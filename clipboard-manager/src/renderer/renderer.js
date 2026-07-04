@@ -17,6 +17,10 @@ const tabs = document.querySelectorAll('.tab');
 let allItems = [];
 let currentFilter = 'all';
 let currentSearch = '';
+let focusedIndex = -1; // 键盘导航：当前高亮索引
+// 自动粘贴设置：默认开启，存在 localStorage
+let autoPaste = localStorage.getItem('cbm_autoPaste');
+autoPaste = autoPaste === null ? true : autoPaste === '1';
 
 // 相对时间
 function timeAgo(ts) {
@@ -93,9 +97,14 @@ function render() {
   }
   emptyEl.hidden = true;
 
+  // 限制 focusedIndex 不超出范围
+  if (focusedIndex >= items.length) focusedIndex = items.length - 1;
+  if (focusedIndex < -1) focusedIndex = -1;
+
   listEl.innerHTML = items.map((item, idx) => {
     const cls = ['item', 'type-' + item.type];
     if (item.pinned) cls.push('pinned');
+    if (idx === focusedIndex) cls.push('focused');
     const content = escapeHtml(truncate(item.content, 200));
     return `
       <div class="${cls.join(' ')}" data-id="${item.id}" style="animation-delay:${Math.min(idx*0.02, 0.3)}s">
@@ -151,10 +160,14 @@ listEl.addEventListener('click', async (e) => {
   }
 
   // 点击卡片 = 复制
+  focusedIndex = -1; // 鼠标点击时清除键盘高亮
   const ok = await window.api.copyItem(id);
   if (ok) {
     showToast('已复制');
-    setTimeout(() => window.close(), 200);
+    if (window.api.pasteToFront) {
+      await window.api.pasteToFront();
+    }
+    setTimeout(() => window.close(), 300);
   }
 });
 
@@ -162,6 +175,7 @@ listEl.addEventListener('click', async (e) => {
 searchInput.addEventListener('input', () => {
   currentSearch = searchInput.value.trim();
   searchClear.classList.toggle('show', !!currentSearch);
+  focusedIndex = -1; // 搜索变化时重置键盘高亮
   render();
 });
 searchClear.addEventListener('click', () => {
@@ -178,6 +192,7 @@ tabs.forEach(tab => {
     tabs.forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     currentFilter = tab.dataset.filter;
+    focusedIndex = -1; // 筛选变化时重置键盘高亮
     render();
   });
 });
@@ -198,6 +213,73 @@ closeSettings.addEventListener('click', () => { settingsPanel.hidden = true; });
 settingsPanel.addEventListener('click', (e) => {
   if (e.target === settingsPanel) settingsPanel.hidden = true;
 });
+
+// 自动粘贴开关
+const autoPasteToggle = document.getElementById('autoPasteToggle');
+if (autoPasteToggle) {
+  autoPasteToggle.checked = autoPaste;
+  autoPasteToggle.addEventListener('change', () => {
+    autoPaste = autoPasteToggle.checked;
+    localStorage.setItem('cbm_autoPaste', autoPaste ? '1' : '0');
+    showToast(autoPaste ? '已开启自动粘贴' : '已关闭自动粘贴');
+  });
+}
+
+// --- 键盘导航 ---
+document.addEventListener('keydown', async (e) => {
+  // 设置面板打开时不拦截
+  if (!settingsPanel.hidden) return;
+
+  const items = getFilteredSorted();
+  if (items.length === 0) return;
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    focusedIndex = Math.min(focusedIndex + 1, items.length - 1);
+    render();
+    scrollFocusedIntoView();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    focusedIndex = Math.max(focusedIndex - 1, 0);
+    render();
+    scrollFocusedIntoView();
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (focusedIndex < 0 || focusedIndex >= items.length) return;
+    const item = items[focusedIndex];
+    const ok = await window.api.copyItem(item.id);
+    if (ok) {
+      showToast('已复制');
+      // 粘贴到前台窗口
+      if (autoPaste && window.api.pasteToFront) {
+        await window.api.pasteToFront();
+      }
+      setTimeout(() => window.close(), 300);
+    }
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    window.close();
+  }
+});
+
+// 获取排序+过滤后的列表（与 render 一致）
+function getFilteredSorted() {
+  const sorted = [...allItems].sort((a, b) => {
+    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+    return b.timestamp - a.timestamp;
+  });
+  const orig = allItems;
+  allItems = sorted;
+  const items = getFilteredItems();
+  allItems = orig;
+  return items;
+}
+
+// 让高亮项滚动到可视区
+function scrollFocusedIntoView() {
+  const el = listEl.children[focusedIndex];
+  if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
 
 // 监听历史更新
 window.api.onHistoryUpdated(() => load());

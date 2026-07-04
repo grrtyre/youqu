@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('api', {
   togglePin: (id) => ipcRenderer.invoke('toggle-pin', id),
   deleteItem: (id) => ipcRenderer.invoke('delete-item', id),
   clearAll: () => ipcRenderer.invoke('clear-all'),
+  pasteToFront: () => ipcRenderer.invoke('paste-to-front'),
   onHistoryUpdated: (cb) => {
     const handler = () => cb();
     ipcRenderer.on('history-updated', handler);

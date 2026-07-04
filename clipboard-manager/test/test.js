@@ -128,6 +128,38 @@ test('刚刚', () => assert.strictEqual(timeAgo(Date.now() - 5000), '刚刚'));
 test('分钟前', () => assert.strictEqual(timeAgo(Date.now() - 120000), '2 分钟前'));
 test('小时前', () => assert.strictEqual(timeAgo(Date.now() - 7200000), '2 小时前'));
 
+console.log('\n=== 8. 键盘导航索引边界 ===');
+// 模拟 renderer.js 的 focusedIndex 边界控制逻辑
+function clampFocus(focusedIndex, itemsLen) {
+  if (focusedIndex >= itemsLen) focusedIndex = itemsLen - 1;
+  if (focusedIndex < -1) focusedIndex = -1;
+  return focusedIndex;
+}
+test('索引超出上限被截断', () => assert.strictEqual(clampFocus(5, 3), 2));
+test('索引 -2 被修正为 -1', () => assert.strictEqual(clampFocus(-2, 3), -1));
+test('空列表索引归 -1', () => assert.strictEqual(clampFocus(0, 0), -1));
+test('合法索引不变', () => assert.strictEqual(clampFocus(1, 3), 1));
+
+// 模拟上下箭头移动
+function moveDown(focusedIndex, itemsLen) {
+  return Math.min(focusedIndex + 1, itemsLen - 1);
+}
+function moveUp(focusedIndex) {
+  return Math.max(focusedIndex - 1, 0);
+}
+test('下箭头不超上限', () => assert.strictEqual(moveDown(2, 3), 2));
+test('上箭头不低于 0', () => assert.strictEqual(moveUp(0), 0));
+test('下箭头从 -1 到 0', () => assert.strictEqual(moveDown(-1, 3), 0));
+
+console.log('\n=== 9. 自动粘贴设置 ===');
+// 模拟 localStorage 读取逻辑
+function readAutoPaste(stored) {
+  return stored === null ? true : stored === '1';
+}
+test('未设置时默认开启', () => assert.strictEqual(readAutoPaste(null), true));
+test('"1" 表示开启', () => assert.strictEqual(readAutoPaste('1'), true));
+test('"0" 表示关闭', () => assert.strictEqual(readAutoPaste('0'), false));
+
 console.log('\n=========================');
 console.log('通过: ' + pass + ' / 失败: ' + fail);
 console.log('=========================');

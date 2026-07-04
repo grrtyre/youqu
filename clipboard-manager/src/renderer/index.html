@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="dark">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';" />
@@ -52,6 +52,7 @@
   <!-- 底栏 -->
   <footer class="footer">
     <span class="count" id="count">0 条记录</span>
+    <span class="footer-hint">Ctrl + Shift + V 唤起</span>
     <button class="footer-btn" id="clearBtn">🗑 清空（保留收藏）</button>
   </footer>
 
@@ -64,12 +65,23 @@
         <code>Ctrl + Shift + V</code>
       </div>
       <div class="setting-row">
+        <span>键盘导航</span>
+        <code>↑ ↓ 选择 · Enter 粘贴 · Esc 关闭</code>
+      </div>
+      <div class="setting-row">
         <span>数据存储位置</span>
         <code id="dataPath">本地 userData</code>
       </div>
       <div class="setting-row">
         <span>最多保留</span>
         <code>500 条</code>
+      </div>
+      <div class="setting-row">
+        <span>选择后自动粘贴到前台窗口</span>
+        <label class="switch">
+          <input type="checkbox" id="autoPasteToggle" checked />
+          <span class="slider"></span>
+        </label>
       </div>
       <div class="setting-row about">
         <span>由 Trae + MiMo Code 协作打造</span>

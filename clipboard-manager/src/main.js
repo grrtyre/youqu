@@ -1,6 +1,7 @@
 const { app, BrowserWindow, Tray, Menu, clipboard, ipcMain, nativeImage } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { execFile } = require('child_process');
 
 const POLL_INTERVAL = 500;
 const MAX_ITEMS = 500;
@@ -224,6 +225,27 @@ function setupIPC() {
     clipboardHistory = clipboardHistory.filter(i => i.pinned);
     saveHistory();
     return true;
+  });
+
+  // 一键粘贴到前台窗口：隐藏自己 → 等待 → 发送 Ctrl+V
+  ipcMain.handle('paste-to-front', () => {
+    return new Promise((resolve) => {
+      if (mainWindow && mainWindow.isVisible()) {
+        mainWindow.hide();
+      }
+      // 等待 80ms 让焦点回到目标窗口，再发送 Ctrl+V
+      setTimeout(() => {
+        const ps = [
+          '$wshell = New-Object -ComObject WScript.Shell;',
+          'Start-Sleep -Milliseconds 100;',
+          '$wshell.SendKeys("^v")'
+        ].join(' ');
+        execFile('powershell.exe', ['-NoProfile', '-Command', ps], { windowsHide: true }, (err) => {
+          if (err) console.error('paste-to-front error:', err.message);
+          resolve(!err);
+        });
+      }, 80);
+    });
   });
 }
 
