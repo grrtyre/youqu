@@ -28,7 +28,7 @@
 
 如果这些工具帮到了你，欢迎在爱发电请我们喝杯咖啡：
 
-👉 [https://afdian.net/a/grrtyre](https://afdian.net/a/grrtyre)
+👉 [https://www.ifdian.net/a/giquwei](https://www.ifdian.net/a/giquwei)
 
 你的支持是我们持续做下去的动力。
 
