@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cron 中文可视化 · 定时任务表达式生成器</title>
+  <meta name="description" content="中文原生的 Cron 表达式可视化生成器：可视化编辑、中文解读、下次执行时间预览、常用预设一键填入。" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%8F%B0%3C/text%3E%3C/svg%3E" />
+</head>
+<body>
+  <div class="bg-aurora"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-logo">⏰</span>
+      <div class="brand-text">
+        <h1>Cron 中文可视化</h1>
+        <p>定时任务表达式生成器</p>
+      </div>
+    </div>
+    <nav class="top-actions">
+      <a class="ghost-btn" href="https://github.com/grrtyre/youqu" target="_blank" rel="noopener">GitHub</a>
+      <a class="ghost-btn afdian" href="https://afdian.net/a/grrtyre" target="_blank" rel="noopener">❤ 爱发电</a>
+      <button class="theme-toggle" id="themeToggle" title="切换主题" aria-label="切换主题">
+        <span class="theme-icon-dark">🌙</span>
+        <span class="theme-icon-light">☀️</span>
+      </button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <!-- 表达式输入区 -->
+    <section class="card expr-card">
+      <div class="card-label">
+        <span>Cron 表达式</span>
+        <div class="quick-actions">
+          <button class="chip" id="copyBtn" title="复制表达式">复制</button>
+          <button class="chip" id="shareBtn" title="生成分享链接">分享</button>
+          <button class="chip chip-danger" id="clearBtn" title="清空">清空</button>
+        </div>
+      </div>
+      <div class="expr-input-wrap">
+        <input id="expr" class="expr-input" type="text" value="0 9 * * 1-5"
+               placeholder="分 时 日 月 周  例如 0 9 * * 1-5"
+               spellcheck="false" autocomplete="off" />
+      </div>
+      <div id="exprStatus" class="expr-status status-ok">✓ 表达式有效</div>
+
+      <!-- 中文解读 -->
+      <div class="describe-wrap">
+        <div class="describe-label">中文解读</div>
+        <div id="describe" class="describe">工作日 09:00</div>
+      </div>
+    </section>
+
+    <!-- 字段可视化 -->
+    <section class="card fields-card">
+      <div class="card-label"><span>字段可视化</span><span class="hint">点击数字快速编辑</span></div>
+      <div class="fields-grid" id="fieldsGrid">
+        <!-- 由 JS 渲染 -->
+      </div>
+    </section>
+
+    <!-- 预设 -->
+    <section class="card presets-card">
+      <div class="card-label"><span>常用预设</span></div>
+      <div class="presets" id="presets">
+        <button class="preset" data-cron="0 * * * *">每小时整点</button>
+        <button class="preset" data-cron="*/5 * * * *">每 5 分钟</button>
+        <button class="preset" data-cron="0 0 * * *">每天 0 点</button>
+        <button class="preset" data-cron="0 9 * * 1-5">工作日 9 点</button>
+        <button class="preset" data-cron="0 9 * * 1">每周一 9 点</button>
+        <button class="preset" data-cron="0 0 1 * *">每月 1 号</button>
+        <button class="preset" data-cron="0 0 * * 0">每周日 0 点</button>
+        <button class="preset" data-cron="0 0,12 * * *">每天 0 点和 12 点</button>
+        <button class="preset" data-cron="*/30 * * * *">每半小时</button>
+        <button class="preset" data-cron="0 18 * * 5">每周五 18 点</button>
+      </div>
+    </section>
+
+    <!-- 下次执行 -->
+    <section class="card next-card">
+      <div class="card-label">
+        <span>接下来 5 次执行</span>
+        <span class="hint" id="nextFrom">从现在开始</span>
+      </div>
+      <div class="next-list" id="nextList">
+        <!-- 由 JS 渲染 -->
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>
+      <a href="https://github.com/grrtyre/youqu" target="_blank" rel="noopener">grrtyre/youqu</a>
+      · 由 Trae + MiMo Code 协作打造
+    </p>
+    <p class="footer-afdian">
+      如果这个工具帮到了你，欢迎
+      <a href="https://afdian.net/a/grrtyre" target="_blank" rel="noopener">在爱发电支持我们 ☕</a>
+    </p>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="cron-utils.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
