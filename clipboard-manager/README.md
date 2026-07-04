@@ -4,6 +4,17 @@
 
 自动记录你复制的一切，全局快捷键秒级唤起，智能分类代码/链接/邮箱/电话/文本，置顶收藏常用片段。
 
+## ⬇️ 直接下载
+
+> 不想自己打包？直接下载下方 exe 即可使用，无需安装 Node.js 或任何依赖。
+
+| 版本 | 下载链接 | 说明 |
+|---|---|---|
+| 安装版（推荐） | [剪贴板管家 Setup 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/clipboard-manager-v1.0.0/Setup.1.0.0.exe) | 73MB，双击安装，自动创建桌面快捷方式 |
+| 免安装便携版 | [剪贴板管家 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/clipboard-manager-v1.0.0/1.0.0.exe) | 73MB，双击即用，不写注册表 |
+
+系统要求：Windows 10/11 x64
+
 ## ✨ 功能特性
 
 - **自动记录** —— 后台静默运行，自动捕获所有剪贴板内容（文本），去重存储
