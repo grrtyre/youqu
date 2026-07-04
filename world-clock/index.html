@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>世界时钟 · 跨时区协作助手</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 顶部标题区 -->
+    <header class="app-header">
+      <div class="title-row">
+        <div class="brand">
+          <div class="brand-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+            </svg>
+          </div>
+          <div>
+            <h1>世界时钟</h1>
+            <p class="subtitle">跨时区协作助手 · 一眼看清全球时间与工作时段重叠</p>
+          </div>
+        </div>
+        <div class="local-now" id="localNow" title="你的本地时间">--:--:--</div>
+      </div>
+
+      <!-- 标签导航 -->
+      <nav class="tabs" role="tablist">
+        <button class="tab active" data-tab="clock" role="tab">🕐 世界时钟</button>
+        <button class="tab" data-tab="overlap" role="tab">🤝 工作时段</button>
+        <button class="tab" data-tab="timestamp" role="tab">⏱ 时间戳转换</button>
+        <button class="tab" data-tab="history" role="tab">📅 历史回溯</button>
+      </nav>
+    </header>
+
+    <!-- 世界时钟 -->
+    <section class="panel active" id="panel-clock" data-panel="clock">
+      <div class="panel-toolbar">
+        <div class="hint">共 <span id="zoneCount">0</span> 个时区 · 每秒刷新</div>
+        <div class="actions">
+          <button class="btn btn-ghost" id="btnSort" title="按时间排序">↕ 排序</button>
+          <button class="btn btn-primary" id="btnAdd">＋ 添加时区</button>
+        </div>
+      </div>
+      <div class="zone-grid" id="zoneGrid"></div>
+
+      <!-- 添加时区弹层 -->
+      <div class="modal-mask" id="addModal" hidden>
+        <div class="modal">
+          <div class="modal-head">
+            <h3>添加时区</h3>
+            <button class="icon-btn" id="btnCloseModal" aria-label="关闭">✕</button>
+          </div>
+          <input type="text" class="modal-search" id="zoneSearch" placeholder="搜索城市或地区…" autocomplete="off" />
+          <div class="modal-list" id="zoneList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 工作时段重叠 -->
+    <section class="panel" id="panel-overlap" data-panel="overlap">
+      <div class="panel-toolbar">
+        <div class="work-hours-input">
+          <label>工作时段（当地时钟）</label>
+          <input type="number" id="workStart" min="0" max="23" step="1" value="9" />
+          <span class="dash">:</span>
+          <span class="fixed-min">00</span>
+          <span class="arrow">→</span>
+          <input type="number" id="workEnd" min="1" max="24" step="1" value="18" />
+          <span class="fixed-min">00</span>
+        </div>
+        <div class="actions">
+          <label class="ref-label">参考时区：
+            <select id="refTz"></select>
+          </label>
+        </div>
+      </div>
+
+      <div class="overlap-summary" id="overlapSummary"></div>
+      <div class="timeline-wrap">
+        <div class="timeline-header">
+          <span class="tl-city">城市</span>
+          <div class="tl-scale" id="tlScale"></div>
+        </div>
+        <div id="timelineRows"></div>
+        <div class="timeline-legend">
+          <span class="lg"><i class="lg-dot lg-work"></i>工作时段</span>
+          <span class="lg"><i class="lg-dot lg-overlap"></i>全员可开会</span>
+          <span class="lg"><i class="lg-dot lg-night"></i>非工作</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 时间戳转换 -->
+    <section class="panel" id="panel-timestamp" data-panel="timestamp">
+      <div class="panel-toolbar col">
+        <label class="field-label">输入 Unix 时间戳（秒或毫秒）或 ISO 字符串</label>
+        <div class="ts-input-row">
+          <input type="text" id="tsInput" class="ts-input" placeholder="例：1783252800  或  2026-07-05T20:00:00+08:00" autocomplete="off" />
+          <button class="btn btn-primary" id="btnTsNow">取当前</button>
+        </div>
+        <div class="ts-meta" id="tsMeta"></div>
+      </div>
+      <div class="result-table-wrap">
+        <table class="result-table" id="tsResult">
+          <thead><tr><th>城市</th><th>时区</th><th>日期</th><th>时间</th><th>星期</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 历史回溯 -->
+    <section class="panel" id="panel-history" data-panel="history">
+      <div class="panel-toolbar col">
+        <label class="field-label">选择一个时刻，查看各时区对应时间（自动处理夏令时）</label>
+        <div class="ts-input-row">
+          <select id="histRefTz" class="hist-ref"></select>
+          <input type="datetime-local" id="histInput" class="ts-input" />
+          <button class="btn btn-ghost" id="btnHistNow">此刻</button>
+        </div>
+      </div>
+      <div class="result-table-wrap">
+        <table class="result-table" id="histResult">
+          <thead><tr><th>城市</th><th>时区</th><th>日期</th><th>时间</th><th>星期</th><th>与参考时差</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="app-footer">
+      <span>纯前端 · 数据不出本地 · 基于 Intl 时区数据库</span>
+      <a class="footer-link" href="https://www.ifdian.net/a/giquwei" target="_blank" rel="noopener">☕ 爱发电支持</a>
+    </footer>
+  </div>
+
+  <!-- 复制提示 -->
+  <div class="toast" id="toast" hidden>已复制</div>
+
+  <script src="timezone-core.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
