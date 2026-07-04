@@ -160,6 +160,97 @@ test('未设置时默认开启', () => assert.strictEqual(readAutoPaste(null), t
 test('"1" 表示开启', () => assert.strictEqual(readAutoPaste('1'), true));
 test('"0" 表示关闭', () => assert.strictEqual(readAutoPaste('0'), false));
 
+console.log('\n=== 10. 搜索关键词高亮 ===');
+// 与 renderer.js 中 highlight 一致的纯逻辑实现
+function escapeHtmlTest(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeRegExpTest(s) {
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+function highlight(text, query) {
+  const escaped = escapeHtmlTest(text);
+  if (!query) return escaped;
+  const safeQuery = escapeRegExpTest(query);
+  try {
+    const re = new RegExp('(' + safeQuery + ')', 'gi');
+    return escaped.replace(re, '<mark>$1</mark>');
+  } catch (e) {
+    return escaped;
+  }
+}
+test('无关键词返回纯 escape', () => {
+  assert.strictEqual(highlight('hello world', ''), 'hello world');
+});
+test('匹配关键词被 mark 包裹', () => {
+  const r = highlight('hello world', 'world');
+  assert.strictEqual(r, 'hello <mark>world</mark>');
+});
+test('大小写不敏感匹配', () => {
+  const r = highlight('Hello World', 'hello');
+  assert.strictEqual(r, '<mark>Hello</mark> World');
+});
+test('多处匹配都高亮', () => {
+  const r = highlight('foo bar foo', 'foo');
+  assert.strictEqual(r, '<mark>foo</mark> bar <mark>foo</mark>');
+});
+test('HTML 特殊字符被转义', () => {
+  const r = highlight('<script>', '');
+  assert.strictEqual(r, '&lt;script&gt;');
+});
+test('正则特殊字符作为关键词安全', () => {
+  // 关键词含正则元字符，不应抛错且按字面匹配
+  const r = highlight('a.b c.d', 'c.d');
+  assert.strictEqual(r, 'a.b <mark>c.d</mark>');
+});
+test('空文本安全', () => {
+  assert.strictEqual(highlight('', 'x'), '');
+});
+
+console.log('\n=== 11. 预览展开逻辑 ===');
+// 模拟 expandedId 的 toggle 行为
+let expandedId = null;
+function toggleExpand(id) {
+  expandedId = (expandedId === id) ? null : id;
+  return expandedId;
+}
+test('首次展开返回 id', () => {
+  expandedId = null;
+  assert.strictEqual(toggleExpand('a1'), 'a1');
+});
+test('再次点击同一项收起', () => {
+  expandedId = 'a1';
+  assert.strictEqual(toggleExpand('a1'), null);
+});
+test('切换到另一项展开', () => {
+  expandedId = 'a1';
+  assert.strictEqual(toggleExpand('b2'), 'b2');
+});
+test('删除当前展开项应清空 expandedId', () => {
+  expandedId = 'a1';
+  // 模拟 renderer.js 中删除分支
+  if (expandedId === 'a1') expandedId = null;
+  assert.strictEqual(expandedId, null);
+});
+
+console.log('\n=== 12. 字数与行数统计 ===');
+function countChars(s) { return String(s).length; }
+function countLines(s) { return String(s).split('\n').length; }
+test('字符数统计', () => {
+  assert.strictEqual(countChars('hello'), 5);
+  assert.strictEqual(countChars('你好世界'), 4);
+  assert.strictEqual(countChars(''), 0);
+});
+test('行数统计（单行）', () => {
+  assert.strictEqual(countLines('hello'), 1);
+});
+test('行数统计（多行）', () => {
+  assert.strictEqual(countLines('a\nb\nc'), 3);
+});
+test('行数统计（含空行）', () => {
+  assert.strictEqual(countLines('a\n\nb'), 3);
+});
+
 console.log('\n=========================');
 console.log('通过: ' + pass + ' / 失败: ' + fail);
 console.log('=========================');

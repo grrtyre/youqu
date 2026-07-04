@@ -12,12 +12,15 @@ const closeBtn = document.getElementById('closeBtn');
 const settingsBtn = document.getElementById('settingsBtn');
 const settingsPanel = document.getElementById('settingsPanel');
 const closeSettings = document.getElementById('closeSettings');
+const dataPathEl = document.getElementById('dataPath');
+const afdianLink = document.getElementById('afdianLink');
 const tabs = document.querySelectorAll('.tab');
 
 let allItems = [];
 let currentFilter = 'all';
 let currentSearch = '';
 let focusedIndex = -1; // 键盘导航：当前高亮索引
+let expandedId = null; // 预览面板：当前展开的条目 id
 // 自动粘贴设置：默认开启，存在 localStorage
 let autoPaste = localStorage.getItem('cbm_autoPaste');
 autoPaste = autoPaste === null ? true : autoPaste === '1';
@@ -53,6 +56,29 @@ function truncate(s, n) {
   return s.length > n ? s.slice(0, n) + '…' : s;
 }
 
+// 转义正则特殊字符
+function escapeRegExp(s) {
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// 搜索关键词高亮：先 escape，再用 <mark> 包裹匹配项
+function highlight(text, query) {
+  const escaped = escapeHtml(text);
+  if (!query) return escaped;
+  const safeQuery = escapeRegExp(query);
+  try {
+    const re = new RegExp('(' + safeQuery + ')', 'gi');
+    return escaped.replace(re, '<mark>$1</mark>');
+  } catch (e) {
+    return escaped;
+  }
+}
+
+// 字数统计
+function countChars(s) {
+  return String(s).length;
+}
+
 // 过滤+搜索
 function getFilteredItems() {
   let items = allItems;
@@ -68,20 +94,53 @@ function getFilteredItems() {
   return items;
 }
 
-// 渲染
-function render() {
-  // 排序：置顶在前，然后按时间
-  const sorted = [...allItems].sort((a, b) => {
+// 排序：置顶在前，然后按时间
+function getSortedItems() {
+  return [...allItems].sort((a, b) => {
     if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
     return b.timestamp - a.timestamp;
   });
-  // 临时替换全局以便过滤
+}
+
+// 获取排序+过滤后的列表
+function getFilteredSorted() {
+  const sorted = getSortedItems();
   const orig = allItems;
   allItems = sorted;
   const items = getFilteredItems();
   allItems = orig;
+  return items;
+}
 
-  countEl.textContent = orig.length + ' 条记录';
+// 渲染单个条目的预览内容
+function renderPreviewContent(item) {
+  const full = escapeHtml(item.content);
+  if (item.type === 'link') {
+    // 链接：显示完整 URL + 打开按钮
+    return `
+      <div class="preview-link-row">
+        <span class="preview-url">${full}</span>
+        <button class="preview-open-btn" data-act="open-link" data-url="${full}">打开 ↗</button>
+      </div>
+      <pre class="preview-body preview-body-link">${full}</pre>
+    `;
+  }
+  if (item.type === 'code') {
+    // 代码：带行号的等宽显示
+    const lines = item.content.split('\n');
+    const numbered = lines.map((ln, i) =>
+      `<span class="line-no">${String(i + 1).padStart(2, ' ')}</span>  ${escapeHtml(ln)}`
+    ).join('\n');
+    return `<pre class="preview-body preview-body-code">${numbered}</pre>`;
+  }
+  // 其他：pre-wrap 保留格式
+  return `<pre class="preview-body">${full}</pre>`;
+}
+
+// 渲染
+function render() {
+  const items = getFilteredSorted();
+  countEl.textContent = allItems.length + ' 条记录';
 
   if (items.length === 0) {
     listEl.innerHTML = '';
@@ -105,7 +164,18 @@ function render() {
     const cls = ['item', 'type-' + item.type];
     if (item.pinned) cls.push('pinned');
     if (idx === focusedIndex) cls.push('focused');
-    const content = escapeHtml(truncate(item.content, 200));
+    if (item.id === expandedId) cls.push('expanded');
+    // 列表预览：高亮关键词 + 截断
+    const preview = highlight(truncate(item.content, 200), currentSearch);
+    const expanded = item.id === expandedId;
+    const previewHtml = expanded ? `
+      <div class="item-preview">
+        <div class="preview-meta">
+          <span class="preview-stat">${countChars(item.content)} 字符 · ${item.content.split('\n').length} 行</span>
+        </div>
+        ${renderPreviewContent(item)}
+      </div>
+    ` : '';
     return `
       <div class="${cls.join(' ')}" data-id="${item.id}" style="animation-delay:${Math.min(idx*0.02, 0.3)}s">
         <div class="item-header">
@@ -114,12 +184,14 @@ function render() {
             <span class="item-time">${timeAgo(item.timestamp)}</span>
           </div>
           <div class="item-actions">
+            <button class="act-btn ${expanded ? 'preview-active' : ''}" data-act="preview" title="预览/展开">👁</button>
             <button class="act-btn ${item.favorite ? 'fav-active' : ''}" data-act="favorite" title="收藏">★</button>
             <button class="act-btn ${item.pinned ? 'pin-active' : ''}" data-act="pin" title="置顶">📌</button>
             <button class="act-btn act-btn-del" data-act="delete" title="删除">🗑</button>
           </div>
         </div>
-        <div class="item-content">${content}</div>
+        <div class="item-content">${preview}</div>
+        ${previewHtml}
       </div>
     `;
   }).join('');
@@ -138,24 +210,43 @@ async function load() {
 // 事件委托：列表操作
 listEl.addEventListener('click', async (e) => {
   const actBtn = e.target.closest('.act-btn');
+  const openBtn = e.target.closest('.preview-open-btn');
   const itemEl = e.target.closest('.item');
   if (!itemEl) return;
   const id = itemEl.dataset.id;
 
+  // 打开链接按钮（预览面板内）
+  if (openBtn) {
+    e.stopPropagation();
+    const url = openBtn.dataset.url;
+    if (url && window.api.openExternal) {
+      await window.api.openExternal(url);
+      showToast('已在浏览器打开');
+    }
+    return;
+  }
+
   if (actBtn) {
     e.stopPropagation();
     const act = actBtn.dataset.act;
-    if (act === 'favorite') {
+    if (act === 'preview') {
+      // 切换预览展开
+      expandedId = (expandedId === id) ? null : id;
+      render();
+    } else if (act === 'favorite') {
       await window.api.toggleFavorite(id);
       showToast('已收藏');
+      await load();
     } else if (act === 'pin') {
       await window.api.togglePin(id);
       showToast('已置顶');
+      await load();
     } else if (act === 'delete') {
       await window.api.deleteItem(id);
+      if (expandedId === id) expandedId = null;
       showToast('已删除');
+      await load();
     }
-    await load();
     return;
   }
 
@@ -164,7 +255,7 @@ listEl.addEventListener('click', async (e) => {
   const ok = await window.api.copyItem(id);
   if (ok) {
     showToast('已复制');
-    if (window.api.pasteToFront) {
+    if (autoPaste && window.api.pasteToFront) {
       await window.api.pasteToFront();
     }
     setTimeout(() => window.close(), 300);
@@ -193,6 +284,7 @@ tabs.forEach(tab => {
     tab.classList.add('active');
     currentFilter = tab.dataset.filter;
     focusedIndex = -1; // 筛选变化时重置键盘高亮
+    expandedId = null;
     render();
   });
 });
@@ -214,6 +306,19 @@ settingsPanel.addEventListener('click', (e) => {
   if (e.target === settingsPanel) settingsPanel.hidden = true;
 });
 
+// 爱发电链接：调用主进程打开外部浏览器
+if (afdianLink) {
+  afdianLink.addEventListener('click', async (e) => {
+    e.preventDefault();
+    try {
+      const url = window.api.getAfdianUrl ? await window.api.getAfdianUrl() : 'https://www.ifdian.net/a/giquwei';
+      if (window.api.openExternal) await window.api.openExternal(url);
+    } catch (err) {
+      showToast('打开失败');
+    }
+  });
+}
+
 // 自动粘贴开关
 const autoPasteToggle = document.getElementById('autoPasteToggle');
 if (autoPasteToggle) {
@@ -225,21 +330,38 @@ if (autoPasteToggle) {
   });
 }
 
+// 加载数据存储路径
+async function loadDataPath() {
+  if (!dataPathEl || !window.api.getDataPath) return;
+  try {
+    const p = await window.api.getDataPath();
+    dataPathEl.textContent = p;
+    dataPathEl.title = p;
+  } catch (e) {
+    dataPathEl.textContent = '本地 userData';
+  }
+}
+
 // --- 键盘导航 ---
 document.addEventListener('keydown', async (e) => {
   // 设置面板打开时不拦截
-  if (!settingsPanel.hidden) return;
+  if (!settingsPanel.hidden) {
+    if (e.key === 'Escape') { settingsPanel.hidden = true; e.preventDefault(); }
+    return;
+  }
 
   const items = getFilteredSorted();
-  if (items.length === 0) return;
+  if (items.length === 0 && e.key !== 'Escape') return;
 
   if (e.key === 'ArrowDown') {
     e.preventDefault();
+    expandedId = null;
     focusedIndex = Math.min(focusedIndex + 1, items.length - 1);
     render();
     scrollFocusedIntoView();
   } else if (e.key === 'ArrowUp') {
     e.preventDefault();
+    expandedId = null;
     focusedIndex = Math.max(focusedIndex - 1, 0);
     render();
     scrollFocusedIntoView();
@@ -256,24 +378,24 @@ document.addEventListener('keydown', async (e) => {
       }
       setTimeout(() => window.close(), 300);
     }
+  } else if (e.key === ' ') {
+    // 空格键：预览/展开当前高亮项
+    if (focusedIndex >= 0 && focusedIndex < items.length) {
+      e.preventDefault();
+      const item = items[focusedIndex];
+      expandedId = (expandedId === item.id) ? null : item.id;
+      render();
+    }
   } else if (e.key === 'Escape') {
     e.preventDefault();
-    window.close();
+    if (expandedId) {
+      expandedId = null;
+      render();
+    } else {
+      window.close();
+    }
   }
 });
-
-// 获取排序+过滤后的列表（与 render 一致）
-function getFilteredSorted() {
-  const sorted = [...allItems].sort((a, b) => {
-    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-    return b.timestamp - a.timestamp;
-  });
-  const orig = allItems;
-  allItems = sorted;
-  const items = getFilteredItems();
-  allItems = orig;
-  return items;
-}
 
 // 让高亮项滚动到可视区
 function scrollFocusedIntoView() {
@@ -286,5 +408,6 @@ window.api.onHistoryUpdated(() => load());
 
 // 初始加载
 load();
+loadDataPath();
 // 自动聚焦搜索
 setTimeout(() => searchInput.focus(), 100);

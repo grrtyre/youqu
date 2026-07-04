@@ -1,7 +1,10 @@
-const { app, BrowserWindow, Tray, Menu, clipboard, ipcMain, nativeImage } = require('electron');
+const { app, BrowserWindow, Tray, Menu, clipboard, ipcMain, nativeImage, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { execFile } = require('child_process');
+
+// 爱发电统一链接
+const AFDIAN_URL = 'https://www.ifdian.net/a/giquwei';
 
 const POLL_INTERVAL = 500;
 const MAX_ITEMS = 500;
@@ -20,7 +23,9 @@ const historyFile = path.join(userDataPath, 'clipboard-history.json');
 function loadHistory() {
   try {
     if (fs.existsSync(historyFile)) {
-      const raw = fs.readFileSync(historyFile, 'utf-8');
+      let raw = fs.readFileSync(historyFile, 'utf-8');
+      // 容错：去掉 UTF-8 BOM（外部编辑器可能写入 BOM）
+      if (raw.charCodeAt(0) === 0xFEFF) raw = raw.slice(1);
       const data = JSON.parse(raw);
       clipboardHistory = Array.isArray(data.items) ? data.items : [];
     } else {
@@ -227,6 +232,19 @@ function setupIPC() {
     return true;
   });
 
+  // 打开外部链接（用于爱发电等）
+  ipcMain.handle('open-external', (event, url) => {
+    if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) return false;
+    shell.openExternal(url);
+    return true;
+  });
+
+  // 获取数据存储路径（供设置面板展示）
+  ipcMain.handle('get-data-path', () => historyFile);
+
+  // 获取爱发电链接
+  ipcMain.handle('get-afdian-url', () => AFDIAN_URL);
+
   // 一键粘贴到前台窗口：隐藏自己 → 等待 → 发送 Ctrl+V
   ipcMain.handle('paste-to-front', () => {
     return new Promise((resolve) => {
@@ -252,15 +270,22 @@ function setupIPC() {
 // --- Tray ---
 
 function createTray() {
-  const icon = nativeImage.createEmpty();
+  // 使用真实图标（多尺寸 ico），避免托盘栏无图标
+  const iconPath = path.join(__dirname, '..', 'build', 'icon.ico');
+  let icon;
+  try {
+    icon = fs.existsSync(iconPath) ? nativeImage.createFromPath(iconPath) : nativeImage.createEmpty();
+  } catch (e) {
+    icon = nativeImage.createEmpty();
+  }
   tray = new Tray(icon);
-  tray.setToolTip('Clipboard Manager');
+  tray.setToolTip('剪贴板管家');
 
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'Show', click: () => toggleWindow() },
+    { label: '显示面板', click: () => toggleWindow() },
     { type: 'separator' },
     {
-      label: 'Exit', click: () => {
+      label: '退出', click: () => {
         app.isQuitting = true;
         app.quit();
       }

@@ -1,6 +1,6 @@
 {
   "name": "clipboard-manager",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Windows 上最美、最快、最隐私的剪贴板历史管理器",
   "main": "src/main.js",
   "scripts": {

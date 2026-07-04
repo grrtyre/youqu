@@ -10,6 +10,12 @@ contextBridge.exposeInMainWorld('api', {
   deleteItem: (id) => ipcRenderer.invoke('delete-item', id),
   clearAll: () => ipcRenderer.invoke('clear-all'),
   pasteToFront: () => ipcRenderer.invoke('paste-to-front'),
+  // 新增：打开外部链接（爱发电等）
+  openExternal: (url) => ipcRenderer.invoke('open-external', url),
+  // 新增：获取数据存储路径
+  getDataPath: () => ipcRenderer.invoke('get-data-path'),
+  // 新增：获取爱发电链接
+  getAfdianUrl: () => ipcRenderer.invoke('get-afdian-url'),
   onHistoryUpdated: (cb) => {
     const handler = () => cb();
     ipcRenderer.on('history-updated', handler);
