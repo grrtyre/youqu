@@ -1,0 +1,235 @@
+/* 编辑器样式 · 苹果白高端风格 */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f5f5f7;
+  --panel: #ffffff;
+  --text: #1d1d1f;
+  --text-2: #6e6e73;
+  --text-3: #a1a1a6;
+  --border: #e8e8ed;
+  --border-2: #d2d2d7;
+  --accent: #007aff;
+  --accent-soft: #e8f1ff;
+  --danger: #ff3b30;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.04);
+  --radius: 10px;
+}
+html, body {
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 标题栏 */
+.titlebar {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px 0 16px;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.titlebar-drag {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  -webkit-app-region: drag;
+  height: 100%;
+}
+.title { font-size: 13px; font-weight: 600; }
+.titlebar-actions { display: flex; gap: 4px; -webkit-app-region: no-drag; }
+.title-btn {
+  width: 28px; height: 28px;
+  border: none; background: transparent;
+  border-radius: 6px; color: var(--text-2);
+  cursor: pointer; display: flex;
+  align-items: center; justify-content: center;
+}
+.title-btn:hover { background: rgba(0,0,0,0.06); }
+.title-btn.btn-close:hover { background: var(--danger); color: #fff; }
+
+/* 工作区 */
+.workspace {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  grid-template-rows: 1fr 56px;
+  height: calc(100vh - 40px);
+}
+.toolbar {
+  grid-row: 1;
+  grid-column: 1;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  overflow-y: auto;
+}
+.tool-group, .color-group, .size-group {
+  display: flex; flex-direction: column; gap: 4px; align-items: center;
+}
+.tool-divider {
+  width: 32px; height: 1px;
+  background: var(--border);
+  margin: 6px 0;
+}
+.tool {
+  width: 44px; height: 44px;
+  border: none; background: transparent;
+  border-radius: 10px; color: var(--text-2);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.tool:hover { background: rgba(0,0,0,0.05); color: var(--text); }
+.tool.active { background: var(--accent-soft); color: var(--accent); }
+.color-row { display: flex; gap: 4px; }
+.color {
+  width: 18px; height: 18px;
+  border-radius: 50%; border: none;
+  cursor: pointer; padding: 0;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
+}
+.color.active { box-shadow: 0 0 0 2px var(--accent), inset 0 0 0 1px rgba(0,0,0,0.06); }
+.size {
+  width: 36px; height: 28px;
+  border: none; background: transparent;
+  border-radius: 6px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.size span {
+  display: block; background: var(--text-2);
+  border-radius: 50%;
+}
+.size:hover { background: rgba(0,0,0,0.05); }
+.size.active { background: var(--accent-soft); }
+.size.active span { background: var(--accent); }
+
+/* 画布区 */
+.canvas-area {
+  grid-row: 1; grid-column: 2;
+  overflow: auto;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(45deg, #ebebed 25%, transparent 25%),
+    linear-gradient(-45deg, #ebebed 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #ebebed 75%),
+    linear-gradient(-45deg, transparent 75%, #ebebed 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  background-color: #f0f0f2;
+}
+.canvas-wrap {
+  position: relative;
+  background: #fff;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.canvas-wrap canvas {
+  display: block;
+  position: absolute;
+  top: 0; left: 0;
+}
+.canvas-wrap canvas:first-child { position: relative; }
+#bgCanvas { z-index: 1; }
+#drawCanvas { z-index: 2; }
+#previewCanvas { z-index: 3; cursor: crosshair; }
+.text-input-floating {
+  position: absolute;
+  z-index: 4;
+  display: none;
+  min-width: 60px;
+  padding: 4px 6px;
+  border: 1.5px solid var(--accent);
+  border-radius: 4px;
+  background: rgba(255,255,255,0.95);
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  outline: none;
+  user-select: text;
+  white-space: nowrap;
+  cursor: text;
+}
+.text-input-floating.show { display: block; }
+
+/* 底部操作栏 */
+.actions {
+  grid-row: 2;
+  grid-column: 1 / span 2;
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+.status {
+  font-size: 12px;
+  color: var(--text-3);
+  font-weight: 500;
+}
+.action-btns { display: flex; gap: 8px; }
+.act {
+  border: 1px solid var(--border-2);
+  background: var(--panel);
+  color: var(--text);
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: inherit;
+  transition: background 0.15s, transform 0.1s;
+}
+.act:hover { background: #f0f0f3; }
+.act:active { transform: scale(0.97); }
+.act.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.act.primary:hover { background: #0066d6; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(29,29,31,0.92);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+  backdrop-filter: blur(20px);
+  z-index: 100;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
