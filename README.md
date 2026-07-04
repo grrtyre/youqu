@@ -10,6 +10,7 @@
 | [📋 剪贴板管家](./clipboard-manager) | Windows 桌面剪贴板历史管理器：苹果白风格、键盘导航、一键粘贴到前台、智能分类、纯本地隐私优先 | Electron + 原生 JS | ✅ 可用 |
 | [📝 Markdown 预览器](./markdown-preview) | 苹果白风格本地 Markdown 预览器：实时编辑、GFM 语法、中文排版优化、一键导出 HTML | 纯 HTML/CSS/JS | ✅ 可用 |
 | [🧰 开发者工具箱](./dev-toolbox) | 苹果白风格 7 合 1 开发者工具：颜色转换 / JSON 格式化 / 时间戳 / 正则测试 / 文本 Diff / Base64 / URL 编解码 | 纯 HTML/CSS/JS | ✅ 可用 |
+| [🎨 拾色管家](./color-picker) | 苹果白风格屏幕取色器：全局快捷键、放大镜精准取色、多调色板管理、托盘常驻、纯本地隐私 | Electron + 原生 JS | ✅ 可用 |
 
 <!-- 新项目在这里追加一行 -->
 

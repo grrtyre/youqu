@@ -1,0 +1,93 @@
+/* 取色覆盖层 - 放大镜风格 */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  cursor: crosshair;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  user-select: none;
+}
+
+.picker {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+.lens {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 220px;
+  height: 220px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.28), 0 0 0 2px rgba(255,255,255,0.6);
+  pointer-events: none;
+  background: #fff;
+}
+
+#canvas {
+  display: block;
+  width: 220px;
+  height: 220px;
+  image-rendering: pixelated;
+}
+
+.crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  transform: translate(-50%, -50%);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(0,0,0,0.5);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.info-card {
+  position: absolute;
+  top: 0;
+  left: 232px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.96);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  pointer-events: none;
+  backdrop-filter: blur(20px);
+}
+
+.info-swatch {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #007aff;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+}
+
+.info-text { font-family: "SF Mono", Menlo, Consolas, monospace; }
+.info-hex { font-size: 15px; font-weight: 600; color: #1d1d1f; }
+.info-rgb { font-size: 11px; color: #6e6e73; margin-top: 2px; }
+
+.hint {
+  position: absolute;
+  top: 232px;
+  left: 0;
+  width: 220px;
+  text-align: center;
+  font-size: 11px;
+  color: rgba(255,255,255,0.92);
+  background: rgba(0,0,0,0.55);
+  padding: 4px 0;
+  border-radius: 6px;
+  pointer-events: none;
+  letter-spacing: 0.3px;
+}

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;">
+  <title>拾色管家</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <!-- 顶部：当前色 + 取色按钮 -->
+    <header class="hero">
+      <div class="hero-left">
+        <div class="swatch-large" id="currentSwatch" style="background:#007AFF;">
+          <span class="swatch-hex" id="currentHex">#007AFF</span>
+        </div>
+        <div class="hero-info">
+          <h1>拾色管家</h1>
+          <p class="subtitle">屏幕取色 · 调色板管理 · 苹果白设计</p>
+          <div class="format-row">
+            <button class="fmt-btn active" data-fmt="hex">#007AFF</button>
+            <button class="fmt-btn" data-fmt="rgb">rgb(0,122,255)</button>
+            <button class="fmt-btn" data-fmt="hsl">hsl(211,100%,50%)</button>
+            <button class="copy-btn" id="copyCurrent">复制</button>
+          </div>
+        </div>
+      </div>
+      <button class="pick-btn" id="pickBtn">
+        <span class="pick-icon">⊙</span>
+        开始取色
+        <span class="pick-shortcut">Ctrl+Shift+C</span>
+      </button>
+    </header>
+
+    <!-- 历史记录 -->
+    <section class="block">
+      <div class="block-head">
+        <h2>最近拾取</h2>
+        <span class="hint" id="historyHint">点击色块复制 HEX · 右键加入调色板</span>
+      </div>
+      <div class="grid" id="historyGrid">
+        <!-- 历史色块 -->
+      </div>
+    </section>
+
+    <!-- 调色板 -->
+    <section class="block">
+      <div class="block-head">
+        <h2>调色板</h2>
+        <div class="palette-controls">
+          <select id="paletteSelect" class="select"></select>
+          <button class="ghost-btn" id="newPaletteBtn">+ 新建</button>
+          <button class="ghost-btn danger" id="delPaletteBtn">删除</button>
+          <button class="ghost-btn" id="renamePaletteBtn">重命名</button>
+        </div>
+      </div>
+      <div class="palette-current" id="paletteCurrent">
+        <span class="palette-label">当前色：</span>
+        <span class="palette-current-hex" id="paletteCurrentHex">#007AFF</span>
+        <button class="primary-btn" id="addToPaletteBtn">加入当前调色板</button>
+      </div>
+      <div class="grid" id="paletteGrid">
+        <!-- 调色板色块 -->
+      </div>
+    </section>
+
+    <!-- 提示 toast -->
+    <div class="toast" id="toast"></div>
+  </div>
+  <script src="renderer.js"></script>
+</body>
+</html>
