@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';" />
+  <title>剪贴板管家</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-glow"></div>
+
+  <!-- 顶栏：可拖动 -->
+  <header class="titlebar">
+    <div class="brand">
+      <span class="brand-icon">📋</span>
+      <span class="brand-name">剪贴板管家</span>
+    </div>
+    <div class="titlebar-actions">
+      <button class="icon-btn" id="settingsBtn" title="设置">⚙</button>
+      <button class="icon-btn icon-btn-danger" id="closeBtn" title="隐藏">✕</button>
+    </div>
+  </header>
+
+  <!-- 搜索栏 -->
+  <div class="search-wrap">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input id="searchInput" type="text" placeholder="搜索剪贴板历史..." spellcheck="false" autocomplete="off" />
+      <button class="search-clear" id="searchClear" title="清除">✕</button>
+    </div>
+    <div class="filter-tabs">
+      <button class="tab active" data-filter="all">全部</button>
+      <button class="tab" data-filter="favorite">⭐ 收藏</button>
+      <button class="tab" data-filter="code">&lt;/&gt; 代码</button>
+      <button class="tab" data-filter="link">🔗 链接</button>
+      <button class="tab" data-filter="text">📝 文本</button>
+    </div>
+  </div>
+
+  <!-- 列表 -->
+  <main class="list-wrap" id="listWrap">
+    <div class="list" id="list">
+      <!-- 由 JS 渲染 -->
+    </div>
+    <div class="empty" id="empty" hidden>
+      <div class="empty-icon">📭</div>
+      <div class="empty-text">还没有剪贴板历史</div>
+      <div class="empty-hint">复制任何内容，就会出现在这里</div>
+    </div>
+  </main>
+
+  <!-- 底栏 -->
+  <footer class="footer">
+    <span class="count" id="count">0 条记录</span>
+    <button class="footer-btn" id="clearBtn">🗑 清空（保留收藏）</button>
+  </footer>
+
+  <!-- 设置面板 -->
+  <div class="settings-panel" id="settingsPanel" hidden>
+    <div class="settings-content">
+      <h3>设置</h3>
+      <div class="setting-row">
+        <span>快捷键</span>
+        <code>Ctrl + Shift + V</code>
+      </div>
+      <div class="setting-row">
+        <span>数据存储位置</span>
+        <code id="dataPath">本地 userData</code>
+      </div>
+      <div class="setting-row">
+        <span>最多保留</span>
+        <code>500 条</code>
+      </div>
+      <div class="setting-row about">
+        <span>由 Trae + MiMo Code 协作打造</span>
+      </div>
+      <div class="setting-row">
+        <a href="#" id="afdianLink">☕ 爱发电支持我们</a>
+      </div>
+      <button class="icon-btn" id="closeSettings">关闭</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
