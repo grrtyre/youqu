@@ -10,10 +10,10 @@
 
 | 平台 | 下载 | 说明 |
 |---|---|---|
-| Windows x64 | [截图管家 Setup 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/screenshot-manager-v1.0.0/截图管家.Setup.1.0.0.exe) | 安装版，支持开机自启 |
-| Windows x64 | [截图管家 Portable 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/screenshot-manager-v1.0.0/截图管家.Portable.1.0.0.exe) | 免安装单文件版 |
+| Windows x64 | [截图管家 Setup 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/screenshot-manager-v1.0.0/Setup.1.0.0.exe) | 安装版，支持开机自启 |
+| Windows x64 | [截图管家 Portable 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/screenshot-manager-v1.0.0/1.0.0.exe) | 免安装单文件版 |
 
-> 若上方链接中文文件名失效，请到 [Releases 页](https://github.com/grrtyre/youqu/releases) 手动下载最新版。
+> 若上方链接失效，请到 [Releases 页](https://github.com/grrtyre/youqu/releases) 手动下载最新版。
 
 ---
 
