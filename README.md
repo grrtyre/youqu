@@ -9,6 +9,7 @@
 | [⏰ Cron 中文可视化](./cron-zh) | 中文原生的 Cron 表达式可视化生成器：实时中文解读、字段可视化、下次执行预览、常用预设 | 纯 HTML/CSS/JS | ✅ 可用 |
 | [📋 剪贴板管家](./clipboard-manager) | Windows 桌面剪贴板历史管理器：苹果白风格、键盘导航、一键粘贴到前台、智能分类、纯本地隐私优先 | Electron + 原生 JS | ✅ 可用 |
 | [📝 Markdown 预览器](./markdown-preview) | 苹果白风格本地 Markdown 预览器：实时编辑、GFM 语法、中文排版优化、一键导出 HTML | 纯 HTML/CSS/JS | ✅ 可用 |
+| [🧰 开发者工具箱](./dev-toolbox) | 苹果白风格 7 合 1 开发者工具：颜色转换 / JSON 格式化 / 时间戳 / 正则测试 / 文本 Diff / Base64 / URL 编解码 | 纯 HTML/CSS/JS | ✅ 可用 |
 
 <!-- 新项目在这里追加一行 -->
 
