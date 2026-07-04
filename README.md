@@ -8,7 +8,6 @@
 |---|---|---|---|
 | [⏰ Cron 中文可视化](./cron-zh) | 中文原生的 Cron 表达式可视化生成器：实时中文解读、字段可视化、下次执行预览、常用预设 | 纯 HTML/CSS/JS | ✅ 可用 |
 | [📋 剪贴板管家](./clipboard-manager) | Windows 桌面剪贴板历史管理器：全局快捷键唤起、智能分类、置顶收藏、纯本地隐私优先 | Electron + 原生 JS | ✅ 可用 |
-| └ ⬇️ [下载安装版](https://github.com/grrtyre/youqu/releases/download/clipboard-manager-v1.0.0/Setup.1.0.0.exe) · [便携版](https://github.com/grrtyre/youqu/releases/download/clipboard-manager-v1.0.0/1.0.0.exe) | Windows 10/11 x64，双击即用 | — | — |
 
 <!-- 新项目在这里追加一行 -->
 
