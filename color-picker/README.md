@@ -17,10 +17,10 @@
 
 | 平台 | 下载 | 说明 |
 |---|---|---|
-| Windows x64 | [拾色管家 Setup](../../releases/latest) | 安装版，含开始菜单快捷方式 |
-| Windows x64 | [拾色管家 Portable](../../releases/latest) | 便携版，解压即用 |
+| Windows x64 | [ColorPicker-Setup-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/color-picker-v1.0.0/ColorPicker-Setup-1.0.0.exe) | 安装版，含开始菜单快捷方式 |
+| Windows x64 | [ColorPicker-Portable-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/color-picker-v1.0.0/ColorPicker-Portable-1.0.0.exe) | 便携版，解压即用 |
 
-> 前往 [Releases 页面](../../releases/latest) 获取最新版本。
+> 前往 [Releases 页面](../../releases) 查看所有版本。
 
 ## 🚀 使用方式
 
