@@ -23,21 +23,29 @@
 
   navItems.forEach(function (item) {
     item.addEventListener('click', function () {
-      var tool = item.getAttribute('data-tool');
-      navItems.forEach(function (n) { n.classList.remove('active'); });
-      item.classList.add('active');
-      panels.forEach(function (p) { p.classList.remove('active'); });
-      var panel = document.querySelector('.panel[data-panel="' + tool + '"]');
-      if (panel) panel.classList.add('active');
-      var meta = TOOL_META[tool];
-      if (meta) {
-        toolTitle.textContent = meta.title;
-        toolDesc.textContent = meta.desc;
-      }
-      // 切换后自动执行一次该工具（首次进入有内容）
-      autoRun(tool);
+      switchTool(item.getAttribute('data-tool'));
     });
   });
+
+  // 切换工具
+  function switchTool(tool) {
+    var item = document.querySelector('.nav-item[data-tool="' + tool + '"]');
+    if (!item) return;
+    navItems.forEach(function (n) { n.classList.remove('active'); });
+    item.classList.add('active');
+    panels.forEach(function (p) { p.classList.remove('active'); });
+    var panel = document.querySelector('.panel[data-panel="' + tool + '"]');
+    if (panel) panel.classList.add('active');
+    var meta = TOOL_META[tool];
+    if (meta) {
+      toolTitle.textContent = meta.title;
+      toolDesc.textContent = meta.desc;
+    }
+    // 记忆上次工具
+    try { localStorage.setItem('dev-toolbox:last', tool); } catch (e) {}
+    // 切换后自动执行一次该工具（首次进入有内容）
+    autoRun(tool);
+  }
 
   // 各工具主按钮 id 映射，用于自动执行
   var AUTO_RUN = {
@@ -357,16 +365,156 @@
     return s.length === 1 ? '0' + s : s;
   }
 
-  // ==================== 初始化：自动执行第一个工具 ====================
+  // ==================== 键盘快捷键 ====================
+  // Ctrl/Cmd + 1~7 切换工具，Ctrl/Cmd + Enter 执行当前工具
+  var TOOL_ORDER = ['color', 'json', 'timestamp', 'regex', 'diff', 'base64', 'url'];
+  document.addEventListener('keydown', function (e) {
+    var mod = e.ctrlKey || e.metaKey;
+    if (!mod) return;
+    // Ctrl/Cmd + 1~7 切换工具
+    var num = parseInt(e.key, 10);
+    if (num >= 1 && num <= 7) {
+      e.preventDefault();
+      switchTool(TOOL_ORDER[num - 1]);
+      return;
+    }
+    // Ctrl/Cmd + Enter 执行当前工具
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      var activePanel = document.querySelector('.panel.active');
+      if (activePanel) {
+        var tool = activePanel.getAttribute('data-panel');
+        var btnId = AUTO_RUN[tool];
+        if (btnId) {
+          var btn = document.getElementById(btnId);
+          if (btn) btn.click();
+        }
+      }
+    }
+  });
+
+  // ==================== JSON 下载 ====================
+  document.getElementById('jsonDownloadBtn').addEventListener('click', function () {
+    var text = jsonOutput.value;
+    if (!text) { toast('内容为空'); return; }
+    downloadFile(text, 'dev-toolbox.json', 'application/json');
+    toast('已下载 JSON 文件');
+  });
+
+  // ==================== Diff 交换 A/B ====================
+  document.getElementById('diffSwapBtn').addEventListener('click', function () {
+    var a = diffA.value;
+    diffA.value = diffB.value;
+    diffB.value = a;
+    toast('已交换 A / B');
+  });
+
+  // ==================== Diff 导出 HTML ====================
+  document.getElementById('diffExportBtn').addEventListener('click', function () {
+    var stats = diffStats.textContent;
+    var html = diffResult.innerHTML;
+    if (!html) { toast('请先执行对比差异'); return; }
+    var full = '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">' +
+      '<title>文本 Diff 对比结果</title><style>' +
+      'body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;background:#f5f5f7;padding:32px;}' +
+      '.diff-stats{display:flex;gap:14px;font-weight:600;margin-bottom:16px;font-size:14px;}' +
+      '.stat-add{color:#34c759}.stat-del{color:#ff3b30}.stat-same{color:#8e8e93}' +
+      '.diff-view{background:#fff;border-radius:8px;border:1px solid #e5e5ea;padding:16px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:13px;line-height:1.8;}' +
+      '.diff-line{display:block;padding:2px 8px;border-radius:4px;white-space:pre-wrap;word-break:break-all;}' +
+      '.diff-line.add{background:rgba(52,199,89,0.12);color:#1a7a3a}' +
+      '.diff-line.del{background:rgba(255,59,48,0.10);color:#b3261a;text-decoration:line-through;text-decoration-color:rgba(255,59,48,0.4)}' +
+      '.diff-line.same{color:#8e8e93}' +
+      '.diff-line .sign{display:inline-block;width:18px;opacity:0.7}' +
+      '</style></head><body><div class="diff-stats">' + escapeHtml(stats) + '</div><div class="diff-view">' + html + '</div></body></html>';
+    downloadFile(full, 'diff-result.html', 'text/html');
+    toast('已导出 HTML 文件');
+  });
+
+  // ==================== 拖拽文件上传到 Diff ====================
+  function bindDropTarget(textarea) {
+    textarea.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      textarea.classList.add('drag-over');
+    });
+    textarea.addEventListener('dragleave', function () {
+      textarea.classList.remove('drag-over');
+    });
+    textarea.addEventListener('drop', function (e) {
+      e.preventDefault();
+      textarea.classList.remove('drag-over');
+      var file = e.dataTransfer.files[0];
+      if (!file) return;
+      if (file.size > 1024 * 1024) { toast('文件过大（>1MB）'); return; }
+      var reader = new FileReader();
+      reader.onload = function () {
+        textarea.value = reader.result;
+        toast('已导入 ' + file.name);
+      };
+      reader.readAsText(file);
+    });
+  }
+  bindDropTarget(diffA);
+  bindDropTarget(diffB);
+
+  // ==================== 文件下载工具函数 ====================
+  function downloadFile(content, filename, mime) {
+    var blob = new Blob([content], { type: mime || 'text/plain;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  // ==================== PWA 安装提示 ====================
+  var deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    var btn = document.getElementById('installBtn');
+    if (btn) btn.hidden = false;
+  });
+  var installBtn = document.getElementById('installBtn');
+  if (installBtn) {
+    installBtn.addEventListener('click', function () {
+      if (!deferredPrompt) { toast('当前浏览器不支持安装'); return; }
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function () {
+        deferredPrompt = null;
+        installBtn.hidden = true;
+      });
+    });
+  }
+
+  // ==================== Service Worker 注册 ====================
+  if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () {
+        // 注册失败静默处理，不影响应用正常使用
+      });
+    });
+  }
+
+  // ==================== 初始化 ====================
   runColor();
 
   // 支持 hash 路由：#json #diff 等，便于深链与截图
   function applyHash() {
     var h = (location.hash || '').replace(/^#/, '');
     if (h && TOOL_META[h]) {
-      var target = document.querySelector('.nav-item[data-tool="' + h + '"]');
-      if (target && !target.classList.contains('active')) target.click();
+      switchTool(h);
+      return;
     }
+    // 无 hash 时恢复上次工具
+    try {
+      var last = localStorage.getItem('dev-toolbox:last');
+      if (last && TOOL_META[last] && last !== 'color') {
+        switchTool(last);
+      }
+    } catch (e) {}
   }
   applyHash();
   window.addEventListener('hashchange', applyHash);

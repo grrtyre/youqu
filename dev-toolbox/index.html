@@ -3,8 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#007aff" />
+  <meta name="description" content="苹果白风格 7 合 1 开发者工具：颜色转换 / JSON 格式化 / 时间戳 / 正则测试 / 文本 Diff / Base64 / URL 编解码" />
   <title>开发者工具箱 · dev-toolbox</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="工具箱" />
 </head>
 <body>
   <div class="app">
@@ -18,26 +26,26 @@
         </div>
       </div>
       <nav class="nav">
-        <button class="nav-item active" data-tool="color">
-          <span class="nav-icon">🎨</span><span>颜色转换</span>
+        <button class="nav-item active" data-tool="color" data-index="1">
+          <span class="nav-icon">🎨</span><span>颜色转换</span><kbd class="nav-kbd">1</kbd>
         </button>
-        <button class="nav-item" data-tool="json">
-          <span class="nav-icon">📄</span><span>JSON 格式化</span>
+        <button class="nav-item" data-tool="json" data-index="2">
+          <span class="nav-icon">📄</span><span>JSON 格式化</span><kbd class="nav-kbd">2</kbd>
         </button>
-        <button class="nav-item" data-tool="timestamp">
-          <span class="nav-icon">⏱</span><span>时间戳转换</span>
+        <button class="nav-item" data-tool="timestamp" data-index="3">
+          <span class="nav-icon">⏱</span><span>时间戳转换</span><kbd class="nav-kbd">3</kbd>
         </button>
-        <button class="nav-item" data-tool="regex">
-          <span class="nav-icon">🔍</span><span>正则测试</span>
+        <button class="nav-item" data-tool="regex" data-index="4">
+          <span class="nav-icon">🔍</span><span>正则测试</span><kbd class="nav-kbd">4</kbd>
         </button>
-        <button class="nav-item" data-tool="diff">
-          <span class="nav-icon">⚖️</span><span>文本 Diff</span>
+        <button class="nav-item" data-tool="diff" data-index="5">
+          <span class="nav-icon">⚖️</span><span>文本 Diff</span><kbd class="nav-kbd">5</kbd>
         </button>
-        <button class="nav-item" data-tool="base64">
-          <span class="nav-icon">🔐</span><span>Base64</span>
+        <button class="nav-item" data-tool="base64" data-index="6">
+          <span class="nav-icon">🔐</span><span>Base64</span><kbd class="nav-kbd">6</kbd>
         </button>
-        <button class="nav-item" data-tool="url">
-          <span class="nav-icon">🌐</span><span>URL 编码</span>
+        <button class="nav-item" data-tool="url" data-index="7">
+          <span class="nav-icon">🌐</span><span>URL 编码</span><kbd class="nav-kbd">7</kbd>
         </button>
       </nav>
       <div class="sidebar-footer">
@@ -48,8 +56,16 @@
     <!-- 主区域 -->
     <main class="main">
       <header class="main-header">
-        <h1 id="toolTitle" class="tool-title">颜色转换</h1>
-        <p id="toolDesc" class="tool-desc">HEX / RGB / HSL / CSS 互转，支持透明度</p>
+        <div class="header-row">
+          <div>
+            <h1 id="toolTitle" class="tool-title">颜色转换</h1>
+            <p id="toolDesc" class="tool-desc">HEX / RGB / HSL / CSS 互转，支持透明度</p>
+          </div>
+          <div class="header-actions">
+            <span class="kbd-hint" title="键盘快捷键"><kbd>⌘/Ctrl</kbd> + <kbd>1-7</kbd> 切换 · <kbd>⌘/Ctrl</kbd> + <kbd>↵</kbd> 执行</span>
+            <button id="installBtn" class="btn ghost install-btn" hidden>安装到桌面</button>
+          </div>
+        </div>
       </header>
 
       <!-- 颜色转换 -->
@@ -88,7 +104,10 @@
         </div>
         <div class="result-block">
           <textarea id="jsonOutput" class="textarea mono" rows="10" readonly></textarea>
-          <button class="btn ghost copy-btn" data-copy="jsonOutput">复制</button>
+          <div class="result-actions">
+            <button class="btn ghost copy-btn" data-copy="jsonOutput">复制</button>
+            <button class="btn ghost" id="jsonDownloadBtn">⬇ 下载 .json</button>
+          </div>
         </div>
       </section>
 
@@ -133,15 +152,15 @@
       <section class="panel" data-panel="diff">
         <div class="row two-col">
           <label class="field">
-            <span class="label">原始文本 A</span>
-            <textarea id="diffA" class="textarea mono" rows="6">第一行
+            <span class="label">原始文本 A <span class="drag-hint">· 可拖拽文件</span></span>
+            <textarea id="diffA" class="textarea mono drop-target" rows="6" placeholder="可拖拽 .txt/.json/.js 文件">第一行
 第二行
 第三行
 第四行</textarea>
           </label>
           <label class="field">
-            <span class="label">对比文本 B</span>
-            <textarea id="diffB" class="textarea mono" rows="6">第一行
+            <span class="label">对比文本 B <span class="drag-hint">· 可拖拽文件</span></span>
+            <textarea id="diffB" class="textarea mono drop-target" rows="6" placeholder="可拖拽 .txt/.json/.js 文件">第一行
 第二行修改
 第三行
 新增行
@@ -150,6 +169,8 @@
         </div>
         <div class="row">
           <button class="btn primary" id="diffBtn">对比差异</button>
+          <button class="btn ghost" id="diffSwapBtn">⇄ 交换 A/B</button>
+          <button class="btn ghost" id="diffExportBtn">⬇ 导出 HTML</button>
         </div>
         <div class="result-block">
           <div class="diff-stats" id="diffStats"></div>
