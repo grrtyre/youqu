@@ -1,4 +1,4 @@
-// 截图选区逻辑
+// 截图选区逻辑（支持多屏拼接）
 const { api } = window;
 const overlay = document.getElementById('overlay');
 const bgLayer = document.getElementById('bgLayer');
@@ -8,17 +8,68 @@ const toolbar = document.getElementById('toolbar');
 const btnOk = document.getElementById('btnOk');
 const btnCancel = document.getElementById('btnCancel');
 
-let rawPath = null;
-let scaleFactor = 1;
+let sources = [];           // [{rawPath, bounds, scaleFactor, physW, physH}]
+let desktopBounds = null;   // 虚拟桌面 bounds {x, y, width, height}
+let composedRawPath = null; // 拼接后的整屏图路径，传给 editor
+let scaleFactor = 1;        // 假设所有屏 scaleFactor 一致（绝大多数情况）
 let dragging = false;
 let startX = 0, startY = 0;
-let rect = null;
+let rect = null;            // 选区 CSS 像素坐标（相对 picker 窗口左上角）
 
-api.onPickerInit((args) => {
-  rawPath = args.rawPath;
-  scaleFactor = args.scaleFactor || 1;
-  bgLayer.style.backgroundImage = `url(file:///${rawPath.replace(/\\/g, '/')})`;
+// 加载图片（base64 → Image）
+function loadImage(base64) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => res(img);
+    img.onerror = rej;
+    img.src = 'data:image/png;base64,' + base64;
+  });
+}
+
+api.onPickerInit(async (args) => {
+  sources = args.sources || [];
+  desktopBounds = args.desktopBounds;
+  if (!sources.length || !desktopBounds) return;
+  scaleFactor = sources[0].scaleFactor || 1;
+  await composeBackground();
 });
+
+// 多屏拼接：在 canvas 上把所有 display 的图按物理像素位置画到一起
+async function composeBackground() {
+  const physW = Math.round(desktopBounds.width * scaleFactor);
+  const physH = Math.round(desktopBounds.height * scaleFactor);
+  const canvas = document.createElement('canvas');
+  canvas.width = physW;
+  canvas.height = physH;
+  const ctx = canvas.getContext('2d');
+
+  for (const s of sources) {
+    const r = await api.readImage({ path: s.rawPath });
+    if (!r.ok) continue;
+    let img;
+    try { img = await loadImage(r.base64); } catch (e) { continue; }
+    // 物理像素位置：相对虚拟桌面的偏移 × scaleFactor
+    const dx = Math.round((s.bounds.x - desktopBounds.x) * scaleFactor);
+    const dy = Math.round((s.bounds.y - desktopBounds.y) * scaleFactor);
+    ctx.drawImage(img, dx, dy, s.physW, s.physH);
+  }
+
+  // 拼接结果存为临时文件，供 editor 读取
+  const dataURL = canvas.toDataURL('image/png');
+  const base64 = dataURL.split(',')[1];
+  const saveR = await api.saveTempRaw({ base64 });
+  if (!saveR.ok) return;
+  composedRawPath = saveR.path;
+
+  // 清理原始单屏 raw 文件（拼接已完成，不再需要）
+  for (const s of sources) {
+    api.cleanupTempFile({ path: s.rawPath });
+  }
+
+  // 用 data URL 作为背景，避免 file:// 路径含空格/中文括号/% 时被破坏
+  bgLayer.style.backgroundImage = `url("${dataURL}")`;
+  bgLayer.style.backgroundSize = `${desktopBounds.width}px ${desktopBounds.height}px`;
+}
 
 function startDrag(x, y) {
   dragging = true;
@@ -75,10 +126,9 @@ overlay.addEventListener('mousemove', (e) => {
 });
 overlay.addEventListener('mouseup', () => endDrag());
 
-// 确定
+// 确定：把 CSS 像素选区转为物理像素选区，传给 editor
 btnOk.onclick = async () => {
-  if (!rect) return;
-  // 把 CSS 像素坐标转为物理像素（乘 scaleFactor）
+  if (!rect || !composedRawPath) return;
   const physRect = {
     x: Math.round(rect.x * scaleFactor),
     y: Math.round(rect.y * scaleFactor),
@@ -86,7 +136,7 @@ btnOk.onclick = async () => {
     h: Math.round(rect.h * scaleFactor)
   };
   await api.openEditor({
-    rawPath: rawPath,
+    rawPath: composedRawPath,
     rect: physRect,
     scaleFactor: scaleFactor
   });

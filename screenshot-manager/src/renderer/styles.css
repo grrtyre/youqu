@@ -10,10 +10,11 @@
   --border-2: #d2d2d7;
   --accent: #007aff;
   --accent-soft: #e8f1ff;
+  --accent-soft-2: #d6e9ff;
   --danger: #ff3b30;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.06);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.04);
-  --shadow-lg: 0 10px 30px rgba(0,0,0,0.08), 0 4px 8px rgba(0,0,0,0.04);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 14px rgba(0,0,0,0.06), 0 1.5px 3px rgba(0,0,0,0.04);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
   --radius: 10px;
   --radius-lg: 14px;
 }
@@ -34,22 +35,22 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 12px 0 16px;
-  background: rgba(255,255,255,0.78);
+  padding: 0 12px 0 18px;
+  background: rgba(255,255,255,0.92);
   backdrop-filter: saturate(180%) blur(20px);
   border-bottom: 1px solid var(--border);
 }
 .titlebar-drag {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex: 1;
   -webkit-app-region: drag;
   height: 100%;
 }
 .app-icon { display: flex; }
 .app-title {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.2px;
 }
@@ -80,12 +81,12 @@ html, body {
   height: calc(100vh - 44px);
 }
 .sidebar {
-  width: 260px;
+  width: 240px;
   background: transparent;
-  padding: 24px 18px;
+  padding: 22px 18px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 14px;
   border-right: 1px solid var(--border);
   overflow-y: auto;
 }
@@ -93,7 +94,7 @@ html, body {
   background: var(--card);
   border-radius: var(--radius-lg);
   padding: 20px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   border: 1px solid var(--border);
 }
 .hero-title {
@@ -109,17 +110,28 @@ html, body {
   margin-bottom: 16px;
   line-height: 1.5;
 }
+.hero-shortcut {
+  text-align: center;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  opacity: 0.65;
+}
 kbd {
   display: inline-block;
-  background: #f0f0f3;
+  background: #fff;
   border: 1px solid var(--border-2);
-  border-radius: 4px;
-  padding: 1px 6px;
+  border-radius: 5px;
+  padding: 2px 7px;
   font-size: 11px;
   font-family: -apple-system, "SF Mono", Menlo, monospace;
   color: var(--text);
-  box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.04), inset 0 -1px 0 rgba(0,0,0,0.03);
   font-weight: 500;
+  min-width: 18px;
+  text-align: center;
 }
 .btn-primary {
   width: 100%;
@@ -141,7 +153,14 @@ kbd {
 .btn-primary:hover { background: #0066d6; }
 .btn-primary:active { transform: scale(0.98); }
 
-.nav { display: flex; flex-direction: column; gap: 2px; }
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 14px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 4px;
+}
 .nav-item {
   display: flex;
   align-items: center;
@@ -158,14 +177,16 @@ kbd {
 .nav-item.active { background: var(--accent-soft); color: var(--accent); }
 .nav-item .nav-count {
   margin-left: auto;
-  background: rgba(0,0,0,0.06);
+  background: rgba(0,0,0,0.05);
   color: var(--text-2);
   font-size: 11px;
-  padding: 1px 7px;
+  padding: 1px 8px;
   border-radius: 10px;
   font-weight: 600;
+  min-width: 18px;
+  text-align: center;
 }
-.nav-item.active .nav-count { background: var(--accent); color: #fff; }
+.nav-item.active .nav-count { background: var(--accent-soft-2); color: var(--accent); }
 
 /* 内容区 */
 .content {
@@ -182,9 +203,9 @@ kbd {
   margin-bottom: 20px;
 }
 .panel-head h2 {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
-  letter-spacing: -0.2px;
+  letter-spacing: -0.3px;
 }
 .panel-hint {
   font-size: 12px;
@@ -196,22 +217,30 @@ kbd {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 16px;
+  min-height: calc(100vh - 44px - 56px - 60px);
+}
+/* 空状态：整个 grid 转为 flex 垂直居中 */
+.history-grid:has(.empty) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .empty {
-  grid-column: 1 / -1;
   text-align: center;
-  padding: 60px 20px;
+  padding: 40px 20px;
   color: var(--text-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
 .empty-title {
   font-size: 15px;
   font-weight: 600;
-  margin-top: 12px;
   color: var(--text-2);
 }
 .empty-sub {
   font-size: 12px;
-  margin-top: 4px;
 }
 .history-item {
   background: var(--card);

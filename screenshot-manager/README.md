@@ -10,8 +10,8 @@
 
 | 平台 | 下载 | 说明 |
 |---|---|---|
-| Windows x64 | [截图管家 Setup 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/screenshot-manager-v1.0.0/Setup.1.0.0.exe) | 安装版，支持开机自启 |
-| Windows x64 | [截图管家 Portable 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/screenshot-manager-v1.0.0/1.0.0.exe) | 免安装单文件版 |
+| Windows x64 | [截图管家 Setup 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/screenshot-manager-v1.1.0/Setup.1.1.0.exe) | v1.1.0 安装版，支持开机自启 |
+| Windows x64 | [截图管家 Portable 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/screenshot-manager-v1.1.0/1.1.0.exe) | v1.1.0 免安装单文件版 |
 
 > 若上方链接失效，请到 [Releases 页](https://github.com/grrtyre/youqu/releases) 手动下载最新版。
 
@@ -54,6 +54,8 @@
 | `Ctrl + Shift + Q` | 备用截图键 |
 | `Esc` | 取消截图 / 关闭文字输入 |
 | `Ctrl + Z` | 编辑器撤销 |
+| `Ctrl + Shift + Z` / `Ctrl + Y` | 编辑器重做 |
+| 贴图右键 | 另存为 / 复制 / 关闭贴图 |
 
 ---
 
@@ -74,8 +76,38 @@ npm start
 ### 方式三：自己打包
 ```bash
 npm install
-npm run build   # 产物在 dist/
+npm run build   # 产物在 build-output/
 ```
+
+---
+
+## 📜 更新日志
+
+### v1.1.0（2026-07-05）
+
+**安全**
+- 新增 IPC 路径白名单校验，防止任意文件读取（`isPathSafe`）
+
+**功能**
+- 新增编辑器重做（Redo）功能：`Ctrl + Shift + Z` / `Ctrl + Y`
+- 新增贴图右键菜单：另存为 / 复制到剪贴板 / 关闭
+- 新增主窗口"立即截图"按钮，一键触发截图流程
+- 多屏支持：拼接所有显示器为虚拟桌面，picker 跨屏选区
+- HiDPI 修复：`thumbnailSize` 乘 `scaleFactor`，避免高 DPI 模糊
+
+**Bug 修复**
+- 修复磁盘泄漏：编辑器关闭时清理临时 raw 文件，pin 关闭时清理 pin 临时文件
+- 修复贴图位置：基于编辑器实际 bounds 计算贴图坐标（右/下/左 fallback）
+- 修复 `ready-to-show` 阶段 IPC 消息丢失：等 `did-finish-load` 后再发送
+- 修复托盘"上次截图再编辑"引用已清理的 raw 文件
+
+**UI**
+- 苹果白高端风格细化：阴影、间距、badge、标题栏、kbd 样式
+- hero 卡片重写：标题+按钮+快捷键居中布局
+- 空状态垂直居中
+
+### v1.0.0（初始版本）
+- 区域截图、6 种标注工具、贴图、历史、纯本地隐私
 
 ---
 
@@ -123,7 +155,7 @@ screenshot-manager/
 npm test
 ```
 
-测试覆盖：UUID 生成、历史管理（增/删/上限/排序）、裁剪坐标转换、标注形状几何、箭头方向、序号自增/撤销。
+测试覆盖：UUID 生成、历史管理（增/删/上限/排序）、裁剪坐标转换、标注形状几何、箭头方向、序号自增/撤销、重做栈、IPC 路径白名单校验、多屏 bounds 并集、HiDPI 物理像素计算、贴图位置定位。
 
 ---
 

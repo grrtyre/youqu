@@ -6,6 +6,10 @@ contextBridge.exposeInMainWorld('api', {
   cropScreenshot: (args) => ipcRenderer.invoke('crop-screenshot', args),
   openEditor: (args) => ipcRenderer.invoke('open-editor', args),
   pickerCancel: () => ipcRenderer.invoke('picker-cancel'),
+  triggerScreenshot: () => ipcRenderer.invoke('trigger-screenshot'),
+  getEditorBounds: () => ipcRenderer.invoke('get-editor-bounds'),
+  saveTempRaw: (args) => ipcRenderer.invoke('save-temp-raw', args),
+  cleanupTempFile: (args) => ipcRenderer.invoke('cleanup-temp-file', args),
   // 编辑器
   saveScreenshot: (args) => ipcRenderer.invoke('save-screenshot', args),
   copyToClipboard: (args) => ipcRenderer.invoke('copy-to-clipboard', args),
@@ -17,6 +21,8 @@ contextBridge.exposeInMainWorld('api', {
   deleteHistory: (id) => ipcRenderer.invoke('delete-history', id),
   showInFolder: (p) => ipcRenderer.invoke('show-in-folder', p),
   editFromHistory: (id) => ipcRenderer.invoke('edit-from-history', id),
+  // pin 窗口
+  pinContextMenu: () => ipcRenderer.invoke('pin-context-menu'),
   // 窗口控制
   winClose: () => ipcRenderer.invoke('win-close'),
   winMinimize: () => ipcRenderer.invoke('win-minimize'),

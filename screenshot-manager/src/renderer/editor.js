@@ -23,6 +23,7 @@ let state = {
   color: '#ff3b30',
   size: 2,
   shapes: [],   // 已确认的标注
+  redoStack: [], // 重做栈：undo 时把 pop 出的 shape 压入这里
   current: null, // 正在绘制的标注
   numberIdx: 1,
   image: null,    // Image 对象
@@ -67,18 +68,46 @@ document.querySelectorAll('.size').forEach(btn => {
     state.size = parseInt(btn.dataset.size, 10);
   };
 });
-// 撤销
+// 撤销 / 重做
 document.getElementById('btnUndo').onclick = undo;
+document.getElementById('btnRedo').onclick = redo;
 function undo() {
   if (state.shapes.length === 0) return;
   const last = state.shapes.pop();
+  state.redoStack.push(last);
   if (last.type === 'number') state.numberIdx = Math.max(1, state.numberIdx - 1);
   redraw();
+  updateUndoRedoState();
+}
+function redo() {
+  if (state.redoStack.length === 0) return;
+  const s = state.redoStack.pop();
+  state.shapes.push(s);
+  if (s.type === 'number') state.numberIdx = Math.max(state.numberIdx, s.num + 1);
+  redraw();
+  updateUndoRedoState();
+}
+// 撤销/重做按钮可用状态反馈
+function updateUndoRedoState() {
+  const btnUndo = document.getElementById('btnUndo');
+  const btnRedo = document.getElementById('btnRedo');
+  if (btnUndo) btnUndo.classList.toggle('disabled', state.shapes.length === 0);
+  if (btnRedo) btnRedo.classList.toggle('disabled', state.redoStack.length === 0);
+}
+// 添加新标注：清空 redo 栈（标准行为：新操作后无法 redo）
+function pushShape(s) {
+  state.shapes.push(s);
+  state.redoStack = [];
+  updateUndoRedoState();
 }
 document.addEventListener('keydown', (e) => {
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+  // Ctrl+Z 撤销，Ctrl+Shift+Z 或 Ctrl+Y 重做
+  if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z') {
     e.preventDefault();
     undo();
+  } else if ((e.ctrlKey || e.metaKey) && (e.shiftKey && e.key.toLowerCase() === 'z' || e.key.toLowerCase() === 'y')) {
+    e.preventDefault();
+    redo();
   }
   if (e.key === 'Escape') hideTextEditor();
 });
@@ -163,7 +192,7 @@ previewCanvas.addEventListener('mousedown', (e) => {
   }
   if (state.tool === 'number') {
     const p = getPos(e);
-    state.shapes.push({
+    pushShape({
       type: 'number',
       x: p.x, y: p.y,
       color: state.color,
@@ -199,7 +228,7 @@ previewCanvas.addEventListener('mouseup', () => {
   // 至少有 2 个点或拖拽距离够
   const pts = state.current.points;
   if (pts.length >= 2) {
-    state.shapes.push(state.current);
+    pushShape(state.current);
   }
   state.current = null;
   previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
@@ -254,7 +283,7 @@ textEditor.addEventListener('blur', () => {
   // 失焦时也提交
   const txt = textEditor.textContent.trim();
   if (txt) {
-    state.shapes.push({
+    pushShape({
       type: 'text',
       x: parseFloat(textEditor.dataset.x),
       y: parseFloat(textEditor.dataset.y),
@@ -429,10 +458,28 @@ document.getElementById('btnPin').onclick = async () => {
   } else showToast('贴图失败');
 };
 
-// 获取当前窗口位置用于贴图定位
+// 获取编辑器窗口在屏幕上的位置，贴图定位到编辑器右侧（不够则下方/左侧）
 async function electronScreenPos() {
-  // 简化：贴在编辑器旁边
-  return { x: 100, y: 100 };
+  const r = await api.getEditorBounds();
+  if (!r.ok) return { x: 100, y: 100 };
+  const pinW = state.displayW || 400;
+  const pinH = state.displayH || 300;
+  const gap = 16;
+  // 优先右侧
+  let x = r.x + r.w + gap;
+  let y = r.y;
+  // 右侧放不下，试下方
+  if (x + pinW > screen.availWidth) {
+    x = r.x;
+    y = r.y + r.h + gap;
+  }
+  // 下方也放不下，试左侧
+  if (y + pinH > screen.availHeight) {
+    x = Math.max(0, r.x - pinW - gap);
+    y = r.y;
+  }
+  return { x: Math.round(x), y: Math.round(y) };
 }
 
 setStatus('就绪');
+updateUndoRedoState();

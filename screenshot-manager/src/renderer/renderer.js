@@ -6,9 +6,11 @@ document.getElementById('btnMin').onclick = () => api.winMinimize();
 document.getElementById('btnMax').onclick = () => api.winMaximize();
 document.getElementById('btnClose').onclick = () => api.winClose();
 
-// 立即截图按钮（提示用快捷键，因为从主窗口启动需要触发主进程的截图流程）
+// 立即截图按钮：直接触发主进程截图流程（先隐藏主窗口避免被截到）
 document.getElementById('btnShot').onclick = () => {
-  showToast('请按 Ctrl+Shift+A 启动截图');
+  api.winMinimize();
+  // 等主窗口最小化后再启动截图，避免主窗口被截进去
+  setTimeout(() => api.triggerScreenshot(), 180);
 };
 
 // 导航切换

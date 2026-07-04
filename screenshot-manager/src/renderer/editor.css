@@ -93,6 +93,8 @@ html, body {
 }
 .tool:hover { background: rgba(0,0,0,0.05); color: var(--text); }
 .tool.active { background: var(--accent-soft); color: var(--accent); }
+.tool.disabled { opacity: 0.35; cursor: not-allowed; }
+.tool.disabled:hover { background: transparent; color: var(--text-2); }
 .color-row { display: flex; gap: 4px; }
 .color {
   width: 18px; height: 18px;
