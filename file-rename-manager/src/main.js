@@ -5,7 +5,7 @@ const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
-const { createFileItem, generatePreview, executeRename, undoRename } = require('./core/rename-engine');
+const { createFileItem, generatePreview, executeRename, undoRename, matchExt, applyUndoToFiles } = require('./core/rename-engine');
 const { readExifDate } = require('./core/exif-reader');
 const { loadPresets, addPreset, deletePreset } = require('./core/preset-store');
 
@@ -21,23 +21,28 @@ const presetFile = () => path.join(userDataPath(), 'presets.json');
 
 // ---------- 文件扫描 ----------
 
-/** 递归扫描路径列表（文件/文件夹混合），返回所有文件路径 */
-async function scanFilePaths(inputPaths, recursive) {
+/** 递归扫描路径列表（文件/文件夹混合），返回所有文件路径。
+ *  extFilter：可选扩展名过滤数组（如 ['.jpg','.png']），null/空表示不过滤。
+ *  顶层传入的文件（inputPaths 中的文件本身）不受 extFilter 影响（用户主动选的）。 */
+async function scanFilePaths(inputPaths, recursive, extFilter) {
+  const hasFilter = Array.isArray(extFilter) && extFilter.length > 0;
   const result = [];
   for (const p of inputPaths) {
     try {
       const stat = await fs.promises.stat(p);
       if (stat.isFile()) {
-        result.push(p);
+        result.push(p); // 用户主动选的文件，不过滤
       } else if (stat.isDirectory()) {
         if (!recursive) continue;
         const entries = await fs.promises.readdir(p, { withFileTypes: true });
         for (const entry of entries) {
           const fullPath = path.join(p, entry.name);
           if (entry.isFile()) {
+            // 文件夹内的文件按扩展名过滤
+            if (hasFilter && !matchExt(fullPath, extFilter)) continue;
             result.push(fullPath);
           } else if (entry.isDirectory() && recursive) {
-            const sub = await scanFilePaths([fullPath], recursive);
+            const sub = await scanFilePaths([fullPath], recursive, extFilter);
             result.push(...sub);
           }
         }
@@ -148,9 +153,10 @@ function setupIPC() {
   });
 
   // 扫描路径列表，返回文件项
-  ipcMain.handle('scan-paths', async (event, paths, recursive = true) => {
+  // 第 3 个参数 extFilter：扩展名过滤数组（如 ['.jpg','.png']），可选
+  ipcMain.handle('scan-paths', async (event, paths, recursive = true, extFilter = null) => {
     if (!Array.isArray(paths) || paths.length === 0) return [];
-    const filePaths = await scanFilePaths(paths, recursive);
+    const filePaths = await scanFilePaths(paths, recursive, extFilter);
     const items = await buildFileItems(filePaths);
     return items;
   });
@@ -168,15 +174,23 @@ function setupIPC() {
   });
 
   // 撤销最近一次重命名
+  // 返回 history 让渲染层能更新 state.files（撤销后文件已恢复原名）
   ipcMain.handle('undo-rename', async () => {
-    if (lastHistory.length === 0) return { success: 0, failed: 0, empty: true };
+    if (lastHistory.length === 0) return { success: 0, failed: 0, empty: true, history: [] };
+    const historySnapshot = lastHistory.slice();
     const result = await undoRename(lastHistory);
     lastHistory = [];
-    return result;
+    return { success: result.success, failed: result.failed, history: historySnapshot };
   });
 
   // 是否有可撤销的历史
   ipcMain.handle('has-undo-history', () => lastHistory.length > 0);
+
+  // 用 history 恢复文件项名称（撤销后文件已恢复原名，state.files 也要同步）
+  // 纯逻辑委托给引擎的 applyUndoToFiles（已测试）
+  ipcMain.handle('apply-undo-to-files', (event, files, history) => {
+    return applyUndoToFiles(files || [], history || []);
+  });
 
   // 预设管理
   ipcMain.handle('preset-list', () => loadPresets(presetFile()));
@@ -229,8 +243,10 @@ async function loadDemoData() {
       fs.writeFileSync(path.join(demoDir, f), 'demo content');
     });
     const items = await buildFileItems(demoFiles.map(f => path.join(demoDir, f)));
+    // 两条规则组合：先替换 IMG_ 前缀，再加序号 —— 便于展示规则调序效果
     const demoRules = [
-      { type: 'sequence', prefix: '照片_', start: 1, step: 1, pad: 3, suffix: '', position: 'replace' }
+      { type: 'replace', find: 'IMG_', replaceWith: 'P_', caseSensitive: true, wholeWord: false },
+      { type: 'case', mode: 'lower' }
     ];
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('demo-data', { items, rules: demoRules });

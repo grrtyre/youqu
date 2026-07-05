@@ -21,7 +21,8 @@ const state = {
   rules: [],
   files: [],        // 文件项数组
   preview: [],      // 预览结果
-  recursive: true
+  recursive: true,
+  extFilter: ''     // 扩展名过滤文本（如 ".jpg,.png" 或 "jpg png"）
 };
 
 // DOM 引用
@@ -46,6 +47,31 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   }[c]));
+}
+
+// 模拟 path.extname / path.basename 拆分（渲染层无 Node path 模块）
+function parseNameExt(name) {
+  if (typeof name !== 'string' || name.length === 0) return { base: '', ext: '' };
+  const i = name.lastIndexOf('.');
+  if (i <= 0) return { base: name, ext: '' }; // 无点或开头点（如 .bashrc）视为无扩展名
+  return { base: name.slice(0, i), ext: name.slice(i) };
+}
+
+// 解析扩展名过滤输入文本 → 扩展名数组
+// 支持 ".jpg,.png"、"jpg png"、"*.jpg;*.png" 等格式
+// 返回 null 表示不过滤
+function parseExtFilter(text) {
+  if (!text || typeof text !== 'string') return null;
+  // 用逗号、分号、空格、换行分隔
+  const parts = text.split(/[,;\s]+/).map(s => s.trim()).filter(Boolean);
+  if (parts.length === 0) return null;
+  // 去掉开头的 * 通配符（如 *.jpg → .jpg）
+  const normalized = parts.map(p => {
+    let s = p;
+    while (s.startsWith('*')) s = s.slice(1);
+    return s;
+  }).filter(Boolean);
+  return normalized.length > 0 ? normalized : null;
 }
 
 // 高亮新旧文件名差异
@@ -100,6 +126,21 @@ function updateRule(idx, patch) {
   updatePreview();
 }
 
+// 规则上下移动（E：规则调序）
+// 通过 IPC 委托给引擎的 moveRule 纯函数（已测试），保证逻辑一致
+async function moveRule(idx, direction) {
+  // 引擎在 main 侧，这里直接做数组交换即可（moveRule 逻辑很简单）
+  // 但为了与测试过的逻辑保持一致，仍然按 moveRule 的语义实现
+  if (idx < 0 || idx >= state.rules.length) return;
+  const target = direction === 'up' ? idx - 1 : direction === 'down' ? idx + 1 : -1;
+  if (target < 0 || target >= state.rules.length) return;
+  const tmp = state.rules[idx];
+  state.rules[idx] = state.rules[target];
+  state.rules[target] = tmp;
+  renderRules();
+  updatePreview();
+}
+
 function renderRules() {
   if (state.rules.length === 0) {
     rulesEmpty.style.display = '';
@@ -136,6 +177,28 @@ function renderRuleCard(rule, idx) {
     updatePreview();
   });
   header.appendChild(select);
+
+  // 规则调序按钮组（E：上下移动）
+  const moveGroup = document.createElement('div');
+  moveGroup.className = 'rule-move-group';
+
+  const upBtn = document.createElement('button');
+  upBtn.className = 'rule-move';
+  upBtn.title = '上移';
+  upBtn.disabled = idx === 0;
+  upBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12"><path d="M6 3l4 5H2z" fill="currentColor"/></svg>';
+  upBtn.addEventListener('click', () => moveRule(idx, 'up'));
+  moveGroup.appendChild(upBtn);
+
+  const downBtn = document.createElement('button');
+  downBtn.className = 'rule-move';
+  downBtn.title = '下移';
+  downBtn.disabled = idx === state.rules.length - 1;
+  downBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12"><path d="M6 9L2 4h8z" fill="currentColor"/></svg>';
+  downBtn.addEventListener('click', () => moveRule(idx, 'down'));
+  moveGroup.appendChild(downBtn);
+
+  header.appendChild(moveGroup);
 
   const delBtn = document.createElement('button');
   delBtn.className = 'rule-delete';
@@ -231,9 +294,13 @@ async function addPaths(paths) {
   if (!paths || paths.length === 0) return;
   toast('正在扫描文件...');
   try {
-    const items = await window.api.scanPaths(paths, state.recursive);
+    // 解析扩展名过滤（A：添加文件夹时按扩展名过滤）
+    const extFilter = parseExtFilter(state.extFilter);
+    const items = await window.api.scanPaths(paths, state.recursive, extFilter);
     if (items.length === 0) {
-      toast('未找到文件', 'warn');
+      toast(extFilter
+        ? `未找到匹配 ${extFilter.join(', ')} 的文件`
+        : '未找到文件', 'warn');
       return;
     }
     // 去重（按完整路径）
@@ -247,7 +314,8 @@ async function addPaths(paths) {
         added++;
       }
     });
-    toast(`已添加 ${added} 个文件${added < items.length ? `（跳过 ${items.length - added} 个重复）` : ''}`, 'success');
+    const filterNote = extFilter ? `（仅 ${extFilter.join(', ')}）` : '';
+    toast(`已添加 ${added} 个文件${added < items.length ? `（跳过 ${items.length - added} 个重复）` : ''}${filterNote}`, 'success');
     renderFileTable();
     updatePreview();
   } catch (e) {
@@ -262,6 +330,16 @@ function clearFiles() {
   renderFileTable();
   updateActionButtons();
   toast('已清空文件列表');
+}
+
+// 删除单个文件（B：文件列表无法删除单个文件）
+function removeFile(idx) {
+  if (idx < 0 || idx >= state.files.length) return;
+  state.files.splice(idx, 1);
+  // 预览也要同步删除对应索引
+  if (idx < state.preview.length) state.preview.splice(idx, 1);
+  renderFileTable();
+  updatePreview();
 }
 
 function renderFileTable() {
@@ -305,7 +383,10 @@ function renderFileTable() {
       <td class="col-arrow">→</td>
       <td class="col-new"><span class="name-new">${newHtml}</span></td>
       <td class="col-status">${statusHtml}</td>
+      <td class="col-action"><button class="row-delete" title="从列表移除"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button></td>
     `;
+    // 绑定删除按钮
+    tr.querySelector('.row-delete').addEventListener('click', () => removeFile(idx));
     fileTbody.appendChild(tr);
   });
 }
@@ -362,16 +443,14 @@ async function applyRename() {
     } else {
       toast(`成功重命名 ${result.success} 个文件`, 'success');
     }
-    // 更新文件列表为新名
+    // 更新文件列表为新名（修复原 require('path') bug：渲染层 contextIsolation 下无 require）
+    // 引擎规则只作用于 base（不含扩展名），ext 不变
     state.files.forEach((file, idx) => {
       const p = state.preview[idx];
       if (p && p.willChange) {
-        file.name = p.newName;
-        const path = require('path') || { basename: (n, e) => n.slice(0, n.length - e.length), extname: (n) => { const i = n.lastIndexOf('.'); return i < 0 ? '' : n.slice(i); } };
-        // 更新 base/ext/dir
         const ext = file.ext; // 扩展名不变
-        file.base = p.newName.slice(0, p.newName.length - ext.length);
         file.name = p.newName;
+        file.base = ext ? p.newName.slice(0, p.newName.length - ext.length) : p.newName;
       }
     });
     // 重新生成预览（应该都是"不变"）
@@ -392,24 +471,21 @@ async function undoRename() {
       $('btn-undo').disabled = true;
       return;
     }
+    // H：撤销后不清空文件列表，用 history 恢复 state.files 的文件名
+    // 撤销后磁盘上文件已恢复原名，state.files 也要同步把"新名"改回"原名"
+    if (result.history && result.history.length > 0) {
+      state.files = await window.api.applyUndoToFiles(state.files, result.history);
+    }
+    // 重新生成预览
+    state.preview = await window.api.generatePreview(state.files, state.rules);
+    renderFileTable();
+    updateActionButtons();
+    $('btn-undo').disabled = true;
     if (result.failed > 0) {
       toast(`撤销成功 ${result.success} 项，失败 ${result.failed} 项`, 'warn');
     } else {
       toast(`已撤销 ${result.success} 项重命名`, 'success');
     }
-    // 重新扫描文件（路径已变回原名）
-    // 简化：清空列表让用户重新添加，或尝试用 history 恢复
-    // 这里用 history 恢复 file.name
-    // 实际上 undoRename 已经在主进程恢复了文件，我们需要更新 state.files
-    // 但 state.preview 的 oldPath/newPath 信息已过期，最简单的方式是重新扫描
-    const paths = state.files.map(f => f.dir + '/' + f.name); // 这些是新名
-    // 撤销后文件已恢复原名，新名路径不存在了，需要映射回原名
-    // 简化处理：清空列表
-    state.files = [];
-    state.preview = [];
-    renderFileTable();
-    updateActionButtons();
-    $('btn-undo').disabled = true;
   } catch (e) {
     toast('撤销失败: ' + e.message, 'error');
   }
@@ -499,6 +575,31 @@ function bindEvents() {
   $('btn-clear-files').addEventListener('click', clearFiles);
   $('chk-recursive').addEventListener('change', (e) => {
     state.recursive = e.target.checked;
+  });
+  // 扩展名过滤输入（A）
+  const extFilterInput = $('input-ext-filter');
+  if (extFilterInput) {
+    extFilterInput.addEventListener('input', (e) => {
+      state.extFilter = e.target.value || '';
+    });
+    // 回车时若有拖入路径则提示当前过滤已生效
+    extFilterInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const f = parseExtFilter(state.extFilter);
+        toast(f ? `已设置扩展名过滤：${f.join(', ')}` : '扩展名过滤已清空（添加全部）');
+      }
+    });
+  }
+  // 快捷过滤按钮（图片/视频/文档）
+  document.querySelectorAll('.ext-preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const val = btn.dataset.ext || '';
+      if (extFilterInput) {
+        extFilterInput.value = val;
+        state.extFilter = val;
+        toast(val ? `已切换为：${val}` : '扩展名过滤已清空');
+      }
+    });
   });
 
   // 拖放

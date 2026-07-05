@@ -309,6 +309,83 @@ async function undoRename(history) {
   return result;
 }
 
+// ---------- 扩展名过滤（A：添加文件夹时按扩展名过滤） ----------
+
+/**
+ * 检查文件路径的扩展名是否匹配过滤列表
+ * @param {string} filePath - 文件路径
+ * @param {string[]|null} extList - 扩展名列表，如 ['.jpg', '.png'] 或 ['jpg', 'PNG']。
+ *                                  null / 空数组 / 非数组 表示不过滤（全部通过）
+ * @returns {boolean} true 表示通过过滤
+ */
+function matchExt(filePath, extList) {
+  if (!Array.isArray(extList) || extList.length === 0) return true;
+  const ext = path.extname(filePath).toLowerCase(); // 含点，如 '.jpg'；无扩展名返回 ''
+  const normalized = extList
+    .map(e => String(e == null ? '' : e).toLowerCase().trim())
+    .filter(Boolean)
+    .map(s => (s.startsWith('.') ? s : '.' + s));
+  if (normalized.length === 0) return true;
+  return normalized.indexOf(ext) !== -1;
+}
+
+// ---------- 撤销后恢复文件项名称（H：撤销后不清空文件列表） ----------
+
+/**
+ * 根据撤销历史恢复文件项的名称信息
+ * @param {Array} files - 当前文件项数组（重命名后的状态）
+ * @param {Array<{oldPath:string,newPath:string}>} history - 撤销历史
+ * @returns {Array} 更新后的文件项数组（新引用，不修改原数组）
+ */
+function applyUndoToFiles(files, history) {
+  if (!Array.isArray(files) || files.length === 0) return files;
+  if (!Array.isArray(history) || history.length === 0) return files;
+
+  // 路径分隔符归一化（Windows \ 与 POSIX / 混用情况），大小写不敏感
+  const norm = (p) => String(p).replace(/\\/g, '/').toLowerCase();
+  const map = new Map();
+  for (const h of history) {
+    if (h && h.oldPath && h.newPath) {
+      map.set(norm(h.newPath), h.oldPath);
+    }
+  }
+  if (map.size === 0) return files;
+
+  return files.map(f => {
+    if (!f || !f.dir || !f.name) return f;
+    // 当前完整路径（用 path.join 保证 OS-native 分隔符）
+    const currentPath = path.join(f.dir, f.name);
+    const oldPath = map.get(norm(currentPath));
+    if (!oldPath) return f; // 不在历史中，保持不变
+    const dir = path.dirname(oldPath);
+    const name = path.basename(oldPath);
+    const ext = path.extname(name);
+    const base = name.slice(0, name.length - ext.length);
+    return Object.assign({}, f, { dir, name, base, ext });
+  });
+}
+
+// ---------- 规则上下移动（E：规则调序） ----------
+
+/**
+ * 调整规则在数组中的位置
+ * @param {Array} rules - 规则数组
+ * @param {number} idx - 要移动的规则索引
+ * @param {'up'|'down'} direction - 移动方向
+ * @returns {Array} 新数组（若无法移动则返回原数组引用）
+ */
+function moveRule(rules, idx, direction) {
+  if (!Array.isArray(rules) || rules.length === 0) return rules;
+  if (idx < 0 || idx >= rules.length) return rules;
+  const target = direction === 'up' ? idx - 1 : direction === 'down' ? idx + 1 : -1;
+  if (target < 0 || target >= rules.length || target === -1) return rules;
+  const result = rules.slice();
+  const tmp = result[idx];
+  result[idx] = result[target];
+  result[target] = tmp;
+  return result;
+}
+
 // ---------- 文件名合法性校验 ----------
 
 const INVALID_CHARS = /[<>:"/\\|?*\x00-\x1f]/g;
@@ -337,5 +414,8 @@ module.exports = {
   generatePreview,
   executeRename,
   undoRename,
-  validateFileName
+  validateFileName,
+  matchExt,
+  applyUndoToFiles,
+  moveRule
 };

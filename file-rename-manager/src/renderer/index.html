@@ -82,6 +82,21 @@
         </div>
       </div>
 
+      <!-- 扩展名过滤栏（A：添加文件夹时按扩展名过滤） -->
+      <div class="ext-filter-bar">
+        <span class="ext-filter-label">扩展名过滤</span>
+        <input type="text" id="input-ext-filter" class="ext-filter-input"
+               placeholder="留空=全部，如 .jpg,.png 或 *.mp4" autocomplete="off">
+        <div class="ext-presets">
+          <button class="ext-preset" data-ext="">全部</button>
+          <button class="ext-preset" data-ext=".jpg,.jpeg,.png,.gif,.bmp,.webp,.tiff">图片</button>
+          <button class="ext-preset" data-ext=".mp4,.mov,.avi,.mkv,.webm,.flv">视频</button>
+          <button class="ext-preset" data-ext=".mp3,.wav,.flac,.aac,.ogg,.m4a">音频</button>
+          <button class="ext-preset" data-ext=".txt,.md,.json,.csv,.xml,.html,.js,.ts,.py,.java,.c,.cpp,.h">文本/代码</button>
+          <button class="ext-preset" data-ext=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx">文档</button>
+        </div>
+      </div>
+
       <!-- 拖放区 + 文件表格 -->
       <div class="files-container" id="files-container">
         <div class="drop-zone" id="drop-zone">
@@ -102,6 +117,7 @@
                 <th class="col-arrow">→</th>
                 <th class="col-new">新文件名</th>
                 <th class="col-status">状态</th>
+                <th class="col-action">操作</th>
               </tr>
             </thead>
             <tbody id="file-tbody"></tbody>

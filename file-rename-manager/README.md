@@ -8,8 +8,8 @@
 
 | 平台 | 下载 | 说明 |
 |------|------|------|
-| Windows x64 | [重命名管家 Setup 1.0.0](https://github.com/grrtyre/youqu/releases/download/file-rename-manager-v1.0.0/rename-manager-setup-1.0.0.exe) | 安装版，支持自定义安装路径 |
-| Windows x64 | [重命名管家 Portable 1.0.0](https://github.com/grrtyre/youqu/releases/download/file-rename-manager-v1.0.0/rename-manager-portable-1.0.0.exe) | 便携版，解压即用 |
+| Windows x64 | [重命名管家 Setup 1.1.0](https://github.com/grrtyre/youqu/releases/download/file-rename-manager-v1.1.0/重命名管家.Setup.1.1.0.exe) | 安装版，支持自定义安装路径 |
+| Windows x64 | [重命名管家 Portable 1.1.0](https://github.com/grrtyre/youqu/releases/download/file-rename-manager-v1.1.0/重命名管家.Portable.1.1.0.exe) | 便携版，解压即用 |
 
 ## ✨ 功能特性
 
@@ -27,6 +27,14 @@
 - **一键撤销** — 操作历史可回退，文件名变更前自动备份映射
 - **预设管理** — 常用规则组合可保存/加载，下次直接复用
 - **EXIF 读取** — 内置极简 JPEG EXIF 解析器，无第三方依赖，按相机本地时间解析
+
+### v1.1 新增
+
+- **🔀 扩展名过滤** — 添加文件夹时可按扩展名过滤（如 `.jpg,.png`），自带图片/视频/音频/文本/文档 6 个快捷预设；顶层手动选的文件不受过滤影响
+- **🗑 删除单个文件** — 文件列表每行末尾的 × 按钮（hover 显示），从列表移除误加入的文件，无需清空重来
+- **↕️ 规则调序** — 每个规则卡片头部上下箭头，调整规则应用顺序（顺序影响结果）
+- **↩️ 撤销保留列表** — 撤销重命名后文件列表保留，名称自动恢复原名，不再清空丢失工作上下文
+- **🐛 修复 applyRename 状态更新** — 原代码在渲染层 `require('path')` 在 contextIsolation 下失败，导致重命名后状态不同步
 
 ## 🎨 设计风格
 
@@ -84,7 +92,7 @@ file-rename-manager/
 │   ├── main.js                # Electron 主进程
 │   └── preload.js             # 安全 IPC 桥
 ├── test/
-│   └── test.js                # 37 项单元测试
+│   └── test.js                # 57 项单元测试
 ├── build/
 │   ├── icon.ico               # 应用图标
 │   ├── icon-source.png        # 图标源文件
@@ -94,7 +102,7 @@ file-rename-manager/
 
 ## 🧪 测试
 
-核心引擎包含 37 项单元测试，覆盖：
+核心引擎包含 57 项单元测试，覆盖：
 - 文本替换（基本/全词/大小写）
 - 正则替换（捕获组/无效正则）
 - 序号命名（替换/前缀/步长）
@@ -107,10 +115,41 @@ file-rename-manager/
 - 交换冲突自动处理
 - 文件名合法性校验
 - 预设存储增删查
+- **扩展名过滤 matchExt**（v1.1 新增，7 项：空过滤/带点/不带点/大小写/无扩展名/空字符串忽略/多点扩展名）
+- **撤销后恢复文件项 applyUndoToFiles**（v1.1 新增，6 项：空历史/恢复原名/未变更项保持/路径分隔符兼容/多文件混合/无效输入）
+- **规则调序 moveRule**（v1.1 新增，7 项：上移/下移/边界保护/无效索引/空数组/相同位置/越界方向）
 
 ```bash
 npm test
 ```
+
+## 📜 更新日志
+
+### v1.1.0（2026-07-05）
+
+**新功能：**
+- 🔀 扩展名过滤 — 添加文件夹时按扩展名过滤，6 个快捷预设（图片/视频/音频/文本/文档/全部）
+- 🗑 删除单个文件 — 文件列表行末 × 按钮，hover 显示，移除误加入的文件
+- ↕️ 规则调序 — 规则卡片头部上下箭头，调整规则应用顺序
+- ↩️ 撤销保留列表 — 撤销后文件列表保留，名称自动恢复原名
+
+**Bug 修复：**
+- 🐛 修复 `applyRename` 在 contextIsolation 下 `require('path')` 失败导致重命名后状态不同步的问题
+
+**测试：**
+- 单元测试从 37 项扩充到 57 项，新增 matchExt / applyUndoToFiles / moveRule 三组共 20 项
+
+**文档：**
+- README 新增 v1.1 章节与更新日志
+- 下载链接更新至 v1.1.0
+
+### v1.0.0（2026-07-04）
+
+- 首个正式版本
+- 7 种重命名规则（文本/正则/序号/日期/大小写/插入/删除）
+- 实时预览、冲突检测、交换安全、一键撤销、预设管理
+- EXIF 拍摄日期读取
+- 苹果白高端风格 UI
 
 ## ☕ 支持我们
 

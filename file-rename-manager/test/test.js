@@ -12,7 +12,10 @@ const {
   formatDate,
   validateFileName,
   escapeRegex,
-  createFileItem
+  createFileItem,
+  matchExt,
+  applyUndoToFiles,
+  moveRule
 } = require('../src/core/rename-engine');
 const { loadPresets, addPreset, deletePreset } = require('../src/core/preset-store');
 
@@ -343,6 +346,137 @@ test('formatDate YY 短年', () => {
 });
 test('escapeRegex 转义特殊字符', () => {
   assert.strictEqual(escapeRegex('a.b*c'), 'a\\.b\\*c');
+});
+
+// ---------- 扩展名过滤（A） ----------
+console.log('[扩展名过滤]');
+test('matchExt 不过滤时全部通过', () => {
+  assert.strictEqual(matchExt('a.jpg', null), true);
+  assert.strictEqual(matchExt('a.jpg', []), true);
+  assert.strictEqual(matchExt('a.jpg', 'not-array'), true);
+});
+test('matchExt 带点扩展名匹配', () => {
+  assert.strictEqual(matchExt('photo.jpg', ['.jpg', '.png']), true);
+  assert.strictEqual(matchExt('photo.png', ['.jpg', '.png']), true);
+  assert.strictEqual(matchExt('photo.gif', ['.jpg', '.png']), false);
+});
+test('matchExt 不带点扩展名也接受', () => {
+  assert.strictEqual(matchExt('photo.JPG', ['jpg', 'png']), true);
+  assert.strictEqual(matchExt('photo.Jpeg', ['JPEG']), true);
+});
+test('matchExt 大小写不敏感', () => {
+  assert.strictEqual(matchExt('PHOTO.JPg', ['.jpg']), true);
+});
+test('matchExt 无扩展名文件', () => {
+  assert.strictEqual(matchExt('README', ['.md']), false);
+  assert.strictEqual(matchExt('README', null), true); // 不过滤 → 通过
+});
+test('matchExt 过滤列表中的空字符串被忽略', () => {
+  // ['md', ''] 中空字符串被过滤掉，相当于只过滤 .md
+  assert.strictEqual(matchExt('photo.jpg', ['jpg', '']), true);
+  assert.strictEqual(matchExt('photo.gif', ['jpg', '']), false);
+});
+test('matchExt 多点扩展名', () => {
+  assert.strictEqual(matchExt('a.tar.gz', ['.gz']), true);
+  assert.strictEqual(matchExt('a.tar.gz', ['.tar.gz']), false); // path.extname 只取最后一段
+});
+
+// ---------- 撤销后恢复文件项名称（H） ----------
+console.log('[撤销恢复文件项]');
+test('applyUndoToFiles 空 history 返回原数组', () => {
+  const files = [{ dir: 'C:/t', name: 'a.txt', base: 'a', ext: '.txt' }];
+  assert.strictEqual(applyUndoToFiles(files, []), files);
+  assert.strictEqual(applyUndoToFiles(files, null), files);
+});
+test('applyUndoToFiles 恢复被重命名的文件', () => {
+  // 重命名后的状态：a.txt → b.txt，files 里是 b.txt
+  const files = [
+    { dir: 'C:/test', name: 'b.txt', base: 'b', ext: '.txt', id: '1' },
+    { dir: 'C:/test', name: 'c.txt', base: 'c', ext: '.txt', id: '2' }
+  ];
+  const history = [
+    { oldPath: 'C:/test/a.txt', newPath: 'C:/test/b.txt' },
+    { oldPath: 'C:/test/x.txt', newPath: 'C:/test/c.txt' }
+  ];
+  const result = applyUndoToFiles(files, history);
+  assert.strictEqual(result[0].name, 'a.txt');
+  assert.strictEqual(result[0].base, 'a');
+  assert.strictEqual(result[0].ext, '.txt');
+  assert.strictEqual(result[1].name, 'x.txt');
+  assert.strictEqual(result[1].base, 'x');
+});
+test('applyUndoToFiles 不在历史中的文件保持不变', () => {
+  const files = [
+    { dir: 'C:/test', name: 'untouched.txt', base: 'untouched', ext: '.txt', id: '1' }
+  ];
+  const history = [{ oldPath: 'C:/test/a.txt', newPath: 'C:/test/b.txt' }];
+  const result = applyUndoToFiles(files, history);
+  assert.strictEqual(result[0].name, 'untouched.txt');
+});
+test('applyUndoToFiles 路径分隔符归一化（\\ 与 /）', () => {
+  // history 用 Windows 风格，files 用 POSIX 风格拼接
+  const files = [
+    { dir: 'C:\\test', name: 'b.txt', base: 'b', ext: '.txt' }
+  ];
+  const history = [
+    { oldPath: 'C:/test/a.txt', newPath: 'C:/test/b.txt' }
+  ];
+  const result = applyUndoToFiles(files, history);
+  assert.strictEqual(result[0].name, 'a.txt');
+});
+test('applyUndoToFiles 不修改原数组', () => {
+  const files = [{ dir: 'C:/t', name: 'b.txt', base: 'b', ext: '.txt' }];
+  const history = [{ oldPath: 'C:/t/a.txt', newPath: 'C:/t/b.txt' }];
+  applyUndoToFiles(files, history);
+  assert.strictEqual(files[0].name, 'b.txt'); // 原数组未变
+});
+test('applyUndoToFiles 处理无扩展名文件', () => {
+  const files = [{ dir: 'C:/t', name: 'newname', base: 'newname', ext: '' }];
+  const history = [{ oldPath: 'C:/t/README', newPath: 'C:/t/newname' }];
+  const result = applyUndoToFiles(files, history);
+  assert.strictEqual(result[0].name, 'README');
+  assert.strictEqual(result[0].base, 'README');
+  assert.strictEqual(result[0].ext, '');
+});
+
+// ---------- 规则上下移动（E） ----------
+console.log('[规则调序]');
+test('moveRule 上移', () => {
+  const rules = [{ type: 'a' }, { type: 'b' }, { type: 'c' }];
+  const result = moveRule(rules, 1, 'up');
+  assert.strictEqual(result[0].type, 'b');
+  assert.strictEqual(result[1].type, 'a');
+  assert.strictEqual(result[2].type, 'c');
+});
+test('moveRule 下移', () => {
+  const rules = [{ type: 'a' }, { type: 'b' }, { type: 'c' }];
+  const result = moveRule(rules, 1, 'down');
+  assert.strictEqual(result[0].type, 'a');
+  assert.strictEqual(result[1].type, 'c');
+  assert.strictEqual(result[2].type, 'b');
+});
+test('moveRule 第一个上移无效返回原数组', () => {
+  const rules = [{ type: 'a' }, { type: 'b' }];
+  assert.strictEqual(moveRule(rules, 0, 'up'), rules);
+});
+test('moveRule 最后一个下移无效返回原数组', () => {
+  const rules = [{ type: 'a' }, { type: 'b' }];
+  assert.strictEqual(moveRule(rules, 1, 'down'), rules);
+});
+test('moveRule 越界索引返回原数组', () => {
+  const rules = [{ type: 'a' }];
+  assert.strictEqual(moveRule(rules, 5, 'up'), rules);
+  assert.strictEqual(moveRule(rules, -1, 'down'), rules);
+});
+test('moveRule 不修改原数组', () => {
+  const rules = [{ type: 'a' }, { type: 'b' }];
+  moveRule(rules, 0, 'down');
+  assert.strictEqual(rules[0].type, 'a');
+  assert.strictEqual(rules[1].type, 'b');
+});
+test('moveRule 无效方向返回原数组', () => {
+  const rules = [{ type: 'a' }, { type: 'b' }];
+  assert.strictEqual(moveRule(rules, 0, 'sideways'), rules);
 });
 
 // ---------- 预设存储 ----------

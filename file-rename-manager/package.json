@@ -1,6 +1,6 @@
 {
   "name": "file-rename-manager",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Windows 上最美、最实用的批量重命名工具——苹果白高端风格",
   "main": "src/main.js",
   "scripts": {

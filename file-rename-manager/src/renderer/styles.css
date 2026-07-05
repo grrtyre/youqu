@@ -196,6 +196,32 @@ input, select { font-family: inherit; }
 }
 .rule-delete:hover { background: #fff0f0; color: var(--danger); }
 
+/* 规则调序按钮组（E：上下移动） */
+.rule-move-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-right: 2px;
+}
+.rule-move {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  transition: background 0.15s, color 0.15s;
+}
+.rule-move:hover:not(:disabled) {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+.rule-move:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 .rule-fields { display: flex; flex-direction: column; gap: 8px; }
 
 .field-row {
@@ -333,6 +359,62 @@ input, select { font-family: inherit; }
 }
 .btn-link-danger:hover { background: #fff0f0; }
 
+/* ========== 扩展名过滤栏（A） ========== */
+.ext-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-light);
+  flex-wrap: wrap;
+}
+.ext-filter-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+.ext-filter-input {
+  width: 220px;
+  height: 26px;
+  padding: 0 10px;
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+.ext-filter-input:focus {
+  border-color: var(--accent);
+  background: var(--bg-card);
+}
+.ext-filter-input::placeholder { color: var(--text-tertiary); }
+
+.ext-presets {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.ext-preset {
+  height: 24px;
+  padding: 0 10px;
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+}
+.ext-preset:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+
 /* 拖放区 */
 .files-container {
   flex: 1;
@@ -403,7 +485,23 @@ input, select { font-family: inherit; }
 .col-idx { width: 40px; text-align: center; color: var(--text-tertiary); }
 .col-arrow { width: 32px; text-align: center; color: var(--text-tertiary); font-size: 14px; }
 .col-status { width: 90px; }
+.col-action { width: 56px; text-align: center; }
 .col-old, .col-new { word-break: break-all; }
+
+/* 行删除按钮（B：删除单个文件） */
+.row-delete {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+}
+.file-table tr:hover .row-delete { opacity: 1; }
+.row-delete:hover { background: #fff0f0; color: var(--danger); }
 
 .name-old { color: var(--text-secondary); }
 .name-new { color: var(--text); font-weight: 500; }

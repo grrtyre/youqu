@@ -5,13 +5,14 @@ contextBridge.exposeInMainWorld('api', {
   // 文件选择
   pickFiles: () => ipcRenderer.invoke('pick-files'),
   pickFolder: () => ipcRenderer.invoke('pick-folder'),
-  scanPaths: (paths, recursive) => ipcRenderer.invoke('scan-paths', paths, recursive),
+  scanPaths: (paths, recursive, extFilter) => ipcRenderer.invoke('scan-paths', paths, recursive, extFilter),
 
   // 重命名操作
   generatePreview: (items, rules) => ipcRenderer.invoke('generate-preview', items, rules),
   executeRename: (preview) => ipcRenderer.invoke('execute-rename', preview),
   undoRename: () => ipcRenderer.invoke('undo-rename'),
   hasUndoHistory: () => ipcRenderer.invoke('has-undo-history'),
+  applyUndoToFiles: (files, history) => ipcRenderer.invoke('apply-undo-to-files', files, history),
 
   // 预设管理
   presetList: () => ipcRenderer.invoke('preset-list'),
