@@ -8,15 +8,85 @@ const AFDIAN_URL = 'https://www.ifdian.net/a/giquwei';
 
 const POLL_INTERVAL = 500;
 const MAX_ITEMS = 500;
+// 图片单独上限：图片占磁盘，单独限制最多保留 50 张
+const MAX_IMAGE_ITEMS = 50;
 
 let mainWindow = null;
 let tray = null;
 let clipboardHistory = [];
 let lastContent = '';
+let lastImageFp = ''; // 图片指纹：用于去重
 let pollTimer = null;
 
 const userDataPath = app.getPath('userData');
 const historyFile = path.join(userDataPath, 'clipboard-history.json');
+const imagesDir = path.join(userDataPath, 'clipboard-images');
+
+// 确保图片存储目录存在
+function ensureImagesDir() {
+  try {
+    if (!fs.existsSync(imagesDir)) {
+      fs.mkdirSync(imagesDir, { recursive: true });
+    }
+  } catch (e) {
+    console.error('Failed to create images dir:', e.message);
+  }
+}
+
+// 计算图片指纹：宽×高 + PNG 编码后字节数
+// 注：Electron nativeImage 没有 .size() 方法，字节数用 toPNG().length
+function imageFingerprint(nativeImg) {
+  if (!nativeImg || nativeImg.isEmpty()) return '';
+  const size = nativeImg.getSize(); // {width, height}
+  return size.width + 'x' + size.height + ':' + nativeImg.toPNG().length;
+}
+
+// 清理孤儿图片文件（条目已不存在但文件还在）
+function cleanupOrphanImages() {
+  try {
+    if (!fs.existsSync(imagesDir)) return;
+    const validPaths = new Set(
+      clipboardHistory
+        .filter(i => i.type === 'image' && i.imagePath)
+        .map(i => path.resolve(i.imagePath))
+    );
+    const files = fs.readdirSync(imagesDir);
+    for (const f of files) {
+      if (!f.endsWith('.png')) continue;
+      const full = path.resolve(path.join(imagesDir, f));
+      if (!validPaths.has(full)) {
+        try { fs.unlinkSync(full); } catch (e) { /* 忽略单个删除失败 */ }
+      }
+    }
+  } catch (e) {
+    console.error('cleanupOrphanImages error:', e.message);
+  }
+}
+
+// 删除条目对应的图片文件（如果是图片条目）
+function deleteImageFileOfItem(item) {
+  if (item && item.type === 'image' && item.imagePath) {
+    try {
+      if (fs.existsSync(item.imagePath)) fs.unlinkSync(item.imagePath);
+    } catch (e) { /* 忽略 */ }
+  }
+}
+
+// 限制图片条目数量：超出则删除最旧的未置顶未收藏图片条目
+function enforceImageLimit() {
+  const imageItems = clipboardHistory.filter(i => i.type === 'image');
+  if (imageItems.length <= MAX_IMAGE_ITEMS) return;
+  // 按 timestamp 升序，跳过置顶/收藏，删除最旧的
+  const sorted = imageItems
+    .filter(i => !i.pinned && !i.favorite)
+    .sort((a, b) => a.timestamp - b.timestamp);
+  const toRemove = sorted.slice(0, imageItems.length - MAX_IMAGE_ITEMS);
+  for (const item of toRemove) {
+    deleteImageFileOfItem(item);
+    const idx = clipboardHistory.findIndex(i => i.id === item.id);
+    if (idx !== -1) clipboardHistory.splice(idx, 1);
+  }
+}
 
 // --- Data persistence ---
 
@@ -72,14 +142,78 @@ function genId() {
 
 // --- Clipboard polling ---
 
+// 生成缩略图 dataURL：限制最大边 240px，JPEG 80 质量（避免 history JSON 过大）
+function makeThumbnailDataURL(nativeImg) {
+  try {
+    const size = nativeImg.getSize();
+    const maxEdge = 240;
+    let w = size.width, h = size.height;
+    if (w > maxEdge || h > maxEdge) {
+      if (w >= h) { h = Math.round(h * maxEdge / w); w = maxEdge; }
+      else { w = Math.round(w * maxEdge / h); h = maxEdge; }
+    }
+    const thumb = nativeImg.resize({ width: w, height: h, quality: 'good' });
+    // Electron 28: toDataURL(options) 接受 {format, quality} 对象
+    return thumb.toDataURL({ format: 'image/jpeg', quality: 0.8 });
+  } catch (e) {
+    console.error('makeThumbnailDataURL error:', e.message);
+    return '';
+  }
+}
+
+// 把图片保存为 PNG 文件并加入历史
+function addImageItem(nativeImg) {
+  ensureImagesDir();
+  const id = genId();
+  const file = path.join(imagesDir, id + '.png');
+  try {
+    fs.writeFileSync(file, nativeImg.toPNG());
+  } catch (e) {
+    console.error('Failed to save image file:', e.message);
+    return;
+  }
+  const size = nativeImg.getSize();
+  const item = {
+    id,
+    content: '[图片] ' + size.width + '×' + size.height,
+    type: 'image',
+    imagePath: file,
+    thumb: makeThumbnailDataURL(nativeImg), // 缩略图 dataURL，渲染时直接用，避免 file:// 加载问题
+    width: size.width,
+    height: size.height,
+    timestamp: Date.now(),
+    pinned: false,
+    favorite: false
+  };
+  clipboardHistory.unshift(item);
+  enforceImageLimit();
+  if (clipboardHistory.length > MAX_ITEMS) {
+    clipboardHistory = clipboardHistory.slice(0, MAX_ITEMS);
+  }
+  saveHistory();
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('history-updated');
+  }
+}
+
 function startClipboardPolling() {
+  // 初始化：记录当前剪贴板状态，避免启动时把已有内容重复加入
   lastContent = clipboard.readText() || '';
+  try {
+    const formats = clipboard.availableFormats();
+    if (formats.some(f => f.startsWith('image/'))) {
+      const img = clipboard.readImage();
+      if (!img.isEmpty()) lastImageFp = imageFingerprint(img);
+    }
+  } catch (e) { /* 忽略 */ }
+
   pollTimer = setInterval(() => {
     try {
       const current = clipboard.readText() || '';
+      // 优先处理文本变化
       if (current && current !== lastContent) {
         lastContent = current;
-        // Dedup: skip if same content as most recent item
+        // 去重：与最新条目内容相同则跳过
         if (clipboardHistory.length > 0 && clipboardHistory[0].content === current) {
           return;
         }
@@ -99,6 +233,33 @@ function startClipboardPolling() {
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('history-updated');
         }
+        return;
+      }
+      // 文本未变化：检查是否有图片（截图、复制图片等场景）
+      const formats = clipboard.availableFormats();
+      if (formats.some(f => f.startsWith('image/'))) {
+        const img = clipboard.readImage();
+        if (!img.isEmpty()) {
+          const size = img.getSize();
+          const dims = size.width + 'x' + size.height;
+          // 两阶段去重：先比尺寸（廉价），尺寸相同再比 PNG 字节数（区分同尺寸不同内容）
+          const lastDims = lastImageFp ? lastImageFp.split(':')[0] : '';
+          let fp;
+          if (dims !== lastDims) {
+            // 尺寸不同 → 必定是新图片，直接用尺寸+字节数
+            fp = dims + ':' + img.toPNG().length;
+          } else {
+            // 尺寸相同 → 需要字节数才能判断
+            fp = dims + ':' + img.toPNG().length;
+          }
+          if (fp !== lastImageFp) {
+            lastImageFp = fp;
+            addImageItem(img);
+          }
+        }
+      } else {
+        // 剪贴板既无文本也无图片：重置图片指纹，便于下次复制相同图片能被捕获
+        if (lastImageFp) lastImageFp = '';
       }
     } catch (e) {
       console.error('Clipboard poll error:', e.message);
@@ -188,7 +349,23 @@ function setupIPC() {
   ipcMain.handle('copy-item', (event, id) => {
     const item = clipboardHistory.find(i => i.id === id);
     if (item) {
-      // Write to clipboard; this will trigger poll but dedup skips it
+      if (item.type === 'image' && item.imagePath) {
+        // 图片条目：从文件读取并写入剪贴板
+        try {
+          if (!fs.existsSync(item.imagePath)) return false;
+          const img = nativeImage.createFromPath(item.imagePath);
+          if (img.isEmpty()) return false;
+          clipboard.writeImage(img);
+          lastImageFp = imageFingerprint(img);
+          // 写入图片后清空 lastContent，避免下一次轮询误把旧文本当新内容
+          lastContent = '';
+          return true;
+        } catch (e) {
+          console.error('copy image item error:', e.message);
+          return false;
+        }
+      }
+      // 文本条目：写入文本
       clipboard.writeText(item.content);
       lastContent = item.content;
       return true;
@@ -219,6 +396,8 @@ function setupIPC() {
   ipcMain.handle('delete-item', (event, id) => {
     const idx = clipboardHistory.findIndex(i => i.id === id);
     if (idx !== -1) {
+      const item = clipboardHistory[idx];
+      deleteImageFileOfItem(item);
       clipboardHistory.splice(idx, 1);
       saveHistory();
       return true;
@@ -226,10 +405,27 @@ function setupIPC() {
     return false;
   });
 
+  // 清空：保留置顶和收藏（与按钮文案一致）
   ipcMain.handle('clear-all', () => {
-    clipboardHistory = clipboardHistory.filter(i => i.pinned);
+    const removed = clipboardHistory.filter(i => !(i.pinned || i.favorite));
+    for (const item of removed) deleteImageFileOfItem(item);
+    clipboardHistory = clipboardHistory.filter(i => i.pinned || i.favorite);
     saveHistory();
     return true;
+  });
+
+  // 编辑条目内容（仅文本类条目；图片条目不允许编辑）
+  ipcMain.handle('edit-item', (event, id, newContent) => {
+    if (typeof newContent !== 'string' || newContent.trim().length === 0) return false;
+    const item = clipboardHistory.find(i => i.id === id);
+    if (!item) return false;
+    if (item.type === 'image') return false; // 图片不可编辑
+    const trimmed = newContent.replace(/\r\n/g, '\n');
+    item.content = trimmed;
+    // 重新分类（编辑后类型可能变化）
+    item.type = classifyContent(trimmed);
+    saveHistory();
+    return item;
   });
 
   // 打开外部链接（用于爱发电等）
@@ -299,7 +495,9 @@ function createTray() {
 // --- App lifecycle ---
 
 app.whenReady().then(() => {
+  ensureImagesDir();
   loadHistory();
+  cleanupOrphanImages();
   createWindow();
   createTray();
   setupIPC();

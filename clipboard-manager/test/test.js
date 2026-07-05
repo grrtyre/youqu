@@ -54,7 +54,7 @@ const sampleItem = {
 test('条目结构完整', () => {
   assert.ok(sampleItem.id, '需要有 id');
   assert.ok(sampleItem.content, '需要有 content');
-  assert.ok(['code','link','email','phone','text'].includes(sampleItem.type), 'type 需合法');
+  assert.ok(['code','link','email','phone','text','image'].includes(sampleItem.type), 'type 需合法');
   assert.strictEqual(typeof sampleItem.timestamp, 'number');
   assert.strictEqual(typeof sampleItem.pinned, 'boolean');
   assert.strictEqual(typeof sampleItem.favorite, 'boolean');
@@ -83,17 +83,26 @@ for (let i = 0; i < 600; i++) bigHistory.push({ id: i, content: 'item' + i });
 if (bigHistory.length > 500) bigHistory = bigHistory.slice(0, 500);
 test('超过 500 条截断', () => assert.strictEqual(bigHistory.length, 500));
 
-console.log('\n=== 5. 清空保留置顶 ===');
+console.log('\n=== 5. 清空保留置顶与收藏 ===');
+// v1.3.0 修复：清空时保留 pinned 或 favorite（与按钮文案"保留收藏"一致）
 let clearHistory = [
-  { id: '1', content: 'a', pinned: true },
-  { id: '2', content: 'b', pinned: false },
-  { id: '3', content: 'c', pinned: true },
-  { id: '4', content: 'd', pinned: false }
+  { id: '1', content: 'a', pinned: true, favorite: false },
+  { id: '2', content: 'b', pinned: false, favorite: false },
+  { id: '3', content: 'c', pinned: true, favorite: false },
+  { id: '4', content: 'd', pinned: false, favorite: true },
+  { id: '5', content: 'e', pinned: false, favorite: false }
 ];
-clearHistory = clearHistory.filter(i => i.pinned);
-test('清空后只剩置顶', () => {
-  assert.strictEqual(clearHistory.length, 2);
-  assert.ok(clearHistory.every(i => i.pinned));
+clearHistory = clearHistory.filter(i => i.pinned || i.favorite);
+test('清空后保留置顶和收藏', () => {
+  assert.strictEqual(clearHistory.length, 3);
+  assert.ok(clearHistory.every(i => i.pinned || i.favorite));
+});
+test('清空后非置顶非收藏被移除', () => {
+  const removed = ['b', 'e'];
+  assert.ok(clearHistory.every(i => !removed.includes(i.content)));
+});
+test('清空后收藏项保留', () => {
+  assert.ok(clearHistory.some(i => i.content === 'd' && i.favorite));
 });
 
 console.log('\n=== 6. 搜索过滤 ===');
@@ -249,6 +258,207 @@ test('行数统计（多行）', () => {
 });
 test('行数统计（含空行）', () => {
   assert.strictEqual(countLines('a\n\nb'), 3);
+});
+
+console.log('\n=== 13. 图片指纹与去重 ===');
+// 模拟 main.js 的 imageFingerprint：宽×高:字节数
+function imageFingerprint(size, bytes) {
+  if (!size || bytes <= 0) return '';
+  return size.width + 'x' + size.height + ':' + bytes;
+}
+test('相同尺寸+字节指纹相同', () => {
+  assert.strictEqual(imageFingerprint({width:100,height:100}, 5000), imageFingerprint({width:100,height:100}, 5000));
+});
+test('不同尺寸指纹不同', () => {
+  assert.notStrictEqual(imageFingerprint({width:100,height:100}, 5000), imageFingerprint({width:200,height:100}, 5000));
+});
+test('相同尺寸不同字节指纹不同', () => {
+  assert.notStrictEqual(imageFingerprint({width:100,height:100}, 5000), imageFingerprint({width:100,height:100}, 6000));
+});
+test('空图片返回空指纹', () => {
+  assert.strictEqual(imageFingerprint(null, 0), '');
+  assert.strictEqual(imageFingerprint({width:0,height:0}, 0), '');
+});
+// 模拟轮询去重逻辑：相同指纹不重复记录
+let lastImageFp = '';
+function tryAddImage(size, bytes) {
+  const fp = imageFingerprint(size, bytes);
+  if (fp && fp !== lastImageFp) {
+    lastImageFp = fp;
+    return true;
+  }
+  return false;
+}
+test('新图片指纹会被记录', () => {
+  lastImageFp = '';
+  assert.strictEqual(tryAddImage({width:100,height:100}, 5000), true);
+});
+test('相同指纹不重复记录', () => {
+  lastImageFp = imageFingerprint({width:100,height:100}, 5000);
+  assert.strictEqual(tryAddImage({width:100,height:100}, 5000), false);
+});
+test('不同图片会被记录', () => {
+  lastImageFp = imageFingerprint({width:100,height:100}, 5000);
+  assert.strictEqual(tryAddImage({width:200,height:200}, 8000), true);
+});
+
+console.log('\n=== 14. 图片条目结构 ===');
+const imageItem = {
+  id: 'img1',
+  content: '[图片] 100×100',
+  type: 'image',
+  imagePath: 'C:/userData/clipboard-images/img1.png',
+  thumb: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD=',
+  width: 100,
+  height: 100,
+  timestamp: Date.now(),
+  pinned: false,
+  favorite: false
+};
+test('图片条目类型为 image', () => assert.strictEqual(imageItem.type, 'image'));
+test('图片条目含 imagePath', () => assert.ok(typeof imageItem.imagePath === 'string' && imageItem.imagePath.length > 0));
+test('图片条目含 thumb dataURL', () => assert.ok(typeof imageItem.thumb === 'string' && imageItem.thumb.startsWith('data:image/')));
+test('图片条目含宽高', () => {
+  assert.strictEqual(typeof imageItem.width, 'number');
+  assert.strictEqual(typeof imageItem.height, 'number');
+});
+test('图片条目 content 含尺寸信息', () => {
+  assert.ok(imageItem.content.includes('100') && imageItem.content.includes('100'));
+});
+test('图片条目可置顶可收藏', () => {
+  imageItem.pinned = true; imageItem.favorite = true;
+  assert.strictEqual(imageItem.pinned, true);
+  assert.strictEqual(imageItem.favorite, true);
+});
+
+console.log('\n=== 15. 编辑条目逻辑 ===');
+// 模拟 main.js 的 edit-item IPC：更新内容并重新分类
+function classifyContent(text) {
+  if (typeof text !== 'string' || text.length === 0) return 'text';
+  const trimmed = text.trim();
+  if (/^https?:\/\//i.test(trimmed)) return 'link';
+  if (/^\S+@\S+\.\S+$/.test(trimmed)) return 'email';
+  if (/^1[3-9]\d{9}$/.test(trimmed)) return 'phone';
+  if (/(?:function|const|let|var|import|export|=>|class |return |if\s*\(|for\s*\(|while\s*\(|switch\s*\(|\.map\(|\.filter\(|\.forEach\(|async |await )/.test(trimmed)) return 'code';
+  if (trimmed.includes('\n') && trimmed.split('\n').length >= 2) {
+    const lines = trimmed.split('\n');
+    const indentedLines = lines.filter(l => /^\s{2,}/.test(l));
+    if (indentedLines.length >= Math.floor(lines.length / 2)) return 'code';
+  }
+  return 'text';
+}
+function editItem(item, newContent) {
+  if (typeof newContent !== 'string' || newContent.trim().length === 0) return null;
+  if (item.type === 'image') return null;
+  const trimmed = newContent.replace(/\r\n/g, '\n');
+  item.content = trimmed;
+  item.type = classifyContent(trimmed);
+  return item;
+}
+test('编辑文本后内容更新', () => {
+  const it = { content: 'hello', type: 'text' };
+  const r = editItem(it, 'world');
+  assert.strictEqual(r.content, 'world');
+});
+test('编辑后类型自动重分类（文本→链接）', () => {
+  const it = { content: 'hello', type: 'text' };
+  editItem(it, 'https://github.com');
+  assert.strictEqual(it.type, 'link');
+});
+test('编辑后类型自动重分类（文本→代码）', () => {
+  const it = { content: 'hello', type: 'text' };
+  editItem(it, 'const x = 1');
+  assert.strictEqual(it.type, 'code');
+});
+test('编辑空内容被拒绝', () => {
+  const it = { content: 'hello', type: 'text' };
+  assert.strictEqual(editItem(it, ''), null);
+  assert.strictEqual(it.content, 'hello'); // 原内容不变
+});
+test('编辑纯空格内容被拒绝', () => {
+  const it = { content: 'hello', type: 'text' };
+  assert.strictEqual(editItem(it, '   '), null);
+});
+test('图片条目不可编辑', () => {
+  const it = { content: '[图片] 100×100', type: 'image', imagePath: '/x.png' };
+  assert.strictEqual(editItem(it, '新文本'), null);
+});
+test('编辑时 CRLF 统一为 LF', () => {
+  const it = { content: 'a', type: 'text' };
+  editItem(it, 'a\r\nb\r\nc');
+  assert.strictEqual(it.content, 'a\nb\nc');
+});
+
+console.log('\n=== 16. 图片条目数量上限 ===');
+// 模拟 enforceImageLimit：超出 50 张时删除最旧的未置顶未收藏图片
+const MAX_IMAGE_ITEMS = 50;
+function enforceImageLimit(history) {
+  const imageItems = history.filter(i => i.type === 'image');
+  if (imageItems.length <= MAX_IMAGE_ITEMS) return history;
+  const sorted = imageItems
+    .filter(i => !i.pinned && !i.favorite)
+    .sort((a, b) => a.timestamp - b.timestamp);
+  const toRemove = sorted.slice(0, imageItems.length - MAX_IMAGE_ITEMS);
+  const removeIds = new Set(toRemove.map(i => i.id));
+  return history.filter(i => !removeIds.has(i.id));
+}
+test('未达上限不删', () => {
+  const h = Array.from({length: 30}, (_, i) => ({id: 'i'+i, type:'image', timestamp: i}));
+  assert.strictEqual(enforceImageLimit(h).length, 30);
+});
+test('超出上限删除最旧未置顶', () => {
+  const h = Array.from({length: 60}, (_, i) => ({
+    id: 'i'+i, type:'image', timestamp: i, pinned: false, favorite: false
+  }));
+  const r = enforceImageLimit(h);
+  assert.strictEqual(r.filter(i => i.type==='image').length, 50);
+  // 保留的应是最新的 50 条（timestamp 10..59）
+  const ts = r.filter(i => i.type==='image').map(i => i.timestamp);
+  assert.strictEqual(Math.min(...ts), 10);
+});
+test('置顶图片不被上限删除', () => {
+  const h = Array.from({length: 60}, (_, i) => ({
+    id: 'i'+i, type:'image', timestamp: i,
+    pinned: i === 0, // 最旧的那张置顶
+    favorite: false
+  }));
+  const r = enforceImageLimit(h);
+  assert.ok(r.some(i => i.id === 'i0' && i.pinned));
+});
+test('收藏图片不被上限删除', () => {
+  const h = Array.from({length: 60}, (_, i) => ({
+    id: 'i'+i, type:'image', timestamp: i,
+    pinned: false,
+    favorite: i === 1 // 第 2 张收藏
+  }));
+  const r = enforceImageLimit(h);
+  assert.ok(r.some(i => i.id === 'i1' && i.favorite));
+});
+
+console.log('\n=== 17. 缩略图尺寸计算 ===');
+// 模拟 main.js 的 makeThumbnailDataURL 中的尺寸计算逻辑
+function computeThumbSize(w, h, maxEdge) {
+  if (w > maxEdge || h > maxEdge) {
+    if (w >= h) { h = Math.round(h * maxEdge / w); w = maxEdge; }
+    else { w = Math.round(w * maxEdge / h); h = maxEdge; }
+  }
+  return { w, h };
+}
+test('小图不缩放', () => {
+  const r = computeThumbSize(100, 100, 240);
+  assert.strictEqual(r.w, 100); assert.strictEqual(r.h, 100);
+});
+test('大图按宽缩放', () => {
+  const r = computeThumbSize(1832, 1832, 240);
+  assert.strictEqual(r.w, 240); assert.strictEqual(r.h, 240);
+});
+test('横图按宽缩放保持比例', () => {
+  const r = computeThumbSize(800, 400, 240);
+  assert.strictEqual(r.w, 240); assert.strictEqual(r.h, 120);
+});
+test('竖图按高缩放保持比例', () => {
+  const r = computeThumbSize(400, 800, 240);
+  assert.strictEqual(r.w, 120); assert.strictEqual(r.h, 240);
 });
 
 console.log('\n=========================');

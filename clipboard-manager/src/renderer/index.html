@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data: file:;" />
   <title>剪贴板管家</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -31,6 +31,7 @@
     <div class="filter-tabs">
       <button class="tab active" data-filter="all">全部</button>
       <button class="tab" data-filter="favorite">⭐ 收藏</button>
+      <button class="tab" data-filter="image">🖼 图片</button>
       <button class="tab" data-filter="code">&lt;/&gt; 代码</button>
       <button class="tab" data-filter="link">🔗 链接</button>
       <button class="tab" data-filter="text">📝 文本</button>
@@ -53,7 +54,9 @@
   <footer class="footer">
     <span class="count" id="count">0 条记录</span>
     <span class="footer-hint">Ctrl + Shift + V 唤起</span>
-    <button class="footer-btn" id="clearBtn">🗑 清空（保留收藏）</button>
+    <div class="footer-btn-wrap">
+      <button class="footer-btn" id="clearBtn">🗑 清空（保留收藏）</button>
+    </div>
   </footer>
 
   <!-- 设置面板 -->
@@ -74,7 +77,7 @@
       </div>
       <div class="setting-row">
         <span>最多保留</span>
-        <code>500 条</code>
+        <code>500 条文本 · 50 张图片</code>
       </div>
       <div class="setting-row">
         <span>选择后自动粘贴到前台窗口</span>
@@ -84,7 +87,7 @@
         </label>
       </div>
       <div class="setting-row about">
-        <span>由 Trae + MiMo Code 协作打造 · v1.2.0</span>
+        <span>由 Trae + MiMo Code 协作打造 · v1.3.0</span>
       </div>
       <div class="setting-row">
         <a href="#" id="afdianLink">☕ 爱发电支持我们</a>

@@ -21,6 +21,7 @@ let currentFilter = 'all';
 let currentSearch = '';
 let focusedIndex = -1; // 键盘导航：当前高亮索引
 let expandedId = null; // 预览面板：当前展开的条目 id
+let editingId = null;  // 编辑模式：当前正在编辑的条目 id
 // 自动粘贴设置：默认开启，存在 localStorage
 let autoPaste = localStorage.getItem('cbm_autoPaste');
 autoPaste = autoPaste === null ? true : autoPaste === '1';
@@ -39,7 +40,9 @@ function timeAgo(ts) {
   return new Date(ts).toLocaleDateString('zh-CN');
 }
 
-const TYPE_LABEL = { code: 'CODE', link: 'LINK', email: 'MAIL', phone: 'TEL', text: 'TEXT' };
+const TYPE_LABEL = { code: 'CODE', link: 'LINK', email: 'MAIL', phone: 'TEL', text: 'TEXT', image: 'IMG' };
+
+// 图片直接用主进程生成的缩略图 dataURL（item.thumb），无需 file:// 转换
 
 function showToast(msg) {
   toastEl.textContent = msg;
@@ -114,6 +117,15 @@ function getFilteredSorted() {
 
 // 渲染单个条目的预览内容
 function renderPreviewContent(item) {
+  if (item.type === 'image' && item.thumb) {
+    const dim = (item.width && item.height) ? (item.width + ' × ' + item.height + ' px') : '';
+    return `
+      <div class="preview-image-wrap">
+        <img class="preview-image" src="${item.thumb}" alt="剪贴板图片" />
+        ${dim ? `<span class="preview-stat">${dim}</span>` : ''}
+      </div>
+    `;
+  }
   const full = escapeHtml(item.content);
   if (item.type === 'link') {
     // 链接：显示完整 URL + 打开按钮
@@ -135,6 +147,30 @@ function renderPreviewContent(item) {
   }
   // 其他：pre-wrap 保留格式
   return `<pre class="preview-body">${full}</pre>`;
+}
+
+// 渲染列表条目的主内容（区分图片/文本/编辑模式）
+function renderItemContent(item, isEditing) {
+  if (isEditing) {
+    // 编辑模式：textarea + 保存/取消
+    return `
+      <textarea class="item-edit-area" rows="4">${escapeHtml(item.content)}</textarea>
+      <div class="item-edit-actions">
+        <button class="edit-save-btn" data-act="edit-save">保存</button>
+        <button class="edit-cancel-btn" data-act="edit-cancel">取消</button>
+      </div>
+    `;
+  }
+  if (item.type === 'image' && item.thumb) {
+    return `
+      <div class="item-image-thumb" data-act="image-thumb">
+        <img src="${item.thumb}" alt="图片" />
+        <span class="item-image-label">${escapeHtml(item.content)}</span>
+      </div>
+    `;
+  }
+  // 文本类：高亮关键词 + 截断
+  return `<div class="item-content">${highlight(truncate(item.content, 200), currentSearch)}</div>`;
 }
 
 // 渲染
@@ -165,10 +201,10 @@ function render() {
     if (item.pinned) cls.push('pinned');
     if (idx === focusedIndex) cls.push('focused');
     if (item.id === expandedId) cls.push('expanded');
-    // 列表预览：高亮关键词 + 截断
-    const preview = highlight(truncate(item.content, 200), currentSearch);
+    if (item.id === editingId) cls.push('editing');
     const expanded = item.id === expandedId;
-    const previewHtml = expanded ? `
+    const isEditing = item.id === editingId;
+    const previewHtml = expanded && !isEditing ? `
       <div class="item-preview">
         <div class="preview-meta">
           <span class="preview-stat">${countChars(item.content)} 字符 · ${item.content.split('\n').length} 行</span>
@@ -176,6 +212,10 @@ function render() {
         ${renderPreviewContent(item)}
       </div>
     ` : '';
+    // 操作按钮：图片不可编辑
+    const editBtn = item.type !== 'image'
+      ? `<button class="act-btn ${isEditing ? 'edit-active' : ''}" data-act="edit" title="编辑">✎</button>`
+      : '';
     return `
       <div class="${cls.join(' ')}" data-id="${item.id}" style="animation-delay:${Math.min(idx*0.02, 0.3)}s">
         <div class="item-header">
@@ -185,12 +225,13 @@ function render() {
           </div>
           <div class="item-actions">
             <button class="act-btn ${expanded ? 'preview-active' : ''}" data-act="preview" title="预览/展开">👁</button>
+            ${editBtn}
             <button class="act-btn ${item.favorite ? 'fav-active' : ''}" data-act="favorite" title="收藏">★</button>
             <button class="act-btn ${item.pinned ? 'pin-active' : ''}" data-act="pin" title="置顶">📌</button>
             <button class="act-btn act-btn-del" data-act="delete" title="删除">🗑</button>
           </div>
         </div>
-        <div class="item-content">${preview}</div>
+        ${renderItemContent(item, isEditing)}
         ${previewHtml}
       </div>
     `;
@@ -211,9 +252,41 @@ async function load() {
 listEl.addEventListener('click', async (e) => {
   const actBtn = e.target.closest('.act-btn');
   const openBtn = e.target.closest('.preview-open-btn');
+  const editSaveBtn = e.target.closest('[data-act="edit-save"]');
+  const editCancelBtn = e.target.closest('[data-act="edit-cancel"]');
+  const imageThumb = e.target.closest('[data-act="image-thumb"]');
   const itemEl = e.target.closest('.item');
   if (!itemEl) return;
   const id = itemEl.dataset.id;
+
+  // 编辑模式下的保存
+  if (editSaveBtn) {
+    e.stopPropagation();
+    const ta = itemEl.querySelector('.item-edit-area');
+    if (!ta) return;
+    const newContent = ta.value;
+    if (!newContent || !newContent.trim()) {
+      showToast('内容不能为空');
+      return;
+    }
+    const updated = await window.api.editItem(id, newContent);
+    if (updated) {
+      editingId = null;
+      showToast('已保存');
+      await load();
+    } else {
+      showToast('保存失败');
+    }
+    return;
+  }
+
+  // 编辑模式下的取消
+  if (editCancelBtn) {
+    e.stopPropagation();
+    editingId = null;
+    render();
+    return;
+  }
 
   // 打开链接按钮（预览面板内）
   if (openBtn) {
@@ -233,6 +306,16 @@ listEl.addEventListener('click', async (e) => {
       // 切换预览展开
       expandedId = (expandedId === id) ? null : id;
       render();
+    } else if (act === 'edit') {
+      // 进入编辑模式（图片不可编辑，按钮已隐藏；这里二次保护）
+      const item = allItems.find(i => i.id === id);
+      if (item && item.type === 'image') return;
+      editingId = id;
+      expandedId = null;
+      render();
+      // 自动聚焦 textarea 并选中所有内容
+      const ta = document.querySelector(`.item[data-id="${id}"] .item-edit-area`);
+      if (ta) { ta.focus(); ta.select(); }
     } else if (act === 'favorite') {
       await window.api.toggleFavorite(id);
       showToast('已收藏');
@@ -244,13 +327,18 @@ listEl.addEventListener('click', async (e) => {
     } else if (act === 'delete') {
       await window.api.deleteItem(id);
       if (expandedId === id) expandedId = null;
+      if (editingId === id) editingId = null;
       showToast('已删除');
       await load();
     }
     return;
   }
 
-  // 点击卡片 = 复制
+  // 编辑模式下点击非按钮区域不触发复制
+  if (editingId === id) return;
+
+  // 点击图片缩略图或卡片 = 复制
+  if (imageThumb) e.stopPropagation();
   focusedIndex = -1; // 鼠标点击时清除键盘高亮
   const ok = await window.api.copyItem(id);
   if (ok) {
@@ -267,6 +355,7 @@ searchInput.addEventListener('input', () => {
   currentSearch = searchInput.value.trim();
   searchClear.classList.toggle('show', !!currentSearch);
   focusedIndex = -1; // 搜索变化时重置键盘高亮
+  editingId = null; // 搜索变化时退出编辑模式
   render();
 });
 searchClear.addEventListener('click', () => {
@@ -285,13 +374,14 @@ tabs.forEach(tab => {
     currentFilter = tab.dataset.filter;
     focusedIndex = -1; // 筛选变化时重置键盘高亮
     expandedId = null;
+    editingId = null; // 切换筛选时退出编辑模式
     render();
   });
 });
 
 // 清空
 clearBtn.addEventListener('click', async () => {
-  if (confirm('清空所有非置顶记录？此操作不可撤销。')) {
+  if (confirm('清空所有非置顶、非收藏记录？此操作不可撤销。')) {
     await window.api.clearAll();
     await load();
     showToast('已清空');
@@ -347,6 +437,29 @@ document.addEventListener('keydown', async (e) => {
   // 设置面板打开时不拦截
   if (!settingsPanel.hidden) {
     if (e.key === 'Escape') { settingsPanel.hidden = true; e.preventDefault(); }
+    return;
+  }
+
+  // 编辑模式下的快捷键：Ctrl/Cmd+Enter 保存，Esc 取消
+  const inEditMode = editingId !== null;
+  const activeIsTextarea = document.activeElement && document.activeElement.classList && document.activeElement.classList.contains('item-edit-area');
+  if (inEditMode && activeIsTextarea) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      const itemEl = document.querySelector(`.item[data-id="${editingId}"]`);
+      if (itemEl) {
+        const saveBtn = itemEl.querySelector('[data-act="edit-save"]');
+        if (saveBtn) saveBtn.click();
+      }
+      return;
+    }
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      editingId = null;
+      render();
+      return;
+    }
+    // 编辑模式下不拦截其他按键（让用户正常输入）
     return;
   }
 

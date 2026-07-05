@@ -10,6 +10,8 @@ contextBridge.exposeInMainWorld('api', {
   deleteItem: (id) => ipcRenderer.invoke('delete-item', id),
   clearAll: () => ipcRenderer.invoke('clear-all'),
   pasteToFront: () => ipcRenderer.invoke('paste-to-front'),
+  // 编辑条目内容（仅文本类条目）
+  editItem: (id, content) => ipcRenderer.invoke('edit-item', id, content),
   // 新增：打开外部链接（爱发电等）
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
   // 新增：获取数据存储路径
