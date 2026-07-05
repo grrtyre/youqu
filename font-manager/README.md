@@ -2,6 +2,13 @@
 
 > 一个苹果白高端风格的本地字体浏览、对比与特性标签管理工具。让中文字体也能被优雅地管理。
 
+## ⬇️ 直接下载
+
+| 平台 | 下载 | 说明 |
+|---|---|---|
+| Windows 安装版 | [FontManager-Setup-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/font-manager-v1.0.0/FontManager-Setup-1.0.0.exe) | 约 73MB，安装到本机，自动创建快捷方式 |
+| Windows 便携版 | [FontManager-Portable-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/font-manager-v1.0.0/FontManager-Portable-1.0.0.exe) | 约 73MB，免安装，双击即用 |
+
 ## ✨ 功能特性
 
 - **极速字体枚举** —— 一键扫描系统已安装的全部字体（含中英文字体）
