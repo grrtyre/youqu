@@ -1,12 +1,13 @@
 {
   "name": "screen-ruler",
-  "version": "1.1.0",
-  "description": "屏幕标尺管家 - 一站式屏幕测量工具（标尺/框选/距离/量角器/放大镜/截图标注）",
+  "version": "1.1.1",
+  "description": "屏幕尺管家 - 屏幕测量与标注工具",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
     "test": "node test/test.js",
-    "dist": "electron-builder --win --x64"
+    "dist": "electron-builder --win --x64",
+    "icon": "python build/make_icon.py"
   },
   "author": "youqu",
   "license": "MIT",
@@ -14,14 +15,18 @@
     "electron": "^28.3.3",
     "electron-builder": "^24.13.3"
   },
+  "dependencies": {
+    "electron-store": "^8.2.0"
+  },
   "build": {
     "appId": "com.youqu.screenruler",
-    "productName": "屏幕标尺管家",
+    "productName": "屏幕尺管家",
     "directories": {
-      "output": "dist"
+      "output": "dist-v1.1.1"
     },
     "files": [
       "src/**/*",
+      "node_modules/**/*",
       "package.json"
     ],
     "win": {
@@ -43,7 +48,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "屏幕标尺管家"
+      "shortcutName": "屏幕尺管家"
     }
   }
 }

@@ -1,108 +1,151 @@
-const { app, BrowserWindow, globalShortcut, screen, ipcMain, desktopCapturer } = require('electron');
+// src/main.js — 屏幕尺管家主进程
+// 全屏透明覆盖窗口 + 全局热键 + 桌面截图取色
+
+const { app, BrowserWindow, globalShortcut, screen, desktopCapturer, ipcMain, nativeImage, clipboard } = require('electron');
 const path = require('path');
+const Store = require('electron-store');
+const { physicalPixels, matchDisplaySource } = require('./core/ruler-core');
 
-let mainWindow = null;
-let overlayWindow = null;
+const store = new Store({ name: 'screen-ruler-config' });
 
-// 跨平台统一使用无边框窗口 + 自定义红黄绿小圆点
-// 解决 Windows 上 titleBarStyle:'hiddenInset' 导致的双重标题栏问题
-function createMainWindow() {
-  mainWindow = new BrowserWindow({
-    width: 720,
-    height: 560,
-    minWidth: 600,
-    minHeight: 480,
-    title: '屏幕标尺管家',
-    frame: false,
-    backgroundColor: '#f7f8fa',
-    autoHideMenuBar: true,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-      nodeIntegration: false
-    }
-  });
-  mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
-  mainWindow.on('closed', () => { mainWindow = null; });
-  // 同步最大化状态给渲染进程（用于切换圆点图标）
-  mainWindow.on('maximize', () => { if (mainWindow) mainWindow.webContents.send('win:maximize-change', true); });
-  mainWindow.on('unmaximize', () => { if (mainWindow) mainWindow.webContents.send('win:maximize-change', false); });
-}
+let overlay = null;
+let panel = null; // 主控面板（小窗）
+let frozenSnapshot = null; // 唤起时冻结的桌面截图 dataURL
 
-// 在指定显示器上创建覆盖层
-function createOverlayWindowOn(display) {
-  const { x, y, width, height } = display.bounds;
-  overlayWindow = new BrowserWindow({
-    x, y, width, height,
-    fullscreen: false,
-    frame: false,
-    transparent: true,
-    alwaysOnTop: true,
-    skipTaskbar: true,
-    resizable: false,
-    movable: false,
-    backgroundColor: '#00000000',
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-      nodeIntegration: false
-    }
-  });
-  overlayWindow.loadFile(path.join(__dirname, 'renderer', 'overlay.html'));
-  overlayWindow.setIgnoreMouseEvents(false);
-  overlayWindow.on('closed', () => { overlayWindow = null; });
-}
-
-// 找到光标所在显示器
-function displayUnderCursor() {
+// ============ 工具函数 ============
+function getActiveDisplay() {
   const cursor = screen.getCursorScreenPoint();
-  const displays = screen.getAllDisplays();
-  // 优先返回包含光标的显示器
-  const found = displays.find(d => {
-    const { x, y, width, height } = d.bounds;
-    return cursor.x >= x && cursor.x < x + width && cursor.y >= y && cursor.y < y + height;
-  });
-  return found || screen.getPrimaryDisplay();
+  return screen.getDisplayNearestPoint(cursor);
 }
 
-// 截取指定显示器的画面
+// 截取指定显示器整个画面
+// HiDPI 修复：thumbnailSize 用物理像素（逻辑像素 × scaleFactor），避免 150%/200% 缩放屏截图模糊
+// 多屏匹配修复：严格按 display.id 匹配桌面源，找不到直接报错，不再"取 sources[0] 兜底"以免拿错屏
 async function captureDisplay(display) {
-  const target = display || screen.getPrimaryDisplay();
-  const { width, height } = target.bounds;
+  const sf = display.scaleFactor || 1;
+  const phys = physicalPixels(display.bounds.width, display.bounds.height, sf);
   const sources = await desktopCapturer.getSources({
     types: ['screen'],
-    thumbnailSize: { width: Math.round(width * (target.scaleFactor || 1)), height: Math.round(height * (target.scaleFactor || 1)) }
+    thumbnailSize: { width: phys.width, height: phys.height }
   });
-  // 优先匹配该显示器的 source
-  const source = sources.find(s => s.display_id === String(target.id)) || sources[0];
-  if (!source) return null;
-  return source.thumbnail.toPNG().toString('base64');
+  const matched = matchDisplaySource(sources, display.id);
+  if (!matched) {
+    throw new Error(`未找到显示器 ${display.id} 的桌面源（可用源数：${sources.length}）`);
+  }
+  return matched.thumbnail;
 }
 
-app.whenReady().then(() => {
-  createMainWindow();
-
-  // 全局快捷键：Ctrl+Shift+R 切换 overlay
-  globalShortcut.register('CommandOrControl+Shift+R', () => {
-    if (overlayWindow && overlayWindow.isVisible()) {
-      overlayWindow.hide();
-    } else {
-      const display = displayUnderCursor();
-      if (!overlayWindow) createOverlayWindowOn(display);
-      else {
-        // 若已存在但不在当前显示器，重新定位
-        const [ox, oy] = overlayWindow.getPosition();
-        if (ox !== display.bounds.x || oy !== display.bounds.y) {
-          overlayWindow.setBounds(display.bounds);
-        }
-      }
-      overlayWindow.show();
-      overlayWindow.focus();
+// ============ 覆盖窗口（测量画布） ============
+function createOverlay(display, snapshotDataURL) {
+  const b = display.bounds;
+  overlay = new BrowserWindow({
+    x: b.x, y: b.y, width: b.width, height: b.height,
+    frame: false,
+    fullscreen: false,
+    movable: false,
+    resizable: false,
+    transparent: true,
+    backgroundColor: '#00000000',
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    hasShadow: false,
+    show: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false
     }
   });
+  overlay.setBounds({ x: b.x, y: b.y, width: b.width, height: b.height });
+  overlay.loadFile(path.join(__dirname, 'renderer', 'overlay.html'));
+  overlay.once('ready-to-show', () => {
+    // 截图失败时 dataURL 为 null，前端会显示纯透明背景（仍可用坐标/十字线，但不能取色量距）
+    overlay.webContents.send('snapshot', { dataURL: snapshotDataURL, bounds: b, scaleFactor: display.scaleFactor });
+    overlay.show();
+  });
+  overlay.on('closed', () => { overlay = null; });
+}
 
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
+// ============ 主控面板（小窗，常驻） ============
+function createPanel() {
+  const b = getActiveDisplay().bounds;
+  panel = new BrowserWindow({
+    width: 360, height: 540,
+    x: b.x + b.width - 380, y: b.y + 40,
+    frame: false,
+    transparent: true,
+    backgroundColor: '#00000000',
+    resizable: false,
+    maximizable: false,
+    minimizable: true,
+    alwaysOnTop: true,
+    show: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  });
+  panel.loadFile(path.join(__dirname, 'renderer', 'panel.html'));
+  panel.once('ready-to-show', () => panel.show());
+  panel.on('closed', () => { panel = null; });
+}
+
+// ============ 唤起/退出覆盖模式 ============
+async function enterOverlay() {
+  if (overlay) { overlay.focus(); return; }
+  const display = getActiveDisplay();
+  let thumb;
+  try {
+    thumb = await captureDisplay(display);
+  } catch (err) {
+    // 截图失败（如多屏匹配不到源、权限被拒）：用透明 1×1 占位图，仍然打开覆盖层
+    // 让用户至少能看到坐标/十字线（不能取色和量距）
+    console.error('[屏幕尺管家] captureDisplay 失败：', err.message);
+    const { nativeImage } = require('electron');
+    thumb = nativeImage.createEmpty();
+  }
+  frozenSnapshot = thumb.isEmpty() ? null : thumb.toDataURL();
+  createOverlay(display, frozenSnapshot);
+}
+
+function exitOverlay() {
+  if (overlay) overlay.close();
+}
+
+// ============ IPC ============
+ipcMain.on('exit-overlay', () => exitOverlay());
+ipcMain.on('save-history', (_e, item) => {
+  const list = store.get('history', []);
+  list.unshift(item);
+  store.set('history', list.slice(0, 50));
+  if (panel) panel.webContents.send('history-updated', store.get('history', []));
+});
+ipcMain.on('copy-text', (_e, text) => clipboard.writeText(text));
+ipcMain.on('get-history', (e) => e.sender.send('history-updated', store.get('history', [])));
+ipcMain.on('clear-history', () => {
+  store.set('history', []);
+  if (panel) panel.webContents.send('history-updated', []);
+});
+ipcMain.on('hide-panel', () => { if (panel) panel.hide(); });
+ipcMain.on('show-panel', () => { if (panel) panel.show(); });
+ipcMain.on('quit-app', () => { app.quit(); });
+ipcMain.on('minimize-panel', () => { if (panel) panel.minimize(); });
+ipcMain.on('toggle-always-on-top', () => {
+  if (panel) panel.setAlwaysOnTop(!panel.isAlwaysOnTop());
+});
+ipcMain.on('trigger-overlay', async () => { await enterOverlay(); });
+
+// ============ 全局热键 ============
+app.whenReady().then(() => {
+  createPanel();
+  // Ctrl+Shift+R 唤起测量
+  globalShortcut.register('Ctrl+Shift+R', () => { enterOverlay(); });
+  // Ctrl+Shift+P 显示/隐藏面板
+  globalShortcut.register('Ctrl+Shift+P', () => {
+    if (!panel) createPanel();
+    else if (panel.isVisible()) panel.hide();
+    else panel.show();
   });
 });
 
@@ -110,61 +153,6 @@ app.on('will-quit', () => {
   globalShortcut.unregisterAll();
 });
 
-// ── 窗口控制 IPC（自定义标题栏）──
-ipcMain.handle('win:minimize', () => {
-  const w = BrowserWindow.getFocusedWindow() || mainWindow;
-  if (w) w.minimize();
-});
-ipcMain.handle('win:maximize-toggle', () => {
-  const w = BrowserWindow.getFocusedWindow() || mainWindow;
-  if (!w) return false;
-  if (w.isMaximized()) { w.unmaximize(); return false; }
-  w.maximize(); return true;
-});
-ipcMain.handle('win:close', () => {
-  const w = BrowserWindow.getFocusedWindow() || mainWindow;
-  if (w) w.close();
-});
-ipcMain.handle('win:is-maximized', () => {
-  return mainWindow ? mainWindow.isMaximized() : false;
-});
-
-// ── 覆盖层 IPC ──
-ipcMain.handle('overlay:capture', async () => {
-  const display = displayUnderCursor();
-  return await captureDisplay(display);
-});
-
-ipcMain.handle('overlay:close', () => {
-  if (overlayWindow) overlayWindow.hide();
-});
-
-ipcMain.handle('app:open-overlay', async () => {
-  const display = displayUnderCursor();
-  if (!overlayWindow) createOverlayWindowOn(display);
-  else {
-    const [ox, oy] = overlayWindow.getPosition();
-    if (ox !== display.bounds.x || oy !== display.bounds.y) {
-      overlayWindow.setBounds(display.bounds);
-    }
-  }
-  overlayWindow.show();
-  overlayWindow.focus();
-  const b64 = await captureDisplay(display);
-  if (overlayWindow && overlayWindow.webContents) {
-    overlayWindow.webContents.send('overlay:screenshot', b64);
-  }
-});
-
-ipcMain.handle('app:quit', () => {
-  app.quit();
-});
-
-ipcMain.handle('app:get-displays', () => {
-  return screen.getAllDisplays().map(d => ({
-    id: d.id,
-    bounds: d.bounds,
-    scaleFactor: d.scaleFactor,
-    isPrimary: d === screen.getPrimaryDisplay()
-  }));
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
 });

@@ -1,7 +1,8 @@
 node_modules/
 dist/
-dist-v*/
-build-output/
+dist-v1.0/
+dist-v1.1/
+dist-v1.1.1/
 *.log
 .DS_Store
 Thumbs.db

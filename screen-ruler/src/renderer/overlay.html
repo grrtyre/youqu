@@ -2,39 +2,43 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline';">
-  <title>测量覆盖层</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self';">
+  <title>屏幕尺管家 · 测量</title>
   <link rel="stylesheet" href="overlay.css">
 </head>
 <body>
-  <div id="toolbar" class="toolbar">
-    <div class="brand">📏 屏幕标尺管家</div>
-    <div class="tools">
-      <button data-tool="ruler" class="t-btn active" title="标尺 (1)">📏</button>
-      <button data-tool="rect" class="t-btn" title="框选 (2)">▭</button>
-      <button data-tool="line" class="t-btn" title="距离 (3)">↔</button>
-      <button data-tool="angle" class="t-btn" title="量角 (4)">∠</button>
-      <button data-tool="magnifier" class="t-btn" title="放大镜 (5)">🔍</button>
-      <button data-tool="free" class="t-btn" title="标注 (6)">✏️</button>
-      <span class="sep"></span>
-      <button id="clearBtn" class="t-btn" title="清空 (C)">🧹</button>
-      <button id="saveBtn" class="t-btn" title="保存 (S)">💾</button>
-      <button id="closeBtn" class="t-btn danger" title="退出 (Esc)">✕</button>
+  <!-- 顶部工具栏 -->
+  <header id="toolbar">
+    <div class="seg-group">
+      <button class="seg active" data-mode="rect" title="矩形测量（R）">▭</button>
+      <button class="seg" data-mode="line" title="直线测量（L）">／</button>
+      <button class="seg" data-mode="pick" title="取色（P）">◐</button>
     </div>
-  </div>
+    <div class="info">
+      <span id="coord">x: 0, y: 0</span>
+      <span class="sep">·</span>
+      <span id="colorInfo">—</span>
+      <span id="colorSwatch" class="swatch"></span>
+    </div>
+    <div class="grow"></div>
+    <div class="seg-group">
+      <button id="copyBtn" class="seg" title="复制测量结果（C）">复制</button>
+      <button id="saveBtn" class="seg" title="保存到历史（S）">保存</button>
+      <button id="closeBtn" class="seg warn" title="退出（ESC）">退出</button>
+    </div>
+  </header>
 
-  <canvas id="bgCanvas"></canvas>
-  <canvas id="drawCanvas"></canvas>
+  <!-- 画布层 -->
+  <canvas id="bg"></canvas>
+  <canvas id="draw"></canvas>
 
-  <div id="hud" class="hud">
-    <div class="hud-row"><span class="hud-label">坐标</span><span id="hudCoord">0, 0</span></div>
-    <div class="hud-row"><span class="hud-label">结果</span><span id="hudResult">—</span></div>
-    <div class="hud-row"><span class="hud-label">物理</span><span id="hudPhysical">—</span></div>
-    <div class="hud-row"><span class="hud-label">取色</span><span id="hudColor"><span class="color-swatch" id="colorSwatch"></span><span id="colorText">—</span></span></div>
-  </div>
+  <!-- 底部提示 -->
+  <footer id="hint">
+    <kbd>ESC</kbd> 退出 · <kbd>R/L/P</kbd> 切换模式 · <kbd>C</kbd> 复制 · <kbd>S</kbd> 保存 · 拖拽测量
+  </footer>
 
-  <div id="hint" class="hint">移动鼠标测量 · 按 Esc 退出</div>
-
+  <!-- ruler-core.js 提供几何/颜色/格式化纯函数（UMD，挂 window.RulerCore），与单元测试同源 -->
+  <script src="../core/ruler-core.js"></script>
   <script src="overlay.js"></script>
 </body>
 </html>
