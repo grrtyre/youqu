@@ -40,6 +40,238 @@
     return text;
   }
 
+  // ======================== Slug 生成（用于目录跳转锚点） ========================
+
+  /**
+   * 把标题文本转换为 URL 安全的 slug
+   * 规则：去 HTML 实体后，移除标点，空格转 -，中文保留，统一小写英文
+   * 非字母数字汉字的字符全部替换为 -，连续 - 合并，首尾 - 去除
+   */
+  function slugify(text) {
+    if (text == null) return '';
+    text = String(text);
+    // 去掉行内 markdown 标记（** **、* *、~~ ~~、` `、[ ]( )）
+    text = text.replace(/\*\*([^*]+)\*\*/g, '$1');
+    text = text.replace(/\*([^*]+)\*/g, '$1');
+    text = text.replace(/~~([^~]+)~~/g, '$1');
+    text = text.replace(/`([^`]+)`/g, '$1');
+    text = text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+    // 保留：字母数字汉字连字符下划线，其余替换为 -
+    text = text.replace(/[^\w\u4e00-\u9fff\u3400-\u4dbf]+/g, '-');
+    // 英文小写
+    text = text.replace(/[A-Z]/g, function (ch) { return ch.toLowerCase(); });
+    // 合并连续 -
+    text = text.replace(/-+/g, '-');
+    // 去首尾 -
+    text = text.replace(/^-+|-+$/g, '');
+    return text;
+  }
+
+  // ======================== 目录大纲提取 ========================
+
+  /**
+   * 从 Markdown 文本中提取标题列表
+   * 仅识别行首 # 标记的标题（不识别 Setext 风格下划线标题）
+   * @returns {Array<{level:Number, text:String, slug:String}>}
+   */
+  function extractToc(text) {
+    if (typeof text !== 'string') return [];
+    var lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+    var toc = [];
+    var inCodeBlock = false;
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      if (/^```/.test(line)) {
+        inCodeBlock = !inCodeBlock;
+        continue;
+      }
+      if (inCodeBlock) continue;
+      // 移除行尾 # 标记
+      var m = line.match(/^(#{1,6})\s+(.+?)\s*#*\s*$/);
+      if (m) {
+        var level = m[1].length;
+        var raw = m[2];
+        // 去掉行内 markdown 标记，得到纯展示文本（用于目录显示）
+        var plain = raw
+          .replace(/\*\*([^*]+)\*\*/g, '$1')
+          .replace(/\*([^*]+)\*/g, '$1')
+          .replace(/~~([^~]+)~~/g, '$1')
+          .replace(/`([^`]+)`/g, '$1')
+          .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+        toc.push({ level: level, text: plain, slug: slugify(plain) });
+      }
+    }
+    return toc;
+  }
+
+  // ======================== 代码块语法高亮（纯 JS，零依赖） ========================
+
+  /**
+   * 高亮代码字符串，返回带 <span class="tok-xxx"> 包裹的 HTML（已 escape）
+   * 支持语言：javascript(js), typescript(ts), python(py), json, html, css, bash(sh), java, go, sql
+   * 未识别语言 → 直接 escape 返回
+   * 实现策略：用占位符保护已匹配片段，避免重叠
+   */
+  function highlightCode(code, lang) {
+    if (code == null) return '';
+    code = String(code);
+    lang = String(lang || '').toLowerCase();
+    var normalized = lang.replace(/^language-/, '');
+    if (!normalized) return escapeHtml(code);
+
+    var rules = HIGHLIGHT_RULES[normalized];
+    if (!rules) return escapeHtml(code);
+
+    // 把所有规则按优先级依次匹配，用占位符替换已匹配片段
+    // 占位符格式：\x00INDEX\x00，INDEX 指向 tokens 数组
+    var tokens = [];
+    var placeholders = [];
+    var marked = code;
+
+    function escapeForRegex(s) {
+      return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    // 先 escape 原始代码为 HTML 实体字符串，再在实体字符串上做高亮包裹
+    // 但这样会让关键字正则匹配不到 < > 等。所以反过来：在原始字符串上匹配，
+    // 记录 [start, end, className]，最后统一 escape + 包裹。
+    var ranges = [];
+    rules.forEach(function (rule) {
+      var re = new RegExp(rule.pattern, rule.flags || 'g');
+      var m;
+      while ((m = re.exec(marked)) !== null) {
+        var start = m.index;
+        var end = m.index + m[0].length;
+        // 跳过被已匹配范围覆盖的片段
+        var overlap = false;
+        for (var r = 0; r < ranges.length; r++) {
+          if (start < ranges[r].end && end > ranges[r].start) {
+            overlap = true;
+            break;
+          }
+        }
+        if (!overlap && m[0].length > 0) {
+          ranges.push({ start: start, end: end, cls: rule.cls });
+        }
+        if (m[0].length === 0) re.lastIndex++;
+      }
+    });
+
+    if (ranges.length === 0) return escapeHtml(code);
+
+    // 按起始位置排序
+    ranges.sort(function (a, b) { return a.start - b.start; });
+
+    // 拼装：片段间的普通文本 escape，匹配的片段 escape 后包 span
+    var out = '';
+    var cursor = 0;
+    for (var i = 0; i < ranges.length; i++) {
+      if (ranges[i].start > cursor) {
+        out += escapeHtml(code.slice(cursor, ranges[i].start));
+      }
+      out += '<span class="' + ranges[i].cls + '">' + escapeHtml(code.slice(ranges[i].start, ranges[i].end)) + '</span>';
+      cursor = ranges[i].end;
+    }
+    if (cursor < code.length) {
+      out += escapeHtml(code.slice(cursor));
+    }
+    return out;
+  }
+
+  // 各语言高亮规则：{cls, pattern, flags}
+  // 注意：注释和字符串优先匹配（在数组前部）
+  var HIGHLIGHT_RULES = {
+    javascript: [
+      { cls: 'tok-comment', pattern: '\\/\\/[^\\n]*', flags: 'g' },
+      { cls: 'tok-comment', pattern: '\\/\\*[\\s\\S]*?\\*\\/', flags: 'g' },
+      { cls: 'tok-string', pattern: '"(?:\\\\.|[^"\\\\])*"', flags: 'g' },
+      { cls: 'tok-string', pattern: "'(?:\\\\.|[^'\\\\])*'", flags: 'g' },
+      { cls: 'tok-string', pattern: '`(?:\\\\.|[^`\\\\])*`', flags: 'g' },
+      { cls: 'tok-keyword', pattern: '\\b(?:var|let|const|function|return|if|else|for|while|do|switch|case|break|continue|new|this|class|extends|super|try|catch|finally|throw|typeof|instanceof|in|of|delete|void|yield|async|await|import|export|from|default|static|get|set|null|undefined|true|false|NaN|Infinity)\\b', flags: 'g' },
+      { cls: 'tok-number', pattern: '\\b\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b', flags: 'g' },
+      { cls: 'tok-function', pattern: '\\b[a-zA-Z_$][\\w$]*(?=\\s*\\()', flags: 'g' }
+    ],
+    js: null, // 占位，下面用别名表填充
+    typescript: null,
+    ts: null,
+    python: [
+      { cls: 'tok-comment', pattern: '#[^\\n]*', flags: 'g' },
+      { cls: 'tok-string', pattern: '"""[\\s\\S]*?"""', flags: 'g' },
+      { cls: 'tok-string', pattern: "'''[\\s\\S]*?'''", flags: 'g' },
+      { cls: 'tok-string', pattern: '"(?:\\\\.|[^"\\\\])*"', flags: 'g' },
+      { cls: 'tok-string', pattern: "'(?:\\\\.|[^'\\\\])*'", flags: 'g' },
+      { cls: 'tok-keyword', pattern: '\\b(?:def|return|if|elif|else|for|while|break|continue|in|not|and|or|is|None|True|False|import|from|as|class|try|except|finally|with|lambda|yield|global|nonlocal|pass|raise|assert|del|print|self)\\b', flags: 'g' },
+      { cls: 'tok-number', pattern: '\\b\\d+(?:\\.\\d+)?\\b', flags: 'g' },
+      { cls: 'tok-function', pattern: '\\bdef\\s+([a-zA-Z_]\\w*)', flags: 'g' }
+    ],
+    py: null,
+    json: [
+      { cls: 'tok-key', pattern: '"(?:\\\\.|[^"\\\\])*"(?=\\s*:)', flags: 'g' },
+      { cls: 'tok-string', pattern: '"(?:\\\\.|[^"\\\\])*"', flags: 'g' },
+      { cls: 'tok-number', pattern: '\\b-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b', flags: 'g' },
+      { cls: 'tok-atom', pattern: '\\b(?:true|false|null)\\b', flags: 'g' }
+    ],
+    html: [
+      { cls: 'tok-comment', pattern: '<!--[\\s\\S]*?-->', flags: 'g' },
+      { cls: 'tok-tag', pattern: '<\\/?[a-zA-Z][\\w:-]*', flags: 'g' },
+      { cls: 'tok-tag', pattern: '\\/?>', flags: 'g' },
+      { cls: 'tok-attr', pattern: '[a-zA-Z-]+(?=\\s*=)', flags: 'g' },
+      { cls: 'tok-string', pattern: '"[^"]*"', flags: 'g' },
+      { cls: 'tok-string', pattern: "'[^']*'", flags: 'g' }
+    ],
+    css: [
+      { cls: 'tok-comment', pattern: '\\/\\*[\\s\\S]*?\\*\\/', flags: 'g' },
+      { cls: 'tok-keyword', pattern: '@[a-zA-Z-]+', flags: 'g' },
+      { cls: 'tok-selector', pattern: '[.#]?[a-zA-Z_][\\w-]*(?=\\s*\\{)', flags: 'g' },
+      { cls: 'tok-attr', pattern: '[a-zA-Z-]+(?=\\s*:)', flags: 'g' },
+      { cls: 'tok-string', pattern: '"[^"]*"', flags: 'g' },
+      { cls: 'tok-string', pattern: "'[^']*'", flags: 'g' },
+      { cls: 'tok-number', pattern: '\\b-?\\d+(?:\\.\\d+)?(?:px|em|rem|%|vh|vw|s|ms|deg)?\\b', flags: 'g' },
+      { cls: 'tok-atom', pattern: '\\b(?:!important|inherit|initial|auto|none|inline|block|flex|grid)\\b', flags: 'g' }
+    ],
+    bash: [
+      { cls: 'tok-comment', pattern: '#[^\\n]*', flags: 'g' },
+      { cls: 'tok-string', pattern: '"(?:\\\\.|[^"\\\\])*"', flags: 'g' },
+      { cls: 'tok-string', pattern: "'[^']*'", flags: 'g' },
+      { cls: 'tok-keyword', pattern: '\\b(?:if|then|else|fi|for|while|do|done|case|esac|in|return|function|export|local|echo|cd|ls|mv|cp|rm|mkdir|chmod|chown|sudo|npm|node|git|cd)\\b', flags: 'g' },
+      { cls: 'tok-variable', pattern: '\\$[a-zA-Z_][\\w]*', flags: 'g' },
+      { cls: 'tok-number', pattern: '\\b\\d+\\b', flags: 'g' }
+    ],
+    sh: null,
+    shell: null,
+    java: [
+      { cls: 'tok-comment', pattern: '\\/\\/[^\\n]*', flags: 'g' },
+      { cls: 'tok-comment', pattern: '\\/\\*[\\s\\S]*?\\*\\/', flags: 'g' },
+      { cls: 'tok-string', pattern: '"(?:\\\\.|[^"\\\\])*"', flags: 'g' },
+      { cls: 'tok-keyword', pattern: '\\b(?:public|private|protected|class|interface|extends|implements|new|return|if|else|for|while|switch|case|break|continue|try|catch|finally|throw|throws|import|package|static|final|void|int|long|double|float|boolean|char|String|null|true|false|this|super|instanceof)\\b', flags: 'g' },
+      { cls: 'tok-number', pattern: '\\b\\d+(?:\\.\\d+)?[LfDd]?\\b', flags: 'g' },
+      { cls: 'tok-function', pattern: '\\b[a-zA-Z_$][\\w$]*(?=\\s*\\()', flags: 'g' }
+    ],
+    go: [
+      { cls: 'tok-comment', pattern: '\\/\\/[^\\n]*', flags: 'g' },
+      { cls: 'tok-comment', pattern: '\\/\\*[\\s\\S]*?\\*\\/', flags: 'g' },
+      { cls: 'tok-string', pattern: '"(?:\\\\.|[^"\\\\])*"', flags: 'g' },
+      { cls: 'tok-string', pattern: '`[^`]*`', flags: 'g' },
+      { cls: 'tok-keyword', pattern: '\\b(?:package|import|func|return|if|else|for|range|switch|case|default|break|continue|var|const|type|struct|interface|map|chan|go|defer|nil|true|false)\\b', flags: 'g' },
+      { cls: 'tok-number', pattern: '\\b\\d+(?:\\.\\d+)?\\b', flags: 'g' },
+      { cls: 'tok-function', pattern: '\\bfunc\\s+([a-zA-Z_]\\w*)', flags: 'g' }
+    ],
+    sql: [
+      { cls: 'tok-comment', pattern: '--[^\\n]*', flags: 'g' },
+      { cls: 'tok-comment', pattern: '\\/\\*[\\s\\S]*?\\*\\/', flags: 'g' },
+      { cls: 'tok-string', pattern: "'(?:''|[^'])*'", flags: 'g' },
+      { cls: 'tok-string', pattern: '"[^"]*"', flags: 'g' },
+      { cls: 'tok-keyword', pattern: '\\b(?:SELECT|FROM|WHERE|INSERT|UPDATE|DELETE|INTO|VALUES|SET|AND|OR|NOT|NULL|IS|IN|LIKE|BETWEEN|JOIN|LEFT|RIGHT|INNER|OUTER|ON|GROUP|BY|ORDER|HAVING|LIMIT|OFFSET|CREATE|TABLE|INDEX|VIEW|DROP|ALTER|ADD|PRIMARY|KEY|FOREIGN|REFERENCES|DEFAULT|UNIQUE|AS|DISTINCT|COUNT|SUM|AVG|MIN|MAX|CASE|WHEN|THEN|ELSE|END|UNION|ALL|TRUE|FALSE)\\b', flags: 'gi' }
+    ]
+  };
+  // 别名填充
+  HIGHLIGHT_RULES.js = HIGHLIGHT_RULES.javascript;
+  HIGHLIGHT_RULES.typescript = HIGHLIGHT_RULES.javascript;
+  HIGHLIGHT_RULES.ts = HIGHLIGHT_RULES.javascript;
+  HIGHLIGHT_RULES.py = HIGHLIGHT_RULES.python;
+  HIGHLIGHT_RULES.sh = HIGHLIGHT_RULES.bash;
+  HIGHLIGHT_RULES.shell = HIGHLIGHT_RULES.bash;
+
   // ======================== 行内解析 ========================
 
   /**
@@ -188,8 +420,11 @@
 
   /**
    * 按行拆分，逐行解析块级元素
+   * @param {string} text
+   * @param {object} [opts] { highlight: Boolean } 是否启用代码块语法高亮
    */
-  function parseBlocks(text) {
+  function parseBlocks(text, opts) {
+    opts = opts || {};
     text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
     if (text.length > 0 && text[text.length - 1] !== '\n') {
       text += '\n';
@@ -236,8 +471,10 @@
           i++;
         }
         if (i < lines.length) i++;
+        var rawCode = codeLines.join('\n');
         var langClass = lang ? ' class="language-' + escapeHtml(lang) + '"' : '';
-        html += '<pre><code' + langClass + '>' + escapeHtml(codeLines.join('\n')) + '</code></pre>\n';
+        var inner = opts.highlight && lang ? highlightCode(rawCode, lang) : escapeHtml(rawCode);
+        html += '<pre><code' + langClass + '>' + inner + '</code></pre>\n';
         continue;
       }
 
@@ -248,7 +485,7 @@
           quoteLines.push(lines[i].replace(/^\s*>\s?/, ''));
           i++;
         }
-        html += '<blockquote>' + parseBlocks(quoteLines.join('\n')).trim() + '</blockquote>';
+        html += '<blockquote>' + parseBlocks(quoteLines.join('\n'), opts).trim() + '</blockquote>';
         continue;
       }
 
@@ -425,15 +662,20 @@
 
   /**
    * 解析 Markdown 文本为 HTML 字符串
+   * @param {string} text
+   * @param {object} [options] { highlight: Boolean } 启用代码块语法高亮
    */
-  function parseMarkdown(text) {
+  function parseMarkdown(text, options) {
     if (typeof text !== 'string') return '';
-    return parseBlocks(text).trim();
+    return parseBlocks(text, options || {}).trim();
   }
 
   return {
     parseMarkdown: parseMarkdown,
     escapeHtml: escapeHtml,
-    addChineseSpaces: addChineseSpaces
+    addChineseSpaces: addChineseSpaces,
+    slugify: slugify,
+    extractToc: extractToc,
+    highlightCode: highlightCode
   };
 }));

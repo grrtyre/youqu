@@ -11,6 +11,9 @@
     <!-- 顶部标题栏 -->
     <header class="titlebar">
       <div class="title-left">
+        <button class="icon-btn" id="btn-toggle-toc" title="显示/隐藏目录" aria-label="目录">
+          <svg viewBox="0 0 20 20" width="16" height="16"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
         <span class="logo">📝</span>
         <h1 class="title">Markdown 预览器</h1>
         <span class="subtitle">实时编辑 · 本地渲染 · 隐私优先</span>
@@ -22,21 +25,40 @@
           <button class="switch-btn" data-mode="preview" title="仅预览">👁</button>
         </div>
         <div class="actions">
+          <button class="btn" id="btn-open" title="打开 .md 文件">
+            <svg viewBox="0 0 20 20" width="13" height="13" style="vertical-align:-2px;margin-right:3px"><path d="M4 4a1 1 0 011-1h4l2 2h4a1 1 0 011 1v8a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>打开
+          </button>
           <button class="btn" id="btn-copy" title="复制渲染后的 HTML">📋 复制</button>
           <button class="btn" id="btn-export" title="导出为独立 HTML 文件">⬇ 导出</button>
+          <button class="btn" id="btn-pdf" title="打印 / 导出 PDF">🖨 PDF</button>
           <button class="btn btn-ghost" id="btn-clear" title="清空编辑区">🗑 清空</button>
+          <button class="icon-btn" id="btn-theme" title="切换主题" aria-label="主题">
+            <svg class="icon-light" viewBox="0 0 20 20" width="16" height="16"><circle cx="10" cy="10" r="3.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 1.5v2M10 16.5v2M2.5 10h-2M19.5 10h-2M4.3 4.3L3 3M17 17l-1.3-1.3M4.3 15.7L3 17M17 3l-1.3 1.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <svg class="icon-dark" viewBox="0 0 20 20" width="16" height="16" hidden><path d="M17 11.5a7 7 0 01-9-9 7 7 0 109 9z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          </button>
         </div>
       </div>
     </header>
 
-    <!-- 主体：编辑 + 预览 -->
+    <!-- 主体：目录 + 编辑 + 预览 -->
     <main class="main" id="main">
+      <!-- 目录大纲侧边栏 -->
+      <aside class="toc-pane" id="toc-pane" hidden>
+        <div class="pane-header">
+          <span class="pane-label">目录</span>
+          <span class="pane-meta" id="toc-meta">0</span>
+        </div>
+        <nav class="toc-list" id="toc-list" aria-label="文档目录">
+          <div class="empty-hint">无标题</div>
+        </nav>
+      </aside>
+
       <section class="pane editor-pane" id="editor-pane">
         <div class="pane-header">
           <span class="pane-label">编辑</span>
           <span class="pane-meta" id="editor-meta">0 字</span>
         </div>
-        <textarea id="editor" class="editor" spellcheck="false" placeholder="在此输入 Markdown…&#10;&#10;# 标题&#10;**粗体** *斜体* ~~删除线~~&#10;- 列表项&#10;[链接](https://example.com)&#10;&#10;左侧编辑，右侧实时预览。"></textarea>
+        <textarea id="editor" class="editor" spellcheck="false" placeholder="在此输入 Markdown…&#10;&#10;# 标题&#10;**粗体** *斜体* ~~删除线~~&#10;- 列表项&#10;[链接](https://example.com)&#10;&#10;左侧编辑，右侧实时预览。&#10;支持拖拽 .md 文件直接打开。"></textarea>
       </section>
 
       <div class="gutter" id="gutter" title="拖动调整宽度"></div>
@@ -63,6 +85,8 @@
       <span class="status-tip" id="status-tip">就绪 · 内容自动保存到本地</span>
     </footer>
   </div>
+
+  <input type="file" id="file-input" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden>
 
   <script src="markdown-parser.js"></script>
   <script src="renderer.js"></script>

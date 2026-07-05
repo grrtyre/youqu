@@ -260,6 +260,221 @@ test('链接中的中文文字', function () {
   assert.strictEqual(parse('[百度](https://baidu.com)'), '<p><a href="https://baidu.com">百度</a></p>');
 });
 
+// ======================== slugify ========================
+
+var slugify = MarkdownParser.slugify;
+
+test('slugify 纯英文', function () {
+  assert.strictEqual(slugify('Hello World'), 'hello-world');
+});
+
+test('slugify 中文保留', function () {
+  assert.strictEqual(slugify('欢迎使用 Markdown'), '欢迎使用-markdown');
+});
+
+test('slugify 标点替换为连字符', function () {
+  assert.strictEqual(slugify('A, B; C!'), 'a-b-c');
+});
+
+test('slugify 去掉行内 markdown 标记', function () {
+  assert.strictEqual(slugify('**Bold** and *Italic*'), 'bold-and-italic');
+});
+
+test('slugify 去掉链接语法保留文本', function () {
+  assert.strictEqual(slugify('[链接](https://example.com)'), '链接');
+});
+
+test('slugify 合并连续连字符', function () {
+  assert.strictEqual(slugify('A---B'), 'a-b');
+});
+
+test('slugify 去首尾连字符', function () {
+  assert.strictEqual(slugify('!!!Hello!!!'), 'hello');
+});
+
+test('slugify 空输入', function () {
+  assert.strictEqual(slugify(''), '');
+  assert.strictEqual(slugify(null), '');
+  assert.strictEqual(slugify(undefined), '');
+});
+
+test('slugify 纯数字', function () {
+  assert.strictEqual(slugify('2026 年总结'), '2026-年总结');
+});
+
+// ======================== extractToc ========================
+
+var extractToc = MarkdownParser.extractToc;
+
+test('extractToc 提取多级标题', function () {
+  var md = '# Title\n\n## Section A\n\n### Subsection\n\n## Section B';
+  var toc = extractToc(md);
+  assert.strictEqual(toc.length, 4);
+  assert.strictEqual(toc[0].level, 1);
+  assert.strictEqual(toc[0].text, 'Title');
+  assert.strictEqual(toc[1].level, 2);
+  assert.strictEqual(toc[1].text, 'Section A');
+  assert.strictEqual(toc[2].level, 3);
+  assert.strictEqual(toc[3].text, 'Section B');
+});
+
+test('extractToc 跳过代码块内的 # 行', function () {
+  var md = '# Title\n\n```\n# not a heading\nfoo\n```\n\n## Real';
+  var toc = extractToc(md);
+  assert.strictEqual(toc.length, 2);
+  assert.strictEqual(toc[0].text, 'Title');
+  assert.strictEqual(toc[1].text, 'Real');
+});
+
+test('extractToc 去掉行内格式后输出纯文本', function () {
+  var md = '# **Bold** Title\n## `Code` Heading';
+  var toc = extractToc(md);
+  assert.strictEqual(toc[0].text, 'Bold Title');
+  assert.strictEqual(toc[1].text, 'Code Heading');
+});
+
+test('extractToc 生成 slug 用于锚点', function () {
+  var toc = extractToc('# 欢迎使用');
+  assert.strictEqual(toc[0].slug, '欢迎使用');
+});
+
+test('extractToc 忽略 Setext 风格标题', function () {
+  var md = 'Title\n=====\n\nParagraph';
+  var toc = extractToc(md);
+  assert.strictEqual(toc.length, 0);
+});
+
+test('extractToc 空输入', function () {
+  assert.strictEqual(extractToc('').length, 0);
+  assert.strictEqual(extractToc(null).length, 0);
+  assert.strictEqual(extractToc('无标题的纯文本').length, 0);
+});
+
+test('extractToc 处理末尾 # 标记', function () {
+  var toc = extractToc('## Section ##');
+  assert.strictEqual(toc[0].text, 'Section');
+});
+
+// ======================== highlightCode ========================
+
+var highlightCode = MarkdownParser.highlightCode;
+
+test('highlightCode 无语言时返回纯 escape', function () {
+  var out = highlightCode('var x = 1;', '');
+  assert.strictEqual(out, 'var x = 1;');
+});
+
+test('highlightCode 未识别语言返回纯 escape', function () {
+  var out = highlightCode('foo bar', 'klingon');
+  assert.strictEqual(out, 'foo bar');
+});
+
+test('highlightCode HTML 字符正确转义', function () {
+  var out = highlightCode('<div>text</div>', 'html');
+  contains(out, '<span class="tok-tag">&lt;div</span>');
+  contains(out, '<span class="tok-tag">&lt;/div</span>');
+  contains(out, 'text');
+});
+
+test('highlightCode JS 关键字高亮', function () {
+  var out = highlightCode('function hello() { return 1; }', 'js');
+  contains(out, '<span class="tok-keyword">function</span>');
+  contains(out, '<span class="tok-keyword">return</span>');
+  contains(out, '<span class="tok-number">1</span>');
+});
+
+test('highlightCode JS 字符串高亮', function () {
+  var out = highlightCode('var s = "hello";', 'javascript');
+  contains(out, '<span class="tok-string">&quot;hello&quot;</span>');
+});
+
+test('highlightCode JS 注释高亮', function () {
+  var out = highlightCode('// comment\nvar x;', 'js');
+  contains(out, '<span class="tok-comment">// comment</span>');
+});
+
+test('highlightCode Python 注释高亮', function () {
+  var out = highlightCode('# python comment\nx = 1', 'python');
+  contains(out, '<span class="tok-comment"># python comment</span>');
+});
+
+test('highlightCode JSON key 着色', function () {
+  var out = highlightCode('{"name": "value"}', 'json');
+  contains(out, 'tok-key');
+  contains(out, 'tok-string');
+});
+
+test('highlightCode CSS 数字带单位', function () {
+  var out = highlightCode('width: 100px;', 'css');
+  contains(out, 'tok-attr');
+});
+
+test('highlightCode SQL 大小写不敏感关键字', function () {
+  var out = highlightCode('select * from users', 'sql');
+  contains(out, 'tok-keyword');
+});
+
+test('highlightCode 别名 js 等价 javascript', function () {
+  var a = highlightCode('var x = 1;', 'js');
+  var b = highlightCode('var x = 1;', 'javascript');
+  assert.strictEqual(a, b);
+});
+
+test('highlightCode 别名 py 等价 python', function () {
+  var a = highlightCode('x = 1', 'py');
+  var b = highlightCode('x = 1', 'python');
+  assert.strictEqual(a, b);
+});
+
+test('highlightCode language- 前缀剥离', function () {
+  var a = highlightCode('var x = 1;', 'language-js');
+  var b = highlightCode('var x = 1;', 'js');
+  assert.strictEqual(a, b);
+});
+
+test('highlightCode 空输入', function () {
+  assert.strictEqual(highlightCode('', 'js'), '');
+  assert.strictEqual(highlightCode(null, 'js'), '');
+});
+
+test('highlightCode 字符串中的关键字不被错误着色', function () {
+  // "function" 在字符串里不应被 tok-keyword 包裹
+  var out = highlightCode('var s = "function foo";', 'js');
+  // 字符串整体应被 tok-string 包裹
+  contains(out, 'tok-string');
+  // 不应出现嵌套的 tok-keyword（粗略验证：keyword span 数量应为 1，即 var）
+  var keywordCount = (out.match(/tok-keyword/g) || []).length;
+  assert.strictEqual(keywordCount, 1);
+});
+
+// ======================== parseMarkdown 高亮选项 ========================
+
+test('parseMarkdown 默认不高亮代码块', function () {
+  var md = '```js\nvar x = 1;\n```';
+  var out = parse(md);
+  assert.strictEqual(out, '<pre><code class="language-js">var x = 1;</code></pre>');
+});
+
+test('parseMarkdown options.highlight 启用高亮', function () {
+  var md = '```js\nvar x = 1;\n```';
+  var out = parse(md, { highlight: true });
+  contains(out, '<span class="tok-keyword">var</span>');
+  contains(out, '<span class="tok-number">1</span>');
+  contains(out, 'class="language-js"');
+});
+
+test('parseMarkdown options.highlight 无语言代码块不高亮', function () {
+  var md = '```\nplain text\n```';
+  var out = parse(md, { highlight: true });
+  assert.strictEqual(out, '<pre><code>plain text</code></pre>');
+});
+
+test('parseMarkdown options.highlight 引用块内代码块也高亮', function () {
+  var md = '> ```js\n> var x = 1;\n> ```';
+  var out = parse(md, { highlight: true });
+  contains(out, 'tok-keyword');
+});
+
 // ======================== 测试结果汇总 ========================
 
 console.log('\n--- 结果 ---');
