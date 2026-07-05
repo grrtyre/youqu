@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>清重管家</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 顶部栏 -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="22" height="22">
+            <defs>
+              <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#5ac8fa"/>
+                <stop offset="1" stop-color="#007aff"/>
+              </linearGradient>
+            </defs>
+            <rect x="3" y="3" width="26" height="26" rx="7" fill="url(#lg)"/>
+            <circle cx="12" cy="16" r="3.2" fill="#fff"/>
+            <circle cx="20" cy="16" r="3.2" fill="#fff" opacity="0.65"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-name">清重管家</div>
+          <div class="brand-sub">精准识别 · 可视对比 · 安全清理</div>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <button id="pickBtn" class="btn btn-primary">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 4a1 1 0 0 1 1-1h3l1.5 1.5H13a1 1 0 0 1 1 1V12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+          选择目录
+        </button>
+        <div id="dirChip" class="dir-chip hidden">未选择</div>
+        <button id="cancelBtn" class="btn btn-ghost hidden">取消</button>
+      </div>
+    </header>
+
+    <!-- 进度条 -->
+    <div id="progressBar" class="progress-wrap hidden">
+      <div class="progress-track">
+        <div id="progressFill" class="progress-fill"></div>
+      </div>
+      <div id="progressText" class="progress-text">准备中…</div>
+    </div>
+
+    <!-- 统计概览 -->
+    <section id="summaryBar" class="summary hidden">
+      <div class="stat">
+        <div class="stat-label">扫描文件</div>
+        <div id="statScanned" class="stat-value">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">重复组</div>
+        <div id="statGroups" class="stat-value">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">重复文件</div>
+        <div id="statFiles" class="stat-value">0</div>
+      </div>
+      <div class="stat highlight">
+        <div class="stat-label">可释放空间</div>
+        <div id="statWaste" class="stat-value">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">已选删除</div>
+        <div id="statSelected" class="stat-value muted">0 项</div>
+      </div>
+      <div class="stat-actions">
+        <button id="deleteSelectedBtn" class="btn btn-danger" disabled>移到回收站</button>
+        <button id="rescanBtn" class="btn btn-ghost hidden">重新扫描</button>
+      </div>
+    </section>
+
+    <!-- 主区域 -->
+    <main class="main">
+      <!-- 空状态 -->
+      <div id="emptyState" class="empty">
+        <div class="empty-icon">
+          <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+            <circle cx="36" cy="36" r="30" stroke="#d1d1d6" stroke-width="2" stroke-dasharray="4 4"/>
+            <circle cx="28" cy="34" r="6" fill="#e5e5ea"/>
+            <circle cx="44" cy="34" r="6" fill="#f0f0f2"/>
+            <path d="M24 50h24" stroke="#d1d1d6" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="empty-title">还没有扫描任何目录</div>
+        <div class="empty-sub">点击右上角「选择目录」开始查找重复文件</div>
+      </div>
+
+      <!-- 内容区：左组列表 + 右详情对比 -->
+      <div id="content" class="content hidden">
+        <aside class="grouplist">
+          <div class="grouplist-head">
+            <span>重复文件组</span>
+            <span id="groupCount" class="badge">0</span>
+          </div>
+          <div id="groupList" class="groups"></div>
+        </aside>
+        <section class="detail">
+          <div id="detailHead" class="detail-head">
+            <div id="detailTitle" class="detail-title">选择左侧任一组查看对比</div>
+            <div id="detailMeta" class="detail-meta"></div>
+          </div>
+          <div id="detailBody" class="detail-body">
+            <div class="detail-empty">点击左侧任意一组，并排查看重复文件，再决定保留哪个</div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- 底部状态栏 -->
+    <footer class="footer">
+      <div class="footer-left">
+        <span id="footerStatus">就绪</span>
+      </div>
+      <div class="footer-right">
+        <button id="afdianBtn" class="link-btn">支持我们 · 爱发电</button>
+      </div>
+    </footer>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
