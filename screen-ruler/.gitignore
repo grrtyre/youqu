@@ -3,6 +3,7 @@ dist/
 dist-v1.0/
 dist-v1.1/
 dist-v1.1.1/
+build/
 *.log
 .DS_Store
 Thumbs.db
