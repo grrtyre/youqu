@@ -4,6 +4,15 @@
 
 重复文件侵占了你多少 GB？市面上的清理工具经常"删完只省了 3GB"，因为它们只看文件名或大小就敢删。**清重管家**只认内容——三阶段哈希校验，确保删掉的是真重复，并排预览让你敢按下删除键。
 
+## ⬇️ 直接下载
+
+| 文件 | 说明 | 大小 | 下载 |
+|------|------|------|------|
+| 安装版 | NSIS 安装包，可选安装路径、创建桌面快捷方式 | ~73 MB | [⬇️ 下载](https://github.com/grrtyre/youqu/releases/download/duplicate-finder-v1.0.0/QingzhongSetup-1.0.0.exe) |
+| 便携版 | 免安装，双击即用 | ~73 MB | [⬇️ 下载](https://github.com/grrtyre/youqu/releases/download/duplicate-finder-v1.0.0/QingzhongPortable-1.0.0.exe) |
+
+> 全部发布版本：[Releases](https://github.com/grrtyre/youqu/releases)
+
 ## ✨ 核心特性
 
 - **精准识别**：三阶段算法（按大小分组 → 部分哈希 → 完整 SHA-256），100% 内容级精准，零误报
@@ -24,15 +33,6 @@
 | 删错没法恢复 | 直接删除 | 移到回收站 |
 
 ## 🚀 使用方式
-
-### 直接下载（推荐普通用户）
-
-| 平台 | 下载 |
-|------|------|
-| Windows x64 安装版 | 见 [Releases](../../releases) |
-| Windows x64 便携版 | 见 [Releases](../../releases) |
-
-下载后双击安装或直接运行 exe 即可。
 
 ### 从源码运行
 
