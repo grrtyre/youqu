@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF管家</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <!-- 顶部标题栏 -->
+    <header class="titlebar">
+      <div class="title-left">
+        <div class="logo">
+          <svg viewBox="0 0 32 32" width="28" height="28" fill="none">
+            <rect x="6" y="3" width="20" height="26" rx="3" fill="#fff" stroke="#007aff" stroke-width="1.5"/>
+            <path d="M11 12h10M11 16h10M11 20h6" stroke="#007aff" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M20 3v5h5" stroke="#007aff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </div>
+        <div class="title-text">
+          <div class="title-name">PDF管家</div>
+          <div class="title-sub">本地隐私 · 离线处理</div>
+        </div>
+      </div>
+      <div class="title-right">
+        <button class="btn-text" id="btn-afdian">❤ 爱发电</button>
+      </div>
+    </header>
+
+    <!-- 主体：左侧导航 + 右侧内容 -->
+    <div class="main">
+      <nav class="sidebar">
+        <div class="nav-item active" data-tab="merge">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v6M15 3v6M9 21v-6M15 21v-6M3 12h6M15 12h6M9 9h6v6H9z"/></svg></span>
+          <span class="nav-label">合并 PDF</span>
+        </div>
+        <div class="nav-item" data-tab="split">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l4-4 4 4M5 16l4 4 4-4M19 8l-4-4-4 4M19 16l-4 4-4-4"/></svg></span>
+          <span class="nav-label">拆分 PDF</span>
+        </div>
+        <div class="nav-item" data-tab="compress">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V5a1 1 0 0 1 1-1h4M20 9V5a1 1 0 0 0-1-1h-4M4 15v4a1 1 0 0 0 1 1h4M20 15v4a1 1 0 0 1-1 1h-4M9 12h6"/></svg></span>
+          <span class="nav-label">压缩 PDF</span>
+        </div>
+        <div class="nav-item" data-tab="encrypt">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+          <span class="nav-label">加密 PDF</span>
+        </div>
+        <div class="nav-item" data-tab="decrypt">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2M12 15v2"/></svg></span>
+          <span class="nav-label">解密 PDF</span>
+        </div>
+        <div class="nav-item" data-tab="watermark">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c2-3 4-3 6 0s4 3 6 0 4-3 6 0M3 17c2-3 4-3 6 0s4 3 6 0 4-3 6 0M3 7c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/></svg></span>
+          <span class="nav-label">加水印</span>
+        </div>
+        <div class="nav-item" data-tab="images">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 16l-5-5L5 20"/></svg></span>
+          <span class="nav-label">图片转 PDF</span>
+        </div>
+
+        <div class="nav-footer">
+          <div class="version">v1.0.0 · 纯本地</div>
+        </div>
+      </nav>
+
+      <section class="content">
+        <!-- 合并 PDF -->
+        <div class="panel active" id="panel-merge">
+          <div class="panel-header">
+            <h1>合并 PDF</h1>
+            <p class="panel-desc">把多个 PDF 文件按顺序合并为一个，所有处理均在本地完成，文件不会上传到任何服务器。</p>
+          </div>
+          <div class="card">
+            <div class="card-title">已选文件</div>
+            <div class="dropzone" id="merge-dropzone">
+              <div class="dz-empty">
+                <div class="dz-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></div>
+                <div>点击下方按钮选择 PDF 文件</div>
+                <div class="dz-hint">支持多选，按选择顺序合并</div>
+              </div>
+              <ol class="file-list" id="merge-list"></ol>
+            </div>
+            <div class="card-actions">
+              <button class="btn-secondary" id="merge-add">＋ 添加 PDF</button>
+              <button class="btn-secondary" id="merge-clear">清空</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">输出</div>
+            <div class="row">
+              <input class="text-input" id="merge-output" placeholder="点击右侧选择保存路径..." readonly>
+              <button class="btn-secondary" id="merge-choose-output">选择</button>
+            </div>
+            <button class="btn-primary big" id="merge-run" disabled>开始合并</button>
+          </div>
+        </div>
+
+        <!-- 拆分 PDF -->
+        <div class="panel" id="panel-split">
+          <div class="panel-header">
+            <h1>拆分 PDF</h1>
+            <p class="panel-desc">将 PDF 拆分成多个小文件，支持每页一份、按范围拆分、抽取指定页三种模式。</p>
+          </div>
+          <div class="card">
+            <div class="card-title">源文件</div>
+            <div class="row">
+              <input class="text-input" id="split-input" placeholder="点击右侧选择 PDF..." readonly>
+              <button class="btn-secondary" id="split-choose">选择</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">拆分模式</div>
+            <div class="radio-group">
+              <label class="radio">
+                <input type="radio" name="split-mode" value="each" checked>
+                <span>每页一份</span>
+              </label>
+              <label class="radio">
+                <input type="radio" name="split-mode" value="ranges">
+                <span>按范围拆分</span>
+              </label>
+              <label class="radio">
+                <input type="radio" name="split-mode" value="extract">
+                <span>抽取指定页</span>
+              </label>
+            </div>
+            <div class="field" id="split-ranges-field" style="display:none">
+              <label class="field-label">页码表达式</label>
+              <input class="text-input" id="split-ranges" placeholder='例: 1-3,5,7-9 （按范围拆分时每段为一份；抽取模式合成一份）'>
+              <div class="field-hint">支持 "1-3" 范围、"5" 单页、"1-3,5,7-9" 混合</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">输出目录</div>
+            <div class="row">
+              <input class="text-input" id="split-output-dir" placeholder="点击右侧选择目录..." readonly>
+              <button class="btn-secondary" id="split-choose-dir">选择</button>
+            </div>
+            <button class="btn-primary big" id="split-run" disabled>开始拆分</button>
+          </div>
+        </div>
+
+        <!-- 压缩 PDF -->
+        <div class="panel" id="panel-compress">
+          <div class="panel-header">
+            <h1>压缩 PDF</h1>
+            <p class="panel-desc">通过对象流重写、清理元数据等方式压缩 PDF 体积。压缩率取决于原文件结构，含大量图片的 PDF 效果有限。</p>
+          </div>
+          <div class="card">
+            <div class="card-title">源文件</div>
+            <div class="row">
+              <input class="text-input" id="compress-input" placeholder="点击右侧选择 PDF..." readonly>
+              <button class="btn-secondary" id="compress-choose">选择</button>
+            </div>
+            <div class="meta-row" id="compress-orig-info" style="display:none">
+              <span>原始大小: <b id="compress-orig-size"></b></span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">输出</div>
+            <div class="row">
+              <input class="text-input" id="compress-output" placeholder="点击右侧选择保存路径..." readonly>
+              <button class="btn-secondary" id="compress-choose-output">选择</button>
+            </div>
+            <button class="btn-primary big" id="compress-run" disabled>开始压缩</button>
+          </div>
+        </div>
+
+        <!-- 加密 PDF -->
+        <div class="panel" id="panel-encrypt">
+          <div class="panel-header">
+            <h1>加密 PDF</h1>
+            <p class="panel-desc">为 PDF 设置打开密码，可选限制打印、复制、修改等权限。本地加密不上传。</p>
+          </div>
+          <div class="card">
+            <div class="card-title">源文件</div>
+            <div class="row">
+              <input class="text-input" id="encrypt-input" placeholder="点击右侧选择 PDF..." readonly>
+              <button class="btn-secondary" id="encrypt-choose">选择</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">密码</div>
+            <div class="field">
+              <label class="field-label">用户密码（打开 PDF 时需要）</label>
+              <input class="text-input" id="encrypt-user-pwd" type="password" placeholder="请输入密码">
+            </div>
+            <div class="field">
+              <label class="field-label">所有者密码（可选，留空则与用户密码相同）</label>
+              <input class="text-input" id="encrypt-owner-pwd" type="password" placeholder="可选">
+            </div>
+            <div class="card-title" style="margin-top:16px">权限设置</div>
+            <div class="checkbox-group">
+              <label class="checkbox"><input type="checkbox" id="perm-print" checked><span>允许打印</span></label>
+              <label class="checkbox"><input type="checkbox" id="perm-modify"><span>允许修改</span></label>
+              <label class="checkbox"><input type="checkbox" id="perm-copy"><span>允许复制</span></label>
+              <label class="checkbox"><input type="checkbox" id="perm-annotate"><span>允许注释</span></label>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">输出</div>
+            <div class="row">
+              <input class="text-input" id="encrypt-output" placeholder="点击右侧选择保存路径..." readonly>
+              <button class="btn-secondary" id="encrypt-choose-output">选择</button>
+            </div>
+            <button class="btn-primary big" id="encrypt-run" disabled>开始加密</button>
+          </div>
+        </div>
+
+        <!-- 解密 PDF -->
+        <div class="panel" id="panel-decrypt">
+          <div class="panel-header">
+            <h1>解密 PDF</h1>
+            <p class="panel-desc">输入正确密码后，去除 PDF 的密码保护，输出为无密码 PDF。</p>
+          </div>
+          <div class="card">
+            <div class="card-title">源文件</div>
+            <div class="row">
+              <input class="text-input" id="decrypt-input" placeholder="点击右侧选择 PDF..." readonly>
+              <button class="btn-secondary" id="decrypt-choose">选择</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">密码</div>
+            <div class="field">
+              <label class="field-label">密码（用户密码或所有者密码）</label>
+              <input class="text-input" id="decrypt-pwd" type="password" placeholder="请输入 PDF 密码">
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">输出</div>
+            <div class="row">
+              <input class="text-input" id="decrypt-output" placeholder="点击右侧选择保存路径..." readonly>
+              <button class="btn-secondary" id="decrypt-choose-output">选择</button>
+            </div>
+            <button class="btn-primary big" id="decrypt-run" disabled>开始解密</button>
+          </div>
+        </div>
+
+        <!-- 加水印 -->
+        <div class="panel" id="panel-watermark">
+          <div class="panel-header">
+            <h1>加水印</h1>
+            <p class="panel-desc">为 PDF 每页添加文字水印，可调字号、不透明度、密度、旋转角度。</p>
+          </div>
+          <div class="card">
+            <div class="card-title">源文件</div>
+            <div class="row">
+              <input class="text-input" id="wm-input" placeholder="点击右侧选择 PDF..." readonly>
+              <button class="btn-secondary" id="wm-choose">选择</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">水印内容</div>
+            <div class="field">
+              <label class="field-label">文字</label>
+              <input class="text-input" id="wm-text" placeholder="例: 机密 / DO NOT COPY / 公司名称">
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label class="field-label">字号</label>
+                <input class="text-input" id="wm-size" type="number" value="60" min="10" max="200">
+              </div>
+              <div class="field">
+                <label class="field-label">不透明度</label>
+                <input class="text-input" id="wm-opacity" type="number" value="0.15" min="0.05" max="1" step="0.05">
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label class="field-label">旋转角度</label>
+                <input class="text-input" id="wm-rotation" type="number" value="-45" min="-180" max="180">
+              </div>
+              <div class="field">
+                <label class="field-label">密度</label>
+                <select class="text-input" id="wm-density">
+                  <option value="low">低（中心 1 个）</option>
+                  <option value="medium" selected>中（5 个）</option>
+                  <option value="high">高（9 个网格）</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label">颜色</label>
+              <input class="text-input color-input" id="wm-color" type="color" value="#000000">
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">输出</div>
+            <div class="row">
+              <input class="text-input" id="wm-output" placeholder="点击右侧选择保存路径..." readonly>
+              <button class="btn-secondary" id="wm-choose-output">选择</button>
+            </div>
+            <button class="btn-primary big" id="wm-run" disabled>开始加水印</button>
+          </div>
+        </div>
+
+        <!-- 图片转 PDF -->
+        <div class="panel" id="panel-images">
+          <div class="panel-header">
+            <h1>图片转 PDF</h1>
+            <p class="panel-desc">把多张 JPG/PNG 图片合成一个 PDF 文件，每张图一页，支持 A4/Letter/适应图片三种页面尺寸。</p>
+          </div>
+          <div class="card">
+            <div class="card-title">已选图片</div>
+            <div class="dropzone" id="img-dropzone">
+              <div class="dz-empty">
+                <div class="dz-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 16l-5-5L5 20"/></svg></div>
+                <div>点击下方按钮选择图片</div>
+                <div class="dz-hint">支持 JPG / PNG 多选</div>
+              </div>
+              <ol class="file-list" id="img-list"></ol>
+            </div>
+            <div class="card-actions">
+              <button class="btn-secondary" id="img-add">＋ 添加图片</button>
+              <button class="btn-secondary" id="img-clear">清空</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">页面设置</div>
+            <div class="grid-2">
+              <div class="field">
+                <label class="field-label">页面尺寸</label>
+                <select class="text-input" id="img-page-size">
+                  <option value="A4" selected>A4</option>
+                  <option value="letter">Letter</option>
+                  <option value="fit">适应图片</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field-label">方向</label>
+                <select class="text-input" id="img-orientation">
+                  <option value="auto" selected>自动</option>
+                  <option value="portrait">纵向</option>
+                  <option value="landscape">横向</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">输出</div>
+            <div class="row">
+              <input class="text-input" id="img-output" placeholder="点击右侧选择保存路径..." readonly>
+              <button class="btn-secondary" id="img-choose-output">选择</button>
+            </div>
+            <button class="btn-primary big" id="img-run" disabled>开始转换</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 底部状态栏 -->
+    <footer class="statusbar">
+      <span class="status-text" id="status-text">就绪</span>
+      <span class="status-progress" id="status-progress"></span>
+    </footer>
+  </div>
+
+  <!-- Toast 提示 -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- 结果对话框 -->
+  <div class="modal-mask" id="modal-mask">
+    <div class="modal">
+      <div class="modal-ico" id="modal-ico">✓</div>
+      <div class="modal-title" id="modal-title">完成</div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="modal-close">关闭</button>
+        <button class="btn-primary" id="modal-open-folder">打开所在文件夹</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
