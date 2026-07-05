@@ -1,0 +1,50 @@
+{
+  "name": "font-manager",
+  "version": "1.0.0",
+  "description": "字体管家 - 本地字体浏览、对比与特性标签管理工具",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/test.js",
+    "dist": "electron-builder --win --x64",
+    "icon": "python build/make_icon.py"
+  },
+  "author": "youqu",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "electron-store": "^8.2.0",
+    "font-list": "^1.5.1",
+    "opentype.js": "^1.3.4"
+  },
+  "build": {
+    "appId": "com.youqu.fontmanager",
+    "productName": "字体管家",
+    "directories": {
+      "output": "dist-v1.0"
+    },
+    "files": [
+      "src/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "字体管家"
+    }
+  }
+}

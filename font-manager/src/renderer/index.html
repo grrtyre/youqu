@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>字体管家</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- 自定义标题栏（Windows） -->
+  <header class="title-bar">
+    <div class="brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="3" width="20" height="18" rx="3" fill="#007aff"/>
+        <text x="12" y="17" text-anchor="middle" fill="#fff" font-family="-apple-system" font-size="13" font-weight="700">A</text>
+      </svg>
+      <span class="brand-name">字体管家</span>
+    </div>
+    <div class="title-spacer"></div>
+    <div class="window-ctrl">
+      <button class="win-btn" id="minBtn" title="最小化">—</button>
+      <button class="win-btn close" id="closeBtn" title="关闭">×</button>
+    </div>
+  </header>
+
+  <!-- 工具栏 -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none">
+        <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+        <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <input id="search" type="text" placeholder="搜索字体名称…" autocomplete="off">
+    </div>
+    <div class="seg-group" id="categoryGroup">
+      <button class="seg active" data-cat="">全部</button>
+      <button class="seg" data-cat="中">中文</button>
+      <button class="seg" data-cat="衬线">衬线</button>
+      <button class="seg" data-cat="无衬线">无衬线</button>
+      <button class="seg" data-cat="等宽">等宽</button>
+      <button class="seg" data-cat="手写">手写</button>
+      <button class="seg" data-cat="装饰">装饰</button>
+    </div>
+    <div class="grow"></div>
+    <div class="seg-group">
+      <button class="seg" id="viewList" title="列表视图">☰</button>
+      <button class="seg active" id="viewGrid" title="网格视图">▦</button>
+      <button class="seg" id="viewCompare" title="对比视图">⇆</button>
+    </div>
+  </div>
+
+  <!-- 主区 -->
+  <main class="main">
+    <!-- 侧栏：标签 -->
+    <aside class="sidebar">
+      <div class="side-section">
+        <div class="side-title">
+          <span>我的标签</span>
+          <button class="text-btn" id="addTagBtn" title="新建标签">+</button>
+        </div>
+        <div id="tagList" class="tag-list"></div>
+      </div>
+      <div class="side-section">
+        <div class="side-title">收藏</div>
+        <div id="favList" class="fav-list"></div>
+      </div>
+      <div class="side-section">
+        <div class="side-title">预览文本</div>
+        <textarea id="previewText" rows="3" placeholder="输入预览文本"></textarea>
+        <div class="size-row">
+          <label>字号</label>
+          <input id="fontSize" type="range" min="12" max="96" value="36">
+          <span id="fontSizeVal" class="num">36</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 字体网格 -->
+    <section class="content" id="content">
+      <div id="fontGrid" class="font-grid"></div>
+      <div id="emptyState" class="empty" style="display:none">
+        <div class="empty-icon">A</div>
+        <div class="empty-text">没有匹配的字体</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 对比抽屉 -->
+  <div id="compareDrawer" class="compare-drawer" style="display:none">
+    <header class="drawer-head">
+      <span class="drawer-title">并排对比</span>
+      <button class="text-btn" id="closeCompare">收起</button>
+    </header>
+    <div id="compareList" class="compare-list"></div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
