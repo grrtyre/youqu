@@ -8,8 +8,8 @@
 
 | 平台 | 下载 | 说明 |
 |------|------|------|
-| Windows x64 | [重命名管家 Setup](../../releases/tag/file-rename-manager-v1.0.0) | 安装版，支持自定义安装路径 |
-| Windows x64 | [重命名管家 Portable](../../releases/tag/file-rename-manager-v1.0.0) | 便携版，解压即用 |
+| Windows x64 | [重命名管家 Setup 1.0.0](https://github.com/grrtyre/youqu/releases/download/file-rename-manager-v1.0.0/rename-manager-setup-1.0.0.exe) | 安装版，支持自定义安装路径 |
+| Windows x64 | [重命名管家 Portable 1.0.0](https://github.com/grrtyre/youqu/releases/download/file-rename-manager-v1.0.0/rename-manager-portable-1.0.0.exe) | 便携版，解压即用 |
 
 ## ✨ 功能特性
 
