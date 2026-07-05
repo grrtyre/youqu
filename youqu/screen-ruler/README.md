@@ -23,10 +23,10 @@
 
 | 平台 | 下载链接 | 说明 |
 | --- | --- | --- |
-| Windows x64 | [屏幕标尺管家 Setup 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/screen-ruler-v1.0.0/屏幕标尺管家.Setup.1.0.0.exe) | 安装版，支持自定义安装路径 |
-| Windows x64 | [屏幕标尺管家 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/screen-ruler-v1.0.0/屏幕标尺管家.1.0.0.exe) | 便携版，双击即用 |
+| Windows x64 | [屏幕标尺管家 Setup 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/screen-ruler-v1.0.0/Setup.1.0.0.exe) | 安装版，支持自定义安装路径 |
+| Windows x64 | [屏幕标尺管家 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/screen-ruler-v1.0.0/1.0.0.exe) | 便携版，双击即用 |
 
-> 若 GitHub Release 中文文件名被转为英文，请以 [Releases 页面](https://github.com/grrtyre/youqu/releases/tag/screen-ruler-v1.0.0) 实际下载链接为准。
+> 注：GitHub Release 会将中文文件名转为英文，上方链接已为实际上传后的真实地址。
 
 ## 🚀 使用方式
 
