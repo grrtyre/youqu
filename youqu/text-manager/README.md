@@ -8,10 +8,10 @@
 
 | 平台 | 下载 | 说明 |
 |------|------|------|
-| Windows x64 | [文本管家 Setup 1.0.0.exe](../../releases/tag/text-manager-v1.0.0) | 安装版，自动创建快捷方式 |
-| Windows x64 | [文本管家 1.0.0.exe](../../releases/tag/text-manager-v1.0.0) | 便携版，双击即用 |
+| Windows x64 | [TextManager-Setup-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/text-manager-v1.0.0/TextManager-Setup-1.0.0.exe) | 安装版（72 MB），自动创建快捷方式 |
+| Windows x64 | [TextManager-Portable-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/text-manager-v1.0.0/TextManager-Portable-1.0.0.exe) | 便携版（72 MB），双击即用 |
 
-> 前往 [Releases 页面](../../releases) 查看所有版本。
+> 前往 [Releases 页面](https://github.com/grrtyre/youqu/releases/tag/text-manager-v1.0.0) 查看所有版本。
 
 ## ✨ 功能特性
 
