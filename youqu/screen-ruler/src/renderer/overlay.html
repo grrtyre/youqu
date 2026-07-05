@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline';">
+  <title>测量覆盖层</title>
+  <link rel="stylesheet" href="overlay.css">
+</head>
+<body>
+  <div id="toolbar" class="toolbar">
+    <div class="brand">📏 屏幕标尺管家</div>
+    <div class="tools">
+      <button data-tool="ruler" class="t-btn active" title="标尺 (1)">📏</button>
+      <button data-tool="rect" class="t-btn" title="框选 (2)">▭</button>
+      <button data-tool="line" class="t-btn" title="距离 (3)">↔</button>
+      <button data-tool="angle" class="t-btn" title="量角 (4)">∠</button>
+      <button data-tool="magnifier" class="t-btn" title="放大镜 (5)">🔍</button>
+      <button data-tool="free" class="t-btn" title="标注 (6)">✏️</button>
+      <span class="sep"></span>
+      <button id="clearBtn" class="t-btn" title="清空 (C)">🧹</button>
+      <button id="saveBtn" class="t-btn" title="保存 (S)">💾</button>
+      <button id="closeBtn" class="t-btn danger" title="退出 (Esc)">✕</button>
+    </div>
+  </div>
+
+  <canvas id="bgCanvas"></canvas>
+  <canvas id="drawCanvas"></canvas>
+
+  <div id="hud" class="hud">
+    <div class="hud-row"><span class="hud-label">坐标</span><span id="hudCoord">0, 0</span></div>
+    <div class="hud-row"><span class="hud-label">结果</span><span id="hudResult">—</span></div>
+    <div class="hud-row"><span class="hud-label">物理</span><span id="hudPhysical">—</span></div>
+  </div>
+
+  <div id="hint" class="hint">移动鼠标测量 · 按 Esc 退出</div>
+
+  <script src="overlay.js"></script>
+</body>
+</html>
