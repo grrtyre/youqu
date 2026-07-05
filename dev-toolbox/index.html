@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#007aff" />
+  <meta name="description" content="苹果白风格 7 合 1 开发者工具：颜色转换 / JSON 格式化 / 时间戳 / 正则测试 / 文本 Diff / Base64 / URL 编解码" />
+  <title>开发者工具箱 · dev-toolbox</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="工具箱" />
+</head>
+<body>
+  <div class="app">
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">🧰</div>
+        <div class="brand-text">
+          <div class="brand-title">开发者工具箱</div>
+          <div class="brand-sub">dev-toolbox</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <button class="nav-item active" data-tool="color" data-index="1">
+          <span class="nav-icon">🎨</span><span>颜色转换</span><kbd class="nav-kbd">1</kbd>
+        </button>
+        <button class="nav-item" data-tool="json" data-index="2">
+          <span class="nav-icon">📄</span><span>JSON 格式化</span><kbd class="nav-kbd">2</kbd>
+        </button>
+        <button class="nav-item" data-tool="timestamp" data-index="3">
+          <span class="nav-icon">⏱</span><span>时间戳转换</span><kbd class="nav-kbd">3</kbd>
+        </button>
+        <button class="nav-item" data-tool="regex" data-index="4">
+          <span class="nav-icon">🔍</span><span>正则测试</span><kbd class="nav-kbd">4</kbd>
+        </button>
+        <button class="nav-item" data-tool="diff" data-index="5">
+          <span class="nav-icon">⚖️</span><span>文本 Diff</span><kbd class="nav-kbd">5</kbd>
+        </button>
+        <button class="nav-item" data-tool="base64" data-index="6">
+          <span class="nav-icon">🔐</span><span>Base64</span><kbd class="nav-kbd">6</kbd>
+        </button>
+        <button class="nav-item" data-tool="url" data-index="7">
+          <span class="nav-icon">🌐</span><span>URL 编码</span><kbd class="nav-kbd">7</kbd>
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="https://www.ifdian.net/a/giquwei" target="_blank" rel="noopener" class="support-link">☕ 支持我们</a>
+      </div>
+    </aside>
+
+    <!-- 主区域 -->
+    <main class="main">
+      <header class="main-header">
+        <div class="header-row">
+          <div>
+            <h1 id="toolTitle" class="tool-title">颜色转换</h1>
+            <p id="toolDesc" class="tool-desc">HEX / RGB / HSL / CSS 互转，支持透明度</p>
+          </div>
+          <div class="header-actions">
+            <span class="kbd-hint" title="键盘快捷键"><kbd>⌘/Ctrl</kbd> + <kbd>1-7</kbd> 切换 · <kbd>⌘/Ctrl</kbd> + <kbd>↵</kbd> 执行</span>
+            <button id="installBtn" class="btn ghost install-btn" hidden>安装到桌面</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- 颜色转换 -->
+      <section class="panel active" data-panel="color">
+        <div class="row">
+          <label class="field">
+            <span class="label">输入颜色</span>
+            <div class="input-group">
+              <input type="text" id="colorInput" class="input" placeholder="#007aff 或 rgba(0,122,255,0.8)" value="#007aff" />
+              <input type="color" id="colorPicker" class="color-picker" value="#007aff" />
+            </div>
+          </label>
+          <button class="btn primary" id="colorBtn">转换</button>
+        </div>
+        <div class="result-block">
+          <div class="color-preview" id="colorPreview"></div>
+          <div class="result-grid" id="colorResult"></div>
+        </div>
+      </section>
+
+      <!-- JSON 格式化 -->
+      <section class="panel" data-panel="json">
+        <div class="row">
+          <label class="field flex-1">
+            <span class="label">JSON 文本</span>
+            <textarea id="jsonInput" class="textarea" rows="6" placeholder='{"name":"dev-toolbox","stars":128}'>{"name":"dev-toolbox","stars":128,"tags":["json","color","regex"]}</textarea>
+          </label>
+        </div>
+        <div class="row">
+          <div class="seg">
+            <button class="seg-btn active" data-indent="2">缩进 2</button>
+            <button class="seg-btn" data-indent="4">缩进 4</button>
+            <button class="seg-btn" data-indent="0">压缩</button>
+          </div>
+          <button class="btn primary" id="jsonBtn">格式化</button>
+        </div>
+        <div class="result-block">
+          <textarea id="jsonOutput" class="textarea mono" rows="10" readonly></textarea>
+          <div class="result-actions">
+            <button class="btn ghost copy-btn" data-copy="jsonOutput">复制</button>
+            <button class="btn ghost" id="jsonDownloadBtn">⬇ 下载 .json</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 时间戳转换 -->
+      <section class="panel" data-panel="timestamp">
+        <div class="row">
+          <label class="field flex-1">
+            <span class="label">输入（时间戳 / 日期字符串 / now）</span>
+            <input type="text" id="tsInput" class="input" placeholder="1700000000 或 2026-07-04 或 now" value="now" />
+          </label>
+          <button class="btn primary" id="tsBtn">转换</button>
+        </div>
+        <div class="result-block">
+          <div class="result-grid" id="tsResult"></div>
+        </div>
+      </section>
+
+      <!-- 正则测试 -->
+      <section class="panel" data-panel="regex">
+        <div class="row">
+          <label class="field">
+            <span class="label">正则表达式</span>
+            <div class="input-group">
+              <span class="prefix">/</span>
+              <input type="text" id="rePattern" class="input" placeholder="\\d+" value="\\d+" />
+              <span class="prefix">/</span>
+              <input type="text" id="reFlags" class="input small" placeholder="gi" value="g" />
+            </div>
+          </label>
+          <button class="btn primary" id="reBtn">测试</button>
+        </div>
+        <label class="field">
+          <span class="label">待匹配文本</span>
+          <textarea id="reText" class="textarea mono" rows="4" placeholder="输入文本">订单号 20260704，金额 99.5 元，编号 A123B456</textarea>
+        </label>
+        <div class="result-block">
+          <div class="result-list" id="reResult"></div>
+        </div>
+      </section>
+
+      <!-- 文本 Diff -->
+      <section class="panel" data-panel="diff">
+        <div class="row two-col">
+          <label class="field">
+            <span class="label">原始文本 A <span class="drag-hint">· 可拖拽文件</span></span>
+            <textarea id="diffA" class="textarea mono drop-target" rows="6" placeholder="可拖拽 .txt/.json/.js 文件">第一行
+第二行
+第三行
+第四行</textarea>
+          </label>
+          <label class="field">
+            <span class="label">对比文本 B <span class="drag-hint">· 可拖拽文件</span></span>
+            <textarea id="diffB" class="textarea mono drop-target" rows="6" placeholder="可拖拽 .txt/.json/.js 文件">第一行
+第二行修改
+第三行
+新增行
+第四行</textarea>
+          </label>
+        </div>
+        <div class="row">
+          <button class="btn primary" id="diffBtn">对比差异</button>
+          <button class="btn ghost" id="diffSwapBtn">⇄ 交换 A/B</button>
+          <button class="btn ghost" id="diffExportBtn">⬇ 导出 HTML</button>
+        </div>
+        <div class="result-block">
+          <div class="diff-stats" id="diffStats"></div>
+          <div class="diff-view mono" id="diffResult"></div>
+        </div>
+      </section>
+
+      <!-- Base64 -->
+      <section class="panel" data-panel="base64">
+        <div class="row">
+          <label class="field flex-1">
+            <span class="label">输入文本</span>
+            <textarea id="b64Input" class="textarea" rows="4" placeholder="输入要编码/解码的内容">你好，dev-toolbox！</textarea>
+          </label>
+        </div>
+        <div class="row">
+          <div class="seg">
+            <button class="seg-btn active" data-mode="encode">编码</button>
+            <button class="seg-btn" data-mode="decode">解码</button>
+          </div>
+          <button class="btn primary" id="b64Btn">执行</button>
+        </div>
+        <div class="result-block">
+          <textarea id="b64Output" class="textarea mono" rows="4" readonly></textarea>
+          <button class="btn ghost copy-btn" data-copy="b64Output">复制</button>
+        </div>
+      </section>
+
+      <!-- URL 编码 -->
+      <section class="panel" data-panel="url">
+        <div class="row">
+          <label class="field flex-1">
+            <span class="label">输入文本</span>
+            <textarea id="urlInput" class="textarea" rows="4" placeholder="输入 URL 或文本">https://example.com/搜索?q=开发者工具</textarea>
+          </label>
+        </div>
+        <div class="row">
+          <div class="seg">
+            <button class="seg-btn active" data-mode="encode">编码</button>
+            <button class="seg-btn" data-mode="decode">解码</button>
+          </div>
+          <button class="btn primary" id="urlBtn">执行</button>
+        </div>
+        <div class="result-block">
+          <textarea id="urlOutput" class="textarea mono" rows="4" readonly></textarea>
+          <button class="btn ghost copy-btn" data-copy="urlOutput">复制</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Toast 提示 -->
+  <div class="toast" id="toast"></div>
+
+  <script src="toolbox-core.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

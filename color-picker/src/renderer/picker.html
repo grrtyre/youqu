@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';">
+  <title>取色器</title>
+  <link rel="stylesheet" href="picker.css">
+</head>
+<body>
+  <div class="picker" id="picker">
+    <div class="lens" id="lens">
+      <canvas id="canvas" width="220" height="220"></canvas>
+      <div class="crosshair"></div>
+    </div>
+    <div class="info-card" id="infoCard">
+      <div class="info-swatch" id="infoSwatch"></div>
+      <div class="info-text">
+        <div class="info-hex" id="infoHex">#007AFF</div>
+        <div class="info-rgb" id="infoRgb">rgb(0, 122, 255)</div>
+      </div>
+    </div>
+    <div class="hint">点击取色 · ESC 取消</div>
+  </div>
+  <script src="picker.js"></script>
+</body>
+</html>

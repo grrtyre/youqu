@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown 预览器</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <!-- 顶部标题栏 -->
+    <header class="titlebar">
+      <div class="title-left">
+        <span class="logo">📝</span>
+        <h1 class="title">Markdown 预览器</h1>
+        <span class="subtitle">实时编辑 · 本地渲染 · 隐私优先</span>
+      </div>
+      <div class="title-right">
+        <div class="view-switch" role="tablist" aria-label="视图模式">
+          <button class="switch-btn active" data-mode="split" title="分屏">⬌</button>
+          <button class="switch-btn" data-mode="edit" title="仅编辑">✎</button>
+          <button class="switch-btn" data-mode="preview" title="仅预览">👁</button>
+        </div>
+        <div class="actions">
+          <button class="btn" id="btn-copy" title="复制渲染后的 HTML">📋 复制</button>
+          <button class="btn" id="btn-export" title="导出为独立 HTML 文件">⬇ 导出</button>
+          <button class="btn btn-ghost" id="btn-clear" title="清空编辑区">🗑 清空</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主体：编辑 + 预览 -->
+    <main class="main" id="main">
+      <section class="pane editor-pane" id="editor-pane">
+        <div class="pane-header">
+          <span class="pane-label">编辑</span>
+          <span class="pane-meta" id="editor-meta">0 字</span>
+        </div>
+        <textarea id="editor" class="editor" spellcheck="false" placeholder="在此输入 Markdown…&#10;&#10;# 标题&#10;**粗体** *斜体* ~~删除线~~&#10;- 列表项&#10;[链接](https://example.com)&#10;&#10;左侧编辑，右侧实时预览。"></textarea>
+      </section>
+
+      <div class="gutter" id="gutter" title="拖动调整宽度"></div>
+
+      <section class="pane preview-pane" id="preview-pane">
+        <div class="pane-header">
+          <span class="pane-label">预览</span>
+          <span class="pane-meta" id="preview-meta">就绪</span>
+        </div>
+        <article id="preview" class="preview markdown-body">
+          <div class="empty-hint">预览区将在此显示渲染结果</div>
+        </article>
+      </section>
+    </main>
+
+    <!-- 状态栏 -->
+    <footer class="statusbar">
+      <span id="stat-chars">字符 0</span>
+      <span class="sep">·</span>
+      <span id="stat-words">字数 0</span>
+      <span class="sep">·</span>
+      <span id="stat-lines">行数 1</span>
+      <span class="spacer"></span>
+      <span class="status-tip" id="status-tip">就绪 · 内容自动保存到本地</span>
+    </footer>
+  </div>
+
+  <script src="markdown-parser.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>

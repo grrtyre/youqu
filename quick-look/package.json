@@ -1,0 +1,42 @@
+{
+  "name": "quick-look",
+  "version": "1.0.0",
+  "description": "速览管家 - Windows 仿 Mac QuickLook 的极速文件预览工具",
+  "main": "src/main.js",
+  "author": "youqu",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/test.js",
+    "build": "electron-builder --win --x64"
+  },
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.youqu.quicklook",
+    "productName": "速览管家",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "速览管家"
+    }
+  }
+}

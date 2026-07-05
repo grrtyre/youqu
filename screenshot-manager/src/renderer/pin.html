@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>贴图</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: transparent;
+      user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    .pin-wrap {
+      width: 100%; height: 100%;
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25), 0 2px 8px rgba(0,0,0,0.15);
+      border: 1px solid rgba(255,255,255,0.4);
+    }
+    img { width: 100%; height: 100%; display: block; }
+    .ctrl {
+      position: absolute;
+      top: 6px; right: 6px;
+      display: flex; gap: 4px;
+      opacity: 0.5;
+      transition: opacity 0.15s;
+    }
+    .pin-wrap:hover .ctrl { opacity: 1; }
+    .ctrl button {
+      width: 22px; height: 22px;
+      border: none;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      line-height: 1;
+    }
+    .ctrl button:hover { background: rgba(0,0,0,0.85); }
+    .ctrl .close:hover { background: #ff3b30; }
+    .drag-handle {
+      position: absolute;
+      inset: 0;
+      cursor: move;
+      -webkit-app-region: drag;
+    }
+  </style>
+</head>
+<body>
+  <div class="pin-wrap" id="wrap">
+    <div class="drag-handle"></div>
+    <img id="img" alt="">
+    <div class="ctrl">
+      <button class="close" id="btnClose" title="关闭">
+        <svg width="10" height="10" viewBox="0 0 10 10"><path d="M1 1l8 8M9 1l-8 8" stroke="currentColor" stroke-width="1.5"/></svg>
+      </button>
+    </div>
+  </div>
+  <script>
+    const { api } = window;
+    api.onPinInit(async (args) => {
+      const r = await api.readImage({ path: args.imagePath });
+      if (r.ok) {
+        document.getElementById('img').src = 'data:image/png;base64,' + r.base64;
+      }
+    });
+    document.getElementById('btnClose').onclick = () => api.winClose();
+    // 右键菜单：另存为 / 复制 / 关闭
+    document.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      api.pinContextMenu();
+    });
+    // 滚轮缩放
+    document.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      // 简单处理：交给原生窗口缩放
+    }, { passive: false });
+  </script>
+</body>
+</html>

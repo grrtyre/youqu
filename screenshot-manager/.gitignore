@@ -1,0 +1,16 @@
+# 截图管家 - .gitignore
+node_modules/
+dist/
+dist-v*/
+*.exe
+*.exe.blockmap
+*.nupkg
+*.appx
+*.snap
+*.deb
+*.dmg
+*.AppImage
+build/builder-effective-config.yaml
+*.log
+.DS_Store
+Thumbs.db

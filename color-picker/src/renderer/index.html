@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;">
+  <title>拾色管家</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <!-- 顶部：当前色 + 取色按钮 + 设置 -->
+    <header class="hero">
+      <div class="hero-left">
+        <div class="swatch-large" id="currentSwatch" style="background:#007AFF;">
+          <span class="swatch-hex" id="currentHex">#007AFF</span>
+        </div>
+        <div class="hero-info">
+          <h1>拾色管家</h1>
+          <p class="subtitle">屏幕取色 · 调色板管理 · 对比度检查 · 苹果白设计</p>
+          <div class="format-row">
+            <button class="fmt-btn active" data-fmt="hex">#007AFF</button>
+            <button class="fmt-btn" data-fmt="rgb">rgb(0,122,255)</button>
+            <button class="fmt-btn" data-fmt="hsl">hsl(211,100%,50%)</button>
+            <button class="copy-btn" id="copyCurrent">复制</button>
+          </div>
+        </div>
+      </div>
+      <div class="hero-right">
+        <button class="pick-btn" id="pickBtn">
+          <span class="pick-icon">⊙</span>
+          开始取色
+          <span class="pick-shortcut" id="pickShortcut">Ctrl+Shift+C</span>
+        </button>
+        <button class="icon-btn" id="settingsBtn" title="设置">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- 历史记录 -->
+    <section class="block">
+      <div class="block-head">
+        <h2>最近拾取</h2>
+        <span class="hint" id="historyHint">点击色块复制 HEX · 右键加入调色板</span>
+      </div>
+      <div class="grid" id="historyGrid">
+        <!-- 历史色块 -->
+      </div>
+    </section>
+
+    <!-- 对比度检查器 -->
+    <section class="block">
+      <div class="block-head">
+        <h2>对比度检查器 <span class="badge-new">NEW</span></h2>
+        <span class="hint">WCAG 2.1 可访问性评估 · 前景/背景</span>
+      </div>
+      <div class="contrast-grid">
+        <div class="contrast-input">
+          <label class="ci-label">前景色</label>
+          <div class="ci-row">
+            <input type="color" id="fgColor" value="#007aff" class="color-native">
+            <input type="text" id="fgHex" value="#007aff" class="hex-input" maxlength="7">
+          </div>
+        </div>
+        <div class="contrast-input">
+          <label class="ci-label">背景色</label>
+          <div class="ci-row">
+            <input type="color" id="bgColor" value="#ffffff" class="color-native">
+            <input type="text" id="bgHex" value="#ffffff" class="hex-input" maxlength="7">
+          </div>
+        </div>
+        <div class="contrast-actions">
+          <button class="ghost-btn" id="swapColorsBtn" title="交换前景与背景">⇄ 交换</button>
+          <button class="ghost-btn" id="useCurrentAsFg" title="用当前色做前景">用当前色</button>
+        </div>
+      </div>
+      <div class="contrast-result" id="contrastResult">
+        <div class="ratio-box">
+          <span class="ratio-label">对比度</span>
+          <span class="ratio-value" id="ratioValue">4.00</span>
+          <span class="ratio-hint">:1</span>
+        </div>
+        <div class="grade-box">
+          <div class="grade-row">
+            <span class="grade-name">AA 普通文本</span>
+            <span class="grade-tag" id="gradeAaNormal">—</span>
+          </div>
+          <div class="grade-row">
+            <span class="grade-name">AA 大字</span>
+            <span class="grade-tag" id="gradeAaLarge">—</span>
+          </div>
+          <div class="grade-row">
+            <span class="grade-name">AAA 普通文本</span>
+            <span class="grade-tag" id="gradeAaaNormal">—</span>
+          </div>
+          <div class="grade-row">
+            <span class="grade-name">AAA 大字</span>
+            <span class="grade-tag" id="gradeAaaLarge">—</span>
+          </div>
+        </div>
+        <div class="preview-box" id="previewBox">
+          <div class="preview-text" id="previewText" style="color:#007aff;background:#ffffff;">Aa 苹果白 拾色管家 1234</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 调色板 -->
+    <section class="block">
+      <div class="block-head">
+        <h2>调色板</h2>
+        <div class="palette-controls">
+          <select id="paletteSelect" class="select"></select>
+          <button class="ghost-btn" id="newPaletteBtn">+ 新建</button>
+          <button class="ghost-btn danger" id="delPaletteBtn">删除</button>
+          <button class="ghost-btn" id="renamePaletteBtn">重命名</button>
+        </div>
+      </div>
+      <div class="palette-current" id="paletteCurrent">
+        <span class="palette-label">当前色：</span>
+        <span class="palette-current-hex" id="paletteCurrentHex">#007AFF</span>
+        <button class="primary-btn" id="addToPaletteBtn">加入当前调色板</button>
+      </div>
+      <div class="palette-export-row">
+        <span class="export-label">导出此调色板：</span>
+        <button class="ghost-btn" data-export="css">CSS</button>
+        <button class="ghost-btn" data-export="scss">SCSS</button>
+        <button class="ghost-btn" data-export="json">JSON</button>
+        <button class="ghost-btn" data-export="gpl">GPL</button>
+        <button class="ghost-btn" data-export="ase">ASE</button>
+      </div>
+      <div class="grid" id="paletteGrid">
+        <!-- 调色板色块 -->
+      </div>
+    </section>
+
+    <!-- 提示 toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- 设置弹层 -->
+    <div class="modal-mask" id="settingsModal">
+      <div class="modal">
+        <div class="modal-head">
+          <h3>设置</h3>
+          <button class="modal-close" id="closeSettings">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="setting-row">
+            <div class="setting-label">
+              <span class="setting-name">取色快捷键</span>
+              <span class="setting-desc">点击右侧录制,然后按下新的组合键</span>
+            </div>
+            <div class="setting-control">
+              <input type="text" id="shortcutInput" class="shortcut-input" readonly placeholder="点击录制">
+              <button class="ghost-btn" id="recordShortcutBtn">录制</button>
+              <button class="ghost-btn" id="resetShortcutBtn">重置</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button class="primary-btn" id="saveSettingsBtn">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="renderer.js"></script>
+</body>
+</html>
