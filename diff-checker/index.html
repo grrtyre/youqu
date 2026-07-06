@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#007aff" />
+  <meta name="description" content="苹果白高端风格的文本对比工具：并排/内联/统一格式三视图，行级+字符级双 diff，支持忽略大小写与空白，本地运行无上传。" />
+  <title>文本对比管家 · diff-checker</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="文本对比" />
+</head>
+<body>
+  <!-- 顶部栏 -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo">⚖️</div>
+      <div>
+        <div class="brand-title">文本对比管家</div>
+        <div class="brand-sub">diff-checker · 一眼看清每一处差异</div>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <label class="option-pill" id="optIgnoreCase">
+        <input type="checkbox" />
+        <span>Aa 忽略大小写</span>
+      </label>
+      <label class="option-pill" id="optTrimWs">
+        <input type="checkbox" />
+        <span>␣ 忽略空白</span>
+      </label>
+      <div class="view-switch" role="tablist">
+        <button class="active" data-view="split">并排</button>
+        <button data-view="inline">内联</button>
+        <button data-view="unified">统一格式</button>
+      </div>
+      <button class="btn ghost" id="btnSwap" title="交换左右">⇄ 交换</button>
+      <button class="btn ghost" id="btnClear" title="清空">清空</button>
+      <button class="btn primary" id="btnCompare">⚡ 立即对比</button>
+    </div>
+  </header>
+
+  <!-- 主区域 -->
+  <main class="main">
+
+    <!-- 输入区 -->
+    <div class="input-grid">
+      <div class="input-card" id="cardLeft">
+        <div class="input-header">
+          <span class="input-tag left"></span>
+          <span class="input-label">原文本</span>
+          <span class="input-meta" id="metaLeft">0 行</span>
+          <div class="input-actions">
+            <button class="btn btn-icon ghost" data-paste="left" title="粘贴">📋</button>
+            <button class="btn btn-icon ghost" data-load="left" title="加载文件">📂</button>
+          </div>
+        </div>
+        <textarea class="input-area" id="textLeft" placeholder="在此粘贴或输入原文本..."></textarea>
+      </div>
+
+      <div class="input-card" id="cardRight">
+        <div class="input-header">
+          <span class="input-tag right"></span>
+          <span class="input-label">新文本</span>
+          <span class="input-meta" id="metaRight">0 行</span>
+          <div class="input-actions">
+            <button class="btn btn-icon ghost" data-paste="right" title="粘贴">📋</button>
+            <button class="btn btn-icon ghost" data-load="right" title="加载文件">📂</button>
+          </div>
+        </div>
+        <textarea class="input-area" id="textRight" placeholder="在此粘贴或输入新文本..."></textarea>
+      </div>
+    </div>
+
+    <!-- 操作栏 -->
+    <div class="action-bar">
+      <div class="examples">
+        <button class="example-chip" data-sample="code">代码片段</button>
+        <button class="example-chip" data-sample="json">JSON 配置</button>
+        <button class="example-chip" data-sample="text">中文段落</button>
+        <button class="example-chip" data-sample="config">配置文件</button>
+      </div>
+      <div class="spacer"></div>
+      <div class="stats-bar" id="statsBar" hidden>
+        <span class="stat-item"><span class="stat-dot add"></span>新增 <span class="stat-num" id="statAdd">0</span></span>
+        <span class="stat-item"><span class="stat-dot del"></span>删除 <span class="stat-num" id="statDel">0</span></span>
+        <span class="stat-item"><span class="stat-dot eq"></span>相同 <span class="stat-num" id="statEq">0</span></span>
+      </div>
+      <button class="btn ghost" id="btnCopySummary" hidden>📋 复制摘要</button>
+      <button class="btn ghost" id="btnCopyUnified" hidden>📋 复制 unified diff</button>
+    </div>
+
+    <!-- 结果区 -->
+    <div class="result-card">
+      <div class="result-header">
+        <span class="result-title">对比结果</span>
+        <span style="flex:1"></span>
+        <span style="font-size:11.5px;color:var(--text-muted);" id="resultMeta"></span>
+      </div>
+
+      <div class="result-empty" id="resultEmpty">
+        <span class="empty-icon">⚖️</span>
+        <div>填写左右两段文本，点击「立即对比」开始</div>
+        <div style="margin-top:8px;font-size:12px;">支持行级 + 字符级双 diff · 并排 / 内联 / 统一格式三视图</div>
+      </div>
+
+      <!-- 并排视图 -->
+      <div class="diff-side" id="viewSplit" hidden></div>
+
+      <!-- 内联视图 -->
+      <div class="diff-inline" id="viewInline" hidden></div>
+
+      <!-- 统一格式 -->
+      <pre class="diff-unified" id="viewUnified" hidden></pre>
+    </div>
+
+    <div class="footer">
+      文本对比管家 · 完全本地运行，数据不上传
+      <span class="divider">·</span>
+      <a href="https://www.ifdian.net/a/giquwei" target="_blank" rel="noopener">☕ 支持我们</a>
+      <span class="divider">·</span>
+      <a href="https://github.com/grrtyre/youqu" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </main>
+
+  <input type="file" id="fileInput" hidden />
+
+  <div class="toast" id="toast"></div>
+
+  <script src="diff-engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
