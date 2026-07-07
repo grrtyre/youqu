@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>记账管家</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect x="2" y="6" width="24" height="18" rx="4" fill="#007aff"/>
+            <rect x="2" y="6" width="24" height="6" rx="4" fill="#0a84ff"/>
+            <circle cx="6" cy="9" r="1.2" fill="#fff"/>
+            <circle cx="9.5" cy="9" r="1.2" fill="#fff"/>
+            <circle cx="13" cy="9" r="1.2" fill="#fff"/>
+            <path d="M6 16h6M6 19h4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M16 17l2 2 4-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">记账管家</div>
+          <div class="brand-sub">本地 · 私密 · 极简</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" data-view="dashboard">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <rect x="2" y="2" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="10" y="2" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="2" y="10" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="10" y="10" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          <span>概览</span>
+        </button>
+        <button class="nav-item" data-view="calendar">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <rect x="2" y="3" width="14" height="13" rx="2.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+            <path d="M2 6.5h14M6 1.5v3M12 1.5v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="6" cy="10" r="1" fill="currentColor"/>
+            <circle cx="9" cy="10" r="1" fill="currentColor" opacity="0.55"/>
+            <circle cx="12" cy="10" r="1" fill="currentColor" opacity="0.55"/>
+          </svg>
+          <span>日历</span>
+        </button>
+        <button class="nav-item" data-view="transactions">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M3 4.5h12M3 9h12M3 13.5h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          <span>明细</span>
+        </button>
+        <button class="nav-item" data-view="stats">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M3 15V8M7.5 15V3M12 15v-5M16.5 15V6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <span>统计</span>
+        </button>
+        <button class="nav-item" data-view="budget">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+            <path d="M9 5.5V9l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span>预算</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="footer-btn" id="btnExport">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 1.5v7M4 6l3 2.5L10 6M2 11v1.5h10V11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>导出</span>
+        </button>
+        <button class="footer-btn" id="btnImport">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 8.5v-7M4 4l3-2.5L10 4M2 11v1.5h10V11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>导入</span>
+        </button>
+        <button class="footer-btn danger" id="btnClear" title="清空所有交易与预算数据">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2.5 4h9M5 4V2.5h4V4M4 4l.7 8.5h4.6L10 4M6 6v4M8 6v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>清空数据</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- 主内容 -->
+    <main class="main">
+      <!-- 顶栏 -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <h1 id="pageTitle">概览</h1>
+          <span class="topbar-sub" id="pageSub"></span>
+        </div>
+        <div class="topbar-right">
+          <div class="month-switcher" id="monthSwitcher">
+            <button class="icon-btn" id="prevMonth" title="上月">
+              <svg width="16" height="16" viewBox="0 0 16 16"><path d="M10 3l-5 5 5 5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <span id="monthLabel" class="month-label">2026-07</span>
+            <button class="icon-btn" id="nextMonth" title="下月">
+              <svg width="16" height="16" viewBox="0 0 16 16"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="icon-btn today-btn" id="todayBtn" title="回到本月">
+              <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.4" fill="none"/><circle cx="7" cy="7" r="1.6" fill="currentColor"/></svg>
+            </button>
+          </div>
+          <button class="primary-btn" id="btnAdd">
+            <svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span>记一笔</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- 视图容器 -->
+      <div class="views" id="views">
+        <!-- 概览视图 -->
+        <section class="view view-dashboard active" data-view="dashboard">
+          <div class="cards">
+            <div class="card card-income">
+              <div class="card-label"><span class="label-icon">↑</span>本月收入</div>
+              <div class="card-amount" id="overviewIncome">¥0.00</div>
+              <div class="card-trend" id="overviewIncomeTrend">—</div>
+            </div>
+            <div class="card card-expense">
+              <div class="card-label"><span class="label-icon">↓</span>本月支出</div>
+              <div class="card-amount" id="overviewExpense">¥0.00</div>
+              <div class="card-trend" id="overviewExpenseTrend">—</div>
+            </div>
+            <div class="card card-balance">
+              <div class="card-label"><span class="label-icon">=</span>本月结余</div>
+              <div class="card-amount" id="overviewBalance">¥0.00</div>
+              <div class="card-trend" id="overviewBalanceTrend">—</div>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="panel">
+              <div class="panel-head">
+                <h3>近 6 个月趋势</h3>
+              </div>
+              <div class="panel-body">
+                <div class="chart-trend" id="trendChart"></div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-head">
+                <h3>支出分类</h3>
+                <span class="panel-sub" id="catTotal"></span>
+              </div>
+              <div class="panel-body">
+                <div class="donut-wrap">
+                  <svg class="donut" id="donutChart" viewBox="0 0 200 200"></svg>
+                  <div class="donut-center">
+                    <div class="donut-label">支出</div>
+                    <div class="donut-value" id="donutTotal">¥0</div>
+                  </div>
+                </div>
+                <div class="legend" id="donutLegend"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h3>最近交易</h3>
+              <button class="link-btn" id="seeAllTx">查看全部 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="display:inline;vertical-align:-1px;"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            </div>
+            <div class="panel-body">
+              <div class="tx-list tx-list-scroll" id="recentTxList"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 日历视图 -->
+        <section class="view view-calendar" data-view="calendar">
+          <div class="panel">
+            <div class="panel-body">
+              <div class="calendar" id="calendar"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <h3 id="selectedDayTitle">今日交易</h3>
+            </div>
+            <div class="panel-body">
+              <div class="tx-list" id="dayTxList"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 明细视图 -->
+        <section class="view view-transactions" data-view="transactions">
+          <div class="panel">
+            <div class="panel-head">
+              <h3>本月明细</h3>
+              <div class="filter-tabs" id="filterTabs">
+                <button class="filter-tab active" data-filter="all">全部</button>
+                <button class="filter-tab" data-filter="expense">支出</button>
+                <button class="filter-tab" data-filter="income">收入</button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="tx-list" id="allTxList"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 统计视图 -->
+        <section class="view view-stats" data-view="stats">
+          <div class="cards">
+            <div class="card card-income">
+              <div class="card-label">本月收入</div>
+              <div class="card-amount" id="statsIncome">¥0.00</div>
+            </div>
+            <div class="card card-expense">
+              <div class="card-label">本月支出</div>
+              <div class="card-amount" id="statsExpense">¥0.00</div>
+            </div>
+            <div class="card card-balance">
+              <div class="card-label">本月结余</div>
+              <div class="card-amount" id="statsBalance">¥0.00</div>
+            </div>
+          </div>
+          <div class="dashboard-grid">
+            <div class="panel">
+              <div class="panel-head">
+                <h3>支出分类占比</h3>
+              </div>
+              <div class="panel-body">
+                <div class="bar-list" id="expenseBars"></div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-head">
+                <h3>收入分类占比</h3>
+              </div>
+              <div class="panel-body">
+                <div class="bar-list" id="incomeBars"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 预算视图 -->
+        <section class="view view-budget" data-view="budget">
+          <div class="panel budget-set">
+            <div class="panel-head">
+              <h3>本月预算</h3>
+              <span class="panel-sub" id="budgetMonthLabel"></span>
+            </div>
+            <div class="panel-body">
+              <div class="budget-input-row">
+                <span class="budget-prefix">¥</span>
+                <input type="number" id="budgetInput" placeholder="设置本月预算" min="0" step="0.01" />
+                <button class="primary-btn" id="saveBudget">保存</button>
+              </div>
+              <div class="budget-display">
+                <div class="budget-ring-wrap">
+                  <svg class="budget-ring" viewBox="0 0 200 200">
+                    <circle cx="100" cy="100" r="86" stroke="#f0f0f5" stroke-width="14" fill="none"/>
+                    <circle id="budgetRing" cx="100" cy="100" r="86" stroke="#007aff" stroke-width="14" fill="none"
+                      stroke-linecap="round" stroke-dasharray="540" stroke-dashoffset="540"
+                      transform="rotate(-90 100 100)"/>
+                  </svg>
+                  <div class="budget-ring-center">
+                    <div class="budget-percent" id="budgetPercent">0%</div>
+                    <div class="budget-used-label">已使用</div>
+                  </div>
+                </div>
+                <div class="budget-summary">
+                  <div class="bs-row">
+                    <span class="bs-label">预算</span>
+                    <span class="bs-value" id="bsBudget">¥0.00</span>
+                  </div>
+                  <div class="bs-row">
+                    <span class="bs-label">已支出</span>
+                    <span class="bs-value" id="bsUsed">¥0.00</span>
+                  </div>
+                  <div class="bs-row">
+                    <span class="bs-label">剩余</span>
+                    <span class="bs-value" id="bsRemaining">¥0.00</span>
+                  </div>
+                  <div class="bs-row bs-row-status" id="bsStatusRow">
+                    <span class="bs-status" id="bsStatus">—</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>预算小贴士</h3></div>
+            <div class="panel-body">
+              <ul class="tips" id="budgetTips"></ul>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- 记一笔 模态框 -->
+  <div class="modal-mask" id="modalMask">
+    <div class="modal" id="txModal">
+      <div class="modal-head">
+        <h3 id="modalTitle">记一笔</h3>
+        <button class="icon-btn" id="modalClose">
+          <svg width="18" height="18" viewBox="0 0 18 18"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="type-toggle">
+          <button class="type-btn active" data-type="expense">支出</button>
+          <button class="type-btn" data-type="income">收入</button>
+        </div>
+        <div class="form-row">
+          <label>金额</label>
+          <div class="amount-input">
+            <span class="amount-prefix">¥</span>
+            <input type="number" id="amountInput" placeholder="0.00" step="0.01" min="0" />
+          </div>
+        </div>
+        <div class="form-row">
+          <label>分类</label>
+          <div class="category-grid" id="categoryGrid"></div>
+        </div>
+        <div class="form-row">
+          <label>账户</label>
+          <div class="account-grid" id="accountGrid"></div>
+        </div>
+        <div class="form-row">
+          <label>日期</label>
+          <input type="date" id="dateInput" />
+        </div>
+        <div class="form-row">
+          <label>备注</label>
+          <input type="text" id="noteInput" placeholder="可选，最多 200 字" maxlength="200" />
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="ghost-btn" id="modalCancel">取消</button>
+        <button class="danger-btn" id="modalDelete" style="display:none">删除</button>
+        <button class="primary-btn" id="modalSave">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

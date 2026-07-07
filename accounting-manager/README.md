@@ -1,0 +1,112 @@
+# 💰 记账管家
+
+> 本地优先的极简记账桌面应用 · 数据完全离线 · 苹果白高端风格
+
+一个专注、克制、好看的个人记账工具。记录每一笔收支，自动汇总统计，预算管理，日历回看。所有数据存储在本地，无需注册、无需联网，打开即用。基于 Electron 构建，拥有原生桌面应用的流畅体验。
+
+## ⬇️ 直接下载
+
+| 文件 | 平台 | 说明 | 下载 |
+| --- | --- | --- | --- |
+| 记账管家 Setup 1.0.0.exe | Windows x64 | NSIS 安装包，支持自定义安装路径 | [⬇️ 下载](https://github.com/grrtyre/youqu/releases/download/accounting-manager-v1.0.0/accounting-manager-setup-1.0.0.exe) |
+| 记账管家 1.0.0.exe | Windows x64 | 便携版，双击即用 | [⬇️ 下载](https://github.com/grrtyre/youqu/releases/download/accounting-manager-v1.0.0/accounting-manager-1.0.0.exe) |
+
+## ✨ 核心功能
+
+- **概览仪表盘** — 本月收入/支出/结余三卡片，环比趋势一目了然
+- **趋势图表** — 近 6 个月收支柱状图，渐变色柱体，当前月高亮标注
+- **分类环形图** — 支出分类占比可视化，Top 4 + 其他聚合，中心显示总额
+- **日历视图** — 月度日历按日聚合收支，点击日期查看当日明细
+- **明细管理** — 全部/支出/收入筛选，支持编辑、删除（二次确认防误操作）
+- **统计视图** — 收支分类占比条形图，直观对比各分类金额
+- **预算管理** — 设置月度预算，环形进度环实时展示使用率，超支预警
+- **数据导入导出** — JSON 格式备份/恢复，CSV 格式导出供电子表格使用
+- **清空数据** — 一键清空所有交易与预算（二次确认），保留分类与账户配置
+- **完全本地** — 数据存储在本地 JSON 文件，绝不上传，隐私安全
+
+## 🎨 设计语言
+
+- **苹果白高端风格** — 白色/浅灰背景、细腻阴影、系统字体（-apple-system, "PingFang SC"）
+- **蓝色强调** — #007aff 主色调，源自 iOS 系统蓝
+- **统一图标** — 全套自绘 SVG 线条图标，stroke-width 统一为 1.5
+- **克制圆角** — 8/12/16/20px 四级圆角体系，呼应 macOS 原生设计
+- **语义配色** — 收入绿（#34c759）、支出红（#ff3b30）、预算蓝（#007aff）
+
+## 📦 使用方式
+
+### 方式一：直接下载（推荐）
+
+下载上方安装包，双击安装即可使用。
+
+### 方式二：从源码运行
+
+```bash
+# 克隆仓库
+git clone https://github.com/grrtyre/youqu.git
+cd youqu/accounting-manager
+
+# 安装依赖（国内用户建议使用镜像）
+set ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/
+npm install
+
+# 启动应用
+npm start
+
+# 打包
+npm run dist
+```
+
+## 🗂️ 项目结构
+
+```
+accounting-manager/
+├── src/
+│   ├── main.js              # Electron 主进程
+│   ├── preload.js           # contextBridge 安全桥接
+│   ├── core/
+│   │   ├── transaction-store.js  # 交易/预算/分类/账户存储
+│   │   ├── stats-utils.js        # 统计计算（月度汇总/分类/趋势/预算）
+│   │   └── date-utils.js         # 日期工具函数
+│   └── renderer/
+│       ├── index.html       # 五视图布局
+│       ├── styles.css       # 苹果白风格样式
+│       └── renderer.js      # 渲染层逻辑
+├── test/
+│   └── test.js              # 73 项单元测试
+├── build/
+│   ├── icon.ico             # 应用图标（多尺寸）
+│   └── make_icon.py         # 图标生成脚本
+└── package.json
+```
+
+## 🧪 测试
+
+```bash
+node test/test.js
+```
+
+覆盖日期工具、交易存储、预算、统计、导入导出、示例数据、清空数据等 73 项测试。
+
+## 🔒 隐私说明
+
+- 所有记账数据存储在 `用户目录/AppData/Roaming/accounting-manager/data.json`
+- 数据完全本地，应用本身不发起任何网络请求
+- 导出功能仅在你主动点击时生成文件到自选位置
+
+## ☕ 支持我们
+
+如果这个工具对你有帮助，欢迎请我们喝杯咖啡：
+
+👉 [爱发电支持](https://www.ifdian.net/a/giquwei)
+
+## 🙏 鸣谢
+
+感谢以下朋友的支持（按支持时间排序）：
+
+<!-- 鸣谢名单占位 -->
+
+_暂无，期待第一个支持者的出现。_
+
+## 📝 License
+
+MIT License © 2026 youqu
