@@ -237,6 +237,61 @@ test('12. 加水印 - 空文字应报错', async () => {
   assert(threw, '空文字抛出异常');
 });
 
+// CJK 字体支持工具函数
+test('13. hasNonAscii 检测非 ASCII 字符', () => {
+  assert(pdf.hasNonAscii('机密') === true, '中文判定为非 ASCII');
+  assert(pdf.hasNonAscii('CONFIDENTIAL') === false, '纯英文判定为 ASCII');
+  assert(pdf.hasNonAscii('机密 CONFIDENTIAL') === true, '中英混合判定为非 ASCII');
+  assert(pdf.hasNonAscii('') === false, '空字符串判定为 ASCII');
+  assert(pdf.hasNonAscii('123') === false, '数字判定为 ASCII');
+  assert(pdf.hasNonAscii('日本語') === true, '日文判定为非 ASCII');
+  assert(pdf.hasNonAscii('한국어') === true, '韩文判定为非 ASCII');
+});
+
+// 中文水印关键 bug 修复验证：修复前 Helvetica 无法渲染中文，字形会缺失
+test('14. 加水印 - 中文水印生成成功', async () => {
+  const src = path.join(tmpDir, 'wm-cn-src.pdf');
+  await createTestPDF(src, 'WatermarkCN', 2);
+  const out = path.join(tmpDir, 'watermarked-cn.pdf');
+  const result = await pdf.addWatermark(src, out, {
+    text: '机密文件',
+    fontSize: 60,
+    opacity: 0.2,
+    color: [1, 0, 0],
+    density: 'medium'
+  });
+  assert(fs.existsSync(out), '中文水印文件已生成');
+  assert(result.pages === 2, '页数=2');
+  // 关键验证：含 CJK 字形嵌入的文件应明显大于纯 ASCII 水印版本
+  // 修复前中文水印几乎不增加体积（字形缺失），修复后嵌入字形子集会显著增大
+  const asciiOut = path.join(tmpDir, 'watermarked-ascii-baseline.pdf');
+  await pdf.addWatermark(src, asciiOut, {
+    text: 'CONFIDENTIAL',
+    fontSize: 60,
+    opacity: 0.2,
+    color: [1, 0, 0],
+    density: 'medium'
+  });
+  const cnSize = fs.statSync(out).size;
+  const asciiSize = fs.statSync(asciiOut).size;
+  assert(cnSize > asciiSize, `中文水印体积(${cnSize})大于 ASCII 水印(${asciiSize})，证明 CJK 字形已嵌入`);
+});
+
+test('15. 加水印 - 中英混合水印', async () => {
+  const src = path.join(tmpDir, 'wm-mix-src.pdf');
+  await createTestPDF(src, 'WatermarkMix', 1);
+  const out = path.join(tmpDir, 'watermarked-mix.pdf');
+  const result = await pdf.addWatermark(src, out, {
+    text: 'Confidential 机密',
+    fontSize: 50,
+    opacity: 0.15,
+    color: [0, 0, 0],
+    density: 'low'
+  });
+  assert(fs.existsSync(out), '中英混合水印文件已生成');
+  assert(result.pages === 1, '页数=1');
+});
+
 // 串行等待所有测试完成
 (async () => {
   for (const t of testQueue) {

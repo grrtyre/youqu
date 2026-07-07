@@ -1,6 +1,16 @@
 // PDF管家 - 渲染层逻辑
 const api = window.pdfAPI;
 
+// 全局阻止默认拖拽行为，防止 Electron 把拖入的文件当成"在窗口里打开"
+// 各 dropzone 的 drop 事件会单独 preventDefault + 处理
+['dragover', 'drop'].forEach(evt => {
+  window.addEventListener(evt, (e) => {
+    if (!e.target.closest('.dropzone') && !e.target.closest('.row')) {
+      e.preventDefault();
+    }
+  });
+});
+
 // ---------- 通用工具 ----------
 
 function $(sel) { return document.querySelector(sel); }
@@ -16,6 +26,34 @@ function extname(p) {
   const b = basename(p);
   const idx = b.lastIndexOf('.');
   return idx >= 0 ? b.slice(idx).toLowerCase() : '';
+}
+
+// 拖拽支持：Electron 的 drop 事件里 file.path 是真实文件系统路径（浏览器不给）
+function setupDropzone(el, onFiles, opts) {
+  const accept = (opts && opts.accept) || null;   // ['.pdf'] 或 ['.jpg','.png']
+  const multiple = !(opts && opts.multiple === false);
+  if (!el) return;
+  el.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    el.classList.add('dragover');
+  });
+  el.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    el.classList.remove('dragover');
+  });
+  el.addEventListener('drop', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    el.classList.remove('dragover');
+    const files = Array.from(e.dataTransfer.files || []);
+    let paths = files.map(f => f.path).filter(Boolean);
+    if (accept) {
+      paths = paths.filter(p => accept.includes(extname(p)));
+    }
+    if (!multiple) paths = paths.slice(0, 1);
+    if (paths.length > 0) onFiles(paths);
+  });
 }
 
 function formatSize(bytes) {
@@ -152,6 +190,8 @@ function renderMergeList() {
       <span class="fidx">${i + 1}</span>
       <span class="fname" title="${escapeHtml(f.path)}">${escapeHtml(f.name)}</span>
       <span class="fsize">${formatSize(f.size)}</span>
+      <button class="fmove" data-act="up" data-idx="${i}" title="上移" ${i === 0 ? 'disabled' : ''}>↑</button>
+      <button class="fmove" data-act="down" data-idx="${i}" title="下移" ${i === mergeState.files.length - 1 ? 'disabled' : ''}>↓</button>
       <button class="fremove" data-idx="${i}" title="移除">×</button>
     `;
     list.appendChild(li);
@@ -164,6 +204,19 @@ function renderMergeList() {
       checkMergeReady();
     };
   });
+  list.querySelectorAll('.fmove').forEach(b => {
+    b.onclick = () => {
+      if (b.disabled) return;
+      const idx = parseInt(b.dataset.idx, 10);
+      const act = b.dataset.act;
+      const target = act === 'up' ? idx - 1 : idx + 1;
+      if (target < 0 || target >= mergeState.files.length) return;
+      const tmp = mergeState.files[idx];
+      mergeState.files[idx] = mergeState.files[target];
+      mergeState.files[target] = tmp;
+      renderMergeList();
+    };
+  });
   checkMergeReady();
 }
 
@@ -174,6 +227,10 @@ function checkMergeReady() {
 $('#merge-add').onclick = async () => {
   const paths = await api.selectPDFs();
   if (paths.length === 0) return;
+  await addMergeFiles(paths);
+};
+
+async function addMergeFiles(paths) {
   // 去重
   const exist = new Set(mergeState.files.map(f => f.path));
   for (const p of paths) {
@@ -183,7 +240,10 @@ $('#merge-add').onclick = async () => {
     exist.add(p);
   }
   renderMergeList();
-};
+}
+
+// 拖拽支持：把 PDF 拖到合并区
+setupDropzone($('#merge-dropzone'), (paths) => addMergeFiles(paths), { accept: ['.pdf'], multiple: true });
 
 $('#merge-clear').onclick = () => {
   mergeState.files = [];
@@ -216,7 +276,7 @@ $('#merge-run').onclick = async () => {
 
 // ========== 2. 拆分 PDF ==========
 
-const splitState = { input: '', outputDir: '' };
+const splitState = { input: '', outputDir: '', pages: 0 };
 
 function checkSplitReady() {
   $('#split-run').disabled = !(splitState.input && splitState.outputDir);
@@ -224,12 +284,28 @@ function checkSplitReady() {
 
 $('#split-choose').onclick = async () => {
   const p = await api.selectPDF();
-  if (p) {
-    splitState.input = p;
-    $('#split-input').value = p;
-    checkSplitReady();
-  }
+  if (p) await setSplitSource(p);
 };
+
+async function setSplitSource(p) {
+  splitState.input = p;
+  $('#split-input').value = p;
+  // 拉取页数，便于用户写有效页码范围
+  const info = await api.getPageCount(p);
+  if (info && info.pages > 0) {
+    splitState.pages = info.pages;
+    $('#split-page-count').textContent = info.pages;
+    $('#split-page-max').textContent = info.pages;
+    $('#split-page-info').style.display = 'block';
+  } else {
+    splitState.pages = 0;
+    $('#split-page-info').style.display = 'none';
+  }
+  checkSplitReady();
+}
+
+// 拖拽支持：把单个 PDF 拖到拆分源文件行
+setupDropzone($('#split-input').parentElement, (paths) => setSplitSource(paths[0]), { accept: ['.pdf'], multiple: false });
 
 $('#split-choose-dir').onclick = async () => {
   const p = await api.selectDir();
@@ -496,6 +572,10 @@ function checkImgReady() {
 $('#img-add').onclick = async () => {
   const paths = await api.selectImages();
   if (paths.length === 0) return;
+  await addImgFiles(paths);
+};
+
+async function addImgFiles(paths) {
   const exist = new Set(imgState.files.map(f => f.path));
   for (const p of paths) {
     if (exist.has(p)) continue;
@@ -504,7 +584,10 @@ $('#img-add').onclick = async () => {
     exist.add(p);
   }
   renderImgList();
-};
+}
+
+// 拖拽支持：把图片拖到图片转 PDF 区
+setupDropzone($('#img-dropzone'), (paths) => addImgFiles(paths), { accept: ['.jpg', '.jpeg', '.png'], multiple: true });
 
 $('#img-clear').onclick = () => {
   imgState.files = [];
@@ -539,6 +622,38 @@ $('#img-run').onclick = async () => {
     toast('转换完成', 'success');
   }
 };
+
+// 拖拽支持：把单个 PDF 拖到各功能源文件行（压缩/加密/解密/水印）
+setupDropzone($('#compress-input').parentElement, (paths) => {
+  const p = paths[0];
+  compressState.input = p;
+  $('#compress-input').value = p;
+  api.getFileInfo(p).then(info => {
+    if (info) {
+      $('#compress-orig-size').textContent = formatSize(info.size);
+      $('#compress-orig-info').style.display = 'block';
+    }
+    checkCompressReady();
+  });
+}, { accept: ['.pdf'], multiple: false });
+
+setupDropzone($('#encrypt-input').parentElement, (paths) => {
+  encryptState.input = paths[0];
+  $('#encrypt-input').value = paths[0];
+  checkEncryptReady();
+}, { accept: ['.pdf'], multiple: false });
+
+setupDropzone($('#decrypt-input').parentElement, (paths) => {
+  decryptState.input = paths[0];
+  $('#decrypt-input').value = paths[0];
+  checkDecryptReady();
+}, { accept: ['.pdf'], multiple: false });
+
+setupDropzone($('#wm-input').parentElement, (paths) => {
+  wmState.input = paths[0];
+  $('#wm-input').value = paths[0];
+  checkWmReady();
+}, { accept: ['.pdf'], multiple: false });
 
 // 初始化
 setStatus('就绪');

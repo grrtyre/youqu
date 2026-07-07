@@ -1,7 +1,8 @@
-const { app, BrowserWindow, ipcMain, dialog, shell, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell, nativeImage, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const pdf = require('./core/pdf-ops.js');
+const { PDFDocument } = require('@cantoo/pdf-lib');
 
 // 爱发电统一链接
 const AFDIAN_URL = 'https://www.ifdian.net/a/giquwei';
@@ -16,6 +17,7 @@ function createWindow() {
     minHeight: 600,
     backgroundColor: '#f5f5f7',
     titleBarStyle: 'default',
+    autoHideMenuBar: true,
     title: 'PDF管家',
     show: false,
     webPreferences: {
@@ -24,6 +26,9 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js')
     }
   });
+
+  // 移除默认菜单栏，让 UI 更简洁
+  Menu.setApplicationMenu(null);
 
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
 
@@ -106,6 +111,18 @@ function setupIPC() {
         sizeText: pdf.formatSize(stat.size),
         mtime: stat.mtimeMs
       };
+    } catch (e) {
+      return null;
+    }
+  });
+
+  // 获取 PDF 页数（用于拆分/抽取时提示有效页码范围）
+  ipcMain.handle('get-page-count', async (event, filePath) => {
+    try {
+      if (!filePath || !fs.existsSync(filePath)) return null;
+      const buf = await fs.promises.readFile(filePath);
+      const doc = await PDFDocument.load(buf, { ignoreEncryption: true });
+      return { pages: doc.getPageCount() };
     } catch (e) {
       return null;
     }

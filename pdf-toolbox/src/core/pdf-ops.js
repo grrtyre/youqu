@@ -10,6 +10,65 @@ const {
   degrees
 } = require('@cantoo/pdf-lib');
 
+// ---------- CJK 字体支持 ----------
+// pdf-lib 内置 StandardFonts 仅支持 WinAnsi/ASCII，无法渲染中文。
+// 当水印文字含非 ASCII 字符时，需嵌入系统 CJK 字体（黑体 simhei.ttf 优先）。
+// @cantoo/pdf-lib 嵌入自定义字体前必须注册 fontkit。
+
+let _fontkitMod = null;   // 懒加载，避免 ASCII 场景的无谓依赖
+let _fontkitRegistered = new WeakSet();   // 记录已注册 fontkit 的 doc
+
+// Windows 常见 CJK 字体，按优先级尝试（simhei.ttf 为纯 TTF，最可靠）
+const CJK_FONT_CANDIDATES = [
+  'C:\\Windows\\Fonts\\simhei.ttf',    // 黑体
+  'C:\\Windows\\Fonts\\msyh.ttc',      // 微软雅黑
+  'C:\\Windows\\Fonts\\simsun.ttc',    // 宋体
+  'C:\\Windows\\Fonts\\msyhbd.ttc',    // 微软雅黑 Bold
+  '/System/Library/Fonts/PingFang.ttc', // macOS 苹方
+  '/usr/share/fonts/truetype/wqy/wqy-microhei.ttc'  // Linux 文泉驿
+];
+
+// 检测文本是否含非 ASCII 字符（CJK / 全角符号 / Emoji 等）
+function hasNonAscii(text) {
+  if (typeof text !== 'string') return false;
+  for (let i = 0; i < text.length; i++) {
+    if (text.charCodeAt(i) > 127) return true;
+  }
+  return false;
+}
+
+// 为文档嵌入合适字体：ASCII 用 HelveticaBold（轻量），含非 ASCII 则嵌入系统 CJK 字体
+async function embedFontForText(doc, text) {
+  if (!hasNonAscii(text)) {
+    return await doc.embedFont(StandardFonts.HelveticaBold);
+  }
+  // 需要 CJK 字体：注册 fontkit（仅一次）
+  if (!_fontkitMod) {
+    try {
+      _fontkitMod = require('@pdf-lib/fontkit');
+    } catch (e) {
+      throw new Error('水印含中文等非 ASCII 字符，但 fontkit 未安装。请联系开发者或仅使用英文水印。');
+    }
+  }
+  if (!_fontkitRegistered.has(doc)) {
+    doc.registerFontkit(_fontkitMod);
+    _fontkitRegistered.add(doc);
+  }
+  // 依次尝试候选字体
+  for (const fp of CJK_FONT_CANDIDATES) {
+    try {
+      if (!fs.existsSync(fp)) continue;
+      const bytes = await fs.promises.readFile(fp);
+      // subset:true 仅嵌入实际使用的字形，避免 simhei.ttf 9.7MB 全量打包
+      return await doc.embedFont(bytes, { subset: true });
+    } catch (e) {
+      // TTC 集合可能需要指定 subfont，继续尝试下一个候选
+      continue;
+    }
+  }
+  throw new Error('水印含中文等非 ASCII 字符，但未找到可用的系统 CJK 字体（simhei.ttf / msyh.ttc 等）。请确认系统已安装中文字体，或改用英文水印。');
+}
+
 // ---------- 通用工具 ----------
 
 // 读取文件为 Uint8Array（pdf-lib 接受的格式）
@@ -306,7 +365,9 @@ async function addWatermark(inputPath, outputPath, opts) {
   if (!fs.existsSync(inputPath)) throw new Error(`文件不存在: ${inputPath}`);
   const bytes = await readBytes(inputPath);
   const doc = await PDFDocument.load(bytes, { ignoreEncryption: true });
-  const font = await doc.embedFont(StandardFonts.HelveticaBold);
+  // 按文字内容选字体：ASCII 用 HelveticaBold，含中文等非 ASCII 字符则嵌入系统 CJK 字体
+  // 修复前固定用 HelveticaBold，中文水印会渲染成缺失字形（UI 占位符却写着"例: 机密"）
+  const font = await embedFontForText(doc, text);
   const pages = doc.getPages();
   const colorRgb = rgb(color[0], color[1], color[2]);
 
@@ -459,5 +520,8 @@ module.exports = {
   parsePageRanges,
   formatSize,
   readBytes,
-  writeBytes
+  writeBytes,
+  // CJK 字体支持（水印中文修复）
+  hasNonAscii,
+  embedFontForText
 };

@@ -1,6 +1,6 @@
 {
   "name": "pdf-toolbox",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Windows 上最美、最隐私的本地 PDF 工具箱 — 合并/拆分/压缩/加密/水印/图片转PDF",
   "main": "src/main.js",
   "scripts": {
@@ -13,7 +13,8 @@
   "author": "grrtyre",
   "license": "MIT",
   "dependencies": {
-    "@cantoo/pdf-lib": "^2.7.1"
+    "@cantoo/pdf-lib": "^2.7.1",
+    "@pdf-lib/fontkit": "^1.1.1"
   },
   "devDependencies": {
     "electron": "^28.0.0",

@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('pdfAPI', {
   savePDF: (defaultName) => ipcRenderer.invoke('save-pdf', defaultName),
   selectDir: () => ipcRenderer.invoke('select-dir'),
   getFileInfo: (filePath) => ipcRenderer.invoke('get-file-info', filePath),
+  getPageCount: (filePath) => ipcRenderer.invoke('get-page-count', filePath),
   openInFolder: (filePath) => ipcRenderer.invoke('open-in-folder', filePath),
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
   getAfdianUrl: () => ipcRenderer.invoke('get-afdian-url'),

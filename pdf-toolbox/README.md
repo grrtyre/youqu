@@ -6,10 +6,19 @@
 
 | 平台 | 下载 | 说明 |
 |------|------|------|
-| Windows x64 | [PDF管家 Setup 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/pdf-toolbox-v1.0.0/PDFManager-Setup-1.0.0.exe) | 安装版（推荐） |
-| Windows x64 | [PDF管家 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/pdf-toolbox-v1.0.0/PDFManager-1.0.0.exe) | 免安装便携版 |
+| Windows x64 | [PDF管家 Setup 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/pdf-toolbox-v1.1.0/PDF%E7%AE%A1%E5%AE%B6-Setup-1.1.0.exe) | 安装版（推荐） |
+| Windows x64 | [PDF管家 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/pdf-toolbox-v1.1.0/PDF%E7%AE%A1%E5%AE%B6-1.1.0.exe) | 免安装便携版 |
 
 > 下载链接在 Release 发布后自动可用。如显示 404，请稍候片刻等待 GitHub 处理。
+
+### 📋 v1.1.0 更新内容
+
+- 🔧 **修复中文水印 bug** — 之前版本水印含中文时显示为乱码方块，现已嵌入系统 CJK 字体（SimHei/微软雅黑等），完美支持中文/日文/韩文水印
+- 🖱 **全功能拖拽** — 7 个功能面板全部支持拖拽文件到窗口操作，告别繁琐的点选
+- 📄 **页数显示** — 拆分/抽取时自动显示源 PDF 总页数，方便填写有效页码范围
+- ↕️ **合并排序** — 合并列表支持上移/下移按钮，自由调整文件顺序
+- 🎨 **UI 精修** — 移除原生菜单栏、渐变背景、分层卡片阴影、精炼按钮系统、统一排版层级
+- 🧪 **测试增强** — 新增 12 项 CJK 水印测试，共 50 项断言全部通过
 
 ---
 
@@ -17,12 +26,12 @@
 
 | 功能 | 说明 |
 |------|------|
-| 🔗 合并 PDF | 多个 PDF 按顺序合并为一个 |
-| ✂️ 拆分 PDF | 每页一份 / 按范围拆分 / 抽取指定页 |
+| 🔗 合并 PDF | 多个 PDF 按顺序合并为一个，支持拖拽和上下排序 |
+| ✂️ 拆分 PDF | 每页一份 / 按范围拆分 / 抽取指定页，自动显示总页数 |
 | 📦 压缩 PDF | 对象流重写 + 元数据清理，减小体积 |
 | 🔒 加密 PDF | 设置打开密码，可选权限（打印/复制/修改/注释） |
 | 🔓 解密 PDF | 输入正确密码去除保护 |
-| 💧 加水印 | 文字水印，可调字号/不透明度/角度/密度/颜色 |
+| 💧 加水印 | 文字水印，可调字号/不透明度/角度/密度/颜色，**支持中文** |
 | 🖼 图片转 PDF | JPG/PNG 合成 PDF，支持 A4/Letter/适应图片 |
 
 ## 🔒 隐私
@@ -31,7 +40,7 @@
 
 ## 🎨 设计
 
-采用苹果白高端风格：白/浅灰背景、细腻多层阴影、系统字体（-apple-system, PingFang SC）、#007aff 蓝色强调。参考 macOS 原生应用设计语言。
+采用苹果白高端风格：白/浅灰渐变背景、细腻多层阴影、系统字体（-apple-system, PingFang SC）、#007aff 蓝色强调、虚线拖拽区。参考 macOS 原生应用设计语言，无原生菜单栏干扰。
 
 ## 🚀 使用
 
@@ -49,6 +58,7 @@ npm start
 
 - Electron 28（桌面应用框架）
 - @cantoo/pdf-lib（PDF 处理，支持 RC4/AES 真加密）
+- @pdf-lib/fontkit（CJK 字体嵌入，支持中文/日文/韩文水印）
 - 原生 JavaScript + CSS（无前端框架，极致轻量）
 
 ## 🧪 测试
@@ -57,14 +67,14 @@ npm start
 npm test
 ```
 
-包含 12 个测试用例、38 个断言，覆盖合并/拆分/压缩/加密/解密/水印/图片转 PDF 全部核心逻辑。
+包含 15 个测试用例、50 个断言，覆盖合并/拆分/压缩/加密/解密/水印/图片转 PDF 全部核心逻辑，含 CJK 水印专项测试。
 
 ## 📁 项目结构
 
 ```
 pdf-toolbox/
 ├── src/
-│   ├── core/pdf-ops.js   # 核心 PDF 操作模块
+│   ├── core/pdf-ops.js   # 核心 PDF 操作模块（含 CJK 字体嵌入）
 │   ├── main.js           # Electron 主进程
 │   ├── preload.js        # 预加载脚本（contextBridge）
 │   └── renderer/         # 渲染进程
@@ -74,7 +84,7 @@ pdf-toolbox/
 ├── build/
 │   ├── icon.ico          # 应用图标
 │   └── make_icon.py      # 图标生成脚本
-├── test/test.js          # 测试
+├── test/test.js          # 测试（50 项断言）
 └── package.json
 ```
 
