@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#007aff" />
-  <meta name="description" content="苹果白高端风格的文本对比工具：并排/内联/统一格式三视图，行级+字符级双 diff，支持忽略大小写与空白，本地运行无上传。" />
+  <meta name="theme-color" content="#007aff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)" />
+  <meta name="description" content="苹果白高端风格的文本对比工具：并排/内联/统一格式三视图，行级+字符级双 diff，支持忽略大小写与空白，实时对比、同步滚动、暗色主题，本地运行无上传。" />
   <title>文本对比管家 · diff-checker</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="manifest" href="manifest.json" />
@@ -26,22 +27,18 @@
     </div>
 
     <div class="topbar-actions">
-      <label class="option-pill" id="optIgnoreCase">
-        <input type="checkbox" />
-        <span>Aa 忽略大小写</span>
-      </label>
-      <label class="option-pill" id="optTrimWs">
-        <input type="checkbox" />
-        <span>␣ 忽略空白</span>
-      </label>
       <div class="view-switch" role="tablist">
         <button class="active" data-view="split">并排</button>
         <button data-view="inline">内联</button>
         <button data-view="unified">统一格式</button>
       </div>
-      <button class="btn ghost" id="btnSwap" title="交换左右">⇄ 交换</button>
-      <button class="btn ghost" id="btnClear" title="清空">清空</button>
-      <button class="btn primary" id="btnCompare">⚡ 立即对比</button>
+      <button class="btn" id="btnSwap" title="交换左右">⇄ 交换</button>
+      <button class="btn" id="btnClear" title="清空">清空</button>
+      <button class="btn primary" id="btnCompare" title="立即对比（Ctrl/⌘ + Enter）">⚡ 对比</button>
+      <button class="btn icon-only" id="btnTheme" title="切换主题" aria-label="切换主题">
+        <span class="theme-icon theme-icon-sun">☀️</span>
+        <span class="theme-icon theme-icon-moon">🌙</span>
+      </button>
     </div>
   </header>
 
@@ -85,14 +82,28 @@
         <button class="example-chip" data-sample="text">中文段落</button>
         <button class="example-chip" data-sample="config">配置文件</button>
       </div>
+      <div class="opt-group">
+        <label class="option-pill" id="optIgnoreCase" title="忽略大小写差异">
+          <input type="checkbox" />
+          <span>Aa 忽略大小写</span>
+        </label>
+        <label class="option-pill" id="optTrimWs" title="忽略首尾空白">
+          <input type="checkbox" />
+          <span>␣ 忽略空白</span>
+        </label>
+        <label class="option-pill active" id="optLive" title="输入即对比（300ms 防抖）">
+          <input type="checkbox" checked />
+          <span>⚡ 实时对比</span>
+        </label>
+      </div>
       <div class="spacer"></div>
       <div class="stats-bar" id="statsBar" hidden>
-        <span class="stat-item"><span class="stat-dot add"></span>新增 <span class="stat-num" id="statAdd">0</span></span>
-        <span class="stat-item"><span class="stat-dot del"></span>删除 <span class="stat-num" id="statDel">0</span></span>
-        <span class="stat-item"><span class="stat-dot eq"></span>相同 <span class="stat-num" id="statEq">0</span></span>
+        <span class="stat-item add"><span class="stat-dot add"></span>新增 <span class="stat-num" id="statAdd">0</span></span>
+        <span class="stat-item del"><span class="stat-dot del"></span>删除 <span class="stat-num" id="statDel">0</span></span>
+        <span class="stat-item eq"><span class="stat-dot eq"></span>相同 <span class="stat-num" id="statEq">0</span></span>
       </div>
-      <button class="btn ghost" id="btnCopySummary" hidden>📋 复制摘要</button>
-      <button class="btn ghost" id="btnCopyUnified" hidden>📋 复制 unified diff</button>
+      <button class="btn" id="btnCopySummary" hidden>📋 复制摘要</button>
+      <button class="btn" id="btnCopyUnified" hidden>📋 复制 unified diff</button>
     </div>
 
     <!-- 结果区 -->
@@ -120,11 +131,13 @@
     </div>
 
     <div class="footer">
-      文本对比管家 · 完全本地运行，数据不上传
-      <span class="divider">·</span>
-      <a href="https://www.ifdian.net/a/giquwei" target="_blank" rel="noopener">☕ 支持我们</a>
-      <span class="divider">·</span>
-      <a href="https://github.com/grrtyre/youqu" target="_blank" rel="noopener">GitHub</a>
+      <div class="footer-brand">⚖️ 文本对比管家</div>
+      <div class="footer-text">完全本地运行 · 数据不上传 · 行级 + 字符级双 diff</div>
+      <div class="footer-links">
+        <a href="https://www.ifdian.net/a/giquwei" target="_blank" rel="noopener">☕ 支持我们</a>
+        <span class="divider">·</span>
+        <a href="https://github.com/grrtyre/youqu" target="_blank" rel="noopener">📦 GitHub</a>
+      </div>
     </div>
   </main>
 

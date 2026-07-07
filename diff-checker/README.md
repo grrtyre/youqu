@@ -38,6 +38,31 @@
 ### 在线使用
 部署到 GitHub Pages 后直接访问（见下方部署说明）。
 
+## 📝 更新日志
+
+### v1.1（2026-07-07）
+
+**严重 bug 修复：**
+- 修复 CSS 变量 `--radius` / `--radius-sm` / `--mono` 从未定义却被引用 11 次的问题（导致圆角失效、等宽字体不生效）
+- 修复 `charDiff` 处理 emoji 代理对时被拆成两个半位的问题（改用 `Array.from` 按码点切分）
+- 修复 `charDiff` 缺少大小保护，超大输入会卡死的问题（500 万 cell 上限退化）
+- 修复 `toUnifiedDiff` 上下文行号计算错误 + 多 hunk 分割逻辑问题（引入 `pendingStartA/B` 显式追踪）
+- 修复 `toSideBySideBlocks` 空行配对歧义（用 `hasDel/hasAdd` 替代 `dl !== ''` 判断）
+- 修复 `navigator.clipboard` 在 `file://` 协议下为 undefined 导致同步 TypeError（降级 `execCommand`）
+- 修复 `[hidden]` 属性被 CSS `display:flex/inline-flex` 覆盖导致元素不隐藏的问题
+
+**UI 优化：**
+- 统一编辑区与结果区行高（1.6）与字号（13px）
+- 优化 empty-row 占位样式（纯灰色块，无重复文字噪音）
+- 统计数字用对应语义色（新增绿/删除红/相同灰）加粗
+- 加深行号颜色、按钮边框、footer 文字对比度
+- textarea 高度自适应内容（160-320px），减少内容少时留白
+- footer 增加品牌标识与分隔线，提升收尾层次
+- 主题按钮改为矩形圆角与其他按钮风格统一
+
+**测试增强：**
+- 测试从 65 项增至 104 项，新增 emoji 代理对、大小保护、unified 上下文行号、多 hunk 分割、空行配对等回归测试
+
 ## 🎯 适用场景
 
 | 场景 | 示例 |
@@ -59,7 +84,7 @@ diff-checker/
 ├── manifest.json       # PWA 应用清单
 ├── sw.js               # Service Worker（离线缓存）
 ├── test/
-│   └── test.js         # 核心引擎测试（65 项断言全通过）
+│   └── test.js         # 核心引擎测试（104 项断言全通过）
 ├── icons/
 │   ├── icon-source.png # 图标原图
 │   ├── icon-192.png    # PWA 图标

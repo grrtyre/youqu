@@ -32,6 +32,7 @@
 
   // 字符级 LCS，返回 diff 段数组
   // 每段：{ type: 'equal'|'add'|'del', text: string }
+  // 按 Unicode 码点切分（Array.from），正确处理 emoji 等代理对字符
   function charDiff(a, b) {
     a = a == null ? '' : String(a);
     b = b == null ? '' : String(b);
@@ -39,7 +40,21 @@
     if (a.length === 0) return [{ type: 'add', text: b }];
     if (b.length === 0) return [{ type: 'del', text: a }];
 
-    var n = a.length, m = b.length;
+    // 按码点切分，避免 emoji 代理对被拆成两个半位
+    var aChars = Array.from(a);
+    var bChars = Array.from(b);
+    var n = aChars.length, m = bChars.length;
+
+    // 大小保护：与 lineDiff 一致的 500 万 cell 上限，防止长行卡死浏览器
+    var MAX_CELLS = 5000000;
+    if ((n + 1) * (m + 1) > MAX_CELLS) {
+      // 退化为整体替换（先删后增）
+      return [
+        { type: 'del', text: a },
+        { type: 'add', text: b }
+      ];
+    }
+
     // dp[i][j] = LCS 长度
     var dp = [];
     for (var i = 0; i <= n; i++) {
@@ -47,7 +62,7 @@
     }
     for (i = 1; i <= n; i++) {
       for (var j = 1; j <= m; j++) {
-        if (a.charAt(i - 1) === b.charAt(j - 1)) {
+        if (aChars[i - 1] === bChars[j - 1]) {
           dp[i][j] = dp[i - 1][j - 1] + 1;
         } else {
           dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
@@ -59,19 +74,19 @@
     var segments = [];
     i = n; j = m;
     while (i > 0 && j > 0) {
-      if (a.charAt(i - 1) === b.charAt(j - 1)) {
-        segments.push({ type: 'equal', text: a.charAt(i - 1) });
+      if (aChars[i - 1] === bChars[j - 1]) {
+        segments.push({ type: 'equal', text: aChars[i - 1] });
         i--; j--;
       } else if (dp[i - 1][j] > dp[i][j - 1]) {
-        segments.push({ type: 'del', text: a.charAt(i - 1) });
+        segments.push({ type: 'del', text: aChars[i - 1] });
         i--;
       } else {
-        segments.push({ type: 'add', text: b.charAt(j - 1) });
+        segments.push({ type: 'add', text: bChars[j - 1] });
         j--;
       }
     }
-    while (i > 0) { segments.push({ type: 'del', text: a.charAt(i - 1) }); i--; }
-    while (j > 0) { segments.push({ type: 'add', text: b.charAt(j - 1) }); j--; }
+    while (i > 0) { segments.push({ type: 'del', text: aChars[i - 1] }); i--; }
+    while (j > 0) { segments.push({ type: 'add', text: bChars[j - 1] }); j--; }
     segments.reverse();
 
     // 合并相邻同类型段
@@ -186,15 +201,20 @@
           var addLines = next.lines;
           var pairCount = Math.max(delLines.length, addLines.length);
           for (var p = 0; p < pairCount; p++) {
-            var dl = p < delLines.length ? delLines[p] : '';
-            var al = p < addLines.length ? addLines[p] : '';
-            if (dl !== '' && al !== '') {
+            // 用 hasDel/hasAdd 显式区分"无对应行"与"对应行是空字符串"
+            // 此前用 dl !== '' 判断会把"删除一个空行"误判为 add 块，导致空行删除被静默丢弃
+            var hasDel = p < delLines.length;
+            var hasAdd = p < addLines.length;
+            var dl = hasDel ? delLines[p] : '';
+            var al = hasAdd ? addLines[p] : '';
+            if (hasDel && hasAdd) {
+              // 双侧都有行（含空字符串），做字符级 diff
               blocks.push({
                 type: 'modify',
                 left: [{ text: dl, charDiffs: charDiff(dl, al) }],
                 right: [{ text: al, charDiffs: charDiff(dl, al) }]
               });
-            } else if (dl !== '') {
+            } else if (hasDel) {
               blocks.push({ type: 'del', left: [{ text: dl }], right: [{ text: '' }] });
             } else {
               blocks.push({ type: 'add', left: [{ text: '' }], right: [{ text: al }] });
@@ -332,6 +352,8 @@
   }
 
   // 统一 diff（unified format）文本生成
+  // 实现标准 unified diff 算法：每个 hunk 包含至多 ctx 行前导上下文 + 改动行 + 至多 ctx 行后继上下文
+  // 相邻改动之间若相同行数 > 2*ctx 则分割为多个 hunk；否则合并到同一 hunk
   function toUnifiedDiff(textA, textB, options) {
     options = options || {};
     var headerA = options.headerA || '原文本';
@@ -343,65 +365,84 @@
     lines.push('+++ ' + headerB);
 
     var ops = result.ops;
-    // 计算每段在原文中的行号
+    // aLineNo / bLineNo：0-based，指向"下一个待处理行"的位置
+    // 注意：pending 中的行不计入 aLineNo/bLineNo，直到被分配给某个 hunk 时才计入
     var aLineNo = 0, bLineNo = 0;
-    var hunks = []; // 每个 hunk: { aStart, aLen, bStart, bLen, lines: [] }
+    var hunks = []; // 每个 hunk: { aStart, bStart, lines: [] }
     var current = null;
+    // pending：上一个 equal 段末尾的至多 ctx 行，作为下一个 hunk 的前导上下文
+    var pending = [];
+    // pendingStartA/B：pending 第一行在 A/B 中的 0-based 行号
+    var pendingStartA = 0, pendingStartB = 0;
 
-    function flush() { if (current && current.lines.length) hunks.push(current); current = null; }
+    function flush() {
+      if (current && current.lines.length) hunks.push(current);
+      current = null;
+    }
 
     for (var i = 0; i < ops.length; i++) {
       var op = ops[i];
+
       if (op.type === 'equal') {
-        // 判断是否需要 flush 当前 hunk
-        if (current && op.lines.length > 2 * ctx) {
-          // 把前 ctx 行加入，然后 flush
-          for (var k = 0; k < ctx && k < op.lines.length; k++) {
-            current.lines.push(' ' + op.lines[k]);
-            aLineNo++; bLineNo++;
-          }
-          flush();
-          // 跳过中间
-          var skip = op.lines.length - 2 * ctx;
-          if (skip > 0) {
+        var eqLines = op.lines;
+        if (!current) {
+          // 没有正在进行的 hunk：保留最后 ctx 行作为潜在前导上下文
+          var head = Math.max(0, eqLines.length - ctx);
+          pendingStartA = aLineNo + head;
+          pendingStartB = bLineNo + head;
+          pending = eqLines.slice(head);
+          // 只把 pending 之前的行计入 aLineNo（pending 行待分配给 hunk 时再计）
+          aLineNo += head;
+          bLineNo += head;
+        } else {
+          if (eqLines.length <= 2 * ctx) {
+            // 相同段较短：全部并入当前 hunk（可能后续还有改动继续此 hunk）
+            for (var k = 0; k < eqLines.length; k++) {
+              current.lines.push(' ' + eqLines[k]);
+              aLineNo++; bLineNo++;
+            }
+          } else {
+            // 相同段较长：前 ctx 行作为后继上下文加入当前 hunk，然后 flush
+            for (var k2 = 0; k2 < ctx; k2++) {
+              current.lines.push(' ' + eqLines[k2]);
+              aLineNo++; bLineNo++;
+            }
+            flush();
+            // 跳过中间的不变行
+            var skip = eqLines.length - 2 * ctx;
             aLineNo += skip;
             bLineNo += skip;
+            // 后 ctx 行作为下一个 hunk 的前导上下文（尚未计入 aLineNo）
+            pendingStartA = aLineNo;
+            pendingStartB = bLineNo;
+            pending = eqLines.slice(eqLines.length - ctx);
           }
-          // 后 ctx 行作为下一个 hunk 的开头（如果后面还有改动）
-          // 这里简化：直接处理
-          for (var k2 = op.lines.length - ctx; k2 < op.lines.length; k2++) {
-            if (k2 < ctx) continue;
-            // 这些行会被下一个 hunk 包含，但因为没有 current，会丢失
-            // 简化：仅当后续还有改动时才需要，否则忽略
-          }
-          continue;
-        } else if (current) {
-          for (var k3 = 0; k3 < op.lines.length; k3++) {
-            current.lines.push(' ' + op.lines[k3]);
-            aLineNo++; bLineNo++;
-          }
-          continue;
-        } else {
-          // 没有 current，跳过（除非 ctx > 0 且需要保留前导上下文）
-          // 简化：如果后续有改动，保留最后 ctx 行
-          // 这里直接前进
-          aLineNo += op.lines.length;
-          bLineNo += op.lines.length;
-          continue;
         }
+        continue;
       }
 
       // add 或 del：开启或继续 hunk
       if (!current) {
-        // 从前一个 equal 段取 ctx 行作为上下文（如果有）— 简化：以当前 aLineNo/bLineNo 为起点
-        current = { aStart: aLineNo, bStart: bLineNo, lines: [] };
+        // 用 pending 前导上下文创建新 hunk
+        current = {
+          aStart: pendingStartA,
+          bStart: pendingStartB,
+          lines: []
+        };
+        for (var p = 0; p < pending.length; p++) {
+          current.lines.push(' ' + pending[p]);
+        }
+        // pending 行是 equal 行，在 A 和 B 中都存在，此时计入 aLineNo/bLineNo
+        aLineNo += pending.length;
+        bLineNo += pending.length;
+        pending = [];
       }
-      for (var k4 = 0; k4 < op.lines.length; k4++) {
+      for (var k3 = 0; k3 < op.lines.length; k3++) {
         if (op.type === 'del') {
-          current.lines.push('-' + op.lines[k4]);
+          current.lines.push('-' + op.lines[k3]);
           aLineNo++;
         } else {
-          current.lines.push('+' + op.lines[k4]);
+          current.lines.push('+' + op.lines[k3]);
           bLineNo++;
         }
       }
@@ -417,6 +458,7 @@
         if (c === ' ' || c === '-') aLen++;
         if (c === ' ' || c === '+') bLen++;
       }
+      // 行号转 1-based；空侧（len=0）时起始号停在插入点（即 0-based 行号，不 +1）
       var aStart = hu.aStart + (aLen > 0 ? 1 : 0);
       var bStart = hu.bStart + (bLen > 0 ? 1 : 0);
       lines.push('@@ -' + aStart + ',' + aLen + ' +' + bStart + ',' + bLen + ' @@');

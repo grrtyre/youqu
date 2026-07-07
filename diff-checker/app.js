@@ -11,8 +11,10 @@
   var btnCompare = $('btnCompare');
   var btnClear = $('btnClear');
   var btnSwap = $('btnSwap');
+  var btnTheme = $('btnTheme');
   var optIgnoreCase = $('optIgnoreCase');
   var optTrimWs = $('optTrimWs');
+  var optLive = $('optLive');
   var statsBar = $('statsBar');
   var statAdd = $('statAdd');
   var statDel = $('statDel');
@@ -33,6 +35,37 @@
   var currentSummary = '';
   var loadTarget = null; // 'left' | 'right'
 
+  // ---------- 持久化 key ----------
+  var THEME_KEY = 'diff-checker:theme';
+  var LIVE_KEY = 'diff-checker:live';
+
+  // ---------- 主题切换 ----------
+  function applyTheme(theme) {
+    if (theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+    try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
+  }
+
+  function toggleTheme() {
+    var current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+    showToast(current === 'dark' ? '已切换到亮色主题' : '已切换到暗色主题');
+  }
+
+  // ---------- 实时对比开关 ----------
+  function isLiveEnabled() {
+    return optLive.classList.contains('active');
+  }
+
+  function setLive(on) {
+    if (on) optLive.classList.add('active');
+    else optLive.classList.remove('active');
+    try { localStorage.setItem(LIVE_KEY, on ? '1' : '0'); } catch (e) {}
+  }
+
   // ---------- 工具 ----------
   function escapeHtml(s) {
     if (s == null) return '';
@@ -51,11 +84,49 @@
     }, 1800);
   }
 
+  // 安全剪贴板访问：file:// 协议下 navigator.clipboard 可能为 undefined
+  // 此前直接访问 .readText/.writeText 会同步抛 TypeError 且不被 .catch 捕获
+  function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text);
+    }
+    // 降级：临时 textarea + execCommand
+    return new Promise(function (resolve, reject) {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        if (ok) resolve(); else reject(new Error('copy failed'));
+      } catch (e) { reject(e); }
+    });
+  }
+
+  function pasteFromClipboard() {
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      return navigator.clipboard.readText();
+    }
+    return Promise.reject(new Error('clipboard read unavailable'));
+  }
+
   function updateMeta() {
     var lLines = DiffEngine.splitLines(textLeft.value);
     var rLines = DiffEngine.splitLines(textRight.value);
     metaLeft.textContent = lLines.length + ' 行 · ' + textLeft.value.length + ' 字';
     metaRight.textContent = rLines.length + ' 行 · ' + textRight.value.length + ' 字';
+    autoResize(textLeft);
+    autoResize(textRight);
+  }
+
+  // textarea 高度自适应内容（上限 320px，超出滚动），避免内容少时大面积留白
+  function autoResize(el) {
+    el.style.height = 'auto';
+    var h = Math.max(160, Math.min(el.scrollHeight, 320));
+    el.style.height = h + 'px';
   }
 
   function getOptions() {
@@ -123,7 +194,8 @@
     var numHtml = isEmpty ? '<span class="line-num"> </span>' : '<span class="line-num">' + num + '</span>';
     var content;
     if (isEmpty) {
-      content = '<span class="line-content">—</span>';
+      // 对侧无对应行的占位：纯视觉色条提示，无文字避免重复噪音
+      content = '<span class="line-content empty-hint" data-side="' + (side || '') + '"></span>';
     } else if (charDiffs) {
       content = '<span class="line-content">' + renderCharDiff(charDiffs, charSide) + '</span>';
     } else {
@@ -203,11 +275,23 @@
   }
 
   // ---------- 主对比流程 ----------
-  function doCompare() {
+  // opts.silent：实时对比时不弹 toast、不显示「请先填写」提示
+  function doCompare(opts) {
+    opts = opts || {};
     var a = textLeft.value;
     var b = textRight.value;
     if (!a && !b) {
-      showToast('请先填写左右文本');
+      if (!opts.silent) showToast('请先填写左右文本');
+      // 清空之前的结果
+      currentResult = null;
+      statsBar.hidden = true;
+      btnCopySummary.hidden = true;
+      btnCopyUnified.hidden = true;
+      resultEmpty.hidden = false;
+      viewSplit.innerHTML = '';
+      viewInline.innerHTML = '';
+      viewUnified.innerHTML = '';
+      resultMeta.textContent = '';
       return;
     }
     var t0 = performance.now();
@@ -231,6 +315,20 @@
 
     // 渲染当前视图
     renderCurrent();
+
+    // 同步滚动：渲染后立即同步一次纵向滚动位置
+    syncScrollAfterRender();
+  }
+
+  // ---------- 实时对比（防抖） ----------
+  var liveTimer = null;
+  function scheduleLiveCompare() {
+    if (!isLiveEnabled()) return;
+    if (liveTimer) clearTimeout(liveTimer);
+    liveTimer = setTimeout(function () {
+      liveTimer = null;
+      doCompare({ silent: true });
+    }, 300);
   }
 
   function renderCurrent() {
@@ -249,7 +347,44 @@
     document.querySelectorAll('.view-switch button').forEach(function (btn) {
       btn.classList.toggle('active', btn.dataset.view === v);
     });
-    if (currentResult) renderCurrent();
+    if (currentResult) {
+      renderCurrent();
+      syncScrollAfterRender();
+    }
+  }
+
+  // ---------- 并排视图同步滚动 ----------
+  // 滚动左列时同步右列，反之亦然。用 flag 防止互相触发死循环。
+  var syncScrollLock = false;
+  function initSyncScroll() {
+    var cols = viewSplit.querySelectorAll('.diff-col');
+    if (cols.length < 2) return;
+    cols.forEach(function (col, idx) {
+      col.addEventListener('scroll', function () {
+        if (syncScrollLock) return;
+        syncScrollLock = true;
+        var other = cols[idx === 0 ? 1 : 0];
+        if (other) {
+          other.scrollTop = col.scrollTop;
+          // 横向也同步
+          other.scrollLeft = col.scrollLeft;
+        }
+        // 解锁放在下一事件循环，避免相互触发
+        setTimeout(function () { syncScrollLock = false; }, 0);
+      }, { passive: true });
+    });
+  }
+
+  // 渲染后调用：重新绑定同步滚动 + 恢复滚动位置
+  function syncScrollAfterRender() {
+    if (currentView !== 'split') return;
+    // 等下一帧 DOM 完成布局
+    requestAnimationFrame(function () {
+      initSyncScroll();
+      // 让两列都回到顶部对齐
+      var cols = viewSplit.querySelectorAll('.diff-col');
+      cols.forEach(function (c) { c.scrollTop = 0; c.scrollLeft = 0; });
+    });
   }
 
   // ---------- 示例 ----------
@@ -300,7 +435,9 @@
   }
 
   // ---------- 事件绑定 ----------
-  btnCompare.addEventListener('click', doCompare);
+  btnCompare.addEventListener('click', function () { doCompare(); });
+
+  btnTheme.addEventListener('click', toggleTheme);
 
   btnClear.addEventListener('click', function () {
     textLeft.value = '';
@@ -322,19 +459,31 @@
     textLeft.value = textRight.value;
     textRight.value = tmp;
     updateMeta();
-    if (currentResult) doCompare();
+    // 交换后无论是否已有结果，都重新对比（实时模式下也立即响应）
+    if (isLiveEnabled() || currentResult) doCompare({ silent: true });
   });
 
   optIgnoreCase.addEventListener('click', function (e) {
     e.preventDefault();
     optIgnoreCase.classList.toggle('active');
-    if (currentResult) doCompare();
+    // 选项变化时，实时模式自动重算；非实时模式仅当已有结果时重算
+    if (isLiveEnabled()) doCompare({ silent: true });
+    else if (currentResult) doCompare();
   });
 
   optTrimWs.addEventListener('click', function (e) {
     e.preventDefault();
     optTrimWs.classList.toggle('active');
-    if (currentResult) doCompare();
+    if (isLiveEnabled()) doCompare({ silent: true });
+    else if (currentResult) doCompare();
+  });
+
+  optLive.addEventListener('click', function (e) {
+    e.preventDefault();
+    var on = !optLive.classList.contains('active');
+    setLive(on);
+    showToast(on ? '已开启实时对比' : '已关闭实时对比');
+    if (on) doCompare({ silent: true });
   });
 
   document.querySelectorAll('.view-switch button').forEach(function (btn) {
@@ -349,7 +498,7 @@
   document.querySelectorAll('[data-paste]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var target = btn.dataset.paste;
-      navigator.clipboard.readText().then(function (text) {
+      pasteFromClipboard().then(function (text) {
         if (target === 'left') textLeft.value = text;
         else textRight.value = text;
         updateMeta();
@@ -396,20 +545,26 @@
 
   // 复制
   btnCopySummary.addEventListener('click', function () {
-    navigator.clipboard.writeText(currentSummary).then(function () {
+    copyToClipboard(currentSummary).then(function () {
       showToast('摘要已复制');
     }).catch(function () { showToast('复制失败'); });
   });
 
   btnCopyUnified.addEventListener('click', function () {
-    navigator.clipboard.writeText(currentUnified).then(function () {
+    copyToClipboard(currentUnified).then(function () {
       showToast('unified diff 已复制');
     }).catch(function () { showToast('复制失败'); });
   });
 
-  // 输入更新 meta
-  textLeft.addEventListener('input', updateMeta);
-  textRight.addEventListener('input', updateMeta);
+  // 输入更新 meta + 触发实时对比
+  textLeft.addEventListener('input', function () {
+    updateMeta();
+    scheduleLiveCompare();
+  });
+  textRight.addEventListener('input', function () {
+    updateMeta();
+    scheduleLiveCompare();
+  });
 
   // 快捷键：Ctrl/Cmd + Enter 对比
   document.addEventListener('keydown', function (e) {
@@ -427,6 +582,21 @@
 
   // 初始化
   updateMeta();
+
+  // 恢复主题偏好（默认 light）
+  (function () {
+    var saved = null;
+    try { saved = localStorage.getItem(THEME_KEY); } catch (e) {}
+    applyTheme(saved === 'dark' ? 'dark' : 'light');
+  })();
+
+  // 恢复实时对比偏好（默认开启）
+  (function () {
+    var saved = null;
+    try { saved = localStorage.getItem(LIVE_KEY); } catch (e) {}
+    // saved === '0' 表示用户主动关闭；其他情况（null/1）默认开启
+    setLive(saved !== '0');
+  })();
 
   // Demo 自动加载（URL 含 ?demo=xxx 时触发，用于预览/截图）
   (function () {
