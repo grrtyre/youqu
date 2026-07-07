@@ -8,9 +8,10 @@
 
 ## ⬇️ 直接下载
 
-| 版本 | 平台 | 下载 |
-|------|------|------|
-| v1.0.0 | Windows x64 | 见下方 Release 资产 |
+| 版本 | 平台 | 类型 | 下载 |
+|------|------|------|------|
+| v1.0.0 | Windows x64 | 安装版（推荐） | [倒计时管家 Setup 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/countdown-manager-v1.0.0/countdown-manager-setup-1.0.0.exe) |
+| v1.0.0 | Windows x64 | 便携版 | [倒计时管家 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/countdown-manager-v1.0.0/countdown-manager-portable-1.0.0.exe) |
 
 ## ✨ 功能特性
 
