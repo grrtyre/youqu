@@ -6,8 +6,8 @@
 
 | 平台 | 下载 | 说明 |
 |------|------|------|
-| Windows x64 | [PDF管家 Setup 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/pdf-toolbox-v1.1.0/PDF%E7%AE%A1%E5%AE%B6-Setup-1.1.0.exe) | 安装版（推荐） |
-| Windows x64 | [PDF管家 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/pdf-toolbox-v1.1.0/PDF%E7%AE%A1%E5%AE%B6-1.1.0.exe) | 免安装便携版 |
+| Windows x64 | [PDF管家 Setup 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/pdf-toolbox-v1.1.0/PDF-Setup-1.1.0.exe) | 安装版（推荐） |
+| Windows x64 | [PDF管家 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/pdf-toolbox-v1.1.0/PDF-Portable-1.1.0.exe) | 免安装便携版 |
 
 > 下载链接在 Release 发布后自动可用。如显示 404，请稍候片刻等待 GitHub 处理。
 
