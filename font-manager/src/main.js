@@ -1,5 +1,5 @@
 // src/main.js — 字体管家主进程
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const Store = require('electron-store');
 const fontList = require('font-list');
@@ -51,3 +51,6 @@ ipcMain.handle('set-favorites', (_e, list) => { store.set('favorites', list); re
 // 自定义预览文本
 ipcMain.handle('get-settings', () => store.get('settings', { previewText: '永和九年岁在癸丑暮春之初会于会稽山阴之兰亭修禊事也', fontSize: 36, sampleEn: 'The quick brown fox jumps over the lazy dog 0123456789' }));
 ipcMain.handle('set-settings', (_e, s) => { store.set('settings', s); return true; });
+
+// 窗口控制（最小化）
+ipcMain.handle('window-min', () => { if (main) main.minimize(); return true; });

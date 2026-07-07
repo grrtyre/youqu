@@ -62,11 +62,11 @@ html, body {
 .title-spacer { flex: 1; }
 .window-ctrl { display: flex; gap: 8px; -webkit-app-region: no-drag; }
 .win-btn {
-  width: 28px; height: 24px;
+  width: 30px; height: 26px;
   border: none; background: rgba(0, 0, 0, 0.04);
   color: var(--text-2);
-  border-radius: 6px;
-  cursor: pointer; font-size: 14px;
+  border-radius: 7px;
+  cursor: pointer; font-size: 15px;
   display: flex; align-items: center; justify-content: center;
   font-family: inherit;
   transition: background 0.15s, color 0.15s, transform 0.1s;
@@ -133,6 +133,17 @@ html, body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px var(--border-strong);
 }
 .grow { flex: 1; }
+.count-info {
+  font-size: 12px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1px;
+  padding: 0 4px;
+  white-space: nowrap;
+}
+/* 视图切换组：放大点击区域，拉开间距 */
+#viewGroup { gap: 3px; padding: 3px; }
+#viewGroup .seg { padding: 5px 11px; font-size: 13.5px; min-width: 30px; }
 
 /* ===== 主区 ===== */
 .main {
@@ -146,13 +157,14 @@ html, body {
   flex-shrink: 0;
   padding: 18px 14px;
   background: var(--bg-soft);
-  border-right: 1px solid var(--border);
+  border-right: 1px solid var(--border-strong);
   overflow-y: auto;
 }
 .sidebar::-webkit-scrollbar { width: 8px; }
 .sidebar::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.15); border-radius: 4px; }
 
-.side-section { margin-bottom: 22px; }
+.side-section { margin-bottom: 26px; }
+.side-section:last-child { margin-bottom: 0; }
 .side-title {
   display: flex; align-items: center; justify-content: space-between;
   font-size: 11px; font-weight: 600;
@@ -249,14 +261,18 @@ html, body {
   margin-top: 12px;
   font-size: 12px; color: var(--text-2);
 }
-/* 自定义滑块 - 苹果风 */
+/* 自定义滑块 - 苹果风（填充轨道） */
 #fontSize {
   flex: 1;
   -webkit-appearance: none;
   appearance: none;
   height: 4px;
   border-radius: 2px;
-  background: rgba(0, 0, 0, 0.1);
+  background: linear-gradient(to right,
+              var(--accent) 0%,
+              var(--accent) var(--pct, 28.57%),
+              rgba(0, 0, 0, 0.1) var(--pct, 28.57%),
+              rgba(0, 0, 0, 0.1) 100%);
   outline: none;
   cursor: pointer;
 }
@@ -305,21 +321,21 @@ html, body {
 /* 字体卡片 - 苹果白高端 */
 .font-card {
   background: var(--card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius);
   padding: 18px 20px 16px;
   cursor: pointer;
   transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
               box-shadow 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
               border-color 0.18s;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   position: relative;
   overflow: hidden;
 }
 .font-card:hover {
-  box-shadow: var(--shadow-hover);
-  transform: translateY(-2px);
-  border-color: var(--border-strong);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+  border-color: rgba(0, 122, 255, 0.25);
 }
 .font-card.selected {
   border-color: var(--accent);
@@ -328,6 +344,7 @@ html, body {
 .fc-head {
   display: flex; align-items: flex-start; justify-content: space-between;
   gap: 8px; margin-bottom: 12px;
+  padding-right: 32px; /* 给右上角收藏星标留出空间，避免与分类徽标重叠 */
 }
 .fc-name {
   font-size: 13.5px; font-weight: 600;
@@ -347,6 +364,13 @@ html, body {
   white-space: nowrap;
   letter-spacing: 0.2px;
 }
+/* 分类语义色（覆盖默认蓝色，便于一眼区分字体类别） */
+.fc-cat.cat-mono   { background: rgba(175, 82, 222, 0.12); color: #af52ce; }
+.fc-cat.cat-serif  { background: rgba(255, 149, 10, 0.14); color: #c0670a; }
+.fc-cat.cat-sans   { background: rgba(0, 122, 255, 0.10); color: #007aff; }
+.fc-cat.cat-hand   { background: rgba(255, 90, 132, 0.12); color: #e83e6b; }
+.fc-cat.cat-display{ background: rgba(52, 199, 89, 0.14); color: #1d9e4a; }
+.fc-cat.cat-other  { background: rgba(0, 0, 0, 0.05); color: #6e6e73; }
 .fc-preview {
   font-size: 30px;
   line-height: 1.4;
@@ -360,7 +384,7 @@ html, body {
 .fc-tags {
   display: flex; flex-wrap: wrap; gap: 5px;
   margin-top: 10px;
-  min-height: 4px;
+  min-height: 22px; /* 统一卡片高度：无标签时也保留一行空间 */
 }
 .fc-tag {
   font-size: 10.5px;
@@ -385,7 +409,7 @@ html, body {
 .fc-actions {
   display: flex; align-items: center; gap: 6px;
   margin-top: 12px;
-  opacity: 0; transition: opacity 0.18s;
+  opacity: 0.62; transition: opacity 0.18s;
 }
 .font-card:hover .fc-actions { opacity: 1; }
 .fc-actions .mini-btn {

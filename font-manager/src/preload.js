@@ -8,5 +8,6 @@ contextBridge.exposeInMainWorld('fontMgr', {
   getFavorites: () => ipcRenderer.invoke('get-favorites'),
   setFavorites: (l) => ipcRenderer.invoke('set-favorites', l),
   getSettings: () => ipcRenderer.invoke('get-settings'),
-  setSettings: (s) => ipcRenderer.invoke('set-settings', s)
+  setSettings: (s) => ipcRenderer.invoke('set-settings', s),
+  minimize: () => ipcRenderer.invoke('window-min')
 });

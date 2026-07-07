@@ -24,6 +24,17 @@ function cssFamily(name) {
   if (/\s/.test(name) && !/^["'].*["']$/.test(name)) return `"${name}"`;
   return name;
 }
+// 分类 → CSS 类后缀（用于语义化配色）
+function catClass(cat) {
+  switch (cat) {
+    case '等宽': return 'cat-mono';
+    case '衬线': return 'cat-serif';
+    case '无衬线': return 'cat-sans';
+    case '手写': return 'cat-hand';
+    case '装饰': return 'cat-display';
+    default: return 'cat-other';
+  }
+}
 function sortFontsCJKFirst(fonts) {
   return fonts.slice().sort((a, b) => {
     const aC = isCJKFont(a), bC = isCJKFont(b);
@@ -32,13 +43,15 @@ function sortFontsCJKFirst(fonts) {
     return a.localeCompare(b, 'zh-Hans');
   });
 }
-function filterFonts(fonts, { search = '', tags = {}, filterTags = [], filterCategory = '' } = {}) {
+function filterFonts(fonts, { search = '', tags = {}, filterTags = [], filterCategory = '', filterCJK = null } = {}) {
   let list = fonts.slice();
   if (search) {
     const s = search.toLowerCase();
     list = list.filter(f => f.toLowerCase().includes(s));
   }
   if (filterCategory) list = list.filter(f => inferCategory(f) === filterCategory);
+  if (filterCJK === true) list = list.filter(f => isCJKFont(f));
+  else if (filterCJK === false) list = list.filter(f => !isCJKFont(f));
   if (filterTags && filterTags.length) {
     list = list.filter(f => {
       const ft = tags[f] || [];
@@ -67,6 +80,7 @@ const els = {
   closeCompare: document.getElementById('closeCompare'),
   minBtn: document.getElementById('minBtn'),
   closeBtn: document.getElementById('closeBtn'),
+  countInfo: document.getElementById('countInfo'),
 };
 
 let allFonts = [];
@@ -74,6 +88,7 @@ let tags = {};
 let favorites = [];
 let settings = { previewText: '', fontSize: 36, sampleEn: '' };
 let activeCategory = '';
+let activeCJKOnly = false; // 「中文」分类按钮：仅显示中文字体
 let activeTagFilter = [];
 let viewMode = 'grid'; // grid | list | compare
 let selectedForCompare = new Set();
@@ -86,6 +101,7 @@ async function init() {
   els.previewText.value = settings.previewText;
   els.fontSize.value = settings.fontSize;
   els.fontSizeVal.textContent = settings.fontSize;
+  updateSliderFill();
 
   // 加载字体
   const result = await window.fontMgr.listFonts();
@@ -108,8 +124,19 @@ function renderFonts() {
     search: els.search.value.trim(),
     tags,
     filterTags: activeTagFilter,
-    filterCategory: activeCategory
+    filterCategory: activeCategory,
+    filterCJK: activeCJKOnly ? true : null
   });
+  // 更新计数信息
+  if (els.countInfo) {
+    if (allFonts.length === 0) {
+      els.countInfo.textContent = '';
+    } else if (filtered.length === allFonts.length) {
+      els.countInfo.textContent = `共 ${allFonts.length} 款`;
+    } else {
+      els.countInfo.textContent = `共 ${allFonts.length} 款 · 显示 ${filtered.length} 款`;
+    }
+  }
   if (!filtered.length) {
     els.fontGrid.innerHTML = '';
     els.emptyState.style.display = 'block';
@@ -133,7 +160,7 @@ function renderFonts() {
         <div class="fc-fav ${isFav ? 'active' : ''}" data-action="fav" title="收藏">★</div>
         <div class="fc-head">
           <div class="fc-name">${escapeHtml(shown)}</div>
-          <span class="fc-cat">${cat}</span>
+          <span class="fc-cat ${catClass(cat)}">${cat}</span>
         </div>
         <div class="fc-preview" style="font-family: ${famCss}; font-size: ${size}px;">${escapeHtml(preview)}</div>
         <div class="fc-tags">${tagHtml}</div>
@@ -194,9 +221,17 @@ els.previewText.addEventListener('input', () => {
 els.fontSize.addEventListener('input', () => {
   settings.fontSize = parseInt(els.fontSize.value, 10);
   els.fontSizeVal.textContent = settings.fontSize;
+  updateSliderFill();
   window.fontMgr.setSettings(settings);
   renderFonts();
 });
+
+// 更新字号滑块填充比例（min=12, max=96）
+function updateSliderFill() {
+  const v = parseInt(els.fontSize.value, 10);
+  const pct = ((v - 12) / (96 - 12)) * 100;
+  els.fontSize.style.setProperty('--pct', pct + '%');
+}
 
 els.categoryGroup.addEventListener('click', (e) => {
   const btn = e.target.closest('.seg');
@@ -204,57 +239,16 @@ els.categoryGroup.addEventListener('click', (e) => {
   els.categoryGroup.querySelectorAll('.seg').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   const cat = btn.dataset.cat;
-  if (cat === '中') activeCategory = 'CJK'; // 特殊标记
-  else activeCategory = cat;
-  // 中文字体过滤需要单独处理
   if (cat === '中') {
-    // 临时过滤中文字体
-    const filtered = filterFonts(allFonts, {
-      search: els.search.value.trim(),
-      tags, filterTags: activeTagFilter, filterCategory: ''
-    }).filter(f => isCJKFont(f));
-    renderCustom(filtered);
-    return;
+    // 「中文」按钮：仅显示中文字体，不走分类推断
+    activeCJKOnly = true;
+    activeCategory = '';
+  } else {
+    activeCJKOnly = false;
+    activeCategory = cat;
   }
   renderFonts();
 });
-
-function renderCustom(list) {
-  if (!list.length) {
-    els.fontGrid.innerHTML = '';
-    els.emptyState.style.display = 'block';
-    return;
-  }
-  els.emptyState.style.display = 'none';
-  els.fontGrid.className = viewMode === 'list' ? 'font-grid list' : 'font-grid';
-  const preview = els.previewText.value || settings.previewText || '永和九年';
-  const size = parseInt(els.fontSize.value, 10);
-  els.fontGrid.innerHTML = list.map(f => {
-    const famCss = cssFamily(f);
-    const cat = inferCategory(f);
-    const isFav = favorites.includes(f);
-    const ftags = tags[f] || [];
-    const selected = selectedForCompare.has(f) ? 'selected' : '';
-    const tagHtml = ftags.map(t => `<span class="fc-tag">${escapeHtml(t)}</span>`).join('');
-    const shown = displayName(f);
-    return `
-      <div class="font-card ${selected}" data-family="${escapeAttr(f)}">
-        <div class="fc-fav ${isFav ? 'active' : ''}" data-action="fav" title="收藏">★</div>
-        <div class="fc-head">
-          <div class="fc-name">${escapeHtml(shown)}</div>
-          <span class="fc-cat">${cat}</span>
-        </div>
-        <div class="fc-preview" style="font-family: ${famCss}; font-size: ${size}px;">${escapeHtml(preview)}</div>
-        <div class="fc-tags">${tagHtml}</div>
-        <div class="fc-meta"><span>${isCJKFont(f) ? '中文' : '拉丁'}</span></div>
-        <div class="fc-actions">
-          <button class="mini-btn" data-action="tag">标签</button>
-          <button class="mini-btn" data-action="compare">${selectedForCompare.has(f) ? '取消对比' : '加入对比'}</button>
-          <button class="mini-btn warn" data-action="copy">复制 CSS</button>
-        </div>
-      </div>`;
-  }).join('');
-}
 
 els.tagList.addEventListener('click', (e) => {
   const del = e.target.closest('.del');
@@ -372,10 +366,7 @@ els.compareList.addEventListener('click', (e) => {
 });
 
 // 窗口控制
-els.minBtn.addEventListener('click', () => {
-  // 通过 ipcRenderer 最小化 — 这里用 BrowserWindow.getFocusedWindow
-  // 简化：用 preload 暴露的 API（暂不实现，按钮仅占位）
-});
+els.minBtn.addEventListener('click', () => window.fontMgr.minimize());
 els.closeBtn.addEventListener('click', () => window.close());
 
 // ============ 标签弹窗 ============
@@ -387,7 +378,7 @@ function showTagModal(family) {
   modalBg.innerHTML = `
     <div class="modal">
       <h3>${family ? '为「' + escapeHtml(family) + '」打标签' : '新建标签'}</h3>
-      <input id="tagInput" type="text" placeholder="输入标签名，回车确认" value="${family ? '' : ''}" autocomplete="off">
+      <input id="tagInput" type="text" placeholder="输入标签名，回车确认" autocomplete="off">
       ${family && existing.length ? `<div style="margin-top:10px;font-size:12px;color:#86868b;">当前标签：${existing.map(t => '#' + escapeHtml(t)).join(' ')}</div>` : ''}
       <div class="modal-actions">
         <button class="btn btn-secondary" id="modalCancel">取消</button>

@@ -35,8 +35,9 @@ function tagScore(family, tags, filterTags) {
   return hit / filterTags.length;
 }
 
-// 字体过滤（搜索 + 标签 + 分类）
-function filterFonts(fonts, { search = '', tags = {}, filterTags = [], filterCategory = '' } = {}) {
+// 字体过滤（搜索 + 标签 + 分类 + 中文字体）
+// filterCJK: null=不过滤, true=仅中文, false=仅非中文
+function filterFonts(fonts, { search = '', tags = {}, filterTags = [], filterCategory = '', filterCJK = null } = {}) {
   let list = fonts.slice();
   if (search) {
     const s = search.toLowerCase();
@@ -44,6 +45,11 @@ function filterFonts(fonts, { search = '', tags = {}, filterTags = [], filterCat
   }
   if (filterCategory) {
     list = list.filter(f => inferCategory(f) === filterCategory);
+  }
+  if (filterCJK === true) {
+    list = list.filter(f => isCJKFont(f));
+  } else if (filterCJK === false) {
+    list = list.filter(f => !isCJKFont(f));
   }
   if (filterTags && filterTags.length) {
     list = list.filter(f => {
