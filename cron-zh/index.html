@@ -35,6 +35,7 @@
       <div class="card-label">
         <span>Cron 表达式</span>
         <div class="quick-actions">
+          <span id="modeBadge" class="mode-badge mode-5">标准 · 5 字段</span>
           <button class="chip" id="copyBtn" title="复制表达式">复制</button>
           <button class="chip" id="shareBtn" title="生成分享链接">分享</button>
           <button class="chip chip-danger" id="clearBtn" title="清空">清空</button>
@@ -42,7 +43,7 @@
       </div>
       <div class="expr-input-wrap">
         <input id="expr" class="expr-input" type="text" value="0 9 * * 1-5"
-               placeholder="分 时 日 月 周  例如 0 9 * * 1-5"
+               placeholder="5字段: 分 时 日 月 周   |   6字段: 秒 分 时 日 月 周"
                spellcheck="false" autocomplete="off" />
       </div>
       <div id="exprStatus" class="expr-status status-ok">✓ 表达式有效</div>
@@ -64,8 +65,14 @@
 
     <!-- 预设 -->
     <section class="card presets-card">
-      <div class="card-label"><span>常用预设</span></div>
-      <div class="presets" id="presets">
+      <div class="card-label">
+        <span>常用预设</span>
+        <div class="preset-tabs">
+          <button class="preset-tab active" data-mode="5">标准 5 字段</button>
+          <button class="preset-tab" data-mode="6">Quartz 6 字段</button>
+        </div>
+      </div>
+      <div class="presets-group active" data-mode="5">
         <button class="preset" data-cron="0 * * * *">每小时整点</button>
         <button class="preset" data-cron="*/5 * * * *">每 5 分钟</button>
         <button class="preset" data-cron="0 0 * * *">每天 0 点</button>
@@ -73,9 +80,21 @@
         <button class="preset" data-cron="0 9 * * 1">每周一 9 点</button>
         <button class="preset" data-cron="0 0 1 * *">每月 1 号</button>
         <button class="preset" data-cron="0 0 * * 0">每周日 0 点</button>
-        <button class="preset" data-cron="0 0,12 * * *">每天 0 点和 12 点</button>
+        <button class="preset" data-cron="0 0,12 * * *">每天 0/12 点</button>
         <button class="preset" data-cron="*/30 * * * *">每半小时</button>
         <button class="preset" data-cron="0 18 * * 5">每周五 18 点</button>
+      </div>
+      <div class="presets-group" data-mode="6">
+        <button class="preset" data-cron="0 */5 * * * ?">每 5 分钟（0 秒）</button>
+        <button class="preset" data-cron="0 0 * * * ?">每小时整点</button>
+        <button class="preset" data-cron="0 0 0 * * ?">每天 0 点</button>
+        <button class="preset" data-cron="0 0 9 * * ?">每天 9 点</button>
+        <button class="preset" data-cron="0 0 9 ? * 1-5">工作日 9 点</button>
+        <button class="preset" data-cron="0 0 0 1 * ?">每月 1 号</button>
+        <button class="preset" data-cron="0 0 0 ? * 1">每周一 0 点</button>
+        <button class="preset" data-cron="30 0 0 * * ?">每天 0 点 30 秒</button>
+        <button class="preset" data-cron="*/10 * * * * ?">每 10 秒</button>
+        <button class="preset" data-cron="0 0 0 1 1 ?">每年 1 月 1 号</button>
       </div>
     </section>
 

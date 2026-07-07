@@ -11,8 +11,9 @@
   var nextFrom = $('nextFrom');
   var toastEl = $('toast');
   var themeToggle = $('themeToggle');
+  var modeBadge = $('modeBadge');
 
-  // ===== 字段元信息 =====
+  // ===== 字段元信息（5 个标准字段，秒字段按需前置） =====
   var FIELD_META = [
     { key: 'minute', name: '分钟', min: 0, max: 59, full: 60 },
     { key: 'hour',   name: '小时', min: 0, max: 23, full: 24 },
@@ -20,6 +21,7 @@
     { key: 'month',  name: '月',   min: 1, max: 12, full: 12 },
     { key: 'dow',    name: '周',   min: 0, max: 6,  full: 7 }
   ];
+  var SECOND_META = { key: 'second', name: '秒', min: 0, max: 59, full: 60 };
   var DOW_LABEL = ['日', '一', '二', '三', '四', '五', '六'];
 
   // ===== 工具 =====
@@ -49,7 +51,6 @@
 
   // ===== 字段简短中文描述 =====
   function fieldDesc(meta, values, raw) {
-    // raw 未受限（即 *）
     if (!Array.isArray(values)) return '任意';
     if (values.length >= meta.full) return '任意';
     if (meta.key === 'dow') {
@@ -72,16 +73,23 @@
       if (values.length === 1) return pad(values[0]) + '分';
       return values.map(function (v) { return pad(v); }).join('、');
     }
+    if (meta.key === 'second') {
+      if (values.length === 1) return pad(values[0]) + '秒';
+      return values.map(function (v) { return pad(v); }).join('、');
+    }
     return values.join(',');
   }
 
   // ===== 渲染字段可视化 =====
   function renderFields(parsed) {
+    // 根据是否带秒，构建字段元信息列表
+    var metas = parsed.hasSeconds ? [SECOND_META].concat(FIELD_META) : FIELD_META;
     var html = '';
-    for (var i = 0; i < FIELD_META.length; i++) {
-      var meta = FIELD_META[i];
+    for (var i = 0; i < metas.length; i++) {
+      var meta = metas[i];
       var f = parsed.fields[meta.key];
       var restricted = Array.isArray(f) && f.length < meta.full;
+      var unspecified = parsed.unspecified && parsed.unspecified[meta.key];
       var valDisplay, descDisplay, isActive;
 
       if (!parsed.ok) {
@@ -92,8 +100,12 @@
         valDisplay = '*';
         descDisplay = '任意';
         isActive = false;
+      } else if (unspecified) {
+        // Quartz "?" 标记：展示为 ?，描述为"不指定"
+        valDisplay = '?';
+        descDisplay = '不指定';
+        isActive = false;
       } else {
-        // 紧凑展示值
         if (f.length >= meta.full) {
           valDisplay = '*';
           descDisplay = '任意';
@@ -109,13 +121,17 @@
         }
       }
 
-      html += '<div class="field-box' + (isActive ? ' is-active' : '') + '">' +
-                '<div class="field-name">' + meta.name + (meta.key === 'dom' ? '(日)' : '') + '</div>' +
+      // 通配符(*)/不指定(?)卡片标记为 is-wildcard，视觉降权
+      var isWildcard = (valDisplay === '*' || valDisplay === '?');
+      html += '<div class="field-box' + (isActive ? ' is-active' : '') + (isWildcard ? ' is-wildcard' : '') + '">' +
+                '<div class="field-name">' + meta.name + '</div>' +
                 '<div class="field-value">' + escapeHtml(valDisplay) + '</div>' +
                 '<div class="field-desc">' + escapeHtml(descDisplay) + '</div>' +
               '</div>';
     }
     fieldsGrid.innerHTML = html;
+    // 6 字段时给网格加 has-seconds 类，触发 6 列布局
+    fieldsGrid.classList.toggle('has-seconds', parsed.hasSeconds === true);
   }
 
   function escapeHtml(s) {
@@ -140,18 +156,22 @@
     return day + ' 天后';
   }
 
-  function fullTime(date) {
+  function fullTime(date, withSeconds) {
     var y = date.getFullYear();
     var mo = pad(date.getMonth() + 1);
     var d = pad(date.getDate());
     var h = pad(date.getHours());
     var mi = pad(date.getMinutes());
     var week = '周' + DOW_LABEL[date.getDay()];
+    if (withSeconds) {
+      var s = pad(date.getSeconds());
+      return y + '-' + mo + '-' + d + ' ' + h + ':' + mi + ':' + s + ' ' + week;
+    }
     return y + '-' + mo + '-' + d + ' ' + h + ':' + mi + ' ' + week;
   }
 
   // ===== 渲染下次执行 =====
-  function renderNext(expr) {
+  function renderNext(expr, hasSeconds) {
     try {
       var now = new Date();
       var runs = CronUtils.nextRun(expr, now, 5);
@@ -159,13 +179,13 @@
         nextList.innerHTML = '<div class="next-empty">暂无下次执行时间</div>';
         return;
       }
-      nextFrom.textContent = '从 ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ' 开始';
+      nextFrom.textContent = '从 ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + (hasSeconds ? ':' + pad(now.getSeconds()) : '') + ' 开始';
       var html = '';
       for (var i = 0; i < runs.length; i++) {
         html += '<div class="next-item">' +
                   '<div class="next-index">' + (i + 1) + '</div>' +
                   '<div class="next-main">' +
-                    '<div class="next-time">' + fullTime(runs[i]) + '</div>' +
+                    '<div class="next-time">' + fullTime(runs[i], hasSeconds) + '</div>' +
                     '<div class="next-relative">' + relativeTime(runs[i], now) + '</div>' +
                   '</div>' +
                   '<div class="next-day">' + ['日','一','二','三','四','五','六'][runs[i].getDay()] + '</div>' +
@@ -174,6 +194,23 @@
       nextList.innerHTML = html;
     } catch (e) {
       nextList.innerHTML = '<div class="next-empty">无法计算：' + escapeHtml(e.message) + '</div>';
+    }
+  }
+
+  // ===== 模式徽标 =====
+  function updateModeBadge(hasSeconds, ok) {
+    if (!modeBadge) return;
+    if (!ok) {
+      modeBadge.textContent = '—';
+      modeBadge.className = 'mode-badge mode-unknown';
+      return;
+    }
+    if (hasSeconds) {
+      modeBadge.textContent = 'Quartz · 6 字段';
+      modeBadge.className = 'mode-badge mode-6';
+    } else {
+      modeBadge.textContent = '标准 · 5 字段';
+      modeBadge.className = 'mode-badge mode-5';
     }
   }
 
@@ -186,6 +223,7 @@
       describeEl.textContent = '—';
       fieldsGrid.innerHTML = '';
       nextList.innerHTML = '<div class="next-empty">输入有效表达式后显示</div>';
+      updateModeBadge(false, false);
       return;
     }
     var parsed = CronUtils.parse(expr);
@@ -193,16 +231,17 @@
       exprStatus.className = 'expr-status status-err';
       exprStatus.textContent = '✗ ' + parsed.error;
       describeEl.textContent = '无效表达式';
-      // 字段仍尝试展示
       renderFields({ ok: false, fields: { minute: '*', hour: '*', dom: '*', month: '*', dow: '*' } });
       nextList.innerHTML = '<div class="next-empty">表达式无效</div>';
+      updateModeBadge(false, false);
       return;
     }
     exprStatus.className = 'expr-status status-ok';
     exprStatus.textContent = '✓ 表达式有效';
     describeEl.textContent = CronUtils.describe(expr);
     renderFields(parsed);
-    renderNext(expr);
+    renderNext(expr, parsed.hasSeconds);
+    updateModeBadge(parsed.hasSeconds, true);
     // 同步 URL
     var u = new URL(location);
     u.searchParams.set('cron', expr);
@@ -233,7 +272,24 @@
     exprInput.focus();
   });
 
-  // 预设
+  // 预设：支持 5 字段 / 6 字段两组切换
+  var presetTabs = document.querySelectorAll('.preset-tab');
+  for (var t = 0; t < presetTabs.length; t++) {
+    presetTabs[t].addEventListener('click', function () {
+      var mode = this.getAttribute('data-mode');
+      // 切换 tab 激活态
+      for (var j = 0; j < presetTabs.length; j++) {
+        presetTabs[j].classList.toggle('active', presetTabs[j] === this);
+      }
+      // 切换预设组显示
+      var groups = document.querySelectorAll('.presets-group');
+      for (var g = 0; g < groups.length; g++) {
+        groups[g].classList.toggle('active', groups[g].getAttribute('data-mode') === mode);
+      }
+    });
+  }
+
+  // 预设点击填入
   var presets = document.querySelectorAll('.preset');
   for (var i = 0; i < presets.length; i++) {
     presets[i].addEventListener('click', function () {

@@ -13,7 +13,7 @@ function eq(name, actual, expected) {
   ok(name + ' (得到: ' + JSON.stringify(actual) + ', 期望: ' + JSON.stringify(expected) + ')', cond);
 }
 
-console.log('\n=== 1. 解析 parse ===');
+console.log('\n=== 1. 解析 parse（5 字段） ===');
 var p1 = C.parse('0 9 * * 1-5');
 ok('工作日表达式有效', p1.ok === true);
 eq('minute', p1.fields.minute, [0]);
@@ -33,7 +33,7 @@ eq('元旦 dom', p4.fields.dom, [1]);
 eq('元旦 month', p4.fields.month, [1]);
 
 // 错误处理
-ok('6字段报错', !C.parse('0 0 0 0 0 0').ok);
+ok('7字段报错', !C.parse('0 0 0 0 0 0 0').ok);
 ok('4字段报错', !C.parse('0 0 0 0').ok);
 ok('分钟越界(60)报错', !C.parse('60 * * * *').ok);
 ok('小时越界(24)报错', !C.parse('* 24 * * *').ok);
@@ -44,7 +44,7 @@ ok('步长0报错', !C.parse('*/0 * * * *').ok);
 var p5 = C.parse('* * * * 7');
 eq('dow 7 规范化为 0', p5.fields.dow, [0]);
 
-console.log('\n=== 2. 中文描述 describe ===');
+console.log('\n=== 2. 中文描述 describe（5 字段） ===');
 console.log('  "0 9 * * 1-5" -> ' + C.describe('0 9 * * 1-5'));
 console.log('  "0 0 * * *"   -> ' + C.describe('0 0 * * *'));
 console.log('  "*/5 * * * *" -> ' + C.describe('*/5 * * * *'));
@@ -53,7 +53,7 @@ console.log('  "30 8 * * 1"  -> ' + C.describe('30 8 * * 1'));
 ok('描述非空', C.describe('0 9 * * 1-5').length > 0);
 ok('无效表达式描述', C.describe('bad expr').indexOf('无效') !== -1);
 
-console.log('\n=== 3. 下次执行 nextRun ===');
+console.log('\n=== 3. 下次执行 nextRun（5 字段） ===');
 
 // 测试1: 每分钟，应有5个结果
 var r1 = C.nextRun('*/1 * * * *', new Date('2026-07-04T10:00:00'), 5);
@@ -97,6 +97,119 @@ ok('null 报错', !C.parse(null).ok);
 try { C.nextRun('bad', new Date(), 1); ok('nextRun 无效表达式抛异常', false); }
 catch(e){ ok('nextRun 无效表达式抛异常', true); }
 ok('nextRun 默认count=5', C.nextRun('* * * * *', new Date()).length === 5);
+
+console.log('\n=== 5. 6 字段（带秒）解析 ===');
+
+// 基本 6 字段解析
+var s1 = C.parse('0 */5 * * * ?');
+ok('6字段有效', s1.ok === true);
+ok('6字段 hasSeconds 标记', s1.hasSeconds === true);
+eq('秒字段=0', s1.fields.second, [0]);
+eq('分钟步长5', s1.fields.minute, [0,5,10,15,20,25,30,35,40,45,50,55]);
+
+// 秒字段为单值
+var s2 = C.parse('30 0 9 * * ?');
+eq('秒=30', s2.fields.second, [30]);
+eq('时=9', s2.fields.hour, [9]);
+
+// 秒字段为步长
+var s3 = C.parse('*/10 * * * * ?');
+eq('秒步长10', s3.fields.second, [0,10,20,30,40,50]);
+
+// 秒字段为列表
+var s4 = C.parse('0,15,30,45 0 * * * ?');
+eq('秒列表', s4.fields.second, [0,15,30,45]);
+
+// 秒越界
+ok('秒越界(60)报错', !C.parse('60 * * * * ?').ok);
+
+// 6 字段 dom 越界（0 非法）
+ok('6字段 dom=0 报错', !C.parse('0 0 0 0 0 ?').ok);
+
+console.log('\n=== 6. Quartz ? 标记 ===');
+
+// ? 在 dom 合法，标记为 unspecified
+var q1 = C.parse('0 0 9 ? * 1');
+ok('? 在 dom 合法', q1.ok === true);
+ok('dom unspecified 标记', q1.unspecified.dom === true);
+ok('dow 仍为具体值', q1.unspecified.dow === false);
+eq('dow=1', q1.fields.dow, [1]);
+
+// ? 在 dow 合法
+var q2 = C.parse('0 0 0 1 * ?');
+ok('? 在 dow 合法', q2.ok === true);
+ok('dow unspecified 标记', q2.unspecified.dow === true);
+
+// ? 在非 dom/dow 字段非法（6 字段顺序：秒 分 时 日 月 周）
+ok('? 在秒非法', !C.parse('? * * * * *').ok);
+ok('? 在分钟非法', !C.parse('0 ? * * * *').ok);
+ok('? 在小时非法', !C.parse('0 0 ? * * *').ok);
+ok('? 在月非法', !C.parse('0 0 * * ? *').ok);
+
+console.log('\n=== 7. L / # 特殊字符明确报错 ===');
+ok('L 单独报错', !C.parse('0 0 L * *').ok);
+ok('L 后缀报错', !C.parse('0 0 15L * *').ok);
+ok('# 报错', !C.parse('0 0 * * 1#3').ok);
+// 确认错误信息提示
+ok('L 报错信息含提示', C.parse('0 0 L * *').error.indexOf('暂不支持') !== -1);
+
+console.log('\n=== 8. 6 字段 describe（带秒描述） ===');
+console.log('  "0 0 9 * * ?"        -> ' + C.describe('0 0 9 * * ?'));
+console.log('  "30 0 9 * * ?"       -> ' + C.describe('30 0 9 * * ?'));
+console.log('  "*/10 * * * * ?"     -> ' + C.describe('*/10 * * * * ?'));
+console.log('  "0,15,30,45 0 * * * ?" -> ' + C.describe('0,15,30,45 0 * * * ?'));
+console.log('  "5,10,30 0 * * * ?"    -> ' + C.describe('5,10,30 0 * * * ?'));
+
+// 单秒值扩展为 HH:MM:SS
+ok('单秒值扩展为 HH:MM:SS', C.describe('30 0 9 * * ?').indexOf('09:00:30') !== -1);
+// 步长秒描述为 "每N秒"
+ok('步长秒描述为每10秒', C.describe('*/10 * * * * ?').indexOf('每10秒') !== -1);
+// 等差列表 0,15,30,45 也识别为步长 → 每15秒
+ok('等差列表识别为每15秒', C.describe('0,15,30,45 0 * * * ?').indexOf('每15秒') !== -1);
+// 非等差列表描述为 "第X秒"
+ok('非等差列表描述为第N秒', C.describe('5,10,30 0 * * * ?').indexOf('第') !== -1);
+
+console.log('\n=== 9. 6 字段 nextRun（带秒计算） ===');
+
+// 每10秒，从 10:00:00 开始，应有 5 个：10:00:10, 10:00:20, 10:00:30, 10:00:40, 10:00:50
+var sr1 = C.nextRun('*/10 * * * * ?', new Date('2026-07-04T10:00:00'), 5);
+eq('每10秒返回5个', sr1.length, 5);
+eq('第一个10:00:10', sr1[0].getSeconds(), 10);
+eq('第二个10:00:20', sr1[1].getSeconds(), 20);
+
+// 每分钟0秒，从 10:00:30 开始，下一个是 10:01:00（秒=0，跨分钟）
+var sr2 = C.nextRun('0 * * * * ?', new Date('2026-07-04T10:00:30'), 1);
+eq('单秒值跨分钟', sr2[0].getMinutes(), 1);
+eq('单秒值秒=0', sr2[0].getSeconds(), 0);
+
+// 从 10:00:29.5 开始，秒=0，下一个是 10:00:30（秒=30，因为表达式秒=0... 等等 0 0 9 是秒0）
+// 0 0 9 * * ? = 每天 09:00:00，从 10:00:29.5 算，下一个是次日 09:00:00
+var sr3 = C.nextRun('0 0 9 * * ?', new Date('2026-07-04T10:00:29'), 1);
+eq('单秒值跨天-日', sr3[0].getDate(), 5);
+eq('单秒值跨天-时', sr3[0].getHours(), 9);
+eq('单秒值跨天-秒', sr3[0].getSeconds(), 0);
+
+// 秒列表 0,30，从 10:00:00 开始：10:00:00 已过(从下一秒), 10:00:30, 10:01:00, 10:01:30
+var sr4 = C.nextRun('0,30 * * * * ?', new Date('2026-07-04T10:00:00'), 4);
+eq('秒列表返回4个', sr4.length, 4);
+eq('秒列表第一个30秒', sr4[0].getSeconds(), 30);
+eq('秒列表第二个下一分0秒', sr4[1].getSeconds(), 0);
+eq('秒列表第二个下一分', sr4[1].getMinutes(), 1);
+
+// 同一分钟内多个匹配秒
+var sr5 = C.nextRun('*/20 * * * * ?', new Date('2026-07-04T10:00:05'), 3);
+eq('同分钟多秒-第一个20', sr5[0].getSeconds(), 20);
+eq('同分钟多秒-第二个40', sr5[1].getSeconds(), 40);
+eq('同分钟多秒-第三个下一分0', sr5[2].getSeconds(), 0);
+eq('同分钟多秒-第三个下一分', sr5[2].getMinutes(), 1);
+
+console.log('\n=== 10. 5/6 字段兼容性 ===');
+// 5 字段无 hasSeconds
+ok('5字段无 hasSeconds', C.parse('0 9 * * 1-5').hasSeconds === false);
+ok('5字段无 second 字段', C.parse('0 9 * * 1-5').fields.second === undefined);
+// 5 字段 nextRun 仍精确到分钟（秒=0）
+var cr = C.nextRun('0 9 * * 1-5', new Date('2026-07-04T10:00:00'), 1);
+eq('5字段结果秒=0', cr[0].getSeconds(), 0);
 
 console.log('\n=========================');
 console.log('通过: ' + pass + ' / 失败: ' + fail);
