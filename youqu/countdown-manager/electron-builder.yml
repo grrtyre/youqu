@@ -1,0 +1,21 @@
+appId: com.grrtyre.countdown-manager
+productName: 倒计时管家
+directories:
+  output: dist
+electronVersion: 28.3.3
+files:
+  - src/**/*
+  - build/**/*
+  - electron-builder.yml
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+  icon: build/icon.ico
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  shortcutName: 倒计时管家
