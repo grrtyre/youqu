@@ -4,6 +4,13 @@
 
 一个专注、克制、不打扰的习惯追踪工具。所有数据存储在本地，无需注册、无需联网，打开即用。基于 Electron 构建，拥有原生桌面应用的流畅体验。
 
+## ⬇️ 直接下载
+
+| 文件 | 平台 | 说明 | 下载 |
+| --- | --- | --- | --- |
+| 习惯管家-Setup-1.0.0.exe | Windows x64 | NSIS 安装包，支持自定义安装路径 | [⬇️ 下载](https://github.com/grrtyre/youqu/releases/download/habit-keeper-v1.0.0/habit-keeper-setup-1.0.0.exe) |
+| 习惯管家-1.0.0.exe | Windows x64 | 便携版，双击即用 | [⬇️ 下载](https://github.com/grrtyre/youqu/releases/download/habit-keeper-v1.0.0/habit-keeper-1.0.0.exe) |
+
 ## ✨ 核心功能
 
 - **一键打卡** — 大圆形打卡按钮，点击即可完成今日习惯，配合空格键快捷打卡
