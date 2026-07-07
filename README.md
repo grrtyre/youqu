@@ -6,9 +6,9 @@
 
 | 工具 | 简介 | 技术栈 | 状态 |
 |---|---|---|---|
-| [⏰ Cron 中文可视化](./cron-zh) | 中文原生的 Cron 表达式可视化生成器：实时中文解读、字段可视化、下次执行预览、常用预设 | 纯 HTML/CSS/JS | ✅ 可用 |
+| [⏰ Cron 中文可视化](./cron-zh) | 中文原生的 Cron 表达式可视化生成器：5/6 字段自动识别（支持 Spring/Quartz 带秒表达式）、`?` 标记兼容、实时中文解读、字段可视化、下次执行预览、常用预设 | 纯 HTML/CSS/JS | ✅ 可用 v2.0 |
 | [📋 剪贴板管家](./clipboard-manager) | Windows 桌面剪贴板历史管理器：苹果白风格、键盘导航、一键粘贴到前台、智能分类、纯本地隐私优先 | Electron + 原生 JS | ✅ 可用 |
-| [📝 Markdown 预览器](./markdown-preview) | 苹果白风格本地 Markdown 预览器：实时编辑、GFM 语法、中文排版优化、一键导出 HTML | 纯 HTML/CSS/JS | ✅ 可用 |
+| [📝 Markdown 预览器](./markdown-preview) | 苹果白风格本地 Markdown 预览器：实时编辑、GFM 语法、中文排版优化、保存 .md、阅读时长估算、一键导出 HTML/PDF | 纯 HTML/CSS/JS | ✅ 可用 v2.1 |
 | [🧰 开发者工具箱](./dev-toolbox) | 苹果白风格 7 合 1 开发者工具：颜色转换 / JSON 格式化 / 时间戳 / 正则测试 / 文本 Diff / Base64 / URL 编解码 | 纯 HTML/CSS/JS | ✅ 可用 |
 | [🎨 拾色管家](./color-picker) | 苹果白风格屏幕取色器：全局快捷键、放大镜精准取色、多调色板管理、WCAG 对比度检查、调色板多格式导出（CSS/SCSS/JSON/GPL/ASE）、托盘常驻、纯本地隐私 | Electron + 原生 JS | ✅ 可用 v1.1.0 |
 | [📸 截图管家](./screenshot-manager) | 苹果白风格截图标注工具：全局快捷键截图、6 种标注（矩形/箭头/画笔/文字/序号/马赛克）、屏幕贴图、历史回看、纯本地隐私 | Electron + 原生 JS | ✅ 可用 |
@@ -22,7 +22,6 @@
 | [📖 PDF管家](./pdf-toolbox) | 本地PDF工具箱·合并/拆分/压缩/加密/解密/水印/图片转PDF，纯本地隐私优先 | Electron + @cantoo/pdf-lib | ✅ 可用 v1.0.0 |
 | [⚖️ 文本对比管家](./diff-checker) | 苹果白风格文本对比工具：行级+字符级双 diff、并排/内联/统一格式三视图、忽略大小写/空白、文件拖放、PWA 离线可用 | 纯 HTML/CSS/JS · PWA | ✅ 可用 v1.0.0 |
 | [⏳ 倒计时管家](./countdown-manager) | 优雅的事件倒数日桌面工具：公历+农历双历法、年度重复、分类标签、置顶筛选、系统托盘、本地存储 | Electron + 原生 JS | ✅ 可用 v1.0.0 |
-| [📋 习惯管家](./habit-keeper) | 本地优先的每日习惯打卡桌面应用：一键打卡、连续天数、月历视图、完成率统计、多习惯管理、数据导入导出、纯本地隐私 | Electron + JavaScript | ✅ 可用 |
 <!-- 新项目在这里追加一行 -->
 
 ## 🎯 共同特点
@@ -58,4 +57,3 @@ _暂无，期待第一个支持者的出现。_
 ## 📄 License
 
 所有项目均采用 [MIT License](./LICENSE)，可自由使用。
-

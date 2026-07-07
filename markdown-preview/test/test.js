@@ -209,6 +209,30 @@ test('中英文之间自动加空格', function () {
   assert.strictEqual(addChineseSpaces('版本1.0已发布'), '版本 1.0 已发布');
 });
 
+test('addChineseSpaces 不破坏 HTML 标签', function () {
+  // 标签内的属性不应被插入空格
+  assert.strictEqual(addChineseSpaces('<a href="./中文doc.html">文档</a>'), '<a href="./中文doc.html">文档</a>');
+  assert.strictEqual(addChineseSpaces('<img src="assets/中文img.png" alt="图">'), '<img src="assets/中文img.png" alt="图">');
+  // 标签外的文本节点仍应被处理
+  assert.strictEqual(addChineseSpaces('<p>你好World</p>'), '<p>你好 World</p>');
+  // 空字符串与无标签文本
+  assert.strictEqual(addChineseSpaces(''), '');
+  assert.strictEqual(addChineseSpaces('中文abc'), '中文 abc');
+});
+
+test('链接 URL 含中文不被破坏', function () {
+  // 链接的 href 含中文字符时不应被插入空格
+  var result = parse('[文档](./中文doc.html)');
+  contains(result, 'href="./中文doc.html"');
+  assert.ok(result.indexOf('中文 doc.html') === -1, 'URL 中不应被插入空格');
+});
+
+test('图片 src 含中文不被破坏', function () {
+  var result = parse('![图](assets/中文img.png)');
+  contains(result, 'src="assets/中文img.png"');
+  assert.ok(result.indexOf('中文 img.png') === -1, 'src 中不应被插入空格');
+});
+
 test('中文和英文混合解析', function () {
   var result = parse('这是JavaScript代码');
   contains(result, 'JavaScript');

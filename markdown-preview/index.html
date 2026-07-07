@@ -25,13 +25,14 @@
           <button class="switch-btn" data-mode="preview" title="仅预览">👁</button>
         </div>
         <div class="actions">
-          <button class="btn" id="btn-open" title="打开 .md 文件">
-            <svg viewBox="0 0 20 20" width="13" height="13" style="vertical-align:-2px;margin-right:3px"><path d="M4 4a1 1 0 011-1h4l2 2h4a1 1 0 011 1v8a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>打开
-          </button>
-          <button class="btn" id="btn-copy" title="复制渲染后的 HTML">📋 复制</button>
-          <button class="btn" id="btn-export" title="导出为独立 HTML 文件">⬇ 导出</button>
-          <button class="btn" id="btn-pdf" title="打印 / 导出 PDF">🖨 PDF</button>
-          <button class="btn btn-ghost" id="btn-clear" title="清空编辑区">🗑 清空</button>
+          <button class="btn" id="btn-open" title="打开 .md 文件">打开</button>
+          <span class="action-sep" aria-hidden="true"></span>
+          <button class="btn" id="btn-copy" title="复制渲染后的 HTML">复制</button>
+          <button class="btn" id="btn-save-md" title="保存为 .md 文件">存 md</button>
+          <button class="btn" id="btn-export" title="导出为独立 HTML 文件">导出</button>
+          <button class="btn" id="btn-pdf" title="打印 / 导出 PDF">PDF</button>
+          <span class="action-sep" aria-hidden="true"></span>
+          <button class="btn btn-ghost" id="btn-clear" title="清空编辑区">清空</button>
           <button class="icon-btn" id="btn-theme" title="切换主题" aria-label="主题">
             <svg class="icon-light" viewBox="0 0 20 20" width="16" height="16"><circle cx="10" cy="10" r="3.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 1.5v2M10 16.5v2M2.5 10h-2M19.5 10h-2M4.3 4.3L3 3M17 17l-1.3-1.3M4.3 15.7L3 17M17 3l-1.3 1.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
             <svg class="icon-dark" viewBox="0 0 20 20" width="16" height="16" hidden><path d="M17 11.5a7 7 0 01-9-9 7 7 0 109 9z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
@@ -81,6 +82,8 @@
       <span id="stat-words">字数 0</span>
       <span class="sep">·</span>
       <span id="stat-lines">行数 1</span>
+      <span class="sep">·</span>
+      <span id="stat-reading" title="按 中文 300 字/分钟、英文 200 词/分钟 估算">阅读 0 分钟</span>
       <span class="spacer"></span>
       <span class="status-tip" id="status-tip">就绪 · 内容自动保存到本地</span>
     </footer>

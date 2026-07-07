@@ -27,6 +27,7 @@
   var statChars = document.getElementById('stat-chars');
   var statWords = document.getElementById('stat-words');
   var statLines = document.getElementById('stat-lines');
+  var statReading = document.getElementById('stat-reading');
   var statusTip = document.getElementById('status-tip');
   var main = document.getElementById('main');
   var app = document.querySelector('.app');
@@ -167,6 +168,19 @@
     statWords.textContent = '字数 ' + words;
     statLines.textContent = '行数 ' + lines;
     editorMeta.textContent = words + ' 字';
+
+    // 阅读时长估算：中文 300 字/分钟，英文 200 词/分钟
+    var minutes = cjk / 300 + en / 200;
+    var readingText;
+    if (minutes < 1 && minutes > 0) {
+      // 不足 1 分钟按秒显示
+      readingText = '阅读 ' + Math.max(1, Math.round(minutes * 60)) + ' 秒';
+    } else if (minutes === 0) {
+      readingText = '阅读 0 分钟';
+    } else {
+      readingText = '阅读 ' + Math.round(minutes) + ' 分钟';
+    }
+    statReading.textContent = readingText;
   }
 
   // ======================== 本地存储 ========================
@@ -250,6 +264,29 @@
     document.body.removeChild(a);
     setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
     toast('已导出 ' + name);
+  }
+
+  // ======================== 保存为 .md 文件 ========================
+  function saveMarkdown() {
+    var text = editor.value;
+    if (!text.trim()) {
+      toast('编辑区为空，无可保存内容');
+      return;
+    }
+    var blob = new Blob([text], { type: 'text/markdown;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    var ts = new Date();
+    var pad = function (n) { return n < 10 ? '0' + n : n; };
+    var name = 'markdown-' + ts.getFullYear() + pad(ts.getMonth() + 1) + pad(ts.getDate()) +
+      '-' + pad(ts.getHours()) + pad(ts.getMinutes()) + pad(ts.getSeconds()) + '.md';
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    toast('已保存 ' + name);
   }
 
   // ======================== 导出 PDF / 打印 ========================
@@ -506,6 +543,7 @@
 
   document.getElementById('btn-copy').addEventListener('click', copyHtml);
   document.getElementById('btn-export').addEventListener('click', exportHtml);
+  document.getElementById('btn-save-md').addEventListener('click', saveMarkdown);
   document.getElementById('btn-clear').addEventListener('click', clearAll);
   document.getElementById('btn-pdf').addEventListener('click', exportPdf);
   document.getElementById('btn-open').addEventListener('click', openFile);

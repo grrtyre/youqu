@@ -33,11 +33,28 @@
   /**
    * 中英文之间自动插入空格
    * 汉字与 ASCII 字母/数字之间加半角空格
+   * 注意：本函数会被作用于 parseInline 生成的 HTML 字符串，因此必须跳过
+   *       HTML 标签和属性值（如 href/src/title），否则会把
+   *       `./中文doc.html` 这样的 URL 破坏成 `./中文 doc.html`。
+   *       实现方式：按 HTML 标签拆分，只对标签外的文本节点应用空格规则。
    */
-  function addChineseSpaces(text) {
+  function addSpacesRaw(text) {
     text = text.replace(/([\u4e00-\u9fff\u3400-\u4dbf])([a-zA-Z0-9])/g, '$1 $2');
     text = text.replace(/([a-zA-Z0-9])([\u4e00-\u9fff\u3400-\u4dbf])/g, '$1 $2');
     return text;
+  }
+
+  function addChineseSpaces(text) {
+    if (!text) return text;
+    // 按标签拆分：偶数索引是文本节点，奇数索引是 HTML 标签
+    // 标签内的属性（href/src/title 等）不被处理，避免破坏 URL
+    var parts = text.split(/(<[^>]+>)/);
+    for (var i = 0; i < parts.length; i++) {
+      if (i % 2 === 0) {
+        parts[i] = addSpacesRaw(parts[i]);
+      }
+    }
+    return parts.join('');
   }
 
   // ======================== Slug 生成（用于目录跳转锚点） ========================

@@ -113,7 +113,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
+  padding: 14px 20px;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
@@ -136,12 +136,21 @@ body {
   font-size: 18px;
   line-height: 1;
   margin-left: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: var(--accent-soft);
+  border-radius: 7px;
+  font-size: 14px;
 }
 
 .title {
   font-size: 15px;
   font-weight: 600;
   letter-spacing: -0.01em;
+  color: var(--text);
 }
 
 .subtitle {
@@ -215,21 +224,31 @@ body {
 /* 操作按钮 */
 .actions {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   align-items: center;
+}
+
+/* 按钮组分隔符 */
+.action-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--border);
+  margin: 0 4px;
+  flex-shrink: 0;
 }
 
 .btn {
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text);
-  padding: 6px 12px;
+  padding: 6px 11px;
   border-radius: var(--radius-sm);
   font-size: 12.5px;
   font-family: var(--font);
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
+  line-height: 1.2;
 }
 
 .btn:hover {
@@ -250,6 +269,21 @@ body {
 .btn-ghost:hover {
   background: var(--surface-3);
   color: var(--text);
+  border-color: transparent;
+}
+
+/* 主操作按钮（强调描边样式，与线性按钮风格统一但有主次区分） */
+.btn-primary {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.btn-primary:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
 
 /* 主题图标显隐 */
@@ -278,11 +312,11 @@ body {
   overflow: hidden;
 }
 
-/* 目录侧边栏 */
+/* 目录侧边栏（Apple 风格侧边栏：略灰背景与主内容区区分） */
 .toc-pane {
-  flex: 0 0 220px;
+  flex: 0 0 240px;
   margin-right: 0;
-  background: var(--surface);
+  background: var(--surface-3);
   border: 1px solid var(--border-soft);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
@@ -291,6 +325,11 @@ body {
   min-width: 0;
   overflow: hidden;
   margin-right: 8px;
+}
+
+.toc-pane .pane-header {
+  background: transparent;
+  border-bottom: 1px solid var(--border-soft);
 }
 
 .toc-list {
@@ -317,7 +356,7 @@ body {
   text-align: left;
   background: transparent;
   border: none;
-  padding: 5px 10px;
+  padding: 6px 12px;
   font-family: var(--font);
   font-size: 12.5px;
   color: var(--text-2);
@@ -366,6 +405,23 @@ body {
   z-index: 2;
 }
 
+.gutter::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  background: var(--border-soft);
+  border-radius: 1px;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.gutter:hover::before {
+  background: var(--accent);
+}
+
 .gutter::after {
   content: "";
   position: absolute;
@@ -409,6 +465,16 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* 目录计数显示为小徽章 */
+#toc-meta {
+  background: var(--surface-3);
+  color: var(--text-2);
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 10.5px;
+  font-weight: 500;
+}
+
 /* ============================ 编辑器 ============================ */
 .editor {
   flex: 1;
@@ -421,7 +487,7 @@ body {
   font-size: 13.5px;
   line-height: 1.7;
   color: var(--text);
-  background: var(--surface);
+  background: var(--surface-2);
   user-select: text;
   tab-size: 2;
 }
@@ -438,7 +504,7 @@ body {
 .editor::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 5px;
-  border: 2px solid var(--surface);
+  border: 2px solid var(--surface-2);
 }
 
 .editor::-webkit-scrollbar-thumb:hover {
@@ -508,18 +574,18 @@ body {
 }
 
 .markdown-body h1 {
-  font-size: 1.9em;
+  font-size: 1.7em;
   padding-bottom: 0.3em;
   border-bottom: 1px solid var(--border-soft);
 }
 
 .markdown-body h2 {
-  font-size: 1.5em;
+  font-size: 1.4em;
   padding-bottom: 0.3em;
   border-bottom: 1px solid var(--border-soft);
 }
 
-.markdown-body h3 { font-size: 1.25em; }
+.markdown-body h3 { font-size: 1.2em; }
 .markdown-body h4 { font-size: 1.05em; }
 .markdown-body h5 { font-size: 0.92em; color: var(--text-2); }
 .markdown-body h6 { font-size: 0.85em; color: var(--text-2); }
@@ -563,6 +629,7 @@ body {
 .markdown-body pre {
   background: var(--code-bg);
   border: 1px solid var(--border-soft);
+  border-left: 3px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 14px 16px;
   overflow-x: auto;
@@ -595,10 +662,10 @@ body {
 .markdown-body blockquote {
   border-left: 3px solid var(--accent);
   background: var(--accent-soft);
-  padding: 0.6em 1em;
+  padding: 0.7em 1.1em;
   margin: 1em 0;
   border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
-  color: var(--text-2);
+  color: var(--text);
 }
 
 .markdown-body blockquote p {
@@ -667,11 +734,11 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 16px;
+  padding: 7px 16px;
   background: var(--surface);
   border-top: 1px solid var(--border-soft);
-  font-size: 11.5px;
-  color: var(--text-3);
+  font-size: 12px;
+  color: var(--text-2);
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 }
@@ -686,7 +753,7 @@ body {
 }
 
 .status-tip {
-  color: var(--text-3);
+  color: var(--text-2);
 }
 
 /* ============================ 视图模式 ============================ */
