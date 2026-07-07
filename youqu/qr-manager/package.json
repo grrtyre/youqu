@@ -1,0 +1,61 @@
+{
+  "name": "qr-manager",
+  "version": "1.0.0",
+  "description": "二维码管家 - 生成与识别二维码的本地桌面工具，支持 WiFi/名片/邮箱模板、批量生成、截屏识别",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/test.js",
+    "dist": "electron-builder --win --x64",
+    "icon": "python build/make_icon.py"
+  },
+  "author": "youqu",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "electron-store": "^8.2.0",
+    "jsqr": "^1.4.0",
+    "pngjs": "^3.4.0",
+    "qrcode": "^1.5.4"
+  },
+  "build": {
+    "appId": "com.youqu.qrmanager",
+    "productName": "二维码管家",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "二维码管家"
+    }
+  }
+}

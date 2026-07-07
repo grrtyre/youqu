@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self';">
+  <title>二维码管家</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- 标题栏 -->
+  <header class="title-bar">
+    <div class="brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <rect x="2" y="2" width="7" height="7" rx="1.5" fill="#007aff"/>
+        <rect x="15" y="2" width="7" height="7" rx="1.5" fill="#007aff"/>
+        <rect x="2" y="15" width="7" height="7" rx="1.5" fill="#007aff"/>
+        <rect x="13" y="13" width="3" height="3" rx="0.6" fill="#ff9500"/>
+        <rect x="18" y="13" width="4" height="4" rx="0.8" fill="#ff9500"/>
+        <rect x="13" y="18" width="4" height="4" rx="0.8" fill="#ff9500"/>
+        <rect x="18.5" y="18.5" width="3" height="3" rx="0.6" fill="#ff9500"/>
+      </svg>
+      <span class="brand-name">二维码管家</span>
+    </div>
+    <div class="title-spacer"></div>
+    <div class="window-ctrl">
+      <button class="win-btn" id="btnMin" title="最小化" aria-label="最小化">
+        <svg width="12" height="12" viewBox="0 0 12 12"><rect y="5.5" width="12" height="1.2" rx="0.6" fill="currentColor"/></svg>
+      </button>
+      <button class="win-btn close" id="btnClose" title="关闭" aria-label="关闭">
+        <svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 2 L10 10 M10 2 L2 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- 主体 -->
+  <div class="app">
+    <!-- 侧边栏 -->
+    <nav class="sidebar">
+      <button class="nav-item active" data-view="generate">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><line x1="14" y1="14" x2="14" y2="14"/><line x1="21" y1="14" x2="21" y2="14"/><line x1="14" y1="21" x2="14" y2="21"/><line x1="21" y1="21" x2="21" y2="21"/></svg>
+        <span>生成</span>
+      </button>
+      <button class="nav-item" data-view="decode">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg>
+        <span>识别</span>
+      </button>
+      <button class="nav-item" data-view="history">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+        <span>历史</span>
+      </button>
+      <button class="nav-item" data-view="favorites">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+        <span>收藏</span>
+      </button>
+      <div class="nav-spacer"></div>
+      <div class="nav-foot">
+        <div class="ver">v1.0.0 · 本地</div>
+      </div>
+    </nav>
+
+    <!-- 内容区 -->
+    <main class="content">
+      <!-- 生成视图 -->
+      <section class="view view-generate active" id="view-generate">
+        <div class="gen-layout">
+          <!-- 左：表单 -->
+          <div class="gen-form card">
+            <div class="card-head">
+              <h2>生成二维码</h2>
+              <p class="card-sub">选择类型，填写内容，实时预览</p>
+            </div>
+            <!-- 类型选择 -->
+            <div class="type-grid" id="typeGrid">
+              <button class="type-cell active" data-type="text"><span class="ti"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg></span>文本</button>
+              <button class="type-cell" data-type="url"><span class="ti"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></svg></span>网址</button>
+              <button class="type-cell" data-type="wifi"><span class="ti"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14 0"/><path d="M8.5 16.05a6 6 0 0 1 7 0"/><path d="M12 19.5h.01"/></svg></span>WiFi</button>
+              <button class="type-cell" data-type="vcard"><span class="ti"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3"/><path d="M6 20a6 6 0 0 1 12 0"/></svg></span>名片</button>
+              <button class="type-cell" data-type="email"><span class="ti"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>邮箱</button>
+              <button class="type-cell" data-type="sms"><span class="ti"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>短信</button>
+              <button class="type-cell" data-type="phone"><span class="ti"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>电话</button>
+            </div>
+            <!-- 动态字段 -->
+            <div class="form-fields" id="formFields"></div>
+            <!-- 样式选项 -->
+            <div class="divider"></div>
+            <div class="style-section">
+              <div class="style-row">
+                <label class="style-label">前景色</label>
+                <div class="color-pick">
+                  <input type="color" id="darkColor" value="#000000">
+                  <input type="text" id="darkColorText" value="#000000" maxlength="7">
+                </div>
+              </div>
+              <div class="style-row">
+                <label class="style-label">背景色</label>
+                <div class="color-pick">
+                  <input type="color" id="lightColor" value="#ffffff">
+                  <input type="text" id="lightColorText" value="#ffffff" maxlength="7">
+                </div>
+              </div>
+              <div class="style-row">
+                <label class="style-label">容错级别</label>
+                <div class="seg-group" id="eclGroup">
+                  <button class="seg" data-ecl="L">L</button>
+                  <button class="seg active" data-ecl="M">M</button>
+                  <button class="seg" data-ecl="Q">Q</button>
+                  <button class="seg" data-ecl="H">H</button>
+                </div>
+              </div>
+              <div class="style-row">
+                <label class="style-label">尺寸</label>
+                <div class="slider-wrap">
+                  <input type="range" id="sizeRange" min="200" max="800" step="20" value="480">
+                  <span class="slider-val" id="sizeVal">480</span>
+                </div>
+              </div>
+              <div class="style-row">
+                <label class="style-label">边距</label>
+                <div class="slider-wrap">
+                  <input type="range" id="marginRange" min="0" max="10" step="1" value="4">
+                  <span class="slider-val" id="marginVal">4</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 右：预览 -->
+          <div class="gen-preview card">
+            <div class="card-head">
+              <h2>预览<span class="live-badge"><span class="live-dot"></span>实时</span></h2>
+              <p class="card-sub">扫描即可使用</p>
+            </div>
+            <div class="preview-stage" id="previewStage">
+              <div class="qr-empty" id="qrEmpty">
+                <div class="qr-empty-icon">
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><rect x="18" y="14" width="3" height="3"/><rect x="14" y="18" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/></svg>
+                </div>
+                <p>填写内容后自动生成</p>
+              </div>
+              <img id="qrImage" class="qr-img hidden" alt="二维码预览">
+            </div>
+            <div class="preview-actions">
+              <button class="btn-primary" id="btnSavePNG" disabled>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                保存 PNG
+              </button>
+              <button class="btn-ghost" id="btnSaveSVG" disabled>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                保存 SVG
+              </button>
+              <button class="btn-ghost" id="btnCopy" disabled>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                复制图片
+              </button>
+              <button class="btn-ghost fav-btn" id="btnFav" disabled>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+                加入收藏
+              </button>
+            </div>
+            <div class="preview-meta" id="previewMeta"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 识别视图 -->
+      <section class="view view-decode" id="view-decode">
+        <div class="decode-layout">
+          <div class="card decode-card">
+            <div class="card-head">
+              <h2>识别二维码</h2>
+              <p class="card-sub">从图片或截屏中识别二维码内容</p>
+            </div>
+            <div class="decode-actions">
+              <button class="btn-primary big" id="btnPickImage">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                选择图片识别
+              </button>
+              <button class="btn-ghost big" id="btnScreen">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                截屏识别
+              </button>
+            </div>
+            <div class="decode-dropzone" id="dropzone">
+              <div class="dz-inner">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <p>或将图片拖到此处</p>
+                <span class="dz-hint">支持 PNG / JPG / BMP</span>
+              </div>
+            </div>
+          </div>
+          <div class="card decode-result" id="decodeResult">
+            <div class="card-head">
+              <h2>识别结果</h2>
+              <p class="card-sub">识别成功后将显示在此</p>
+            </div>
+            <div class="result-empty" id="resultEmpty">
+              <p>等待识别…</p>
+            </div>
+            <div class="result-body hidden" id="resultBody">
+              <div class="result-type" id="resultType"></div>
+              <pre class="result-text" id="resultText"></pre>
+              <div class="result-actions">
+                <button class="btn-primary" id="btnCopyResult">复制内容</button>
+                <button class="btn-ghost" id="btnOpenResult">打开链接</button>
+                <button class="btn-ghost" id="btnResultToFav">加入收藏</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 历史视图 -->
+      <section class="view view-history" id="view-history">
+        <div class="list-wrap">
+          <div class="list-head card">
+            <div>
+              <h2>历史记录</h2>
+              <p class="card-sub">最近生成与识别的记录（最多保留 100 条）</p>
+            </div>
+            <button class="btn-ghost danger" id="btnClearHistory">清空历史</button>
+          </div>
+          <div class="list-body" id="historyList">
+            <div class="empty-state">
+              <p>暂无历史记录</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 收藏视图 -->
+      <section class="view view-favorites" id="view-favorites">
+        <div class="list-wrap">
+          <div class="list-head card">
+            <div>
+              <h2>我的收藏</h2>
+              <p class="card-sub">常用二维码收藏夹</p>
+            </div>
+            <button class="btn-ghost danger" id="btnClearFav">清空收藏</button>
+          </div>
+          <div class="list-body" id="favList">
+            <div class="empty-state">
+              <p>暂无收藏</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
