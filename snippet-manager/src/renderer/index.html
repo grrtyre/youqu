@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>代码片段管家</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="../core/highlight.js"></script>
+</head>
+<body>
+  <div class="app">
+    <!-- 左侧导航栏 -->
+    <aside class="sidebar">
+      <div class="sidebar-head">
+        <div class="brand">
+          <div class="brand-logo">&lt;/&gt;</div>
+          <span>代码片段管家</span>
+        </div>
+        <button class="btn-new" id="btnNew" title="新建片段 (Ctrl+N)">＋ 新建</button>
+      </div>
+      <nav class="nav" id="nav">
+        <div class="nav-section">
+          <div class="nav-title">库</div>
+          <div class="nav-item active" data-filter="all">
+            <span class="icon">☰</span><span class="label">全部片段</span><span class="count" id="cntAll">0</span>
+          </div>
+          <div class="nav-item" data-filter="favorites">
+            <span class="icon">★</span><span class="label">收藏</span><span class="count" id="cntFav">0</span>
+          </div>
+          <div class="nav-item" data-filter="pinned">
+            <span class="icon">⚑</span><span class="label">置顶</span><span class="count" id="cntPin">0</span>
+          </div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-title">按语言</div>
+          <div id="navLangs"></div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-title">按标签</div>
+          <div id="navTags"></div>
+        </div>
+      </nav>
+      <div class="sidebar-foot">
+        <span id="footCount">0 个片段</span>
+        <div class="foot-actions">
+          <button class="tool-btn" id="btnImport" title="导入">↓</button>
+          <button class="tool-btn" id="btnExport" title="导出">↑</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 中间片段列表 -->
+    <section class="list-pane">
+      <div class="search-bar">
+        <span class="search-icon">⌕</span>
+        <input class="search-input" id="searchInput" placeholder="搜索标题、内容、标签..." />
+      </div>
+      <div class="list-head">
+        <span class="title" id="listTitle">全部片段</span>
+        <span class="sort" id="listCount">0</span>
+      </div>
+      <div class="snippet-list" id="snippetList"></div>
+    </section>
+
+    <!-- 右侧详情/编辑 -->
+    <section class="detail-pane" id="detailPane">
+      <div class="detail-empty" id="detailEmpty">
+        <div class="big">&lt;/&gt;</div>
+        <div class="tip">选择一个片段查看，或点击「新建」创建</div>
+        <div class="tip" style="font-size:11px;color:var(--text-3)">Ctrl+Shift+S 全局唤起 · Ctrl+N 新建</div>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
