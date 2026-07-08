@@ -1,0 +1,40 @@
+{
+  "name": "disk-manager",
+  "version": "1.0.0",
+  "description": "磁盘管家 - 苹果白风格磁盘空间可视化分析器",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/test.js",
+    "build": "electron-builder --win --x64"
+  },
+  "author": "youqu",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.6.4"
+  },
+  "build": {
+    "appId": "com.youqu.diskmanager",
+    "productName": "磁盘管家",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false
+    }
+  }
+}
