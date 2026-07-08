@@ -21,8 +21,8 @@
 
 | 版本 | 说明 | 下载 |
 |---|---|---|
-| Windows 安装版 | 双击安装，自动创建快捷方式 | [代码片段管家 Setup 1.0.0.exe](../../releases/download/snippet-manager-v1.0.0/...) |
-| Windows 便携版 | 免安装，双击即用 | [代码片段管家 1.0.0.exe](../../releases/download/snippet-manager-v1.0.0/...) |
+| Windows 安装版 | 双击安装，自动创建快捷方式 | [snippet-manager-1.0.0-setup.exe](https://github.com/grrtyre/youqu/releases/download/snippet-manager-v1.0.0/snippet-manager-1.0.0-setup.exe) |
+| Windows 便携版 | 免安装，双击即用 | [snippet-manager-1.0.0-portable.exe](https://github.com/grrtyre/youqu/releases/download/snippet-manager-v1.0.0/snippet-manager-1.0.0-portable.exe) |
 
 > 下载链接以 GitHub Release 实际上传返回的地址为准。
 
