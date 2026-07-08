@@ -56,8 +56,8 @@ npm test
 
 | 平台 | 下载 |
 |---|---|
-| Windows x64 安装包 | [磁盘管家 Setup 1.0.0.exe](../../releases/latest) |
-| Windows x64 便携版 | [磁盘管家 Portable 1.0.0.exe](../../releases/latest) |
+| Windows x64 安装包 | [磁盘管家 Setup 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/disk-manager-v1.0.0/disk-manager-setup-1.0.0.exe) |
+| Windows x64 便携版 | [磁盘管家 Portable 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/disk-manager-v1.0.0/disk-manager-portable-1.0.0.exe) |
 
 ## ☕ 支持我们
 
