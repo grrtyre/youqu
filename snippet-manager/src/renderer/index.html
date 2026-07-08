@@ -2,10 +2,11 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>代码片段管家</title>
   <link rel="stylesheet" href="styles.css" />
-  <script src="../core/highlight.js"></script>
+  <script src="../core/highlight.js" defer></script>
 </head>
 <body>
   <div class="app">
@@ -13,22 +14,27 @@
     <aside class="sidebar">
       <div class="sidebar-head">
         <div class="brand">
-          <div class="brand-logo">&lt;/&gt;</div>
+          <div class="brand-logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 6 3 12 8 18"/><polyline points="16 6 21 12 16 18"/></svg>
+          </div>
           <span>代码片段管家</span>
         </div>
-        <button class="btn-new" id="btnNew" title="新建片段 (Ctrl+N)">＋ 新建</button>
+        <button class="btn-new" id="btnNew" title="新建片段 (Ctrl+N)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          新建
+        </button>
       </div>
       <nav class="nav" id="nav">
         <div class="nav-section">
           <div class="nav-title">库</div>
           <div class="nav-item active" data-filter="all">
-            <span class="icon">☰</span><span class="label">全部片段</span><span class="count" id="cntAll">0</span>
+            <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></span><span class="label">全部片段</span><span class="count" id="cntAll">0</span>
           </div>
           <div class="nav-item" data-filter="favorites">
-            <span class="icon">★</span><span class="label">收藏</span><span class="count" id="cntFav">0</span>
+            <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 3 14.7 9.3 21.5 9.9 16.3 14.3 17.9 21 12 17.3 6.1 21 7.7 14.3 2.5 9.9 9.3 9.3 12 3"/></svg></span><span class="label">收藏</span><span class="count" id="cntFav">0</span>
           </div>
           <div class="nav-item" data-filter="pinned">
-            <span class="icon">⚑</span><span class="label">置顶</span><span class="count" id="cntPin">0</span>
+            <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M9 17h6l-1.5-4.5V5h-3v7.5L9 17z"/><path d="M7.5 5h9"/></svg></span><span class="label">置顶</span><span class="count" id="cntPin">0</span>
           </div>
         </div>
         <div class="nav-section">
@@ -43,8 +49,12 @@
       <div class="sidebar-foot">
         <span id="footCount">0 个片段</span>
         <div class="foot-actions">
-          <button class="tool-btn" id="btnImport" title="导入">↓</button>
-          <button class="tool-btn" id="btnExport" title="导出">↑</button>
+          <button class="tool-btn" id="btnImport" title="导入">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><polyline points="7 10 12 15 17 10"/><path d="M5 21h14"/></svg>
+          </button>
+          <button class="tool-btn" id="btnExport" title="导出">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><polyline points="7 8 12 3 17 8"/><path d="M5 21h14"/></svg>
+          </button>
         </div>
       </div>
     </aside>
@@ -52,8 +62,10 @@
     <!-- 中间片段列表 -->
     <section class="list-pane">
       <div class="search-bar">
-        <span class="search-icon">⌕</span>
-        <input class="search-input" id="searchInput" placeholder="搜索标题、内容、标签..." />
+        <span class="search-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+        </span>
+        <input class="search-input" id="searchInput" placeholder="搜索标题、内容、标签... (Ctrl+F)" />
       </div>
       <div class="list-head">
         <span class="title" id="listTitle">全部片段</span>
@@ -65,15 +77,17 @@
     <!-- 右侧详情/编辑 -->
     <section class="detail-pane" id="detailPane">
       <div class="detail-empty" id="detailEmpty">
-        <div class="big">&lt;/&gt;</div>
+        <div class="big">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 6 3 12 8 18"/><polyline points="16 6 21 12 16 18"/></svg>
+        </div>
         <div class="tip">选择一个片段查看，或点击「新建」创建</div>
-        <div class="tip" style="font-size:11px;color:var(--text-3)">Ctrl+Shift+S 全局唤起 · Ctrl+N 新建</div>
+        <div class="tip" style="font-size:11px;color:var(--text-3)">Ctrl+Shift+S 全局唤起 · Ctrl+N 新建 · Ctrl+F 搜索</div>
       </div>
     </section>
   </div>
 
   <div class="toast" id="toast"></div>
 
-  <script src="renderer.js"></script>
+  <script src="renderer.js" defer></script>
 </body>
 </html>

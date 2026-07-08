@@ -39,7 +39,52 @@ function langLabel(id) {
 }
 
 function escapeHtml(s) {
-  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// ===== SVG 图标（线条风格，stroke-width 1.6） =====
+const ICON = {
+  star: '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 3 14.7 9.3 21.5 9.9 16.3 14.3 17.9 21 12 17.3 6.1 21 7.7 14.3 2.5 9.9 9.3 9.3 12 3"/></svg>',
+  starOutline: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 3 14.7 9.3 21.5 9.9 16.3 14.3 17.9 21 12 17.3 6.1 21 7.7 14.3 2.5 9.9 9.3 9.3 12 3"/></svg>',
+  pin: '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M9 17h6l-1.5-4.5V5h-3v7.5L9 17z"/><path d="M7.5 5h9"/></svg>',
+  pinOutline: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M9 17h6l-1.5-4.5V5h-3v7.5L9 17z"/><path d="M7.5 5h9"/></svg>',
+  copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 20 7"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/><line x1="10" y1="11" x2="10" y2="16"/><line x1="14" y1="11" x2="14" y2="16"/></svg>',
+  dot: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="4"/></svg>',
+  hash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="4" x2="8" y2="20"/><line x1="16" y1="4" x2="14" y2="20"/></svg>',
+  code: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 6 3 12 8 18"/><polyline points="16 6 21 12 16 18"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  alert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v10"/><circle cx="12" cy="17.5" r="1" fill="currentColor" stroke="none"/></svg>',
+};
+
+// ===== 确认对话框（苹果白风格，替代原生 confirm） =====
+function confirmDialog({ title, message, confirmText = '确认', cancelText = '取消', danger = true }) {
+  return new Promise((resolve) => {
+    const mask = document.createElement('div');
+    mask.className = 'modal-mask';
+    mask.innerHTML = `
+      <div class="confirm-modal">
+        <div class="confirm-body">
+          <div class="confirm-icon-wrap">
+            <div class="confirm-icon">${ICON.alert}</div>
+            <div class="confirm-title">${escapeHtml(title)}</div>
+          </div>
+          <div class="confirm-msg">${escapeHtml(message)}</div>
+        </div>
+        <div class="modal-foot">
+          <button class="ghost-btn" data-cancel>${escapeHtml(cancelText)}</button>
+          <button class="danger-btn" data-ok>${escapeHtml(confirmText)}</button>
+        </div>
+      </div>`;
+    document.body.appendChild(mask);
+    const close = (val) => { mask.remove(); resolve(val); };
+    mask.querySelector('[data-cancel]').addEventListener('click', () => close(false));
+    mask.querySelector('[data-ok]').addEventListener('click', () => close(true));
+    mask.addEventListener('click', (e) => { if (e.target === mask) close(false); });
+    // ESC 取消
+    const onKey = (e) => { if (e.key === 'Escape') { close(false); document.removeEventListener('keydown', onKey); } };
+    document.addEventListener('keydown', onKey);
+  });
 }
 
 let toastTimer;
@@ -72,7 +117,7 @@ function renderNav(langs, tags) {
   navLangs.innerHTML = langs.slice(0, 10).map(({ language, count }) => {
     const active = state.filter.type === 'lang' && state.filter.value === language ? 'active' : '';
     return `<div class="nav-item ${active}" data-filter="lang" data-value="${escapeHtml(language)}">
-      <span class="icon">●</span><span class="label">${escapeHtml(langLabel(language))}</span><span class="count">${count}</span>
+      <span class="icon">${ICON.dot}</span><span class="label">${escapeHtml(langLabel(language))}</span><span class="count">${count}</span>
     </div>`;
   }).join('') || '<div style="padding:4px 10px;font-size:12px;color:var(--text-3)">暂无</div>';
 
@@ -80,7 +125,7 @@ function renderNav(langs, tags) {
   navTags.innerHTML = tags.slice(0, 10).map(({ tag, count }) => {
     const active = state.filter.type === 'tag' && state.filter.value === tag ? 'active' : '';
     return `<div class="nav-item ${active}" data-filter="tag" data-value="${escapeHtml(tag)}">
-      <span class="icon">#</span><span class="label">${escapeHtml(tag)}</span><span class="count">${count}</span>
+      <span class="icon">${ICON.hash}</span><span class="label">${escapeHtml(tag)}</span><span class="count">${count}</span>
     </div>`;
   }).join('') || '<div style="padding:4px 10px;font-size:12px;color:var(--text-3)">暂无</div>';
 }
@@ -118,18 +163,17 @@ function renderList() {
   elListCount.textContent = arr.length;
 
   if (arr.length === 0) {
-    elList.innerHTML = `<div class="empty-state"><div class="emoji">∅</div><div class="text">没有匹配的片段</div></div>`;
+    elList.innerHTML = `<div class="empty-state"><div class="emoji">${ICON.code}</div><div class="text">没有匹配的片段</div></div>`;
     return;
   }
 
   elList.innerHTML = arr.map((s) => {
     const active = state.current && s.id === state.current.id ? 'active' : '';
-    const preview = (s.content || '').split('\n')[0].slice(0, 80);
     return `<div class="snippet-card ${active}" data-id="${s.id}">
       <div class="card-row">
         <span class="card-lang">${escapeHtml(langLabel(s.language))}</span>
-        ${s.favorite ? '<span class="card-fav">★</span>' : ''}
-        ${s.pinned ? '<span class="card-pin">⚑</span>' : ''}
+        ${s.favorite ? `<span class="card-fav">${ICON.star}</span>` : ''}
+        ${s.pinned ? `<span class="card-pin">${ICON.pin}</span>` : ''}
         <span class="card-meta">${fmtDate(s.updatedAt || s.createdAt)}</span>
       </div>
       <div class="card-title">${escapeHtml(s.title)}</div>
@@ -152,9 +196,9 @@ function renderDetail() {
   const s = state.current;
   if (!s) {
     elDetail.innerHTML = `<div class="detail-empty" id="detailEmpty">
-      <div class="big">&lt;/&gt;</div>
+      <div class="big">${ICON.code}</div>
       <div class="tip">选择一个片段查看，或点击「新建」创建</div>
-      <div class="tip" style="font-size:11px;color:var(--text-3)">Ctrl+Shift+S 全局唤起 · Ctrl+N 新建</div>
+      <div class="tip" style="font-size:11px;color:var(--text-3)">Ctrl+Shift+S 全局唤起 · Ctrl+N 新建 · Ctrl+F 搜索</div>
     </div>`;
     return;
   }
@@ -166,10 +210,10 @@ function renderDetail() {
   elDetail.innerHTML = `
     <div class="detail-head">
       <input class="detail-title" id="editTitle" value="${escapeHtml(s.title)}" placeholder="片段标题" />
-      <button class="tool-btn ${s.favorite ? 'active' : ''}" id="btnFav" title="收藏">★</button>
-      <button class="tool-btn ${s.pinned ? 'active' : ''}" id="btnPin" title="置顶">⚑</button>
-      <button class="tool-btn" id="btnCopy" title="复制代码">⧉</button>
-      <button class="tool-btn danger" id="btnDel" title="删除">✕</button>
+      <button class="tool-btn ${s.favorite ? 'active' : ''}" id="btnFav" title="收藏">${s.favorite ? ICON.star : ICON.starOutline}</button>
+      <button class="tool-btn ${s.pinned ? 'active' : ''}" id="btnPin" title="置顶">${s.pinned ? ICON.pin : ICON.pinOutline}</button>
+      <button class="tool-btn" id="btnCopy" title="复制代码">${ICON.copy}</button>
+      <button class="tool-btn danger" id="btnDel" title="删除">${ICON.trash}</button>
     </div>
     <div class="detail-meta">
       <div class="field">
@@ -190,7 +234,7 @@ function renderDetail() {
     <div class="code-area">
       <div class="code-toolbar">
         <span class="lang-badge">${escapeHtml(s.language)}</span>
-        <button class="copy-btn" id="btnCopy2">⧉ 复制代码</button>
+        <button class="copy-btn" id="btnCopy2">${ICON.copy} 复制代码</button>
       </div>
       <div class="code-scroll">
         <pre class="code-view" id="codeView"></pre>
@@ -262,7 +306,12 @@ function renderDetail() {
     refresh();
   });
   $('#btnDel').addEventListener('click', async () => {
-    if (confirm('确定删除这个片段吗？此操作不可撤销。')) {
+    const ok = await confirmDialog({
+      title: '删除片段',
+      message: '确定删除这个片段吗？此操作不可撤销。',
+      confirmText: '删除',
+    });
+    if (ok) {
       await API.remove(s.id);
       state.current = null;
       renderDetail();
@@ -274,9 +323,9 @@ function renderDetail() {
     await API.copy(s.content || '');
     const btn = $('#btnCopy2');
     btn.classList.add('done');
-    btn.textContent = '✓ 已复制';
+    btn.innerHTML = ICON.check + ' 已复制';
     toast('代码已复制到剪贴板');
-    setTimeout(() => { btn.classList.remove('done'); btn.textContent = '⧉ 复制代码'; }, 1500);
+    setTimeout(() => { btn.classList.remove('done'); btn.innerHTML = ICON.copy + ' 复制代码'; }, 1500);
   };
   $('#btnCopy').addEventListener('click', doCopy);
   $('#btnCopy2').addEventListener('click', doCopy);

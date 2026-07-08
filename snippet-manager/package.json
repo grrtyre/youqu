@@ -1,6 +1,6 @@
 {
   "name": "snippet-manager",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "代码片段管家 - 本地优先的代码片段管理桌面应用",
   "main": "src/main.js",
   "scripts": {
