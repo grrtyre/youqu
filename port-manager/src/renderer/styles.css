@@ -223,21 +223,25 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px 12px;
+  padding: 28px 16px;
   text-align: center;
+  color: var(--text-3);
+  background: var(--card);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-xs);
+  margin: 4px 0;
 }
 
-.fav-empty-icon {
-  font-size: 28px;
-  color: var(--text-3);
-  margin-bottom: 8px;
-  opacity: 0.5;
+.fav-empty svg {
+  margin-bottom: 10px;
+  opacity: 0.4;
 }
 
 .fav-empty-text {
   font-size: 12px;
-  color: var(--text-3);
+  color: var(--text-2);
   line-height: 1.5;
+  font-weight: 500;
 }
 
 .fav-item {
@@ -667,7 +671,7 @@ html, body {
 }
 
 .conn-table td {
-  padding: 8px 12px;
+  padding: 7px 12px;
   border-bottom: 1px solid var(--border);
   color: var(--text);
   font-variant-numeric: tabular-nums;
@@ -676,6 +680,7 @@ html, body {
   text-overflow: ellipsis;
   max-width: 0;
   vertical-align: middle;
+  font-size: 13px;
 }
 
 .conn-table tbody tr {
@@ -695,8 +700,8 @@ html, body {
 }
 
 .col-proto { width: 58px; }
-.col-local { width: 180px; }
-.col-foreign { width: 155px; }
+.col-local { width: 185px; }
+.col-foreign { width: 130px; }
 .col-state { width: 82px; }
 .col-pid { width: 65px; }
 .col-process { width: 200px; }

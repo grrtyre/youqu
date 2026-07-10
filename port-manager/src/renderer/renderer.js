@@ -144,14 +144,14 @@ function getBuiltinDemoData() {
     { proto: 'TCP', localAddr: '0.0.0.0', localPort: 8080, foreignAddr: '0.0.0.0', foreignPort: 0, state: 'LISTENING', pid: 15420, processName: 'python.exe', memUsage: '56,200 K', favorite: true },
     { proto: 'TCP', localAddr: '0.0.0.0', localPort: 443, foreignAddr: '0.0.0.0', foreignPort: 0, state: 'LISTENING', pid: 9876, processName: 'nginx.exe', memUsage: '12,800 K', favorite: true },
     { proto: 'TCP', localAddr: '0.0.0.0', localPort: 3306, foreignAddr: '0.0.0.0', foreignPort: 0, state: 'LISTENING', pid: 7654, processName: 'mysqld.exe', memUsage: '345,672 K', favorite: false },
-    { proto: 'TCP', localAddr: '127.0.0.1', localPort: 5432, foreignAddr: '0.0.0.0', foreignPort: 0, state: 'LISTENING', pid: 5432, processName: 'postgres.exe', memUsage: '128,500 K', favorite: false },
-    { proto: 'TCP', localAddr: '0.0.0.0', localPort: 80, foreignAddr: '0.0.0.0', foreignPort: 0, state: 'LISTENING', pid: 3344, processName: 'httpd.exe', memUsage: '24,100 K', favorite: false },
     { proto: 'TCP', localAddr: '127.0.0.1', localPort: 6379, foreignAddr: '0.0.0.0', foreignPort: 0, state: 'LISTENING', pid: 6379, processName: 'redis-server.exe', memUsage: '18,300 K', favorite: false },
-    { proto: 'TCP', localAddr: '127.0.0.1', localPort: 27017, foreignAddr: '0.0.0.0', foreignPort: 0, state: 'LISTENING', pid: 27017, processName: 'mongod.exe', memUsage: '201,400 K', favorite: false },
     { proto: 'TCP', localAddr: '192.168.1.100', localPort: 51234, foreignAddr: '142.250.80.46', foreignPort: 443, state: 'ESTABLISHED', pid: 12000, processName: 'chrome.exe', memUsage: '234,560 K', favorite: false },
     { proto: 'TCP', localAddr: '192.168.1.100', localPort: 51240, foreignAddr: '151.101.1.69', foreignPort: 443, state: 'ESTABLISHED', pid: 8800, processName: 'Code.exe', memUsage: '456,700 K', favorite: false },
+    { proto: 'TCP', localAddr: '192.168.1.100', localPort: 51250, foreignAddr: '20.42.65.92', foreignPort: 443, state: 'ESTABLISHED', pid: 8800, processName: 'Code.exe', memUsage: '456,700 K', favorite: false },
     { proto: 'TCP', localAddr: '192.168.1.100', localPort: 51260, foreignAddr: '104.16.123.96', foreignPort: 443, state: 'TIME_WAIT', pid: 0, processName: '(已释放)', memUsage: '', favorite: false },
+    { proto: 'TCP', localAddr: '192.168.1.100', localPort: 51270, foreignAddr: '140.82.114.4', foreignPort: 22, state: 'CLOSE_WAIT', pid: 12000, processName: 'chrome.exe', memUsage: '234,560 K', favorite: false },
     { proto: 'UDP', localAddr: '0.0.0.0', localPort: 5353, foreignAddr: '*', foreignPort: 0, state: '', pid: 2468, processName: 'chrome.exe', memUsage: '234,560 K', favorite: false },
+    { proto: 'UDP', localAddr: '0.0.0.0', localPort: 1900, foreignAddr: '*', foreignPort: 0, state: '', pid: 2345, processName: 'svchost.exe', memUsage: '8,192 K', favorite: false },
   ];
 }
 
@@ -187,7 +187,7 @@ async function toggleFav(port) {
 function renderFavorites() {
   favCountEl.textContent = favorites.length;
   if (favorites.length === 0) {
-    favList.innerHTML = '<div class="fav-empty"><div class="fav-empty-icon">☆</div><div class="fav-empty-text">收藏常用端口<br>快速监控状态</div></div>';
+    favList.innerHTML = '<div class="fav-empty"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><div class="fav-empty-text">收藏常用端口<br>快速查看监听状态</div></div>';
     return;
   }
   // 检查每个收藏端口是否在监听
