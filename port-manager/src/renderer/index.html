@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>端口管家</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2C8 2 5 5 5 9c0 3 2 5 3 6v3a2 2 0 002 2h4a2 2 0 002-2v-3c1-1 3-3 3-6 0-4-3-7-7-7z" fill="#fff" opacity="0.95"/>
+            <circle cx="12" cy="9" r="2.5" fill="#007aff"/>
+          </svg>
+        </div>
+        <span class="logo-text">端口管家</span>
+      </div>
+
+      <div class="stats-cards">
+        <div class="stat-row">
+          <div class="stat-card sm">
+            <div class="stat-content">
+              <div class="stat-value" id="stat-total">—</div>
+              <div class="stat-label">总连接</div>
+            </div>
+          </div>
+          <div class="stat-card sm">
+            <div class="stat-content">
+              <div class="stat-value" id="stat-listening">—</div>
+              <div class="stat-label">监听</div>
+            </div>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-card sm">
+            <div class="stat-content">
+              <div class="stat-value" id="stat-established">—</div>
+              <div class="stat-label">已连接</div>
+            </div>
+          </div>
+          <div class="stat-card sm">
+            <div class="stat-content">
+              <div class="stat-value" id="stat-processes">—</div>
+              <div class="stat-label">进程</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fav-section">
+        <div class="fav-header">
+          <span class="fav-title">⭐ 收藏端口</span>
+          <span class="fav-count" id="fav-count">0</span>
+        </div>
+        <div class="fav-list" id="fav-list">
+          <div class="fav-empty">点击端口号旁的星标添加收藏</div>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="footer-info">端口管家 v1.0</div>
+      </div>
+    </aside>
+
+    <!-- 主内容 -->
+    <main class="main">
+      <!-- 标题区 -->
+      <div class="page-header">
+        <div class="page-title-row">
+          <h1 class="page-title">网络端口监控</h1>
+          <span class="page-badge" id="page-badge">实时</span>
+        </div>
+        <p class="page-subtitle">查看本机所有网络连接，一键结束占用进程</p>
+      </div>
+
+      <!-- 工具栏 -->
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="7"/>
+            <path d="M21 21l-4.3-4.3"/>
+          </svg>
+          <input type="text" id="search" class="search-input" placeholder="搜索端口、进程名、地址、PID..." />
+        </div>
+        <div class="toolbar-actions">
+          <label class="toggle">
+            <input type="checkbox" id="auto-refresh" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            <span class="toggle-label">自动刷新</span>
+          </label>
+          <button class="btn-outline" id="btn-export-csv" title="导出 CSV">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>CSV</span>
+          </button>
+          <button class="btn-outline" id="btn-export-json" title="导出 JSON">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>JSON</span>
+          </button>
+          <button class="btn-refresh" id="btn-refresh" title="刷新">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M21 12a9 9 0 11-3-6.7L21 8"/>
+              <path d="M21 3v5h-5"/>
+            </svg>
+            <span>刷新</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 筛选标签 -->
+      <div class="filter-tabs" id="filter-tabs">
+        <button class="tab active" data-filter="all">全部 <span class="tab-count" id="count-all">0</span></button>
+        <button class="tab" data-filter="LISTENING">监听 <span class="tab-count" id="count-listening">0</span></button>
+        <button class="tab" data-filter="ESTABLISHED">已连接 <span class="tab-count" id="count-established">0</span></button>
+        <button class="tab" data-filter="TIME_WAIT">TIME_WAIT <span class="tab-count" id="count-timewait">0</span></button>
+        <button class="tab" data-filter="UDP">UDP <span class="tab-count" id="count-udp">0</span></button>
+      </div>
+
+      <!-- 表格 + 状态栏容器 -->
+      <div class="content-card">
+        <div class="table-wrap">
+          <table class="conn-table" id="conn-table">
+            <thead>
+              <tr>
+                <th class="col-proto">协议</th>
+                <th class="col-local">本地地址</th>
+                <th class="col-foreign">外部地址</th>
+                <th class="col-state">状态</th>
+                <th class="col-pid">PID</th>
+                <th class="col-process">进程</th>
+                <th class="col-action"></th>
+              </tr>
+            </thead>
+            <tbody id="conn-tbody">
+            </tbody>
+          </table>
+          <div class="empty-state" id="empty-state" style="display:flex;">
+            <div class="empty-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 12a9 9 0 11-3-6.7L21 8"/>
+                <path d="M21 3v5h-5"/>
+              </svg>
+            </div>
+            <div class="empty-text">正在扫描端口...</div>
+            <div class="empty-hint">读取本机网络连接信息</div>
+          </div>
+        </div>
+
+        <!-- 状态栏 -->
+        <div class="statusbar">
+          <span id="last-update">未扫描</span>
+          <span class="status-sep">·</span>
+          <span id="result-count">0 条结果</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 进程详情弹窗 -->
+  <div class="modal-mask" id="detail-modal" style="display:none;">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">进程详情</span>
+        <button class="modal-close" id="detail-close">✕</button>
+      </div>
+      <div class="modal-body" id="detail-body"></div>
+    </div>
+  </div>
+
+  <!-- 确认弹窗 -->
+  <div class="modal-mask" id="confirm-modal" style="display:none;">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <span class="modal-title">确认结束进程</span>
+      </div>
+      <div class="modal-body" id="confirm-body"></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="confirm-cancel">取消</button>
+        <button class="btn-danger" id="confirm-ok">结束进程</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" style="display:none;"></div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
