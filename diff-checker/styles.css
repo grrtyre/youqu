@@ -88,12 +88,19 @@
 html, body {
   min-height: 100vh;
   background: var(--bg);
+  background-image: linear-gradient(180deg, #efeff4 0%, var(--bg) 240px);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   transition: background 0.25s ease, color 0.25s ease;
+}
+
+/* body 作为 flex 列：topbar 固定顶部，main 撑满剩余高度，footer 贴底 */
+body {
+  display: flex;
+  flex-direction: column;
 }
 
 /* ==================== 顶部栏 ==================== */
@@ -109,6 +116,7 @@ html, body {
   z-index: 100;
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.03);
 }
 
 .brand {
@@ -119,14 +127,14 @@ html, body {
 }
 
 .brand-logo {
-  font-size: 24px;
   width: 38px;
   height: 38px;
   display: grid;
   place-items: center;
-  background: var(--brand-logo-bg);
+  background: var(--accent);
+  color: #fff;
   border-radius: 10px;
-  box-shadow: var(--brand-logo-shadow);
+  box-shadow: 0 2px 8px rgba(0,122,255,0.3);
 }
 
 .brand-title {
@@ -175,7 +183,7 @@ html, body {
 .view-switch button.active {
   background: var(--card);
   color: var(--accent);
-  font-weight: 500;
+  font-weight: 600;
   box-shadow: var(--shadow-sm);
 }
 
@@ -248,9 +256,11 @@ html, body {
 
 .option-pill:hover { color: var(--text); border-color: #d1d1d6; }
 .option-pill.active {
-  background: var(--accent-soft);
-  color: var(--accent);
-  border-color: var(--accent-soft);
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(0,122,255,0.25);
 }
 
 .option-pill input { display: none; }
@@ -261,6 +271,9 @@ html, body {
   max-width: 1600px;
   margin: 0 auto;
   width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .section-title {
@@ -340,7 +353,7 @@ html, body {
 
 textarea.input-area {
   width: 100%;
-  min-height: 160px;
+  min-height: 200px;
   padding: 14px 16px;
   border: none;
   outline: none;
@@ -389,6 +402,52 @@ textarea.input-area::placeholder {
   box-shadow: var(--shadow-md);
 }
 
+/* 结果区头部的统计条：去掉卡片底纹，融入 header */
+.result-header .stats-bar {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  gap: 12px;
+}
+
+.result-header .stat-item {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12.5px;
+}
+
+.result-header .stat-item.add { background: var(--green-soft); }
+.result-header .stat-item.del { background: var(--red-soft); }
+.result-header .stat-item.eq  { background: var(--card); border: 1px solid var(--border-soft); }
+
+.result-header .stat-num {
+  font-size: 14px;
+}
+
+/* 操作栏分组分隔线 */
+.bar-divider {
+  width: 1px;
+  height: 22px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+/* 头部小按钮 */
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 12px;
+  gap: 4px;
+}
+
+/* 结果区耗时等元信息 */
+.result-meta {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  white-space: nowrap;
+}
+
 .stat-item { display: inline-flex; align-items: center; gap: 7px; }
 .stat-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
 .stat-dot.add { background: var(--green); box-shadow: 0 0 0 2px var(--green-soft); }
@@ -406,6 +465,10 @@ textarea.input-area::placeholder {
   border-radius: var(--radius);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
+  min-height: 320px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .result-header {
@@ -429,13 +492,17 @@ textarea.input-area::placeholder {
   text-align: center;
   color: var(--text-muted);
   font-size: 14px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .result-empty .empty-icon {
-  font-size: 44px;
   display: block;
   margin-bottom: 12px;
-  opacity: 0.5;
+  color: var(--text-muted);
 }
 
 /* ==================== 并排视图 ==================== */
@@ -475,10 +542,10 @@ textarea.input-area::placeholder {
 }
 
 .diff-row .line-num {
-  width: 42px;
-  min-width: 42px;
+  width: 52px;
+  min-width: 52px;
   text-align: right;
-  padding: 0 8px;
+  padding: 0 10px;
   color: var(--text-sub);
   background: var(--line-num-bg);
   user-select: none;
@@ -508,6 +575,28 @@ textarea.input-area::placeholder {
   display: block;
   height: 100%;
   min-height: 22px;
+}
+
+/* 仅显示差异：折叠相同行的分隔条 */
+.diff-row.collapse-row {
+  background: var(--card-2);
+  border-top: 1px dashed var(--border);
+  border-bottom: 1px dashed var(--border);
+  min-height: 26px;
+  align-items: center;
+}
+.diff-row.collapse-row .collapse-hint {
+  color: var(--text-muted);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+  font-size: 11.5px;
+  font-style: italic;
+  letter-spacing: 0.2px;
+  flex: 1;
+}
+.diff-inline .diff-row.collapse-row .line-sign {
+  color: var(--text-muted);
+  background: var(--card-2);
+  font-style: normal;
 }
 
 .diff-row.add .line-num { background: var(--green-num-bg); color: var(--green-num-fg); }
@@ -624,14 +713,16 @@ textarea.input-area::placeholder {
 
 .example-chip {
   font-size: 12px;
-  padding: 6px 12px;
-  background: var(--card);
-  border: 1px solid var(--border-soft);
+  padding: 6px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 999px;
   color: var(--text-sub);
   cursor: pointer;
   font-family: inherit;
+  font-weight: 500;
   transition: all 0.15s ease;
+  box-shadow: var(--shadow-sm);
 }
 
 .example-chip:hover {
@@ -643,28 +734,34 @@ textarea.input-area::placeholder {
 /* ==================== 底部 ==================== */
 .footer {
   text-align: center;
-  padding: 20px 20px 12px;
+  padding: 14px 20px 10px;
   color: var(--text-sub);
-  font-size: 12.5px;
+  font-size: 12px;
   border-top: 1px solid var(--border-soft);
-  margin-top: 20px;
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .footer-brand {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--text);
-  margin-bottom: 4px;
 }
 
 .footer-text {
   font-size: 11.5px;
   color: var(--text-muted);
-  margin-bottom: 8px;
 }
 
 .footer-links {
-  font-size: 12.5px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .footer a {
@@ -708,15 +805,14 @@ textarea.input-area::placeholder {
 :root[data-theme="dark"] .theme-icon-moon { display: none; }
 
 /* ==================== 并排视图同步滚动 ====================
-   视图区设合理 max-height，内容超出时内部滚动，避免页面过长 */
+   视图区在 flex 布局下自然填满结果卡片，内容超出时内部滚动 */
 .diff-side {
-  max-height: 560px;
-  min-height: 200px;
+  min-height: 240px;
   overflow: hidden;
+  flex: 1;
 }
 
 .diff-col {
-  max-height: 560px;
   overflow-y: auto;
   overflow-x: auto;
   scroll-behavior: auto;
@@ -739,11 +835,12 @@ textarea.input-area::placeholder {
 
 /* 内联视图与统一格式也支持独立滚动 */
 .diff-inline {
-  max-height: 560px;
-  min-height: 200px;
+  max-height: 640px;
+  min-height: 240px;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
+  flex: 1;
 }
 .diff-inline::-webkit-scrollbar {
   width: 10px;
@@ -756,19 +853,15 @@ textarea.input-area::placeholder {
 }
 
 .diff-unified {
-  max-height: 560px;
-  min-height: 200px;
+  min-height: 240px;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
+  flex: 1;
 }
 
 /* ==================== 实时对比指示器 ==================== */
-.option-pill.active#optLive {
-  background: var(--accent-soft);
-  color: var(--accent);
-  border-color: var(--accent-soft);
-}
+/* optLive 继承统一 .option-pill.active 强样式，不再单独软化 */
 
 /* 实时对比进行中的轻提示（resultMeta 已有，无需额外样式） */
 

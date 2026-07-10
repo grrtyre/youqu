@@ -19,7 +19,13 @@
   <!-- 顶部栏 -->
   <header class="topbar">
     <div class="brand">
-      <div class="brand-logo">⚖️</div>
+      <div class="brand-logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 5h18M9 5v14M15 5v14M3 19h18"/>
+          <circle cx="9" cy="19" r="1.5" fill="currentColor"/>
+          <circle cx="15" cy="19" r="1.5" fill="currentColor"/>
+        </svg>
+      </div>
       <div>
         <div class="brand-title">文本对比管家</div>
         <div class="brand-sub">diff-checker · 一眼看清每一处差异</div>
@@ -32,9 +38,9 @@
         <button data-view="inline">内联</button>
         <button data-view="unified">统一格式</button>
       </div>
-      <button class="btn" id="btnSwap" title="交换左右">⇄ 交换</button>
+      <button class="btn" id="btnSwap" title="交换左右">交换</button>
       <button class="btn" id="btnClear" title="清空">清空</button>
-      <button class="btn primary" id="btnCompare" title="立即对比（Ctrl/⌘ + Enter）">⚡ 对比</button>
+      <button class="btn primary" id="btnCompare" title="立即对比（Ctrl/⌘ + Enter）">对比</button>
       <button class="btn icon-only" id="btnTheme" title="切换主题" aria-label="切换主题">
         <span class="theme-icon theme-icon-sun">☀️</span>
         <span class="theme-icon theme-icon-moon">🌙</span>
@@ -82,6 +88,7 @@
         <button class="example-chip" data-sample="text">中文段落</button>
         <button class="example-chip" data-sample="config">配置文件</button>
       </div>
+      <span class="bar-divider"></span>
       <div class="opt-group">
         <label class="option-pill" id="optIgnoreCase" title="忽略大小写差异">
           <input type="checkbox" />
@@ -91,31 +98,45 @@
           <input type="checkbox" />
           <span>␣ 忽略空白</span>
         </label>
+        <label class="option-pill" id="optIgnoreBlank" title="对比时移除空行（空行增删不再计为差异）">
+          <input type="checkbox" />
+          <span>↵ 忽略空行</span>
+        </label>
+        <label class="option-pill" id="optOnlyDiff" title="折叠连续相同行，只看差异">
+          <input type="checkbox" />
+          <span>⊥ 仅显示差异</span>
+        </label>
         <label class="option-pill active" id="optLive" title="输入即对比（300ms 防抖）">
           <input type="checkbox" checked />
           <span>⚡ 实时对比</span>
         </label>
       </div>
-      <div class="spacer"></div>
-      <div class="stats-bar" id="statsBar" hidden>
-        <span class="stat-item add"><span class="stat-dot add"></span>新增 <span class="stat-num" id="statAdd">0</span></span>
-        <span class="stat-item del"><span class="stat-dot del"></span>删除 <span class="stat-num" id="statDel">0</span></span>
-        <span class="stat-item eq"><span class="stat-dot eq"></span>相同 <span class="stat-num" id="statEq">0</span></span>
-      </div>
-      <button class="btn" id="btnCopySummary" hidden>📋 复制摘要</button>
-      <button class="btn" id="btnCopyUnified" hidden>📋 复制 unified diff</button>
     </div>
 
     <!-- 结果区 -->
     <div class="result-card">
       <div class="result-header">
         <span class="result-title">对比结果</span>
+        <div class="stats-bar" id="statsBar" hidden>
+          <span class="stat-item add"><span class="stat-dot add"></span>新增 <span class="stat-num" id="statAdd">0</span></span>
+          <span class="stat-item del"><span class="stat-dot del"></span>删除 <span class="stat-num" id="statDel">0</span></span>
+          <span class="stat-item eq"><span class="stat-dot eq"></span>相同 <span class="stat-num" id="statEq">0</span></span>
+        </div>
+        <span class="result-meta" id="resultMeta"></span>
         <span style="flex:1"></span>
-        <span style="font-size:11.5px;color:var(--text-muted);" id="resultMeta"></span>
+        <button class="btn btn-sm" id="btnCopySummary" hidden>📋 摘要</button>
+        <button class="btn btn-sm" id="btnCopyUnified" hidden>📋 unified</button>
+        <button class="btn btn-sm" id="btnExportPatch" hidden title="下载 .patch 文件供 git apply 使用">⬇ Patch</button>
       </div>
 
       <div class="result-empty" id="resultEmpty">
-        <span class="empty-icon">⚖️</span>
+        <span class="empty-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.4">
+            <path d="M3 5h18M9 5v14M15 5v14M3 19h18"/>
+            <circle cx="9" cy="19" r="1.5" fill="currentColor"/>
+            <circle cx="15" cy="19" r="1.5" fill="currentColor"/>
+          </svg>
+        </span>
         <div>填写左右两段文本，点击「立即对比」开始</div>
         <div style="margin-top:8px;font-size:12px;">支持行级 + 字符级双 diff · 并排 / 内联 / 统一格式三视图</div>
       </div>
@@ -131,13 +152,13 @@
     </div>
 
     <div class="footer">
-      <div class="footer-brand">⚖️ 文本对比管家</div>
-      <div class="footer-text">完全本地运行 · 数据不上传 · 行级 + 字符级双 diff</div>
-      <div class="footer-links">
-        <a href="https://www.ifdian.net/a/giquwei" target="_blank" rel="noopener">☕ 支持我们</a>
+      <span class="footer-brand">文本对比管家</span>
+      <span class="footer-text">完全本地运行 · 数据不上传</span>
+      <span class="footer-links">
+        <a href="https://www.ifdian.net/a/giquwei" target="_blank" rel="noopener">支持我们</a>
         <span class="divider">·</span>
-        <a href="https://github.com/grrtyre/youqu" target="_blank" rel="noopener">📦 GitHub</a>
-      </div>
+        <a href="https://github.com/grrtyre/youqu" target="_blank" rel="noopener">GitHub</a>
+      </span>
     </div>
   </main>
 

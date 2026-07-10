@@ -15,6 +15,8 @@
   var optIgnoreCase = $('optIgnoreCase');
   var optTrimWs = $('optTrimWs');
   var optLive = $('optLive');
+  var optIgnoreBlank = $('optIgnoreBlank');
+  var optOnlyDiff = $('optOnlyDiff');
   var statsBar = $('statsBar');
   var statAdd = $('statAdd');
   var statDel = $('statDel');
@@ -26,6 +28,7 @@
   var resultMeta = $('resultMeta');
   var btnCopySummary = $('btnCopySummary');
   var btnCopyUnified = $('btnCopyUnified');
+  var btnExportPatch = $('btnExportPatch');
   var fileInput = $('fileInput');
   var toastEl = $('toast');
 
@@ -122,32 +125,89 @@
     autoResize(textRight);
   }
 
-  // textarea 高度自适应内容（上限 320px，超出滚动），避免内容少时大面积留白
+  // textarea 高度自适应内容（下限 200px，上限 400px，超出滚动），避免内容少时大面积留白
   function autoResize(el) {
     el.style.height = 'auto';
-    var h = Math.max(160, Math.min(el.scrollHeight, 320));
+    var h = Math.max(200, Math.min(el.scrollHeight, 400));
     el.style.height = h + 'px';
   }
 
   function getOptions() {
     return {
       ignoreCase: optIgnoreCase.classList.contains('active'),
-      trimWhitespace: optTrimWs.classList.contains('active')
+      trimWhitespace: optTrimWs.classList.contains('active'),
+      ignoreBlankLines: optIgnoreBlank.classList.contains('active')
     };
+  }
+
+  // ---------- 仅显示差异开关 ----------
+  function isOnlyDiff() {
+    return optOnlyDiff.classList.contains('active');
+  }
+
+  // ---------- 仅显示差异：合并连续 equal 块 ----------
+  // 返回新数组，连续 equal 块合并为 { type:'collapse', count:N }
+  // 无差异时不折叠（避免整屏只剩一个"省略"条）
+  function collapseEqualRuns(blocks, hasDiff) {
+    if (!hasDiff) return blocks;
+    var out = [];
+    var i = 0;
+    while (i < blocks.length) {
+      if (blocks[i].type === 'equal') {
+        var count = 0;
+        while (i < blocks.length && blocks[i].type === 'equal') { count++; i++; }
+        out.push({ type: 'collapse', count: count });
+      } else {
+        out.push(blocks[i]);
+        i++;
+      }
+    }
+    return out;
+  }
+
+  // 内联视图同理：合并连续 equal 行
+  function collapseInlineRuns(inline, hasDiff) {
+    if (!hasDiff) return inline;
+    var out = [];
+    var i = 0;
+    while (i < inline.length) {
+      if (inline[i].type === 'equal') {
+        var count = 0;
+        while (i < inline.length && inline[i].type === 'equal') { count++; i++; }
+        out.push({ type: 'collapse', count: count });
+      } else {
+        out.push(inline[i]);
+        i++;
+      }
+    }
+    return out;
+  }
+
+  function renderCollapseRow(count) {
+    return '<div class="diff-row collapse-row">' +
+      '<span class="line-num"> </span>' +
+      '<span class="line-content collapse-hint">⋯ 省略 ' + count + ' 行相同</span>' +
+      '</div>';
   }
 
   // ---------- 渲染：并排视图 ----------
   function renderSplit(result) {
     var blocks = result.blocks;
+    var hasDiff = result.stats.added + result.stats.deleted > 0;
+    var useCollapse = isOnlyDiff();
+    var renderBlocks = useCollapse ? collapseEqualRuns(blocks, hasDiff) : blocks;
     var html = '';
 
     // 左列
     html += '<div class="diff-col">';
     html += '<div class="diff-col-header">原文本</div>';
     var leftNo = 0, rightNo = 0;
-    for (var i = 0; i < blocks.length; i++) {
-      var b = blocks[i];
-      if (b.type === 'equal') {
+    for (var i = 0; i < renderBlocks.length; i++) {
+      var b = renderBlocks[i];
+      if (b.type === 'collapse') {
+        leftNo += b.count; rightNo += b.count;
+        html += renderCollapseRow(b.count);
+      } else if (b.type === 'equal') {
         leftNo++;
         rightNo++;
         html += renderRow('equal', leftNo, b.left[0].text, false, 'left');
@@ -168,9 +228,12 @@
     html += '<div class="diff-col">';
     html += '<div class="diff-col-header">新文本</div>';
     leftNo = 0; rightNo = 0;
-    for (var j = 0; j < blocks.length; j++) {
-      var b2 = blocks[j];
-      if (b2.type === 'equal') {
+    for (var j = 0; j < renderBlocks.length; j++) {
+      var b2 = renderBlocks[j];
+      if (b2.type === 'collapse') {
+        leftNo += b2.count; rightNo += b2.count;
+        html += renderCollapseRow(b2.count);
+      } else if (b2.type === 'equal') {
         leftNo++;
         rightNo++;
         html += renderRow('equal', rightNo, b2.right[0].text, false, 'right');
@@ -224,10 +287,22 @@
   // ---------- 渲染：内联视图 ----------
   function renderInline(result) {
     var inline = result.inline;
+    var hasDiff = result.stats.added + result.stats.deleted > 0;
+    var useCollapse = isOnlyDiff();
+    var renderInlineList = useCollapse ? collapseInlineRuns(inline, hasDiff) : inline;
     var html = '';
     var leftNo = 0, rightNo = 0;
-    for (var i = 0; i < inline.length; i++) {
-      var r = inline[i];
+    for (var i = 0; i < renderInlineList.length; i++) {
+      var r = renderInlineList[i];
+      if (r.type === 'collapse') {
+        leftNo += r.count; rightNo += r.count;
+        html += '<div class="diff-row collapse-row">' +
+          '<span class="line-sign">⋯</span>' +
+          '<span class="line-num"> </span>' +
+          '<span class="line-content collapse-hint">省略 ' + r.count + ' 行相同</span>' +
+          '</div>';
+        continue;
+      }
       var sign = ' ';
       var cls = 'equal';
       var num = '';
@@ -287,6 +362,7 @@
       statsBar.hidden = true;
       btnCopySummary.hidden = true;
       btnCopyUnified.hidden = true;
+      btnExportPatch.hidden = true;
       resultEmpty.hidden = false;
       viewSplit.innerHTML = '';
       viewInline.innerHTML = '';
@@ -308,6 +384,7 @@
     statEq.textContent = result.stats.unchanged;
     btnCopySummary.hidden = false;
     btnCopyUnified.hidden = false;
+    btnExportPatch.hidden = false;
 
     // 隐藏空状态
     resultEmpty.hidden = true;
@@ -447,6 +524,7 @@
     statsBar.hidden = true;
     btnCopySummary.hidden = true;
     btnCopyUnified.hidden = true;
+    btnExportPatch.hidden = true;
     resultEmpty.hidden = false;
     viewSplit.innerHTML = '';
     viewInline.innerHTML = '';
@@ -476,6 +554,23 @@
     optTrimWs.classList.toggle('active');
     if (isLiveEnabled()) doCompare({ silent: true });
     else if (currentResult) doCompare();
+  });
+
+  optIgnoreBlank.addEventListener('click', function (e) {
+    e.preventDefault();
+    optIgnoreBlank.classList.toggle('active');
+    if (isLiveEnabled()) doCompare({ silent: true });
+    else if (currentResult) doCompare();
+  });
+
+  optOnlyDiff.addEventListener('click', function (e) {
+    e.preventDefault();
+    optOnlyDiff.classList.toggle('active');
+    // 仅显示差异只影响渲染，无需重新对比
+    if (currentResult) {
+      renderCurrent();
+      syncScrollAfterRender();
+    }
   });
 
   optLive.addEventListener('click', function (e) {
@@ -556,6 +651,25 @@
     }).catch(function () { showToast('复制失败'); });
   });
 
+  // 导出 .patch 文件（供 git apply 使用）
+  btnExportPatch.addEventListener('click', function () {
+    if (!currentUnified) { showToast('无内容可导出'); return; }
+    try {
+      var blob = new Blob([currentUnified], { type: 'text/plain;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'changes.patch';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      showToast('已导出 changes.patch');
+    } catch (e) {
+      showToast('导出失败');
+    }
+  });
+
   // 输入更新 meta + 触发实时对比
   textLeft.addEventListener('input', function () {
     updateMeta();
@@ -599,7 +713,11 @@
   })();
 
   // Demo 自动加载（URL 含 ?demo=xxx 时触发，用于预览/截图）
+  // onlydiff=1 时自动开启「仅显示差异」，便于截图展示折叠效果
   (function () {
+    if (/onlydiff=1/i.test(location.search)) {
+      optOnlyDiff.classList.add('active');
+    }
     var m = /demo=([a-z]+)/i.exec(location.search);
     if (m && SAMPLES[m[1]]) {
       loadSample(m[1]);

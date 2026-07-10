@@ -265,12 +265,24 @@
     return { added: added, deleted: deleted, unchanged: unchanged };
   }
 
+  // 判断是否空行（空字符串或仅空白字符）
+  function isBlankLine(line) {
+    return /^\s*$/.test(line);
+  }
+
   // 主入口：对比两段文本
   // options: { ignoreCase: bool, trimWhitespace: bool, ignoreBlankLines: bool }
   function compare(textA, textB, options) {
     options = options || {};
     var aLines = splitLines(textA);
     var bLines = splitLines(textB);
+
+    // 忽略空行：从两侧移除空行后再比较，使"仅空行增删"不再计为差异
+    // 结果中也不再包含空行（对比与展示均移除），语义清晰、可测试
+    if (options.ignoreBlankLines) {
+      aLines = aLines.filter(function (l) { return !isBlankLine(l); });
+      bLines = bLines.filter(function (l) { return !isBlankLine(l); });
+    }
 
     // 预处理：根据选项归一化用于"比较"的行，但保留原始行用于展示
     function normalize(line) {

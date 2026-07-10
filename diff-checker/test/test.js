@@ -361,6 +361,66 @@ group('toSideBySideBlocks 空行配对');
   }
 })();
 
+// ========== v1.2 新增：忽略空行（ignoreBlankLines） ==========
+group('ignoreBlankLines');
+(function () {
+  // 场景1：仅空行增删 —— 开启后不应计为差异
+  var a = 'line1\n\nline2';
+  var b = 'line1\nline2';
+  var r1 = Diff.compare(a, b, { ignoreBlankLines: true });
+  assertEqual(r1.stats.added, 0, '空行增删忽略 added=0');
+  assertEqual(r1.stats.deleted, 0, '空行增删忽略 deleted=0');
+
+  // 不开启时应有差异
+  var r1b = Diff.compare(a, b);
+  assert(r1b.stats.added + r1b.stats.deleted > 0, '不忽略空行时有差异');
+
+  // 场景2：两侧都有空行但数量不同 —— 开启后相等
+  var a2 = 'a\n\n\nb';
+  var b2 = 'a\nb';
+  var r2 = Diff.compare(a2, b2, { ignoreBlankLines: true });
+  assertEqual(r2.stats.added, 0, '多空行 vs 少空行 added=0');
+  assertEqual(r2.stats.deleted, 0, '多空行 vs 少空行 deleted=0');
+  assertEqual(r2.stats.unchanged, 2, '多空行 vs 少空行 unchanged=2');
+
+  // 场景3：非空行改动仍然显示
+  var a3 = 'line1\n\nline2';
+  var b3 = 'line1\n\nCHANGED';
+  var r3 = Diff.compare(a3, b3, { ignoreBlankLines: true });
+  assert(r3.stats.added >= 1, '非空行改动仍显示 added>=1');
+  assert(r3.stats.deleted >= 1, '非空行改动仍显示 deleted>=1');
+
+  // 场景4：纯空白行（含空格/tab）也算空行
+  var a4 = 'x\n   \ny';
+  var b4 = 'x\ny';
+  var r4 = Diff.compare(a4, b4, { ignoreBlankLines: true });
+  assertEqual(r4.stats.added, 0, '纯空白行算空行 added=0');
+  assertEqual(r4.stats.deleted, 0, '纯空白行算空行 deleted=0');
+
+  // 场景5：ignoreBlankLines 与 ignoreCase 可组合
+  var a5 = 'A\n\nB';
+  var b5 = 'a\nb';
+  var r5 = Diff.compare(a5, b5, { ignoreBlankLines: true, ignoreCase: true });
+  assertEqual(r5.stats.added, 0, '组合 ignoreCase+ignoreBlank added=0');
+  assertEqual(r5.stats.deleted, 0, '组合 ignoreCase+ignoreBlank deleted=0');
+
+  // 场景6：toUnifiedDiff 也应透传 ignoreBlankLines（排除 --- / +++ 头行）
+  var u = Diff.toUnifiedDiff('a\n\nb', 'a\nb', { ignoreBlankLines: true, context: 3 });
+  var body = u.split('\n').filter(function (l) {
+    return l.indexOf('--- ') !== 0 && l.indexOf('+++ ') !== 0 && l.indexOf('@@') !== 0;
+  });
+  var hasPlus = body.some(function (l) { return l.charAt(0) === '+'; });
+  var hasMinus = body.some(function (l) { return l.charAt(0) === '-'; });
+  assert(!hasPlus, 'unified ignoreBlankLines 无 + 行');
+  assert(!hasMinus, 'unified ignoreBlankLines 无 - 行');
+
+  // 场景7：全部是空行
+  var r7 = Diff.compare('\n\n\n', '\n', { ignoreBlankLines: true });
+  assertEqual(r7.stats.added, 0, '全空行 added=0');
+  assertEqual(r7.stats.deleted, 0, '全空行 deleted=0');
+  assertEqual(r7.stats.unchanged, 0, '全空行 unchanged=0');
+})();
+
 // ========== 结果 ==========
 console.log('\n========================');
 console.log('通过：' + pass + ' · 失败：' + fail);
