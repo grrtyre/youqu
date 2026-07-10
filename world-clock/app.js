@@ -216,6 +216,8 @@
     const zones = state.zones.slice();
     const overlap = C.computeOverlap(zones, workHours, now);
 
+    renderRecommend(overlap, zones, refTz, now);
+
     // 摘要
     const summary = $('#overlapSummary');
     if (!overlap.length) {
@@ -301,6 +303,82 @@
     if (z) return z.city;
     if (tz === LOCAL_TZ) return '本地';
     return tz;
+  }
+
+  // ===== 智能会议推荐卡 =====
+  function renderRecommend(overlap, zones, refTz, now) {
+    const card = $('#recommendCard');
+    const body = $('#rcBody');
+    if (!zones.length) {
+      card.hidden = true;
+      return;
+    }
+    if (!overlap.length) {
+      card.hidden = false;
+      body.innerHTML = `
+        <div class="rc-best">
+          <div class="rc-best-time">暂无全员可约时段</div>
+        </div>
+        <div class="rc-hint">建议调整工作时段范围，或减少参与时区，再来寻找合适的会议时间。</div>
+      `;
+      return;
+    }
+
+    const ranked = C.rankOverlapSlots(overlap, refTz, now);
+    const best = ranked[0];
+    const badgeCls = best.label === '极佳' ? 'excellent' : (best.label === '较好' ? 'good' : 'fair');
+    const durH = (best.durMin / 60).toFixed(best.durMin % 60 ? 1 : 0);
+
+    // 各参与人本地时间
+    const people = uniqZones(zones).map((z) => {
+      const s = C.utcMinutesToZoneTime(best.startUTC, z.tz, now);
+      const e = C.utcMinutesToZoneTime(best.endUTC, z.tz, now);
+      const startH = C.utcMinutesToZoneHour(best.startUTC, z.tz, now);
+      const isNight = startH < 7 || startH >= 21;
+      return `<div class="rc-person${isNight ? ' rp-night' : ''}">
+        <span class="rp-name">${z.city}</span>
+        <span class="rp-time">${best.fullDay ? '全天' : s + '–' + e}</span>
+      </div>`;
+    }).join('');
+
+    body.innerHTML = `
+      <div class="rc-best">
+        <div class="rc-best-time">${C.formatSlotLocal(best, refTz, now)}</div>
+        <div class="rc-best-meta">
+          <span class="rc-badge ${badgeCls}">${best.label}</span>
+          <span class="rc-dur">${best.fullDay ? '全天可约' : '约 ' + durH + ' 小时'}</span>
+        </div>
+      </div>
+      <div class="rc-people">${people}</div>
+      <div class="rc-hint">已按"黄金时段 + 时长"智能排序，参与人本地时间见上方卡片。</div>
+    `;
+    card.hidden = false;
+  }
+
+  // 生成会议信息文本并复制
+  function copyMeetingInfo() {
+    const refTz = $('#refTz').value || LOCAL_TZ;
+    const now = new Date();
+    const zones = state.zones.slice();
+    const overlap = C.computeOverlap(zones, state.workHours, now);
+    if (!overlap.length) {
+      showToast('当前无全员可约时段');
+      return;
+    }
+    const best = C.rankOverlapSlots(overlap, refTz, now)[0];
+    const refLabel = tzLabel(refTz);
+    const lines = [];
+    lines.push('📅 会议时间建议（' + refLabel + '时区）：' + C.formatSlotLocal(best, refTz, now) + ' · ' + best.label);
+    lines.push('');
+    lines.push('各参与人本地时间：');
+    for (const z of uniqZones(zones)) {
+      const s = C.utcMinutesToZoneTime(best.startUTC, z.tz, now);
+      const e = C.utcMinutesToZoneTime(best.endUTC, z.tz, now);
+      lines.push('· ' + z.city + '：' + (best.fullDay ? '全天' : s + '–' + e));
+    }
+    lines.push('');
+    lines.push('—— 由「世界时钟·跨时区协作助手」生成');
+    copyText(lines.join('\n'));
   }
 
   // ===== 时间戳转换 =====
@@ -462,6 +540,8 @@
     $('#workStart').addEventListener('input', renderOverlap);
     $('#workEnd').addEventListener('input', renderOverlap);
     $('#refTz').addEventListener('change', renderOverlap);
+
+    $('#btnCopyMeeting').addEventListener('click', copyMeetingInfo);
 
     $('#tsInput').addEventListener('input', renderTimestamp);
     $('#btnTsNow').addEventListener('click', () => {

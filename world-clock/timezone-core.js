@@ -298,6 +298,75 @@
     return new Date(utcMs);
   }
 
+  // 智能会议推荐：对重叠时段按"便利度"打分并排序
+  // overlap: computeOverlap 的返回值 [{ startUTC, endUTC, fullDay? }]
+  // refTz: 参考时区，用于把 UTC 时段换算成参考时区的墙上时间来评估时段好坏
+  // 返回 [{ startUTC, endUTC, fullDay, score, label, startHour, endHour, durMin }]
+  // score 0~1，越高越好；label 为 "极佳"/"较好"/"勉强"
+  function rankOverlapSlots(overlap, refTz, date) {
+    date = date || new Date();
+    if (!overlap || !overlap.length) return [];
+    return overlap.map((slot) => {
+      const fullDay = !!slot.fullDay;
+      const durMin = fullDay ? 1440 : ((slot.endUTC - slot.startUTC) + (slot.endUTC <= slot.startUTC ? 1440 : 0));
+      const startH = utcMinutesToZoneHour(slot.startUTC, refTz, date);
+      const endH = utcMinutesToZoneHour(slot.endUTC, refTz, date);
+      // 综合分数：时段黄金度 × 0.65 + 时长分 × 0.35
+      const golden = goldenHourScore(startH, endH);
+      const durScore = Math.min(1, durMin / 180); // 3 小时即满分
+      const score = Math.max(0, Math.min(1, golden * 0.65 + durScore * 0.35));
+      let label;
+      if (fullDay || score >= 0.8) label = '极佳';
+      else if (score >= 0.5) label = '较好';
+      else label = '勉强';
+      return {
+        startUTC: slot.startUTC,
+        endUTC: slot.endUTC,
+        fullDay,
+        score: Math.round(score * 100) / 100,
+        label,
+        startHour: startH,
+        endHour: endH,
+        durMin,
+      };
+    }).sort((a, b) => b.score - a.score);
+  }
+
+  // 评估 [startH, endH]（参考时区墙上小时，可跨天）的"黄金度"
+  // 黄金时段：9-11、14-17；午餐 12-13 扣分；早 <8 / 晚 >19 重扣
+  function goldenHourScore(startH, endH) {
+    // 把跨天区间归一为 0-24 线性区间，分点采样取平均
+    const pts = 24;
+    const span = endH > startH ? endH - startH : endH + 24 - startH;
+    let sum = 0;
+    for (let i = 0; i < pts; i++) {
+      const h = ((startH + (span * i) / pts) % 24 + 24) % 24;
+      sum += hourWeight(h);
+    }
+    return sum / pts;
+  }
+
+  // 单个小时的权重（参考时区墙上时间）
+  function hourWeight(h) {
+    if (h >= 9 && h < 12) return 1.0;        // 上午黄金
+    if (h >= 14 && h < 18) return 1.0;       // 下午黄金
+    if (h >= 12 && h < 14) return 0.55;      // 午餐
+    if (h >= 8 && h < 9) return 0.6;         // 早 8 点
+    if (h >= 18 && h < 19) return 0.6;       // 晚 18 点
+    if (h >= 7 && h < 8) return 0.3;
+    if (h >= 19 && h < 20) return 0.3;
+    return 0.05;                              // 深夜/清晨
+  }
+
+  // 把 UTC 时段在参考时区下格式化成 "HH:00–HH:00"（跨天不额外标注，已归一）
+  function formatSlotLocal(slot, refTz, date) {
+    date = date || new Date();
+    if (slot.fullDay) return '全天可约';
+    const s = utcMinutesToZoneTime(slot.startUTC, refTz, date);
+    const e = utcMinutesToZoneTime(slot.endUTC, refTz, date);
+    return s + '–' + e;
+  }
+
   // 导出
   global.TimezoneCore = {
     COMMON_TIMEZONES,
@@ -318,6 +387,9 @@
     convertTimestamp,
     convertISO,
     parseLocalInput,
+    rankOverlapSlots,
+    goldenHourScore,
+    formatSlotLocal,
   };
 
   // CommonJS 兼容（供 Node 测试使用）

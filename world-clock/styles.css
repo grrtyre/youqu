@@ -348,6 +348,90 @@ html, body {
   font-family: inherit; font-size: 13px; background: var(--card); color: var(--text);
 }
 
+/* ===== 智能会议推荐卡 ===== */
+.recommend-card {
+  background: linear-gradient(180deg, #ffffff 0%, #f8f9ff 100%);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 6px 20px rgba(0, 122, 255, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 122, 255, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+.recommend-card[hidden] { display: none !important; }
+.recommend-card::before {
+  content: "";
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, #007aff, #5ac8fa);
+}
+
+.rc-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-bottom: 12px;
+}
+.rc-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 15px; font-weight: 600; color: var(--text);
+  letter-spacing: -0.01em;
+}
+.rc-spark { font-size: 16px; }
+.rc-copy {
+  font-size: 12px; padding: 6px 12px;
+  background: var(--blue-soft); color: #0061cc;
+  border: 1px solid rgba(0, 122, 255, 0.2);
+}
+.rc-copy:hover { background: rgba(0, 122, 255, 0.16); border-color: rgba(0,122,255,0.3); }
+
+.rc-body { display: flex; flex-direction: column; gap: 10px; }
+
+.rc-best {
+  display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+}
+.rc-best-time {
+  font-size: 26px; font-weight: 600; color: var(--text);
+  font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
+}
+.rc-best-meta {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--text-2);
+}
+.rc-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 12px;
+  font-size: 12px; font-weight: 600;
+}
+.rc-badge.excellent { background: var(--green-soft); color: #1d8a3f; }
+.rc-badge.good { background: rgba(0, 122, 255, 0.1); color: #0061cc; }
+.rc-badge.fair { background: rgba(255, 149, 0, 0.14); color: #c66800; }
+.rc-dur { color: var(--text-3); font-variant-numeric: tabular-nums; }
+
+.rc-people {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+  padding-top: 6px;
+}
+.rc-person {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 12px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.rc-person .rp-name { font-size: 13px; font-weight: 500; color: var(--text); }
+.rc-person .rp-time {
+  font-size: 13px; font-weight: 600; color: var(--blue);
+  font-variant-numeric: tabular-nums;
+}
+.rc-person .rp-night { color: var(--text-3); }
+
+.rc-hint {
+  font-size: 12px; color: var(--text-3);
+  padding-top: 4px;
+}
+
 .overlap-summary {
   background: var(--card);
   border-radius: var(--radius);

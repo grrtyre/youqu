@@ -126,6 +126,60 @@ test('北京+伦敦 9-18 工作时段重叠为 UTC 8:00-10:00', () => {
   assert.strictEqual(overlap[0].endUTC, 10 * 60, 'endUTC 应 600，实际 ' + overlap[0].endUTC);
 });
 
+// ===== 智能会议推荐 rankOverlapSlots 测试 =====
+test('rankOverlapSlots 对空重叠返回空数组', () => {
+  assert.strictEqual(core.rankOverlapSlots([], 'Asia/Shanghai', T).length, 0);
+});
+
+test('rankOverlapSlots 上午黄金时段得"极佳"标签', () => {
+  // 北京+伦敦重叠 UTC8-10，参考时区北京 → 北京 16-18（下午黄金），应得高分
+  const zones = [
+    { city: '北京', tz: 'Asia/Shanghai' },
+    { city: '伦敦', tz: 'Europe/London' },
+  ];
+  const overlap = core.computeOverlap(zones, { start: 9, end: 18 }, T);
+  const ranked = core.rankOverlapSlots(overlap, 'Asia/Shanghai', T);
+  assert.strictEqual(ranked.length, 1);
+  assert.ok(ranked[0].score >= 0.8, '下午黄金时段应 ≥0.8，实际 ' + ranked[0].score);
+  assert.strictEqual(ranked[0].label, '极佳');
+});
+
+test('rankOverlapSlots 按分数降序排序（最佳在前）', () => {
+  // 构造两个时段：一个上午黄金，一个深夜，最佳应排第一
+  const slots = [
+    { startUTC: 22 * 60, endUTC: 23 * 60 },  // 深夜 UTC22-23
+    { startUTC: 2 * 60, endUTC: 4 * 60 },     // 北京上午 10-12 黄金
+  ];
+  const ranked = core.rankOverlapSlots(slots, 'Asia/Shanghai', T);
+  assert.strictEqual(ranked.length, 2);
+  assert.ok(ranked[0].score >= ranked[1].score, '应降序，最佳在前');
+  // 北京 UTC2-4 = 10-12，黄金段；应优于深夜段
+  assert.ok(ranked[0].startUTC === 2 * 60, '黄金段应排第一');
+});
+
+test('goldenHourScore 上午 9-11 接近 1', () => {
+  const s = core.goldenHourScore(9, 11);
+  assert.ok(s > 0.9, '9-11 黄金度应 >0.9，实际 ' + s);
+});
+
+test('goldenHourScore 深夜 23-5 接近 0', () => {
+  // 跨天区间 23 → 5
+  const s = core.goldenHourScore(23, 5);
+  assert.ok(s < 0.2, '23-5 应 <0.2，实际 ' + s);
+});
+
+test('rankOverlapSlots 全天段标记 fullDay 且得"极佳"', () => {
+  const slots = [{ startUTC: 0, endUTC: 0, fullDay: true }];
+  const ranked = core.rankOverlapSlots(slots, 'Asia/Shanghai', T);
+  assert.strictEqual(ranked[0].label, '极佳');
+  assert.strictEqual(ranked[0].fullDay, true);
+});
+
+test('formatSlotLocal 把北京 UTC8-10 段格式化为 16:00–18:00', () => {
+  const slot = { startUTC: 8 * 60, endUTC: 10 * 60 };
+  assert.strictEqual(core.formatSlotLocal(slot, 'Asia/Shanghai', T), '16:00–18:00');
+});
+
 // 三个同半小时区应全天重叠
 test('北京+上海+深圳（同时区）9-18 重叠为 UTC 1:00-10:00', () => {
   const zones = [
