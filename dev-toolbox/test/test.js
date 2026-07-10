@@ -260,6 +260,116 @@ group('URL 编解码');
   assert(r8.ok, '默认 encode');
 })();
 
+// ========== JWT 解码 ==========
+group('JWT 解码');
+(function () {
+  // UTF-8 安全的 base64url 编码辅助（仅测试用）
+  function b64urlUtf8(str) {
+    var bytes = [];
+    for (var i = 0; i < str.length; i++) {
+      var c = str.charCodeAt(i);
+      if (c < 0x80) bytes.push(c);
+      else if (c < 0x800) { bytes.push(0xc0 | (c >> 6), 0x80 | (c & 0x3f)); }
+      else { bytes.push(0xe0 | (c >> 12), 0x80 | ((c >> 6) & 0x3f), 0x80 | (c & 0x3f)); }
+    }
+    var bin = '';
+    for (var j = 0; j < bytes.length; j++) bin += String.fromCharCode(bytes[j]);
+    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function makeJwt(header, payload) {
+    return b64urlUtf8(JSON.stringify(header)) + '.' + b64urlUtf8(JSON.stringify(payload)) + '.sig-part';
+  }
+
+  // 标准三段解码
+  var token = makeJwt({ alg: 'HS256', typ: 'JWT' }, { sub: '123', name: 'dev-toolbox' });
+  var r = core.jwtDecode(token);
+  assert(r.ok, '标准 JWT ok=true');
+  assertEqual(r.header.alg, 'HS256', 'header.alg');
+  assertEqual(r.header.typ, 'JWT', 'header.typ');
+  assertEqual(r.payload.sub, '123', 'payload.sub');
+  assertEqual(r.payload.name, 'dev-toolbox', 'payload.name');
+  assertEqual(r.signature, 'sig-part', 'signature 段');
+
+  // 中文 payload
+  var tokenZh = makeJwt({ alg: 'HS256' }, { name: '开发者工具箱', role: '管理员' });
+  var rZh = core.jwtDecode(tokenZh);
+  assert(rZh.ok, '中文 payload ok');
+  assertEqual(rZh.payload.name, '开发者工具箱', '中文 payload 解码');
+  assertEqual(rZh.payload.role, '管理员', '中文 role 解码');
+
+  // exp 未来 → 有效
+  var futureExp = Math.floor(Date.now() / 1000) + 86400; // 明天
+  var tokenValid = makeJwt({ alg: 'HS256' }, { iat: 1700000000, exp: futureExp });
+  var rValid = core.jwtDecode(tokenValid);
+  assertEqual(rValid.claims.status, 'valid', 'exp 未来状态 valid');
+  assertEqual(rValid.claims.statusText, '有效', '状态文案 有效');
+  assert(rValid.claims.remaining.indexOf('还有') !== -1, '剩余时间含"还有"');
+
+  // exp 过去 → 已过期
+  var pastExp = Math.floor(Date.now() / 1000) - 3600; // 1 小时前
+  var tokenExpired = makeJwt({ alg: 'HS256' }, { exp: pastExp });
+  var rExp = core.jwtDecode(tokenExpired);
+  assertEqual(rExp.claims.status, 'expired', 'exp 过去状态 expired');
+  assertEqual(rExp.claims.statusText, '已过期', '状态文案 已过期');
+  assert(rExp.claims.remaining.indexOf('已过期') !== -1, '逾期含"已过期"');
+
+  // nbf 未来 → 尚未生效
+  var futureNbf = Math.floor(Date.now() / 1000) + 7200;
+  var tokenNbf = makeJwt({ alg: 'HS256' }, { nbf: futureNbf, exp: futureExp });
+  var rNbf = core.jwtDecode(tokenNbf);
+  assertEqual(rNbf.claims.status, 'notbefore', 'nbf 未来状态 notbefore');
+  assertEqual(rNbf.claims.statusText, '尚未生效', '状态文案 尚未生效');
+
+  // 无 exp → 无过期声明
+  var tokenNoExp = makeJwt({ alg: 'none' }, { sub: 'x' });
+  var rNoExp = core.jwtDecode(tokenNoExp);
+  assertEqual(rNoExp.claims.status, 'unknown', '无 exp 状态 unknown');
+  assertEqual(rNoExp.claims.statusText, '无过期声明', '状态文案 无过期声明');
+  assertEqual(rNoExp.claims.exp, null, '无 exp 字段 null');
+
+  // iat 日期格式化
+  var tokenIat = makeJwt({ alg: 'HS256' }, { iat: 1700000000 });
+  var rIat = core.jwtDecode(tokenIat);
+  assert(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(rIat.claims.iatDate), 'iat 日期格式 YYYY-MM-DD HH:mm:ss');
+
+  // 两段 JWT（无签名）也支持
+  var tokenTwo = b64urlUtf8('{"alg":"none"}') + '.' + b64urlUtf8('{"sub":"ab"}');
+  var rTwo = core.jwtDecode(tokenTwo);
+  assert(rTwo.ok, '两段 JWT ok=true');
+  assertEqual(rTwo.signature, '', '两段 JWT signature 为空');
+  assertEqual(rTwo.payload.sub, 'ab', '两段 JWT payload');
+
+  // 空输入
+  var rEmpty = core.jwtDecode('');
+  assert(!rEmpty.ok, '空输入 ok=false');
+  assert(rEmpty.error.indexOf('请输入') !== -1, '空输入提示');
+
+  // 无点分隔
+  var rNoDot = core.jwtDecode('notajwt');
+  assert(!rNoDot.ok, '无点分隔 ok=false');
+  assert(rNoDot.error.indexOf('格式错误') !== -1, '格式错误提示含中文');
+
+  // 段数过多（4 段）
+  var rFour = core.jwtDecode('a.b.c.d');
+  assert(!rFour.ok, '四段 JWT ok=false');
+
+  // 非法 base64url payload
+  var rBad = core.jwtDecode('eyJhbGciOiJub25lIn0.!!!invalid!!!.sig');
+  assert(!rBad.ok, '非法 payload ok=false');
+  assert(rBad.error.indexOf('解析失败') !== -1, '解析失败提示');
+
+  // jwt.io 标准示例 token（base64url 含 - 和 _）
+  var stdToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+  var rStd = core.jwtDecode(stdToken);
+  assert(rStd.ok, 'jwt.io 标准 token ok');
+  assertEqual(rStd.payload.sub, '1234567890', '标准 token sub');
+  assertEqual(rStd.payload.name, 'John Doe', '标准 token name');
+  assertEqual(rStd.payload.iat, 1516239022, '标准 token iat');
+
+  // 签名含 base64url 特殊字符（- 和 _）能正确取出
+  assert(rStd.signature.indexOf('_') !== -1 || rStd.signature.indexOf('-') !== -1 || rStd.signature === 'SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', '签名段保留原始字符');
+})();
+
 // ========== 总结 ==========
 console.log('\n========================');
 console.log('通过: ' + pass + '  失败: ' + fail);

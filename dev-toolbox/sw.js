@@ -2,7 +2,7 @@
  * 离线缓存策略：缓存优先（cache-first），使应用在离线状态下可用
  * 仅在 http/https 协议下注册（file:// 直接打开不生效，但应用本身纯前端可双击即用）
  */
-var CACHE_NAME = 'dev-toolbox-v2';
+var CACHE_NAME = 'dev-toolbox-v2.1';
 var CACHE_URLS = [
   './',
   './index.html',

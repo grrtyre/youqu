@@ -12,7 +12,8 @@
     regex: { title: '正则测试', desc: '实时测试正则表达式，查看所有匹配' },
     diff: { title: '文本 Diff', desc: '逐行对比两段文本差异（LCS 算法）' },
     base64: { title: 'Base64 编解码', desc: '支持 UTF-8 的 Base64 编码与解码' },
-    url: { title: 'URL 编解码', desc: 'URL 安全编码与解码' }
+    url: { title: 'URL 编解码', desc: 'URL 安全编码与解码' },
+    jwt: { title: 'JWT 解码', desc: '解码 JWT，查看 header / payload / 过期状态（不验签）' }
   };
 
   // ==================== 侧边栏切换 ====================
@@ -50,7 +51,7 @@
   // 各工具主按钮 id 映射，用于自动执行
   var AUTO_RUN = {
     color: 'colorBtn', json: 'jsonBtn', timestamp: 'tsBtn',
-    regex: 'reBtn', diff: 'diffBtn', base64: 'b64Btn', url: 'urlBtn'
+    regex: 'reBtn', diff: 'diffBtn', base64: 'b64Btn', url: 'urlBtn', jwt: 'jwtBtn'
   };
   function autoRun(tool) {
     var id = AUTO_RUN[tool];
@@ -349,6 +350,77 @@
     }
   });
 
+  // ==================== JWT 解码 ====================
+  var jwtInput = document.getElementById('jwtInput');
+  var jwtResult = document.getElementById('jwtResult');
+
+  // 点击结果中任意带 data-raw 的元素即复制
+  jwtResult.addEventListener('click', function (e) {
+    var item = e.target.closest('[data-raw]');
+    if (item) copyText(item.getAttribute('data-raw') || item.textContent);
+  });
+
+  document.getElementById('jwtBtn').addEventListener('click', function () {
+    var token = jwtInput.value.trim();
+    if (!token) { jwtResult.innerHTML = '<div class="empty-tip">请输入 JWT</div>'; return; }
+    var r = core.jwtDecode(token);
+    if (!r.ok) { jwtResult.innerHTML = '<div class="error-tip">' + escapeHtml(r.error) + '</div>'; return; }
+    var c = r.claims;
+    var headerJson = JSON.stringify(r.header, null, 2);
+    var payloadJson = JSON.stringify(r.payload, null, 2);
+
+    // 时间声明项
+    var claimItems = [];
+    if (c.iat !== null) claimItems.push({ label: '签发 iat', value: c.iatDate });
+    if (c.nbf !== null) claimItems.push({ label: '生效 nbf', value: c.nbfDate });
+    if (c.exp !== null) claimItems.push({ label: '过期 exp', value: c.expDate });
+    var claimsHtml = claimItems.length
+      ? '<div class="jwt-claims">' + claimItems.map(function (it) {
+          return '<div class="jwt-claim"><div class="jwt-claim-label">' + it.label +
+            '</div><div class="jwt-claim-value mono" data-raw="' + escapeAttr(it.value) + '">' + escapeHtml(it.value) + '</div></div>';
+        }).join('') + '</div>'
+      : '';
+
+    // 剩余时间
+    var remainingHtml = c.remaining
+      ? '<span class="jwt-remaining">' + escapeHtml(c.remaining) + '</span>'
+      : '';
+
+    // 原始 token 三段长度
+    var rawParts = token.split('.');
+    var hLen = rawParts[0] ? rawParts[0].length : 0;
+    var pLen = rawParts[1] ? rawParts[1].length : 0;
+    var sLen = rawParts[2] ? rawParts[2].length : 0;
+
+    // 签名段（紧凑单行条带，不再占完整卡片）
+    var sigHtml = r.signature
+      ? '<div class="jwt-sig-strip" data-raw="' + escapeAttr(r.signature) + '">' +
+        '<span class="jwt-sig-label">签名</span>' +
+        '<span class="jwt-sig-text mono">' + escapeHtml(r.signature) + '</span>' +
+        '<span class="jwt-sig-meta">' + sLen + ' 字符</span></div>'
+      : '<div class="jwt-sig-empty">无签名段（alg=none 或未签名）</div>';
+
+    jwtResult.innerHTML =
+      '<div class="jwt-status-row"><span class="jwt-status ' + c.status + '">' + c.statusText + '</span>' + remainingHtml + '</div>' +
+      claimsHtml +
+      '<div class="jwt-cards">' +
+        '<div class="jwt-card jwt-card-header"><div class="jwt-card-head"><span class="jwt-card-label">Header</span>' +
+        '<span class="jwt-card-meta">' + hLen + ' 字符</span></div>' +
+        '<pre class="jwt-card-json mono" data-raw="' + escapeAttr(headerJson) + '">' + escapeHtml(headerJson) + '</pre></div>' +
+        '<div class="jwt-card jwt-card-payload"><div class="jwt-card-head"><span class="jwt-card-label">Payload</span>' +
+        '<span class="jwt-card-meta">' + pLen + ' 字符</span></div>' +
+        '<pre class="jwt-card-json mono" data-raw="' + escapeAttr(payloadJson) + '">' + escapeHtml(payloadJson) + '</pre></div>' +
+      '</div>' +
+      sigHtml;
+  });
+
+  jwtInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      document.getElementById('jwtBtn').click();
+    }
+  });
+
   // ==================== 工具函数 ====================
   function escapeHtml(s) {
     return String(s)
@@ -366,14 +438,14 @@
   }
 
   // ==================== 键盘快捷键 ====================
-  // Ctrl/Cmd + 1~7 切换工具，Ctrl/Cmd + Enter 执行当前工具
-  var TOOL_ORDER = ['color', 'json', 'timestamp', 'regex', 'diff', 'base64', 'url'];
+  // Ctrl/Cmd + 1~8 切换工具，Ctrl/Cmd + Enter 执行当前工具
+  var TOOL_ORDER = ['color', 'json', 'timestamp', 'regex', 'diff', 'base64', 'url', 'jwt'];
   document.addEventListener('keydown', function (e) {
     var mod = e.ctrlKey || e.metaKey;
     if (!mod) return;
-    // Ctrl/Cmd + 1~7 切换工具
+    // Ctrl/Cmd + 1~8 切换工具
     var num = parseInt(e.key, 10);
-    if (num >= 1 && num <= 7) {
+    if (num >= 1 && num <= 8) {
       e.preventDefault();
       switchTool(TOOL_ORDER[num - 1]);
       return;

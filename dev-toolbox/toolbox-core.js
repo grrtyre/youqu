@@ -370,6 +370,118 @@
     }
   }
 
+  // ==================== JWT 解码 ====================
+
+  /**
+   * JWT（JSON Web Token）解码
+   * 仅解码 header 与 payload，不验证签名（本地调试用途）
+   * @param {string} token - JWT 字符串，形如 header.payload.signature
+   * @returns {{ok:boolean, header:object|null, payload:object|null, signature:string, claims:object|null, error:string}}
+   *   claims: {status, statusText, iat, iatDate, exp, expDate, nbf, nbfDate, remaining}
+   */
+  function jwtDecode(token) {
+    var s = String(token).trim();
+    if (!s) {
+      return { ok: false, header: null, payload: null, signature: '', claims: null, error: '请输入 JWT' };
+    }
+    var parts = s.split('.');
+    if (parts.length < 2 || parts.length > 3) {
+      return {
+        ok: false, header: null, payload: null, signature: '', claims: null,
+        error: 'JWT 格式错误：应为 header.payload.signature 三段（或 header.payload 两段）'
+      };
+    }
+    if (!parts[0] || !parts[1]) {
+      return {
+        ok: false, header: null, payload: null, signature: '', claims: null,
+        error: 'JWT 格式错误：header 或 payload 段为空'
+      };
+    }
+    try {
+      var header = JSON.parse(base64urlDecode(parts[0]));
+      var payload = JSON.parse(base64urlDecode(parts[1]));
+      var signature = parts[2] || '';
+      var claims = analyzeClaims(payload);
+      return { ok: true, header: header, payload: payload, signature: signature, claims: claims, error: '' };
+    } catch (e) {
+      return { ok: false, header: null, payload: null, signature: '', claims: null, error: 'JWT 解析失败: ' + e.message };
+    }
+  }
+
+  /** Base64URL 解码为 UTF-8 字符串（JWT header/payload 专用） */
+  function base64urlDecode(str) {
+    // base64url 字符替换为标准 base64
+    var s = String(str).replace(/-/g, '+').replace(/_/g, '/');
+    // 补齐 padding
+    var pad = s.length % 4;
+    if (pad === 2) s += '==';
+    else if (pad === 3) s += '=';
+    else if (pad === 1) throw new Error('Base64URL 长度非法');
+    var binary = atob(s);
+    var bytes = [];
+    for (var i = 0; i < binary.length; i++) bytes.push(binary.charCodeAt(i));
+    return utf8Decode(bytes);
+  }
+
+  /** 分析 JWT 标准时间声明（iat/exp/nbf），返回可读状态 */
+  function analyzeClaims(payload) {
+    var now = Math.floor(Date.now() / 1000);
+    var iat = typeof payload.iat === 'number' ? payload.iat : null;
+    var exp = typeof payload.exp === 'number' ? payload.exp : null;
+    var nbf = typeof payload.nbf === 'number' ? payload.nbf : null;
+
+    var status, statusText;
+    if (nbf !== null && now < nbf) {
+      status = 'notbefore';
+      statusText = '尚未生效';
+    } else if (exp !== null && now >= exp) {
+      status = 'expired';
+      statusText = '已过期';
+    } else if (exp !== null) {
+      status = 'valid';
+      statusText = '有效';
+    } else {
+      status = 'unknown';
+      statusText = '无过期声明';
+    }
+
+    // 剩余 / 逾期时间描述
+    var remaining = '';
+    if (exp !== null) {
+      var diff = exp - now;
+      remaining = diff >= 0 ? '还有 ' + humanDuration(diff) + ' 过期' : '已过期 ' + humanDuration(-diff);
+    }
+
+    return {
+      status: status,
+      statusText: statusText,
+      iat: iat,
+      iatDate: iat !== null ? fmtClaim(iat) : null,
+      exp: exp,
+      expDate: exp !== null ? fmtClaim(exp) : null,
+      nbf: nbf,
+      nbfDate: nbf !== null ? fmtClaim(nbf) : null,
+      remaining: remaining
+    };
+  }
+
+  /** Unix 秒戳格式化为本地时间字符串 */
+  function fmtClaim(ts) {
+    var d = new Date(ts * 1000);
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) +
+      ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
+  }
+
+  /** 秒数转为中文可读时长（天/小时/分/秒） */
+  function humanDuration(sec) {
+    if (sec < 60) return sec + ' 秒';
+    if (sec < 3600) return Math.floor(sec / 60) + ' 分';
+    if (sec < 86400) return Math.floor(sec / 3600) + ' 小时';
+    if (sec < 2592000) return Math.floor(sec / 86400) + ' 天';
+    if (sec < 31536000) return Math.floor(sec / 2592000) + ' 个月';
+    return Math.floor(sec / 31536000) + ' 年';
+  }
+
   // ==================== 导出 ====================
 
   var core = {
@@ -379,7 +491,8 @@
     regexTest: regexTest,
     textDiff: textDiff,
     base64Code: base64Code,
-    urlCode: urlCode
+    urlCode: urlCode,
+    jwtDecode: jwtDecode
   };
 
   if (typeof module !== 'undefined' && module.exports) {
