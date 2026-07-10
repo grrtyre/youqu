@@ -2,6 +2,13 @@
 
 > 本地网络端口监控与管理桌面应用
 
+## ⬇️ 直接下载
+
+| 版本 | 下载链接 | 说明 |
+|---|---|---|
+| 安装版 v1.0.0 | [port-manager-setup-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/port-manager-v1.0.0/port-manager-setup-1.0.0.exe) | 推荐安装，支持开始菜单和桌面快捷方式 |
+| 便携版 v1.0.0 | [port-manager-portable-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/port-manager-v1.0.0/port-manager-portable-1.0.0.exe) | 免安装，双击即用 |
+
 ## 功能说明
 
 端口管家是一款轻量级的 Windows 桌面工具，帮助开发者和系统管理员快速查看本机所有网络连接、监控端口占用、一键结束占用进程。
