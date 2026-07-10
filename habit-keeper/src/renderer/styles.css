@@ -105,7 +105,7 @@ input { font-family: inherit; color: inherit; }
 
 /* ===== 侧边栏 ===== */
 .sidebar {
-  width: 280px;
+  width: 300px;
   flex-shrink: 0;
   background: var(--bg-soft);
   border-right: 1px solid var(--line);
@@ -149,14 +149,13 @@ input { font-family: inherit; color: inherit; }
 }
 .habit-item:hover { background: rgba(0, 0, 0, 0.035); }
 .habit-item.active {
-  background: #dcebff;
-  border-color: rgba(0, 122, 255, 0.28);
-  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.12);
+  background: var(--accent-soft);
+  border-color: rgba(0, 122, 255, 0.35);
+  box-shadow: 0 2px 10px rgba(0, 122, 255, 0.15);
 }
 .habit-item.active::before {
   content: ''; position: absolute; left: 0; top: 10px; bottom: 10px;
   width: 4px; background: var(--accent); border-radius: 0 4px 4px 0;
-  box-shadow: 0 0 8px rgba(0, 122, 255, 0.4);
 }
 .habit-icon {
   width: 34px; height: 34px;
@@ -184,25 +183,28 @@ input { font-family: inherit; color: inherit; }
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  margin-top: 8px;
+  margin-top: 6px;
   transition: all 0.18s var(--ease);
 }
 .habit-add-card:hover { background: #d4e6ff; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0, 122, 255, 0.18); }
 
 .habit-streak {
-  font-size: 12px; color: var(--text-3); font-weight: 600;
+  font-size: 11px; color: var(--text-3); font-weight: 600;
   font-variant-numeric: tabular-nums;
-  min-width: 24px; text-align: right;
+  min-width: 18px; text-align: center;
+  padding: 2px 6px;
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.04);
 }
-.habit-item.active .habit-streak { color: var(--accent); }
-.habit-streak.zero { color: var(--text-3); font-weight: 500; }
+.habit-item.active .habit-streak { color: var(--accent); background: rgba(0, 122, 255, 0.1); }
+.habit-streak.zero { color: var(--text-3); font-weight: 500; background: transparent; }
 
 .sidebar-foot {
   margin-top: 12px;
   padding-top: 14px;
   border-top: 1px solid var(--line);
 }
-.foot-progress { display: flex; flex-direction: column; gap: 8px; }
+.foot-progress { display: flex; flex-direction: column; gap: 10px; }
 .foot-progress-head {
   display: flex; justify-content: space-between; align-items: baseline;
 }
@@ -210,21 +212,21 @@ input { font-family: inherit; color: inherit; }
 .foot-count { font-size: 14px; font-weight: 700; color: var(--text-1); font-variant-numeric: tabular-nums; }
 .foot-count span { color: var(--accent); }
 .progress-bar {
-  height: 6px;
+  height: 10px;
   background: var(--card-2);
-  border-radius: 3px;
+  border-radius: 5px;
   overflow: hidden;
   border: 1px solid var(--line);
 }
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #007aff 0%, #34a4ff 50%, #00c6ff 100%);
-  border-radius: 3px;
+  background: linear-gradient(90deg, #5ba8ff 0%, #007aff 100%);
+  border-radius: 5px;
   width: 0%;
   transition: width 0.5s var(--ease);
-  box-shadow: 0 0 8px rgba(0, 122, 255, 0.4);
+  box-shadow: 0 1px 4px rgba(0, 122, 255, 0.25);
 }
-.foot-line { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+.foot-line { font-size: 11px; color: var(--text-3); margin-top: 4px; }
 .foot-line span { color: var(--text-1); font-weight: 600; font-variant-numeric: tabular-nums; }
 
 /* ===== 主内容 ===== */
@@ -377,26 +379,28 @@ input { font-family: inherit; color: inherit; }
 }
 .cal-title { font-size: 17px; font-weight: 600; flex: 1; text-align: center; letter-spacing: 0.02em; }
 .cal-nav {
-  width: 30px; height: 30px;
-  border-radius: 8px;
+  width: 36px; height: 36px;
+  border-radius: 9px;
   display: flex; align-items: center; justify-content: center;
-  color: var(--text-2);
+  color: var(--text-1);
   transition: all 0.18s var(--ease);
+  background: var(--card-2);
+  border: 1px solid var(--line);
 }
-.cal-nav:hover { background: rgba(0, 0, 0, 0.05); color: var(--text-1); }
+.cal-nav:hover { background: var(--accent-soft); color: var(--accent); border-color: rgba(0, 122, 255, 0.25); }
 .cal-today {
   font-size: 12px; color: var(--accent);
-  padding: 6px 12px;
-  border-radius: 8px;
-  background: var(--accent-soft);
+  padding: 0 12px;
+  border-radius: 9px;
+  background: var(--card-2);
+  border: 1px solid var(--line);
   margin-left: 6px;
   font-weight: 600;
   transition: all 0.18s var(--ease);
-  border: 1px solid rgba(0, 122, 255, 0.2);
-  height: 30px;
+  height: 36px;
   display: inline-flex; align-items: center;
 }
-.cal-today:hover { background: #d4e6ff; }
+.cal-today:hover { background: var(--accent-soft); color: var(--accent); border-color: rgba(0,122,255,0.25); }
 
 .cal-weekdays {
   display: grid; grid-template-columns: repeat(7, 1fr);
@@ -420,7 +424,7 @@ input { font-family: inherit; color: inherit; }
   font-size: 13px; font-weight: 500;
   color: var(--text-2);
   background: #f4f4f6;
-  border: 1.5px solid transparent;
+  border: 1px solid transparent;
   cursor: pointer;
   transition: all 0.18s var(--ease);
   position: relative;
@@ -435,8 +439,8 @@ input { font-family: inherit; color: inherit; }
   font-weight: 700;
 }
 .cal-cell.future {
-  color: var(--text-3);
-  opacity: 0.35;
+  color: var(--text-2);
+  opacity: 0.55;
   cursor: default;
   background: transparent;
 }
@@ -444,16 +448,16 @@ input { font-family: inherit; color: inherit; }
 .cal-cell.done {
   background: var(--accent-soft);
   color: var(--accent-deep);
-  border-color: rgba(0, 122, 255, 0.35);
+  border-color: rgba(0, 122, 255, 0.4);
   font-weight: 700;
 }
 .cal-cell.done:hover { background: #d4e6ff; }
 .cal-cell.done.today {
-  background: var(--accent);
-  color: #fff;
+  background: var(--accent-soft);
+  color: var(--accent-deep);
   border-color: var(--accent);
-  box-shadow: 0 3px 10px rgba(0, 122, 255, 0.45);
-  transform: scale(1.06);
+  border-width: 2px;
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
 }
 
 .cal-legend {
