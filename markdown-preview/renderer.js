@@ -14,7 +14,7 @@
 (function () {
   'use strict';
 
-  var STORAGE_KEY = 'markdown-preview:content';
+  var STORAGE_KEY = 'markdown-preview:content:v2';
   var MODE_KEY = 'markdown-preview:mode';
   var RATIO_KEY = 'markdown-preview:ratio';
   var THEME_KEY = 'markdown-preview:theme';
@@ -95,10 +95,13 @@
       html += '<button class="toc-item level-' + toc[i].level + '" data-slug="' + escapeAttr(toc[i].slug) + '" title="' + escapeAttr(toc[i].text) + '">' + escapeText(toc[i].text) + '</button>';
     }
     tocList.innerHTML = html;
+    // 默认高亮第一项，让用户知道 TOC 可交互
+    var firstItem = tocList.querySelector('.toc-item');
+    if (firstItem) firstItem.classList.add('active');
   }
 
   function escapeAttr(s) {
-    return String(s).replace(/"/g, '&quot;').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return MarkdownParser.escapeAttr(s);
   }
 
   /**
@@ -530,7 +533,13 @@
       updateStats();
       saveDelayed();
     }
-    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    // Ctrl/Cmd + S 保存为 .md 文件（符合编辑器直觉）
+    if ((e.ctrlKey || e.metaKey) && e.key === 's' && !e.shiftKey) {
+      e.preventDefault();
+      saveMarkdown();
+    }
+    // Ctrl/Cmd + Shift + E 导出独立 HTML 文件
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'e' || e.key === 'E')) {
       e.preventDefault();
       exportHtml();
     }
@@ -539,6 +548,15 @@
       e.preventDefault();
       exportPdf();
     }
+  });
+
+  // 全局快捷键：视图模式切换（Ctrl/Cmd + 1/2/3）
+  document.addEventListener('keydown', function (e) {
+    if (!(e.ctrlKey || e.metaKey)) return;
+    if (e.target === editor) return; // 编辑区内不拦截
+    if (e.key === '1') { e.preventDefault(); setMode('split'); }
+    else if (e.key === '2') { e.preventDefault(); setMode('edit'); }
+    else if (e.key === '3') { e.preventDefault(); setMode('preview'); }
   });
 
   document.getElementById('btn-copy').addEventListener('click', copyHtml);
@@ -642,13 +660,13 @@
     '- **拖拽打开** `.md` 文件直接载入',
     '- **导出 PDF**：`Ctrl + P` 调用浏览器打印',
     '- **代码块语法高亮**：JS / Python / JSON / HTML / CSS / Bash / Java / Go / SQL',
-    '- 一键导出独立 HTML 文件',
+    '- 一键导出独立 HTML 文件（`Ctrl + Shift + E`）',
     '- 内容自动保存到本地，刷新不丢失',
-    '- `Ctrl + S` 快捷导出 HTML',
+    '- `Ctrl + S` 保存为 .md 文件',
     '',
     '## 语法示例',
     '',
-    '> 引用块：这是一段引用文字，带蓝色左边框。',
+    '> 引用块：这是一段引用文字，左侧带灰色边框。',
     '',
     '1. 有序列表第一项',
     '2. 有序列表第二项',
@@ -660,9 +678,9 @@
     '',
     '| 工具 | 简介 | 状态 |',
     '|---|---|---|',
-    '| Cron 中文可视化 | 定时任务表达式 | ✅ |',
-    '| 剪贴板管家 | 剪贴板历史管理 | ✅ |',
-    '| Markdown 预览器 | 本工具 | ✅ |',
+    '| Cron 中文可视化 | 定时任务表达式 | 已完成 |',
+    '| 剪贴板管家 | 剪贴板历史管理 | 已完成 |',
+    '| Markdown 预览器 | 本工具 | 已完成 |',
     '',
     '### 代码块（语法高亮）',
     '',
@@ -687,8 +705,8 @@
     '```json',
     '{',
     '  "name": "markdown-preview",',
-    '  "version": "2.0",',
-    '  "features": ["toc", "dark-mode", "highlight"]',
+    '  "version": "2.2",',
+    '  "features": ["toc", "dark-mode", "highlight", "pwa"]',
     '}',
     '```',
     '',

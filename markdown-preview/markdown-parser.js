@@ -18,6 +18,8 @@
 
   /**
    * HTML 特殊字符转义，防止 XSS 注入
+   * 注意：必须先替换 & 再替换其他字符，否则 &quot; 等已生成的实体中的 &
+   * 会被二次转义为 &amp;quot;
    */
   function escapeHtml(text) {
     return text
@@ -26,6 +28,19 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+  }
+
+  /**
+   * HTML 属性值转义：用于把文本安全地放入双引号属性（如 title="..."）
+   * 与 escapeHtml 的区别：不转义单引号（双引号属性中单引号无需转义）
+   * 顺序：先 & 再 "，避免 &quot; 中的 & 被二次转义
+   */
+  function escapeAttr(text) {
+    return String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
   }
 
   // ======================== 中文排版优化 ========================
@@ -690,6 +705,7 @@
   return {
     parseMarkdown: parseMarkdown,
     escapeHtml: escapeHtml,
+    escapeAttr: escapeAttr,
     addChineseSpaces: addChineseSpaces,
     slugify: slugify,
     extractToc: extractToc,

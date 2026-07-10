@@ -19,11 +19,16 @@
 - **PDF 导出** —— 调用浏览器打印对话框，支持 `Ctrl/Cmd+P` 快捷键，导出 PDF 时自动隐藏编辑区
 - **复制 HTML** —— 复制渲染后的 HTML 到剪贴板，粘贴到公众号/博客编辑器
 
+### PWA 能力（v2.2 新增）
+- **离线可用** —— 通过 Service Worker 缓存核心资源，断网后仍可使用
+- **安装到桌面** —— 浏览器地址栏安装按钮，一键变为桌面独立应用
+- **深链分享** —— 支持 URL hash 直达
+
 ### 交互与体验
-- **三视图模式** —— 分屏 / 仅编辑 / 仅预览，一键切换
+- **三视图模式** —— 分屏 / 仅编辑 / 仅预览，一键切换（支持 `Ctrl/Cmd+1/2/3` 快捷键）
 - **拖拽打开** —— 拖拽 `.md/.markdown/.txt` 文件直接载入编辑区
 - **打开文件** —— 工具栏按钮选择本地 Markdown 文件
-- **保存为 .md** —— 一键下载源码为 `.md` 文件，与「导出 HTML」互补
+- **保存为 .md** —— 一键下载源码为 `.md` 文件（`Ctrl/Cmd+S`），符合编辑器直觉
 - **拖动调整** —— 拖动中间分隔条调整左右宽度
 - **自动保存** —— 内容/视图模式/比例/主题/TOC 显隐均自动保存到 localStorage，刷新不丢失
 - **字数统计** —— 实时显示字符数、字数（中文按字、英文按词）、行数
@@ -39,8 +44,12 @@
 ### 快捷键
 | 快捷键 | 功能 |
 |---|---|
-| `Ctrl/Cmd + S` | 导出 HTML 文件 |
+| `Ctrl/Cmd + S` | 保存为 .md 文件 |
+| `Ctrl/Cmd + Shift + E` | 导出独立 HTML 文件 |
 | `Ctrl/Cmd + P` | 打印 / 导出 PDF |
+| `Ctrl/Cmd + 1` | 分屏视图 |
+| `Ctrl/Cmd + 2` | 仅编辑视图 |
+| `Ctrl/Cmd + 3` | 仅预览视图 |
 | `Tab` | 编辑区内插入两个空格（缩进） |
 
 ## 🎯 快捷操作
@@ -53,7 +62,7 @@
 - **🗑 清空** —— 清空编辑区（带二次确认）
 - **🌙/☀️ 主题** —— 切换暗色/亮色主题
 - **📂 打开** —— 选择本地 `.md` 文件载入
-- **⬌ / ✎ / 👁** —— 分屏 / 仅编辑 / 仅预览 三种视图
+- **⊞ / ✎ / 👁** —— 分屏 / 仅编辑 / 仅预览 三种视图（`Ctrl/Cmd + 1/2/3`）
 
 ## 📁 项目结构
 
@@ -61,19 +70,23 @@
 markdown-preview/
 ├── index.html          # 页面结构
 ├── styles.css          # 苹果白风格样式（含暗色主题、代码高亮配色、打印样式）
-├── renderer.js         # 渲染逻辑（编辑、预览、TOC、主题、拖拽、PDF 导出）
-├── markdown-parser.js  # Markdown 解析核心（零依赖，含 slugify/extractToc/highlightCode）
+├── renderer.js         # 渲染逻辑（编辑、预览、TOC、主题、拖拽、PDF 导出、快捷键）
+├── markdown-parser.js  # Markdown 解析核心（零依赖，含 slugify/extractToc/highlightCode/escapeAttr）
+├── manifest.json       # PWA 应用清单
+├── sw.js                # Service Worker（离线缓存）
+├── icons/               # PWA 图标（192/256/384/512 + favicon）
 ├── test/
-│   └── test.js         # 核心解析逻辑测试（76 用例）
+│   └── test.js         # 核心解析逻辑测试（87 用例）
 ├── .gitignore
 ├── LICENSE
 └── README.md
 ```
 
-## 🛠 技术栈
+## 🛠️ 技术栈
 
 - 纯 HTML / CSS / JavaScript（ES5+，兼容性好）
 - 零运行时依赖、零构建步骤、零 CDN 引用
+- PWA（Service Worker + Web App Manifest，可离线、可安装）
 - 苹果白高端风格（参考 macOS / iOS 原生设计）
 - 自研代码高亮引擎（regex ranges + token 包裹，无 Prism/highlight.js 依赖）
 
@@ -83,7 +96,7 @@ markdown-preview/
 node test/test.js
 ```
 
-**79 个用例**覆盖：
+**87 个用例**覆盖：
 - 标题（h1-h6、行内格式、末尾 #）
 - 段落、换行
 - 行内格式（粗体/斜体/删除线/行内代码）
@@ -96,8 +109,31 @@ node test/test.js
 - **slugify**（中文保留、标点处理、去重）9 项
 - **extractToc**（多级标题、跳过代码块、行内格式剥离）7 项
 - **highlightCode**（10 种语言、别名、HTML 转义、字符串内关键字保护）15 项
+- **escapeAttr**（属性值转义、`&` 与 `"` 同时存在不二次转义、null/数字输入）8 项
 
 ## 📜 更新日志
+
+### v2.2（2026-07-10）
+
+**PWA 化**
+- 新增 `manifest.json` + `sw.js`，部署到 http/localhost 后可离线使用、可安装到桌面
+- 生成全套 PWA 图标（192/256/384/512 + Apple touch icon + favicon）
+
+**Bug 修复**
+- 修复 `escapeAttr` 双引号转义 bug：此前先替换 `"` 为 `&quot;` 再替换 `&` 为 `&amp;`，导致 `&quot;` 中的 `&` 被二次转义为 `&amp;quot;`。现改为先替换 `&` 再替换 `"`，并将 `escapeAttr` 提取到 `MarkdownParser` 模块导出，可被测试覆盖
+
+**快捷键优化**
+- `Ctrl/Cmd + S` 从「导出 HTML」改为「保存为 .md 文件」，符合 Markdown 编辑器直觉
+- 新增 `Ctrl/Cmd + Shift + E` 导出独立 HTML 文件
+- 新增 `Ctrl/Cmd + 1/2/3` 切换分屏 / 仅编辑 / 仅预览视图
+
+**UI 优化**
+- 视图切换按钮的 emoji（⬌ ✎ 👁）替换为 SVG 矢量图标，风格统一
+- 品牌 logo 从 emoji（📝）替换为 SVG 矢量 M 图标，与 PWA 图标一致
+- 新增 favicon、theme-color meta、description meta
+
+**测试**
+- 新增 8 个 escapeAttr 测试用例（共 87 项），覆盖 `&` + `"` 同时存在的二次转义 bug 回归
 
 ### v2.1（2026-07-07）
 

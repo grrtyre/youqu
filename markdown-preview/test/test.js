@@ -8,6 +8,7 @@ var MarkdownParser = require('../markdown-parser');
 
 var parse = MarkdownParser.parseMarkdown;
 var escapeHtml = MarkdownParser.escapeHtml;
+var escapeAttr = MarkdownParser.escapeAttr;
 var addChineseSpaces = MarkdownParser.addChineseSpaces;
 
 var total = 0;
@@ -497,6 +498,43 @@ test('parseMarkdown options.highlight 引用块内代码块也高亮', function 
   var md = '> ```js\n> var x = 1;\n> ```';
   var out = parse(md, { highlight: true });
   contains(out, 'tok-keyword');
+});
+
+// ======================== escapeAttr（属性值转义） ========================
+
+test('escapeAttr 普通文本不变', function () {
+  assert.strictEqual(escapeAttr('Hello 世界'), 'Hello 世界');
+});
+
+test('escapeAttr 转义 & 符号', function () {
+  assert.strictEqual(escapeAttr('A & B'), 'A &amp; B');
+});
+
+test('escapeAttr 转义双引号', function () {
+  assert.strictEqual(escapeAttr('say "hi"'), 'say &quot;hi&quot;');
+});
+
+test('escapeAttr 同时含 & 和 " 不二次转义', function () {
+  // 旧 bug：先替换 " 为 &quot;，再替换 & 为 &amp;，导致 &amp;quot;
+  // 修复后：先替换 & 再替换 "，结果正确
+  assert.strictEqual(escapeAttr('A & "B"'), 'A &amp; &quot;B&quot;');
+});
+
+test('escapeAttr 转义 < 和 >', function () {
+  assert.strictEqual(escapeAttr('<tag>'), '&lt;tag&gt;');
+});
+
+test('escapeAttr 不转义单引号', function () {
+  assert.strictEqual(escapeAttr("it's"), "it's");
+});
+
+test('escapeAttr null/undefined 输入', function () {
+  assert.strictEqual(escapeAttr(null), 'null');
+  assert.strictEqual(escapeAttr(undefined), 'undefined');
+});
+
+test('escapeAttr 数字输入', function () {
+  assert.strictEqual(escapeAttr(42), '42');
 });
 
 // ======================== 测试结果汇总 ========================
