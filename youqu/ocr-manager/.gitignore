@@ -1,0 +1,12 @@
+node_modules/
+dist/
+dist-v*/
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.env
+
+# 大体积离线语言包（打包时内置进 exe；源码仓库不提交，运行时缺失则走 CDN 缓存回退）
+src/langs/*.traineddata
+src/langs/*.traineddata.gz
