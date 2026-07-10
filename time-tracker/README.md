@@ -6,8 +6,8 @@
 
 | 平台 | 下载 |
 |---|---|
-| Windows 安装版 | [时间管家 Setup 1.0.0.exe](../../releases/tag/time-tracker-v1.0.0) |
-| Windows 便携版 | [时间管家 1.0.0.exe](../../releases/tag/time-tracker-v1.0.0) |
+| Windows 安装版 | [Setup.1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/time-tracker-v1.0.0/Setup.1.0.0.exe) |
+| Windows 便携版 | [1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/time-tracker-v1.0.0/1.0.0.exe) |
 
 ## ✨ 功能
 
