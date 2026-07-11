@@ -13,15 +13,25 @@ const COLORS = {
 
 const CATEGORIES = ['工作', '个人', '灵感', '待办', '其他'];
 
-// 分类对应颜色（与侧边栏一致）
+// 分类对应颜色（与侧边栏一致，标签文字用降低饱和度版）
 const CATEGORY_COLORS = {
-  '工作': '#007aff',
-  '个人': '#34c759',
-  '灵感': '#ffcc00',
-  '待办': '#ff9500',
-  '其他': '#8e8e93'
+  '工作': '#0066cc',
+  '个人': '#1a8a3e',
+  '灵感': '#b89500',
+  '待办': '#cc3b30',
+  '其他': '#6e6e73'
+};
+// 分类对应浅色背景（卡片标签用）
+const CATEGORY_BG = {
+  '工作': '#eef4ff',
+  '个人': '#f0fbf3',
+  '灵感': '#fffdec',
+  '待办': '#fff0f0',
+  '其他': '#f5f5f7'
 };
 let notes = [];
+let trash = [];
+let currentView = 'notes'; // 'notes' | 'trash'
 let currentCategory = '全部';
 let currentSearch = '';
 let editingNoteId = null;
@@ -30,12 +40,16 @@ let editingColor = 'default';
 
 // DOM 元素
 const notesGrid = document.getElementById('notesGrid');
+const trashList = document.getElementById('trashList');
 const emptyState = document.getElementById('emptyState');
 const mainTitle = document.getElementById('mainTitle');
 const searchInput = document.getElementById('searchInput');
 const newNoteBtn = document.getElementById('newNoteBtn');
 const importBtn = document.getElementById('importBtn');
 const exportBtn = document.getElementById('exportBtn');
+const trashEntry = document.getElementById('trashEntry');
+const emptyTrashBtn = document.getElementById('emptyTrashBtn');
+const sortInfo = document.getElementById('sortInfo');
 
 // 弹窗元素
 const modalOverlay = document.getElementById('modalOverlay');
@@ -65,6 +79,16 @@ function formatDate(ts) {
   return d.getFullYear() + '/' + m + '/' + day;
 }
 
+// === 回收站剩余天数 ===
+const TRASH_MAX_DAYS = 30;
+function getDaysLeft(deletedAt) {
+  const now = Date.now();
+  const maxAgeMs = TRASH_MAX_DAYS * 24 * 60 * 60 * 1000;
+  const elapsed = now - deletedAt;
+  const left = Math.ceil((maxAgeMs - elapsed) / (24 * 60 * 60 * 1000));
+  return left < 0 ? 0 : left;
+}
+
 // === 转义 HTML ===
 function escapeHtml(str) {
   if (!str) return '';
@@ -73,6 +97,41 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+// === 总渲染入口：根据当前视图分发 ===
+function render() {
+  if (currentView === 'trash') {
+    renderTrash();
+  } else {
+    renderNotes();
+  }
+  updateStats();
+  updateViewControls();
+}
+
+// 控制各视图容器的显隐与按钮
+function updateViewControls() {
+  if (currentView === 'trash') {
+    notesGrid.style.display = 'none';
+    trashList.style.display = 'flex';
+    emptyTrashBtn.style.display = trash.length > 0 ? 'inline-flex' : 'none';
+    sortInfo.style.display = 'none';
+    newNoteBtn.style.opacity = '0.5';
+    newNoteBtn.style.pointerEvents = 'none';
+    searchInput.disabled = true;
+    searchInput.placeholder = '回收站中不支持搜索';
+    searchInput.value = '';
+  } else {
+    trashList.style.display = 'none';
+    notesGrid.style.display = 'grid';
+    emptyTrashBtn.style.display = 'none';
+    sortInfo.style.display = 'block';
+    newNoteBtn.style.opacity = '1';
+    newNoteBtn.style.pointerEvents = 'auto';
+    searchInput.disabled = false;
+    searchInput.placeholder = '搜索便签...';
+  }
 }
 
 // === 渲染便签列表 ===
@@ -156,8 +215,73 @@ function renderNotes() {
       });
     });
   }
+}
 
-  updateStats();
+// === 渲染回收站列表 ===
+function renderTrash() {
+  mainTitle.textContent = '回收站';
+  // 回收站按删除时间倒序
+  const sorted = [...trash].sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
+
+  if (sorted.length === 0) {
+    trashList.style.display = 'none';
+    emptyState.style.display = 'flex';
+    emptyState.querySelector('.empty-title').textContent = '回收站为空';
+    emptyState.querySelector('.empty-desc').textContent = '删除的便签会暂存于此，30 天后自动清理';
+  } else {
+    emptyState.style.display = 'none';
+    trashList.style.display = 'flex';
+    trashList.innerHTML = sorted.map(n => {
+      const color = COLORS[n.color] || COLORS.default;
+      const daysLeft = getDaysLeft(n.deletedAt);
+      const titleHtml = n.title
+        ? `<div class="trash-item-title">${escapeHtml(n.title)}</div>`
+        : `<div class="trash-item-title" style="color:var(--text-tertiary);font-weight:400;">无标题</div>`;
+      const contentHtml = n.content
+        ? `<div class="trash-item-content">${escapeHtml(n.content)}</div>`
+        : `<div class="trash-item-content" style="color:var(--text-tertiary);font-style:italic;">空便签</div>`;
+      return `
+        <div class="trash-row" data-id="${n.id}" style="border-left-color:${color.dot}">
+          <div class="trash-row-main">
+            ${titleHtml}
+            ${contentHtml}
+            <div class="trash-row-meta">
+              <span class="trash-cat">${escapeHtml(n.category)}</span>
+              <span class="trash-deleted">删除于 ${formatDate(n.deletedAt)}</span>
+              <span class="trash-days">${daysLeft} 天后自动清理</span>
+            </div>
+          </div>
+          <div class="trash-row-actions">
+            <button class="trash-restore-btn" data-id="${n.id}" title="恢复">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M3 8C3 5.24 5.24 3 8 3C10.76 3 13 5.24 13 8C13 10.76 10.76 13 8 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M5 3L3 5L5 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              恢复
+            </button>
+            <button class="trash-delete-btn" data-id="${n.id}" title="彻底删除">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M3 4H13M6 4V3C6 2.45 6.45 2 7 2H9C9.55 2 10 2.45 10 3V4M5 4L5.5 13C5.55 13.83 6.17 14 7 14H9C9.83 14 10.45 13.83 10.5 13L11 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>`;
+    }).join('');
+
+    // 绑定恢复 / 彻底删除
+    trashList.querySelectorAll('.trash-restore-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        restoreNote(btn.dataset.id);
+      });
+    });
+    trashList.querySelectorAll('.trash-delete-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteFromTrash(btn.dataset.id);
+      });
+    });
+  }
 }
 
 // === 更新统计 ===
@@ -172,6 +296,10 @@ function updateStats() {
   });
   const allEl = document.getElementById('count-全部');
   if (allEl) allEl.textContent = notes.length;
+
+  // 回收站计数
+  const trashEl = document.getElementById('count-trash');
+  if (trashEl) trashEl.textContent = trash.length;
 
   // 字数
   let totalWords = 0;
@@ -268,20 +396,25 @@ async function saveNote() {
     notes.unshift(newNote);
   }
 
-  await window.notesAPI.save(notes);
+  await window.notesAPI.save(notes, trash);
   closeModal();
-  renderNotes();
+  render();
   showToast(editingNoteId ? '已保存' : '已创建');
 }
 
-// === 删除便签 ===
+// === 删除便签（移入回收站） ===
 async function deleteNote() {
   if (!editingNoteId) return;
+  const note = notes.find(n => n.id === editingNoteId);
+  if (note) {
+    // 移入回收站：加 deletedAt，取消置顶
+    trash.unshift({ ...note, pinned: false, deletedAt: Date.now() });
+  }
   notes = notes.filter(n => n.id !== editingNoteId);
-  await window.notesAPI.save(notes);
+  await window.notesAPI.save(notes, trash);
   closeModal();
-  renderNotes();
-  showToast('已删除');
+  render();
+  showToast('已移入回收站');
 }
 
 // === 切换置顶 ===
@@ -292,10 +425,38 @@ async function togglePin(id) {
     }
     return n;
   });
-  await window.notesAPI.save(notes);
-  renderNotes();
+  await window.notesAPI.save(notes, trash);
+  render();
   const note = notes.find(n => n.id === id);
   showToast(note && note.pinned ? '已置顶' : '已取消置顶');
+}
+
+// === 从回收站恢复 ===
+async function restoreNote(id) {
+  const result = await window.notesAPI.restoreFromTrash(id);
+  if (result.success) {
+    notes = result.notes;
+    trash = result.trash;
+    render();
+    showToast('已恢复');
+  }
+}
+
+// === 从回收站彻底删除 ===
+async function deleteFromTrash(id) {
+  const result = await window.notesAPI.deleteFromTrash(id);
+  trash = result.trash;
+  render();
+  showToast('已彻底删除');
+}
+
+// === 清空回收站 ===
+async function emptyTrash() {
+  if (trash.length === 0) return;
+  const result = await window.notesAPI.emptyTrash();
+  trash = result.trash;
+  render();
+  showToast('回收站已清空');
 }
 
 // === Toast ===
@@ -317,8 +478,9 @@ newNoteBtn.addEventListener('click', () => {
 });
 
 searchInput.addEventListener('input', (e) => {
+  if (currentView === 'trash') return; // 回收站不支持搜索
   currentSearch = e.target.value;
-  renderNotes();
+  render();
 });
 
 document.querySelectorAll('.category-item').forEach(item => {
@@ -326,8 +488,22 @@ document.querySelectorAll('.category-item').forEach(item => {
     document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
     item.classList.add('active');
     currentCategory = item.dataset.category;
-    renderNotes();
+    currentView = 'notes'; // 切换分类时回到便签视图
+    render();
   });
+});
+
+// 回收站入口
+trashEntry.addEventListener('click', () => {
+  document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
+  trashEntry.classList.add('active');
+  currentView = 'trash';
+  render();
+});
+
+// 清空回收站
+emptyTrashBtn.addEventListener('click', () => {
+  emptyTrash();
 });
 
 modalCloseBtn.addEventListener('click', closeModal);
@@ -377,7 +553,8 @@ importBtn.addEventListener('click', async () => {
   const result = await window.notesAPI.importNotes();
   if (result.success) {
     notes = result.notes;
-    renderNotes();
+    currentView = 'notes';
+    render();
     showToast('导入成功');
   } else if (result.error) {
     showToast('导入失败：' + result.error);
@@ -401,8 +578,10 @@ window.notesAPI.onAction((action) => {
 
 // === 初始化 ===
 async function init() {
-  notes = await window.notesAPI.load();
-  renderNotes();
+  const data = await window.notesAPI.load();
+  notes = data.notes || [];
+  trash = data.trash || [];
+  render();
 }
 
 init();
