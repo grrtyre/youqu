@@ -10,8 +10,8 @@
 
 | 版本 | 下载链接 | 说明 |
 |---|---|---|
-| 安装版（推荐） | [Hosts管家 Setup 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/hosts-manager-v1.1.0/Hosts管Setup.1.1.0.exe) | 双击安装，自动创建桌面快捷方式 |
-| 免安装便携版 | [Hosts管家 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/hosts-manager-v1.1.0/Hosts管家.1.1.0.exe) | 双击即用，不写注册表 |
+| 安装版（推荐） | [HostsManager-Setup-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/hosts-manager-v1.0.0/HostsManager-Setup-1.0.0.exe) | 双击安装，自动创建桌面快捷方式 |
+| 免安装便携版 | [HostsManager-Portable-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/hosts-manager-v1.0.0/HostsManager-Portable-1.0.0.exe) | 双击即用，不写注册表 |
 
 系统要求：Windows 10/11 x64
 
