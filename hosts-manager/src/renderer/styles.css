@@ -81,7 +81,7 @@ input, textarea {
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
   -webkit-app-region: drag;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   position: relative;
 }
 .topbar::after {
@@ -91,7 +91,7 @@ input, textarea {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(0, 122, 255, 0.12), transparent);
+  background: linear-gradient(90deg, transparent, rgba(0, 122, 255, 0.18), transparent);
 }
 
 .topbar-left, .topbar-right {
@@ -246,11 +246,13 @@ input, textarea {
 }
 
 .side-section {
-  padding-bottom: 8px;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
 }
 .side-section:last-child {
   border-bottom: none;
+  margin-bottom: 0;
 }
 
 .side-header {
@@ -292,8 +294,8 @@ input, textarea {
 }
 .side-item.active {
   background: var(--accent-light);
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent);
+  border-color: rgba(0, 122, 255, 0.15);
+  box-shadow: none;
 }
 .side-item.active .side-item-label {
   color: var(--accent);
@@ -331,14 +333,14 @@ input, textarea {
 .side-item-actions .icon-btn svg { width: 14px; height: 14px; }
 
 .empty-hint {
-  margin: 6px 4px;
-  padding: 14px 12px;
+  margin: 4px 4px;
+  padding: 16px 12px;
   font-size: 12px;
   color: var(--text-tertiary);
   text-align: center;
   line-height: 1.6;
-  background: transparent;
-  border: none;
+  background: var(--bg);
+  border: 1px dashed var(--border);
   border-radius: var(--radius-sm);
 }
 .empty-hint svg {
@@ -591,7 +593,7 @@ input, textarea {
 .entry-actions {
   display: flex;
   gap: 6px;
-  opacity: 0.4;
+  opacity: 0.7;
   transition: opacity 0.15s ease;
 }
 .entry-card:hover .entry-actions { opacity: 1; }
@@ -599,6 +601,11 @@ input, textarea {
   width: 32px;
   height: 32px;
   border-radius: 7px;
+  color: var(--text-secondary);
+}
+.entry-actions .icon-btn:hover {
+  background: var(--bg);
+  color: var(--accent);
 }
 .entry-actions .icon-btn svg { width: 17px; height: 17px; }
 
@@ -697,15 +704,16 @@ input, textarea {
   align-items: center;
   gap: 10px;
   padding: 0 24px;
-  height: 32px;
-  background: var(--surface);
+  height: 36px;
+  background: var(--surface-elevated);
   border-top: 1px solid var(--border);
   flex-shrink: 0;
   font-size: 11.5px;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
 }
 .footer-sep { color: var(--text-tertiary); }
 .footer-text { user-select: text; }
+.footer-text.success { color: var(--success); }
 
 /* ==================== Toast ==================== */
 
