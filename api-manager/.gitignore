@@ -1,0 +1,14 @@
+node_modules/
+dist/
+dist-*/
+*.log
+build/icon-source.png
+build/make_icon.py
+build/screenshot.ps1
+build/*.ps1
+build/*.txt
+electron-*.log
+npm-install.log
+out.log
+err.log
+.DS_Store
