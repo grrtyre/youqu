@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>正则管家</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <!-- 顶部标题栏 -->
+    <header class="header">
+      <div class="header-inner">
+        <div class="header-left">
+          <div class="logo-wrap">
+            <svg class="logo-icon" viewBox="0 0 128 128" width="44" height="44">
+              <defs>
+                <linearGradient id="logoGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#0a84ff"/>
+                  <stop offset="100%" stop-color="#0066d6"/>
+                </linearGradient>
+              </defs>
+              <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#logoGrad)"/>
+              <rect x="4" y="4" width="120" height="60" rx="28" fill="rgba(255,255,255,0.08)"/>
+              <text x="64" y="82" text-anchor="middle" fill="#fff" font-size="58" font-family="-apple-system, 'SF Mono', monospace" font-weight="700" letter-spacing="-2">.*</text>
+            </svg>
+          </div>
+          <div class="header-text">
+            <h1>正则管家</h1>
+            <p>专业正则表达式测试与构建工具</p>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="btn-icon" id="btn-favorite" title="收藏当前正则">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </button>
+          <button class="btn-icon" id="btn-copy-pattern" title="复制正则">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="main">
+      <!-- 左侧：输入区 -->
+      <div class="left-panel">
+        <!-- 正则输入 -->
+        <section class="card pattern-card">
+          <div class="card-label">
+            <span class="label-dot"></span>
+            正则表达式
+          </div>
+          <div class="pattern-input-row">
+            <span class="pattern-slash">/</span>
+            <input type="text" id="pattern-input" class="pattern-input" placeholder="例如：\d+ 匹配数字" autocomplete="off" spellcheck="false">
+            <span class="pattern-slash">/</span>
+            <input type="text" id="flags-input" class="flags-input" value="g" maxlength="6" spellcheck="false">
+          </div>
+          <div class="flags-row">
+            <label class="flag-chip" data-flag="g"><input type="checkbox" data-flag="g" checked><span>g</span> 全局</label>
+            <label class="flag-chip" data-flag="i"><input type="checkbox" data-flag="i"><span>i</span> 忽略大小写</label>
+            <label class="flag-chip" data-flag="m"><input type="checkbox" data-flag="m"><span>m</span> 多行</label>
+            <label class="flag-chip" data-flag="s"><input type="checkbox" data-flag="s"><span>s</span> 单行</label>
+            <label class="flag-chip" data-flag="u"><input type="checkbox" data-flag="u"><span>u</span> Unicode</label>
+            <label class="flag-chip" data-flag="y"><input type="checkbox" data-flag="y"><span>y</span> 粘连</label>
+          </div>
+          <div id="pattern-status" class="pattern-status"></div>
+        </section>
+
+        <!-- 测试文本 -->
+        <section class="card test-card">
+          <div class="card-label">
+            <span class="label-dot"></span>
+            测试文本
+          </div>
+          <textarea id="test-string" class="test-textarea" placeholder="在此粘贴需要匹配的文本..." spellcheck="false"></textarea>
+        </section>
+      </div>
+
+      <!-- 右侧：结果区 -->
+      <div class="right-panel">
+        <!-- 匹配结果 -->
+        <section class="card result-card">
+          <div class="card-label">
+            <span class="label-dot dot-blue"></span>
+            匹配结果
+            <span id="match-count" class="match-count-badge">0 个匹配</span>
+          </div>
+          <div id="highlight-output" class="highlight-output">
+            <div class="placeholder-text">输入正则和文本后，匹配结果将在此高亮显示</div>
+          </div>
+        </section>
+
+        <!-- 匹配详情 -->
+        <section class="card detail-card" id="detail-card" style="display:none;">
+          <div class="card-label">
+            <span class="label-dot dot-green"></span>
+            匹配详情
+          </div>
+          <div id="match-details" class="match-details"></div>
+        </section>
+
+        <!-- 替换 -->
+        <section class="card replace-card">
+          <div class="card-label">
+            <span class="label-dot dot-purple"></span>
+            替换预览
+          </div>
+          <input type="text" id="replacement-input" class="replacement-input" placeholder="替换文本（支持 $1 $2 $& $` $' ...）" spellcheck="false">
+          <div id="replace-output" class="replace-output">
+            <div class="placeholder-text">输入替换文本后在此预览结果</div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- 底部标签区 -->
+    <section class="card bottom-section">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="library">常用模式库</button>
+        <button class="tab-btn" data-tab="cheatsheet">速查表</button>
+        <button class="tab-btn" data-tab="history">历史记录</button>
+        <button class="tab-btn" data-tab="favorites">收藏夹</button>
+      </div>
+
+      <!-- 模式库 -->
+      <div class="tab-panel active" id="panel-library">
+        <div id="library-content" class="library-content"></div>
+      </div>
+
+      <!-- 速查表 -->
+      <div class="tab-panel" id="panel-cheatsheet">
+        <div class="cheatsheet-content">
+          <div class="cheat-group">
+            <h3>字符类</h3>
+            <div class="cheat-items">
+              <div class="cheat-item"><code>.</code><span>任意字符（不含换行）</span></div>
+              <div class="cheat-item"><code>\d</code><span>数字 [0-9]</span></div>
+              <div class="cheat-item"><code>\D</code><span>非数字</span></div>
+              <div class="cheat-item"><code>\w</code><span>单词字符 [A-Za-z0-9_]</span></div>
+              <div class="cheat-item"><code>\W</code><span>非单词字符</span></div>
+              <div class="cheat-item"><code>\s</code><span>空白字符</span></div>
+              <div class="cheat-item"><code>\S</code><span>非空白字符</span></div>
+              <div class="cheat-item"><code>[abc]</code><span>a 或 b 或 c</span></div>
+              <div class="cheat-item"><code>[^abc]</code><span>非 a、b、c</span></div>
+              <div class="cheat-item"><code>[a-z]</code><span>a 到 z 范围</span></div>
+            </div>
+          </div>
+          <div class="cheat-group">
+            <h3>量词</h3>
+            <div class="cheat-items">
+              <div class="cheat-item"><code>*</code><span>0 次或多次</span></div>
+              <div class="cheat-item"><code>+</code><span>1 次或多次</span></div>
+              <div class="cheat-item"><code>?</code><span>0 次或 1 次</span></div>
+              <div class="cheat-item"><code>{n}</code><span>恰好 n 次</span></div>
+              <div class="cheat-item"><code>{n,}</code><span>至少 n 次</span></div>
+              <div class="cheat-item"><code>{n,m}</code><span>n 到 m 次</span></div>
+              <div class="cheat-item"><code>*?</code><span>惰性匹配（尽量少）</span></div>
+              <div class="cheat-item"><code>+?</code><span>惰性匹配</span></div>
+            </div>
+          </div>
+          <div class="cheat-group">
+            <h3>锚点与边界</h3>
+            <div class="cheat-items">
+              <div class="cheat-item"><code>^</code><span>行首</span></div>
+              <div class="cheat-item"><code>$</code><span>行尾</span></div>
+              <div class="cheat-item"><code>\b</code><span>单词边界</span></div>
+              <div class="cheat-item"><code>\B</code><span>非单词边界</span></div>
+              <div class="cheat-item"><code>\A</code><span>字符串开头</span></div>
+              <div class="cheat-item"><code>\z</code><span>字符串结尾</span></div>
+            </div>
+          </div>
+          <div class="cheat-group">
+            <h3>分组与引用</h3>
+            <div class="cheat-items">
+              <div class="cheat-item"><code>(abc)</code><span>捕获组</span></div>
+              <div class="cheat-item"><code>(?:abc)</code><span>非捕获组</span></div>
+              <div class="cheat-item"><code>(?&lt;name&gt;abc)</code><span>命名捕获组</span></div>
+              <div class="cheat-item"><code>\1</code><span>反向引用第 1 组</span></div>
+              <div class="cheat-item"><code>(?=abc)</code><span>正向先行断言</span></div>
+              <div class="cheat-item"><code>(?!abc)</code><span>负向先行断言</span></div>
+              <div class="cheat-item"><code>(?&lt;=abc)</code><span>正向后行断言</span></div>
+              <div class="cheat-item"><code>(?&lt;!abc)</code><span>负向后行断言</span></div>
+            </div>
+          </div>
+          <div class="cheat-group">
+            <h3>替换语法</h3>
+            <div class="cheat-items">
+              <div class="cheat-item"><code>$&amp;</code><span>整个匹配</span></div>
+              <div class="cheat-item"><code>$1</code><span>第 1 个捕获组</span></div>
+              <div class="cheat-item"><code>$`</code><span>匹配前的文本</span></div>
+              <div class="cheat-item"><code>$'</code><span>匹配后的文本</span></div>
+              <div class="cheat-item"><code>$$</code><span>字面量 $</span></div>
+            </div>
+          </div>
+          <div class="cheat-group">
+            <h3>特殊字符</h3>
+            <div class="cheat-items">
+              <div class="cheat-item"><code>\n</code><span>换行</span></div>
+              <div class="cheat-item"><code>\r</code><span>回车</span></div>
+              <div class="cheat-item"><code>\t</code><span>制表符</span></div>
+              <div class="cheat-item"><code>\\</code><span>反斜杠</span></div>
+              <div class="cheat-item"><code>\u4e00</code><span>Unicode 字符</span></div>
+              <div class="cheat-item"><code>\x41</code><span>十六进制字符 A</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 历史记录 -->
+      <div class="tab-panel" id="panel-history">
+        <div id="history-content" class="history-content">
+          <div class="placeholder-text">暂无历史记录</div>
+        </div>
+      </div>
+
+      <!-- 收藏夹 -->
+      <div class="tab-panel" id="panel-favorites">
+        <div id="favorites-content" class="favorites-content">
+          <div class="placeholder-text">暂无收藏，点击右上角星标收藏当前正则</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Toast 提示 -->
+  <div id="toast" class="toast"></div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
