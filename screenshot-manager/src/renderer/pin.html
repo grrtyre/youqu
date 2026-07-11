@@ -76,10 +76,10 @@
       e.preventDefault();
       api.pinContextMenu();
     });
-    // 滚轮缩放
+    // 滚轮缩放：上滚放大、下滚缩小（等比缩放窗口，图像填满窗口随之缩放）
     document.addEventListener('wheel', (e) => {
       e.preventDefault();
-      // 简单处理：交给原生窗口缩放
+      api.pinZoom({ delta: e.deltaY });
     }, { passive: false });
   </script>
 </body>

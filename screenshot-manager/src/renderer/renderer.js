@@ -37,6 +37,8 @@ function fmtTime(ts) {
 
 function renderHistory(list) {
   historyCount.textContent = list.length;
+  // 计数为 0 时隐藏徽章，避免空状态下出现突兀的"0"
+  historyCount.style.display = list.length > 0 ? '' : 'none';
   historyGrid.innerHTML = '';
   if (!list.length) {
     historyGrid.appendChild(emptyState);
@@ -46,7 +48,7 @@ function renderHistory(list) {
     const card = document.createElement('div');
     card.className = 'history-item';
     card.innerHTML = `
-      <div class="history-thumb"><img src="file:///${item.path.replace(/\\/g, '/')}" alt=""></div>
+      <div class="history-thumb"><img alt="" data-path="${item.path}"></div>
       <div class="history-meta">
         <span class="history-time">${fmtTime(item.time)}</span>
         <div class="history-actions">
@@ -62,6 +64,11 @@ function renderHistory(list) {
         </div>
       </div>
     `;
+    // 通过 IPC readImage（白名单校验）加载缩略图，避免 file:/// 直连绕过安全检查
+    const imgEl = card.querySelector('img');
+    api.readImage({ path: item.path }).then(r => {
+      if (r && r.ok) imgEl.src = 'data:image/png;base64,' + r.base64;
+    });
     card.querySelector('[data-act="edit"]').onclick = async (e) => {
       e.stopPropagation();
       const r = await api.editFromHistory(item.id);
@@ -73,8 +80,8 @@ function renderHistory(list) {
     };
     card.querySelector('[data-act="del"]').onclick = async (e) => {
       e.stopPropagation();
-      await api.deleteHistory(item.id);
-      showToast('已删除');
+      const r = await api.deleteHistory(item.id);
+      showToast(r && r.ok ? '已删除' : '删除失败');
     };
     card.onclick = () => api.editFromHistory(item.id);
     historyGrid.appendChild(card);
@@ -100,3 +107,14 @@ function showToast(msg) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
 }
+
+// 关于页 · 爱发电入口（关于页按钮 + 侧边栏页脚链接）
+['afdianLink', 'afdianLinkSide'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.onclick = (e) => {
+      e.preventDefault();
+      api.openExternal('https://www.ifdian.net/a/giquwei');
+    };
+  }
+});

@@ -33,8 +33,31 @@ function loadHistory() {
 }
 
 function saveHistory(list) {
+  // 原子写入：先写 .tmp 再 rename，避免崩溃导致 history.json 损坏
   try {
-    fs.writeFileSync(getHistoryFile(), JSON.stringify(list, null, 2), 'utf8');
+    const f = getHistoryFile();
+    const tmp = f + '.tmp';
+    fs.writeFileSync(tmp, JSON.stringify(list, null, 2), 'utf8');
+    fs.renameSync(tmp, f);
+  } catch (e) {}
+}
+
+// 启动时清理崩溃残留的临时文件（raw_*.png / pin_*.png / raw_composed_*.png）
+// 这些是截图/贴图流程的中间产物，正常流程会在编辑器/pin 关闭时删除；
+// 若上次崩溃则残留，这里按是否在历史列表中决定是否清理
+function cleanupOrphanTempFiles() {
+  try {
+    const dir = getHistoryDir();
+    const list = loadHistory();
+    const knownPaths = new Set(list.map(it => it.path && path.resolve(it.path)));
+    for (const name of fs.readdirSync(dir)) {
+      if (/^(raw_|pin_|raw_composed_)/.test(name)) {
+        const full = path.join(dir, name);
+        if (!knownPaths.has(path.resolve(full))) {
+          try { fs.unlinkSync(full); } catch (e) {}
+        }
+      }
+    }
   } catch (e) {}
 }
 
@@ -217,19 +240,6 @@ function openPickerMulti(sources, desktopBounds) {
   pickerWin.on('closed', () => { pickerWin = null; });
 }
 
-// 裁剪截图：保留以兼容旧前端，但当前 picker 直接走 open-editor
-ipcMain.handle('crop-screenshot', async (event, args) => {
-  const { rawPath, rect, scaleFactor } = args;
-  try {
-    if (!isPathSafe(rawPath)) return { ok: false, error: '路径不在允许范围内' };
-    const buf = fs.readFileSync(rawPath);
-    const base64 = buf.toString('base64');
-    return { ok: true, rawPath, rect, base64 };
-  } catch (e) {
-    return { ok: false, error: String(e) };
-  }
-});
-
 // 打开编辑器：把整屏图 + 选区 rect 传给 editor，editor 内 canvas 裁剪显示
 // rawPath 是临时整屏图，编辑器关闭后由主进程清理（避免磁盘泄漏）
 ipcMain.handle('open-editor', async (event, args) => {
@@ -402,6 +412,37 @@ ipcMain.handle('pin-context-menu', async (event) => {
   return { ok: true };
 });
 
+// 贴图滚轮缩放：等比缩放发起请求的 pin 窗口（图像填满窗口，缩放窗口即缩放图像）
+ipcMain.handle('pin-zoom', async (event, args) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (!win || win.isDestroyed()) return { ok: false };
+  const { delta } = args;
+  const [w, h] = win.getSize();
+  const factor = (typeof delta === 'number' && delta < 0) ? 1.1 : 0.9;
+  let newW = Math.round(w * factor);
+  let newH = Math.round(h * factor);
+  // 限制在工作区内，避免贴图缩放到屏幕外
+  const display = screen.getDisplayMatching(win.getBounds());
+  const maxW = display.workAreaSize.width;
+  const maxH = display.workAreaSize.height;
+  if (newW > maxW) newW = maxW;
+  if (newH > maxH) newH = maxH;
+  if (newW < 80) newW = 80;
+  if (newH < 60) newH = 60;
+  win.setSize(newW, newH);
+  return { ok: true, width: newW, height: newH };
+});
+
+// 打开外部链接（仅 http/https，用于爱发电等入口）
+ipcMain.handle('open-external', async (event, args) => {
+  const { url } = args;
+  if (typeof url === 'string' && /^https?:\/\//i.test(url)) {
+    shell.openExternal(url);
+    return { ok: true };
+  }
+  return { ok: false };
+});
+
 // 读取图片为 base64（白名单校验：仅允许 historyDir 内或历史列表中的路径）
 ipcMain.handle('read-image', async (event, args) => {
   const { path: p } = args;
@@ -429,7 +470,9 @@ ipcMain.handle('delete-history', async (event, args) => {
   }
   const newList = list.filter(x => x.id !== id);
   saveHistory(newList);
-  if (mainWin) mainWin.webContents.send('history-updated', newList);
+  if (mainWin && !mainWin.isDestroyed()) {
+    mainWin.webContents.send('history-updated', newList);
+  }
   return { ok: true };
 });
 
@@ -444,7 +487,10 @@ ipcMain.handle('show-in-folder', async (event, args) => {
 // 保存到指定位置
 ipcMain.handle('save-as', async (event, args) => {
   const { base64 } = args;
-  const result = await dialog.showSaveDialog(editorWin || mainWin, {
+  // 优先用编辑器窗口作为父窗口，其次主窗口；均不可用时不指定父窗口
+  const parent = (editorWin && !editorWin.isDestroyed()) ? editorWin
+               : (mainWin && !mainWin.isDestroyed()) ? mainWin : undefined;
+  const result = await dialog.showSaveDialog(parent, {
     title: '保存截图',
     defaultPath: `截图_${Date.now()}.png`,
     filters: [{ name: 'PNG 图片', extensions: ['png'] }]
@@ -546,16 +592,20 @@ if (!gotLock) {
   });
 
   app.whenReady().then(() => {
+    // 清理上次崩溃残留的临时文件（raw_*.png / pin_*.png / raw_composed_*.png）
+    cleanupOrphanTempFiles();
     createMainWindow();
     createTray();
-    // 注册全局快捷键
-    globalShortcut.register('CommandOrControl+Shift+A', () => {
+    // 注册全局快捷键（检查返回值，失败时在控制台告警）
+    const regA = globalShortcut.register('CommandOrControl+Shift+A', () => {
       startScreenshot();
     });
+    if (!regA) console.warn('[截图管家] 全局快捷键 Ctrl+Shift+A 注册失败，可能已被占用');
     // 也支持 Ctrl+Shift+Q 作为备用
-    globalShortcut.register('CommandOrControl+Shift+Q', () => {
+    const regQ = globalShortcut.register('CommandOrControl+Shift+Q', () => {
       startScreenshot();
     });
+    if (!regQ) console.warn('[截图管家] 全局快捷键 Ctrl+Shift+Q 注册失败，可能已被占用');
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
@@ -568,7 +618,6 @@ app.on('will-quit', () => {
 });
 
 // 不退出，留在托盘
-app.on('window-all-closed', (e) => {
+app.on('window-all-closed', () => {
   // Windows 上不退出，留在托盘
-  // do nothing
 });

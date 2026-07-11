@@ -10,8 +10,8 @@
 
 | 平台 | 下载 | 说明 |
 |---|---|---|
-| Windows x64 | [截图管家 Setup 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/screenshot-manager-v1.1.0/Setup.1.1.0.exe) | v1.1.0 安装版，支持开机自启 |
-| Windows x64 | [截图管家 Portable 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/screenshot-manager-v1.1.0/1.1.0.exe) | v1.1.0 免安装单文件版 |
+| Windows x64 | [截图管家 Setup 1.2.0.exe](https://github.com/grrtyre/youqu/releases/download/screenshot-manager-v1.2.0/Setup.1.2.0.exe) | v1.2.0 安装版，支持开机自启 |
+| Windows x64 | [截图管家 Portable 1.2.0.exe](https://github.com/grrtyre/youqu/releases/download/screenshot-manager-v1.2.0/Portable.1.2.0.exe) | v1.2.0 免安装单文件版 |
 
 > 若上方链接失效，请到 [Releases 页](https://github.com/grrtyre/youqu/releases) 手动下载最新版。
 
@@ -82,6 +82,43 @@ npm run build   # 产物在 build-output/
 ---
 
 ## 📜 更新日志
+
+### v1.2.0（2026-07-11）
+
+**安全**
+- 新增 Content-Security-Policy（CSP）meta 标签，限制脚本/样式/图片来源
+- 修复 file:/// 直连加载缩略图绕过路径白名单的问题，改为 IPC readImage 安全通道
+- 新增 open-external IPC handler，仅放行 http/https 协议，防止任意协议执行
+
+**可靠性**
+- saveHistory 改为原子写入（.tmp → rename），避免崩溃导致 history.json 损坏
+- 新增 cleanupOrphanTempFiles()：启动时自动清理崩溃残留的 raw_/pin_/raw_composed_ 临时文件
+- delete-history 添加 isDestroyed 检查，避免窗口关闭后发送 IPC 报错
+- save-as 对话框添加 parent 空值保护
+- globalShortcut.register 返回值检查，注册失败时 console.warn
+
+**功能**
+- 新增贴图滚轮缩放（上滚放大 1.1x / 下滚缩小 0.9x，钳制在工作区范围内）
+- 关于页新增爱发电入口按钮
+- 侧边栏底部新增「支持我们」+ 版本号页脚
+
+**UI 精修**
+- 阴影系统柔化（减少 opacity，更接近 macOS 原生质感）
+- 空状态重新设计：截图主题图标 + 大号标题 + 引导文案
+- 导航图标统一 stroke-width（1.6），视觉重量一致
+- 快捷键展示改为纯文本胶囊，不再碎片化
+- 侧边栏宽度收窄至 232px，内容区比例更舒展
+- panel-head h2 字号从 24px 降至 20px，降低视觉压迫
+- kbd 样式精简（薄边框、小圆角、轻阴影）
+
+**清理**
+- 移除 crop-screenshot 死代码 handler
+- 移除 window-all-closed 死参数
+- 补充 pin.html 滚轮缩放事件绑定（替换空 handler）
+
+**测试**
+- 新增 4 项测试：原子写入、孤儿清理、pin-zoom 缩放系数、open-external 协议白名单
+- 全部 15 项测试通过
 
 ### v1.1.0（2026-07-05）
 

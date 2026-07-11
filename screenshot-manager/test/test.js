@@ -358,4 +358,100 @@ function makeHistoryStore(dir) {
   console.log('✓ 贴图位置计算测试通过（右/下/左 fallback）');
 })();
 
+// 12. 原子写入测试（saveHistory：先写 .tmp 再 rename，崩溃不损坏主文件）
+(function testAtomicSave() {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'shot-atomic-'));
+  const file = path.join(tmp, 'history.json');
+  const tmpFile = file + '.tmp';
+  // 模拟 main.js 的 saveHistory 行为
+  function saveAtomic(list) {
+    fs.writeFileSync(tmpFile, JSON.stringify(list, null, 2), 'utf8');
+    fs.renameSync(tmpFile, file);
+  }
+  saveAtomic([{ id: 'a', time: 1 }]);
+  assert.ok(fs.existsSync(file), '原子写入后主文件存在');
+  assert.ok(!fs.existsSync(tmpFile), '原子写入后 .tmp 已被 rename 掉');
+  assert.deepEqual(JSON.parse(fs.readFileSync(file, 'utf8')), [{ id: 'a', time: 1 }], '内容正确');
+
+  // 覆盖写
+  saveAtomic([{ id: 'b', time: 2 }, { id: 'c', time: 3 }]);
+  assert.equal(JSON.parse(fs.readFileSync(file, 'utf8')).length, 2, '覆盖写后内容更新');
+  assert.ok(!fs.existsSync(tmpFile), '覆盖写后 .tmp 仍不存在');
+  fs.rmSync(tmp, { recursive: true, force: true });
+  console.log('✓ 原子写入测试通过（.tmp → rename，不残留临时文件）');
+})();
+
+// 13. 启动时孤儿临时文件清理测试
+// raw_*.png / pin_*.png / raw_composed_*.png 不在历史列表中则删除；final_*.png 保留
+(function testOrphanCleanup() {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'shot-orphan-'));
+  // 模拟历史目录内容
+  const finalPath = path.join(tmp, 'final_1.png');      // 真实历史图，保留
+  const rawOrphan = path.join(tmp, 'raw_123.png');        // 崩溃残留 raw，删除
+  const pinOrphan = path.join(tmp, 'pin_456.png');        // 崩溃残留 pin，删除
+  const composedOrphan = path.join(tmp, 'raw_composed_789.png'); // 崩溃残留 composed，删除
+  const finalKeep = path.join(tmp, 'final_2.png');       // 真实历史图，保留
+  [finalPath, rawOrphan, pinOrphan, composedOrphan, finalKeep].forEach(f => fs.writeFileSync(f, 'x'));
+
+  const historyList = [{ id: '1', path: finalPath }, { id: '2', path: finalKeep }];
+  const knownPaths = new Set(historyList.map(it => path.resolve(it.path)));
+
+  // 模拟 cleanupOrphanTempFiles 逻辑
+  for (const name of fs.readdirSync(tmp)) {
+    if (/^(raw_|pin_|raw_composed_)/.test(name)) {
+      const full = path.join(tmp, name);
+      if (!knownPaths.has(path.resolve(full))) {
+        fs.unlinkSync(full);
+      }
+    }
+  }
+
+  assert.ok(fs.existsSync(finalPath), 'final_1.png 历史图保留');
+  assert.ok(fs.existsSync(finalKeep), 'final_2.png 历史图保留');
+  assert.ok(!fs.existsSync(rawOrphan), 'raw_*.png 孤儿已清理');
+  assert.ok(!fs.existsSync(pinOrphan), 'pin_*.png 孤儿已清理');
+  assert.ok(!fs.existsSync(composedOrphan), 'raw_composed_*.png 孤儿已清理');
+  fs.rmSync(tmp, { recursive: true, force: true });
+  console.log('✓ 孤儿临时文件清理测试通过（final 保留 / raw·pin·composed 清理）');
+})();
+
+// 14. 贴图滚轮缩放系数计算测试（pin-zoom：上滚 1.1x，下滚 0.9x，带 min/max 钳制）
+(function testPinZoomFactor() {
+  function computeZoom(w, h, delta, maxW, maxH) {
+    const factor = (typeof delta === 'number' && delta < 0) ? 1.1 : 0.9;
+    let newW = Math.round(w * factor);
+    let newH = Math.round(h * factor);
+    if (newW > maxW) newW = maxW;
+    if (newH > maxH) newH = maxH;
+    if (newW < 80) newW = 80;
+    if (newH < 60) newH = 60;
+    return { width: newW, height: newH };
+  }
+  // 上滚放大（deltaY < 0）
+  assert.deepEqual(computeZoom(400, 300, -100, 1920, 1080), { width: 440, height: 330 }, '上滚放大 1.1x');
+  // 下滚缩小（deltaY > 0）
+  assert.deepEqual(computeZoom(400, 300, 100, 1920, 1080), { width: 360, height: 270 }, '下滚缩小 0.9x');
+  // 最小尺寸钳制
+  assert.deepEqual(computeZoom(80, 60, 100, 1920, 1080), { width: 80, height: 60 }, '最小尺寸钳制 80x60');
+  // 最大尺寸钳制（超过工作区）
+  const r = computeZoom(1800, 1000, -100, 1920, 1080);
+  assert.ok(r.width <= 1920 && r.height <= 1080, '超过工作区时被钳制');
+  console.log('✓ 贴图滚轮缩放系数测试通过（上滚放大/下滚缩小/最小最大钳制）');
+})();
+
+// 15. 外部链接协议白名单测试（open-external：仅允许 http/https）
+(function testOpenExternalScheme() {
+  function isOpenable(url) {
+    return typeof url === 'string' && /^https?:\/\//i.test(url);
+  }
+  assert.ok(isOpenable('https://www.ifdian.net/a/giquwei'), 'https 允许');
+  assert.ok(isOpenable('http://example.com'), 'http 允许');
+  assert.ok(!isOpenable('file:///C:/secret.txt'), 'file:// 拒绝');
+  assert.ok(!isOpenable('javascript:alert(1)'), 'javascript: 拒绝');
+  assert.ok(!isOpenable('C:\\Windows\\system32'), '本地路径拒绝');
+  assert.ok(!isOpenable(123), '非字符串拒绝');
+  assert.ok(!isOpenable(null), 'null 拒绝');
+  console.log('✓ 外部链接协议白名单测试通过（http/https 放行，其他拒绝）');
+})();
+
 console.log('\n全部测试通过 ✓');

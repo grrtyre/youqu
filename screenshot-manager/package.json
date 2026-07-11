@@ -1,6 +1,6 @@
 {
   "name": "screenshot-manager",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "截图管家 - 苹果白高端风格截图标注工具",
   "main": "src/main.js",
   "scripts": {

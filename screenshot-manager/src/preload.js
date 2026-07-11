@@ -3,7 +3,6 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('api', {
   // 截图流程
-  cropScreenshot: (args) => ipcRenderer.invoke('crop-screenshot', args),
   openEditor: (args) => ipcRenderer.invoke('open-editor', args),
   pickerCancel: () => ipcRenderer.invoke('picker-cancel'),
   triggerScreenshot: () => ipcRenderer.invoke('trigger-screenshot'),
@@ -23,10 +22,13 @@ contextBridge.exposeInMainWorld('api', {
   editFromHistory: (id) => ipcRenderer.invoke('edit-from-history', id),
   // pin 窗口
   pinContextMenu: () => ipcRenderer.invoke('pin-context-menu'),
+  pinZoom: (args) => ipcRenderer.invoke('pin-zoom', args),
   // 窗口控制
   winClose: () => ipcRenderer.invoke('win-close'),
   winMinimize: () => ipcRenderer.invoke('win-minimize'),
   winMaximize: () => ipcRenderer.invoke('win-maximize'),
+  // 外部链接（爱发电等）
+  openExternal: (url) => ipcRenderer.invoke('open-external', { url }),
   // 事件
   onPickerInit: (cb) => ipcRenderer.on('picker-init', (e, args) => cb(args)),
   onEditorInit: (cb) => ipcRenderer.on('editor-init', (e, args) => cb(args)),
