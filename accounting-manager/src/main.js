@@ -48,6 +48,13 @@ function createWindow() {
       setTimeout(async () => {
         try {
           await new Promise((r) => setTimeout(r, 1500));
+          // 可选：切换到指定视图再截图
+          if (process.env.AM_SCREENSHOT_VIEW) {
+            await mainWindow.webContents.executeJavaScript(
+              `document.querySelector('.nav-item[data-view="${process.env.AM_SCREENSHOT_VIEW}"]')?.click()`
+            );
+            await new Promise((r) => setTimeout(r, 800));
+          }
           const img = await mainWindow.webContents.capturePage();
           const buf = img.toPNG();
           fs.writeFileSync(process.env.AM_AUTO_SCREENSHOT, buf);

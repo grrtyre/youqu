@@ -11,6 +11,7 @@ const state = {
   })(),
   selectedDate: null, // 日历选中日期（YYYY-MM-DD）
   filter: 'all',
+  searchQuery: '', // 明细搜索关键词
   categories: { expense: [], income: [] },
   accounts: [],
   transactions: [],
@@ -164,6 +165,11 @@ function bindEvents() {
       renderTxList($('allTxList'), filterTx(state.transactions));
     });
   });
+  // 搜索
+  $('txSearch').addEventListener('input', (e) => {
+    state.searchQuery = e.target.value.trim().toLowerCase();
+    renderTxList($('allTxList'), filterTx(state.transactions));
+  });
   // 预算保存
   $('saveBudget').addEventListener('click', saveBudget);
   $('budgetInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') saveBudget(); });
@@ -180,7 +186,7 @@ function switchView(view) {
   state.currentView = view;
   $$('.nav-item').forEach((b) => b.classList.toggle('active', b.dataset.view === view));
   $$('.view').forEach((v) => v.classList.toggle('active', v.dataset.view === view));
-  const titles = { dashboard: '概览', calendar: '日历', transactions: '明细', stats: '统计', budget: '预算' };
+  const titles = { dashboard: '概览', calendar: '日历', transactions: '明细', stats: '统计', budget: '预算', accounts: '账户' };
   $('pageTitle').textContent = titles[view] || '';
   $('pageSub').textContent = monthKeyToLabel(state.currentMonth);
   renderView();
@@ -193,6 +199,7 @@ function renderView() {
   else if (state.currentView === 'transactions') renderTransactions();
   else if (state.currentView === 'stats') renderStats();
   else if (state.currentView === 'budget') renderBudget();
+  else if (state.currentView === 'accounts') renderAccounts();
 }
 
 // ===== 概览 =====
@@ -426,9 +433,17 @@ function escapeHtml(s) {
 }
 
 function filterTx(all) {
-  const monthTx = all.filter((t) => t.date.startsWith(state.currentMonth));
-  if (state.filter === 'all') return monthTx;
-  return monthTx.filter((t) => t.type === state.filter);
+  let monthTx = all.filter((t) => t.date.startsWith(state.currentMonth));
+  if (state.filter !== 'all') monthTx = monthTx.filter((t) => t.type === state.filter);
+  if (state.searchQuery) {
+    monthTx = monthTx.filter((t) => {
+      const cat = getCatById(t.categoryId);
+      const acc = getAccountById(t.accountId);
+      const hay = [t.note, cat.name, acc.name].join(' ').toLowerCase();
+      return hay.includes(state.searchQuery);
+    });
+  }
+  return monthTx;
 }
 
 // ===== 日历 =====
@@ -491,6 +506,123 @@ function renderDayTx() {
 // ===== 明细 =====
 function renderTransactions() {
   renderTxList($('allTxList'), filterTx(state.transactions));
+}
+
+// ===== 账户 =====
+function renderAccounts() {
+  // 计算各账户余额（全部历史数据，不限月份）
+  const map = {};
+  const countMap = {};
+  state.accounts.forEach((a) => { map[a.id] = 0; countMap[a.id] = 0; });
+  state.transactions.forEach((t) => {
+    if (map[t.accountId] === undefined) { map[t.accountId] = 0; countMap[t.accountId] = 0; }
+    if (t.type === 'income') map[t.accountId] += t.amount;
+    else if (t.type === 'expense') map[t.accountId] -= t.amount;
+    countMap[t.accountId]++;
+  });
+
+  const knownIds = new Set(state.accounts.map((a) => a.id));
+  const list = state.accounts.map((a) => ({
+    ...a,
+    balance: Math.round((map[a.id] || 0) * 100) / 100,
+    txCount: countMap[a.id] || 0,
+  }));
+  Object.keys(map).forEach((id) => {
+    if (!knownIds.has(id) && countMap[id] > 0) {
+      list.push({ id, name: id, icon: '✏️', color: '#8e8e93', balance: Math.round(map[id] * 100) / 100, txCount: countMap[id] });
+    }
+  });
+  list.sort((a, b) => b.balance - a.balance);
+
+  let totalAssets = 0, totalLiabilities = 0;
+  list.forEach((a) => {
+    if (a.balance > 0) totalAssets += a.balance;
+    else totalLiabilities += Math.abs(a.balance);
+  });
+  totalAssets = Math.round(totalAssets * 100) / 100;
+  totalLiabilities = Math.round(totalLiabilities * 100) / 100;
+  const netWorth = Math.round((totalAssets - totalLiabilities) * 100) / 100;
+
+  $('totalAssets').textContent = '¥' + fmtMoney(totalAssets);
+  $('totalLiabilities').textContent = '¥' + fmtMoney(totalLiabilities);
+  $('netWorth').textContent = '¥' + fmtMoney(netWorth);
+  $('accountCount').textContent = list.length + ' 个账户';
+
+  // 底部统计条
+  const assetCount = list.filter((a) => a.balance > 0).length;
+  const liabCount = list.filter((a) => a.balance < 0).length;
+  const totalTx = list.reduce((s, a) => s + a.txCount, 0);
+  const avgBal = list.length > 0 ? netWorth / list.length : 0;
+  $('accStatsBar').innerHTML = `
+    <div class="acc-stat"><span class="acc-stat-label">资产账户</span><span class="acc-stat-val acc-stat-pos">${assetCount}</span></div>
+    <div class="acc-stat-divide"></div>
+    <div class="acc-stat"><span class="acc-stat-label">负债账户</span><span class="acc-stat-val acc-stat-neg">${liabCount}</span></div>
+    <div class="acc-stat-divide"></div>
+    <div class="acc-stat"><span class="acc-stat-label">交易总数</span><span class="acc-stat-val">${totalTx}</span></div>
+    <div class="acc-stat-divide"></div>
+    <div class="acc-stat"><span class="acc-stat-label">平均余额</span><span class="acc-stat-val">${avgBal < 0 ? '-' : ''}¥${fmtMoney(Math.abs(avgBal))}</span></div>
+  `;
+
+  if (list.length === 0) {
+    $('accountList').innerHTML = '<div class="tx-empty"><span class="emoji">💳</span>暂无账户</div>';
+    return;
+  }
+
+  const html = list.map((a) => {
+    const isNegative = a.balance < 0;
+    const isZero = a.balance === 0;
+    const balCls = isZero ? 'acc-bal-zero' : (isNegative ? 'acc-bal-negative' : 'acc-bal-positive');
+    const balStr = (isNegative ? '-' : '') + '¥' + fmtMoney(Math.abs(a.balance));
+    const tag = isZero ? '<span class="acc-bal-tag acc-bal-tag-zero">中性</span>' : (isNegative ? '<span class="acc-bal-tag">负债</span>' : '<span class="acc-bal-tag">资产</span>');
+    return `<div class="acc-card" data-id="${escapeHtml(a.id)}">
+      <div class="acc-icon" style="background:${a.color}14">${a.icon}</div>
+      <div class="acc-info">
+        <div class="acc-name">${escapeHtml(a.name)}</div>
+        <div class="acc-meta">${a.txCount} 笔交易</div>
+      </div>
+      <div class="acc-balance ${balCls}">${balStr}${tag}</div>
+    </div>`;
+  }).join('');
+  $('accountList').innerHTML = html;
+
+  // 点击账户卡片跳转到该账户的明细
+  $('accountList').querySelectorAll('.acc-card').forEach((el) => {
+    el.addEventListener('click', () => {
+      const accId = el.dataset.id;
+      const acc = state.accounts.find((x) => x.id === accId) || { name: accId };
+      state.searchQuery = acc.name.toLowerCase();
+      $('txSearch').value = acc.name;
+      switchView('transactions');
+    });
+  });
+
+  // 资产负债分布图（显示所有账户，资产绿色、负债红色）
+  const chartContainer = $('assetChart');
+  const nonZero = list.filter((a) => a.balance !== 0);
+  if (nonZero.length === 0) {
+    chartContainer.innerHTML = '<div class="tx-empty"><span class="emoji">📊</span>暂无资产数据</div>';
+    return;
+  }
+  const totalAbs = nonZero.reduce((s, a) => s + Math.abs(a.balance), 0);
+  const chartHtml = nonZero.map((a) => {
+    // 用占总比的方式计算宽度，最大 85%，最小 6%
+    const sharePct = totalAbs > 0 ? (Math.abs(a.balance) / totalAbs * 100) : 0;
+    const barWidth = Math.max(Math.min(sharePct * 1.8, 85), 6);
+    const isNeg = a.balance < 0;
+    const barColor = isNeg ? '#ff3b30' : '#34c759';
+    const sign = isNeg ? '-' : '';
+    return `<div class="bar-item">
+      <div class="bar-head">
+        <span class="bar-name"><span class="icon">${a.icon}</span>${escapeHtml(a.name)}</span>
+        <span class="bar-amount" style="color:${barColor}">${sign}¥${fmtMoney(Math.abs(a.balance))}</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${barWidth}%;background:${barColor};"></div>
+      </div>
+      <div class="bar-pct">${sharePct.toFixed(1)}%</div>
+    </div>`;
+  }).join('');
+  chartContainer.innerHTML = '<div class="bar-list">' + chartHtml + '</div>';
 }
 
 // ===== 统计 =====

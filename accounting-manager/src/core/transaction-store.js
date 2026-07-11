@@ -38,10 +38,10 @@ const DEFAULT_INCOME_CATEGORIES = [
 ];
 
 const DEFAULT_ACCOUNTS = [
-  { id: 'cash', name: '现金', icon: '💵', color: '#34c759' },
+  { id: 'cash', name: '现金', icon: '💵', color: '#ff9500' },
   { id: 'bank', name: '银行卡', icon: '🏦', color: '#007aff' },
-  { id: 'alipay', name: '支付宝', icon: '💙', color: '#5ac8fa' },
-  { id: 'wechat', name: '微信', icon: '💚', color: '#34c759' },
+  { id: 'alipay', name: '支付宝', icon: '📱', color: '#5ac8fa' },
+  { id: 'wechat', name: '微信', icon: '💬', color: '#34c759' },
   { id: 'credit', name: '信用卡', icon: '💳', color: '#ff3b30' },
 ];
 
@@ -291,15 +291,17 @@ class AccountStore {
     const dby = new Date(today); dby.setDate(today.getDate() - 2);
     const lastWeek = new Date(today); lastWeek.setDate(today.getDate() - 5);
 
-    // 本月数据
+    // 本月数据（分散到不同账户，让账户余额更真实）
     this.createTransaction({ type: 'expense', amount: 38.5, categoryId: 'e_food', accountId: 'wechat', date: toDateKey(today), note: '午餐外卖' });
     this.createTransaction({ type: 'expense', amount: 12, categoryId: 'e_transport', accountId: 'alipay', date: toDateKey(today), note: '地铁通勤' });
-    this.createTransaction({ type: 'expense', amount: 89, categoryId: 'e_shopping', accountId: 'alipay', date: toDateKey(yest), note: '日用品' });
+    this.createTransaction({ type: 'expense', amount: 89, categoryId: 'e_shopping', accountId: 'credit', date: toDateKey(yest), note: '日用品' });
     this.createTransaction({ type: 'expense', amount: 45, categoryId: 'e_entertain', accountId: 'wechat', date: toDateKey(yest), note: '电影票' });
     this.createTransaction({ type: 'income', amount: 8800, categoryId: 'i_salary', accountId: 'bank', date: toDateKey(dby), note: '本月工资' });
     this.createTransaction({ type: 'expense', amount: 2500, categoryId: 'e_housing', accountId: 'bank', date: toDateKey(dby), note: '房租' });
+    this.createTransaction({ type: 'income', amount: 500, categoryId: 'i_parttime', accountId: 'alipay', date: toDateKey(dby), note: '兼职收入' });
     this.createTransaction({ type: 'expense', amount: 68, categoryId: 'e_food', accountId: 'cash', date: toDateKey(lastWeek), note: '聚餐' });
     this.createTransaction({ type: 'expense', amount: 199, categoryId: 'e_comm', accountId: 'wechat', date: toDateKey(lastWeek), note: '话费充值' });
+    this.createTransaction({ type: 'income', amount: 200, categoryId: 'i_gift', accountId: 'cash', date: toDateKey(lastWeek), note: '生日红包' });
 
     // 前 5 个月的历史数据（让趋势图饱满）
     const historyData = [
@@ -355,11 +357,24 @@ class AccountStore {
         // 分散到月中几天
         const day = 5 + Math.floor(Math.random() * 20);
         const date = new Date(today.getFullYear(), today.getMonth() - m.monthsAgo, day);
+        // 根据分类分配账户：让余额分布更真实
+        let accId;
+        if (it.type === 'income') {
+          accId = it.categoryId === 'i_parttime' || it.categoryId === 'i_bonus' ? 'alipay' : 'bank';
+        } else {
+          // 支出按分类分配到不同账户
+          const accMap = {
+            e_housing: 'bank', e_food: 'wechat', e_transport: 'alipay',
+            e_shopping: 'credit', e_entertain: 'wechat', e_comm: 'wechat',
+            e_medical: 'cash', e_education: 'alipay', e_social: 'cash',
+          };
+          accId = accMap[it.categoryId] || 'wechat';
+        }
         this.createTransaction({
           type: it.type,
           amount: it.amount,
           categoryId: it.categoryId,
-          accountId: it.type === 'income' ? 'bank' : 'wechat',
+          accountId: accId,
           date: toDateKey(date),
           note: it.note,
         });

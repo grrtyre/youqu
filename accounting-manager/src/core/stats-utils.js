@@ -74,10 +74,65 @@ function budgetUsage(transactions, monthKey, budget) {
   return { budget, expense, percent, remaining, overBudget: expense > budget };
 }
 
+/** 账户余额计算：每个账户的收入-支出，及总资产/总负债/净资产
+ *  余额为正=资产，为负=负债（如信用卡消费产生欠款）
+ *  accounts: [{ id, name, icon, color, ... }]
+ *  返回: { list: [...accounts+balance+txCount], totalAssets, totalLiabilities, netWorth }
+ */
+function accountBalances(transactions, accounts) {
+  const map = {};
+  const countMap = {};
+  (accounts || []).forEach((a) => {
+    map[a.id] = 0;
+    countMap[a.id] = 0;
+  });
+  (transactions || []).forEach((t) => {
+    if (map[t.accountId] === undefined) {
+      map[t.accountId] = 0;
+      countMap[t.accountId] = 0;
+    }
+    if (t.type === 'income') map[t.accountId] += t.amount;
+    else if (t.type === 'expense') map[t.accountId] -= t.amount;
+    countMap[t.accountId]++;
+  });
+
+  const knownIds = new Set((accounts || []).map((a) => a.id));
+  const list = (accounts || []).map((a) => ({
+    ...a,
+    balance: Math.round((map[a.id] || 0) * 100) / 100,
+    txCount: countMap[a.id] || 0,
+  }));
+  // 处理交易中出现但不在 accounts 列表中的账户（兼容旧数据）
+  Object.keys(map).forEach((id) => {
+    if (!knownIds.has(id) && countMap[id] > 0) {
+      list.push({
+        id, name: id, icon: '✏️', color: '#8e8e93',
+        balance: Math.round(map[id] * 100) / 100,
+        txCount: countMap[id],
+      });
+    }
+  });
+  list.sort((a, b) => b.balance - a.balance);
+
+  let totalAssets = 0, totalLiabilities = 0;
+  list.forEach((a) => {
+    if (a.balance > 0) totalAssets += a.balance;
+    else totalLiabilities += Math.abs(a.balance);
+  });
+
+  return {
+    list,
+    totalAssets: Math.round(totalAssets * 100) / 100,
+    totalLiabilities: Math.round(totalLiabilities * 100) / 100,
+    netWorth: Math.round((totalAssets - totalLiabilities) * 100) / 100,
+  };
+}
+
 module.exports = {
   monthlySummary,
   categoryBreakdown,
   dailySummary,
   monthlyTrend,
   budgetUsage,
+  accountBalances,
 };

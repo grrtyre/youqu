@@ -1,6 +1,6 @@
 {
   "name": "accounting-manager",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "记账管家 - 本地优先的极简记账桌面应用",
   "main": "src/main.js",
   "scripts": {

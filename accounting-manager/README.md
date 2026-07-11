@@ -8,8 +8,8 @@
 
 | 文件 | 平台 | 说明 | 下载 |
 | --- | --- | --- | --- |
-| 记账管家 Setup 1.0.0.exe | Windows x64 | NSIS 安装包，支持自定义安装路径 | [⬇️ 下载](https://github.com/grrtyre/youqu/releases/download/accounting-manager-v1.0.0/accounting-manager-setup-1.0.0.exe) |
-| 记账管家 1.0.0.exe | Windows x64 | 便携版，双击即用 | [⬇️ 下载](https://github.com/grrtyre/youqu/releases/download/accounting-manager-v1.0.0/accounting-manager-1.0.0.exe) |
+| 记账管家 Setup 1.1.0.exe | Windows x64 | NSIS 安装包，支持自定义安装路径 | [⬇️ 下载](https://github.com/grrtyre/youqu/releases/download/accounting-manager-v1.1.0/accounting-manager-setup-1.1.0.exe) |
+| 记账管家 1.1.0.exe | Windows x64 | 便携版，双击即用 | [⬇️ 下载](https://github.com/grrtyre/youqu/releases/download/accounting-manager-v1.1.0/accounting-manager-1.1.0.exe) |
 
 ## ✨ 核心功能
 
@@ -17,12 +17,29 @@
 - **趋势图表** — 近 6 个月收支柱状图，渐变色柱体，当前月高亮标注
 - **分类环形图** — 支出分类占比可视化，Top 4 + 其他聚合，中心显示总额
 - **日历视图** — 月度日历按日聚合收支，点击日期查看当日明细
-- **明细管理** — 全部/支出/收入筛选，支持编辑、删除（二次确认防误操作）
+- **明细管理** — 全部/支出/收入筛选，支持编辑、删除（二次确认防误操作），支持搜索备注和分类名
 - **统计视图** — 收支分类占比条形图，直观对比各分类金额
 - **预算管理** — 设置月度预算，环形进度环实时展示使用率，超支预警
+- **账户余额** — 🆕 v1.1.0 新增：查看各账户余额、总资产、总负债、净资产，资产负债分布图，账户统计汇总
 - **数据导入导出** — JSON 格式备份/恢复，CSV 格式导出供电子表格使用
 - **清空数据** — 一键清空所有交易与预算（二次确认），保留分类与账户配置
 - **完全本地** — 数据存储在本地 JSON 文件，绝不上传，隐私安全
+
+## 📋 更新日志
+
+### v1.1.0（2026-07-11）
+- 🆕 新增「账户余额」视图：总资产/总负债/净资产三卡片，账户列表带余额与交易数
+- 🆕 新增资产负债分布图（资产绿色、负债红色、百分比标签）
+- 🆕 新增账户统计汇总条（资产账户数、负债账户数、交易总数、平均余额）
+- 🆕 明细视图新增搜索框，支持按备注和分类名搜索
+- 🎨 优化账户图标辨识度（支付宝📱、微信💬）
+- 🎨 优化示例数据账户分配，让余额分布更真实
+- 🎨 0 元余额用灰色中性色显示，增强色彩语义
+- 🎨 减小卡片金额字号、增强卡片阴影、优化导航激活态
+- ✅ 单元测试从 73 项增至 93 项，覆盖账户余额计算
+
+### v1.0.0
+- 首次发布
 
 ## 🎨 设计语言
 
@@ -65,14 +82,14 @@ accounting-manager/
 │   ├── preload.js           # contextBridge 安全桥接
 │   ├── core/
 │   │   ├── transaction-store.js  # 交易/预算/分类/账户存储
-│   │   ├── stats-utils.js        # 统计计算（月度汇总/分类/趋势/预算）
+│   │   ├── stats-utils.js        # 统计计算（月度汇总/分类/趋势/预算/账户余额）
 │   │   └── date-utils.js         # 日期工具函数
 │   └── renderer/
-│       ├── index.html       # 五视图布局
+│       ├── index.html       # 六视图布局
 │       ├── styles.css       # 苹果白风格样式
 │       └── renderer.js      # 渲染层逻辑
 ├── test/
-│   └── test.js              # 73 项单元测试
+│   └── test.js              # 93 项单元测试
 ├── build/
 │   ├── icon.ico             # 应用图标（多尺寸）
 │   └── make_icon.py         # 图标生成脚本
@@ -85,7 +102,7 @@ accounting-manager/
 node test/test.js
 ```
 
-覆盖日期工具、交易存储、预算、统计、导入导出、示例数据、清空数据等 73 项测试。
+覆盖日期工具、交易存储、预算、统计、导入导出、示例数据、清空数据、账户余额等 93 项测试。
 
 ## 🔒 隐私说明
 
