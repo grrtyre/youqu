@@ -6,8 +6,8 @@
 
 | 平台 | 下载 | 说明 |
 |---|---|---|
-| Windows x64 | [水印管家 1.0.0.exe](https://github.com/grrtyre/youqu/releases/tag/watermark-manager-v1.0.0) | 便携版，双击即用 |
-| Windows x64 | [水印管家 Setup 1.0.0.exe](https://github.com/grrtyre/youqu/releases/tag/watermark-manager-v1.0.0) | 安装版，自动创建快捷方式 |
+| Windows x64 | [水印管家 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/watermark-manager-v1.0.0/watermark-manager-1.0.0.exe) | 便携版，双击即用 |
+| Windows x64 | [水印管家 Setup 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/watermark-manager-v1.0.0/watermark-manager-setup-1.0.0.exe) | 安装版，自动创建快捷方式 |
 
 ## ✨ 功能特点
 
