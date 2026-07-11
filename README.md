@@ -32,8 +32,8 @@
 | [🔌 API管家](./api-manager) | 本地优先的 HTTP API 测试工具：集合管理、环境变量、JSON 语法高亮、历史记录，苹果白高端风格 | Electron + 原生 JS | ✅ 可用 v1.0.0 |
 | [📌 置顶管家](./topmost-manager) | Windows 窗口置顶管理工具：可视化窗口列表、一键置顶、透明度调节、全局热键、自动置顶规则、托盘常驻，纯本地隐私优先 | Electron + 原生 JS | ✅ 可用 v1.0.0 |
 | [👁 护眼管家](./eye-rest-manager) | 护眼休息提醒桌面管家：20-20-20法则、三级休息周期、眼保健操引导、免打扰时段、全屏抑制、本地统计，苹果白高端风格 | Electron + 原生 JS | ✅ 可用 v1.0.1 |
-| [🖥️ Hosts管家](./hosts-manager) | hosts 文件编辑与方案管理桌面应用：可视化编辑、一键应用、模板库、方案保存、自动备份 | Electron + 原生 JS | ✅ 可用 v1.1.0 |
-| [📊 订阅管家](./subscription-manager) | 追踪所有订阅服务，管理周期性支出和续费提醒 | Electron | ✅ 可用 |
+| [🖥️ Hosts管家](./hosts-manager) | hosts 文件编辑与方案管理桌面应用：可视化编辑、一键应用、模板库、方案保存、自动备份 | Electron + 原生 JS | ✅ 可用 v1.0.0 |
+| [🌐 网络管家](./network-manager) | 本地网络诊断一体化桌面应用：Ping/路由追踪/DNS/端口检测/HTTP头/Whois/IP归属 7合1、延迟柱状图、诊断历史、苹果白高端风格 | Electron + 原生 JS | ✅ 可用 v1.0.0 |
 <!-- 新项目在这里追加一行 -->
 
 ## 🎯 共同特点
@@ -69,4 +69,3 @@ _暂无，期待第一个支持者的出现。_
 ## 📄 License
 
 所有项目均采用 [MIT License](./LICENSE)，可自由使用。
-

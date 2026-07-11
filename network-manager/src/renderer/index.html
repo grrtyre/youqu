@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>网络管家</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="9" stroke="#fff" stroke-width="1.8"/>
+            <ellipse cx="12" cy="12" rx="4" ry="9" stroke="#fff" stroke-width="1.5" opacity="0.7"/>
+            <path d="M3 12h18" stroke="#fff" stroke-width="1.8"/>
+            <path d="M5 7.5h14M5 16.5h14" stroke="#fff" stroke-width="1.2" opacity="0.5"/>
+          </svg>
+        </div>
+        <div>
+          <div class="logo-text">网络管家</div>
+          <div class="logo-sub">网络诊断工具集</div>
+        </div>
+      </div>
+
+      <nav class="nav" id="nav">
+        <button class="nav-item active" data-tool="ping">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 13a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4"/><path d="M2 16a7 7 0 0 1 7-7h6a7 7 0 0 1 7 7"/><circle cx="12" cy="13" r="1.6" fill="currentColor" stroke="none"/></svg></span><span class="nav-label">Ping 探测</span>
+        </button>
+        <button class="nav-item" data-tool="tracert">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 7l10 4M7 17l10-4"/></svg></span><span class="nav-label">路由追踪</span>
+        </button>
+        <button class="nav-item" data-tool="dns">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/><path d="M17 16l3 2-3 2"/></svg></span><span class="nav-label">DNS 查询</span>
+        </button>
+        <button class="nav-item" data-tool="port">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 4v4M15 4v4M9 16v4M15 16v4"/></svg></span><span class="nav-label">端口检测</span>
+        </button>
+        <button class="nav-item" data-tool="http">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span><span class="nav-label">HTTP 头分析</span>
+        </button>
+        <button class="nav-item" data-tool="whois">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 4l4 4"/></svg></span><span class="nav-label">Whois 域名</span>
+        </button>
+        <button class="nav-item" data-tool="ip">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3.5 9h17M3.5 15h17M11 3.5a14 14 0 0 0 0 17M13 3.5a14 14 0 0 1 0 17"/></svg></span><span class="nav-label">IP 归属</span>
+        </button>
+      </nav>
+
+      <div class="hist-section">
+        <div class="hist-card">
+          <div class="hist-header">
+            <span class="hist-title">诊断历史</span>
+            <button class="hist-clear" id="hist-clear" title="清空">清空</button>
+          </div>
+          <div class="hist-list" id="hist-list">
+            <div class="hist-empty">暂无历史记录</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 主区域 -->
+    <main class="main">
+      <!-- Ping -->
+      <section class="panel active" id="panel-ping">
+        <div class="panel-head">
+          <div class="panel-title">
+            <span class="panel-ico"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9" stroke-width="1.5" opacity="0.7"/><path d="M3 12h18"/></svg></span>
+            <div>
+              <h2>Ping 探测</h2>
+              <p>测试到目标主机的连通性与延迟</p>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <input type="text" id="ping-host" class="input" placeholder="主机名或 IP 地址" />
+          <div class="select-group">
+            <label>次数</label>
+            <select id="ping-count" class="select">
+              <option value="4">4</option>
+              <option value="6">6</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+            </select>
+          </div>
+          <button class="btn primary" id="ping-run">开始 Ping</button>
+        </div>
+        <div class="result" id="ping-result">
+          <div class="result-empty">
+            <div class="empty-graphic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9" stroke-width="1.4" opacity="0.7"/><path d="M3 12h18"/></svg>
+            </div>
+            <div>
+              <div class="empty-text">输入主机名开始探测</div>
+              <div class="empty-hint">支持域名或 IP，如 baidu.com 或 8.8.8.8</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Traceroute -->
+      <section class="panel" id="panel-tracert">
+        <div class="panel-head">
+          <div class="panel-title">
+            <span class="panel-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 7l10 4M7 17l10-4"/></svg></span>
+            <div>
+              <h2>路由追踪</h2>
+              <p>追踪数据包到目标经过的每一跳</p>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <input type="text" id="tracert-host" class="input" placeholder="主机名或 IP" />
+          <div class="select-group">
+            <label>最大跳数</label>
+            <select id="tracert-hops" class="select">
+              <option value="10">10</option>
+              <option value="15" selected>15</option>
+              <option value="20">20</option>
+              <option value="30">30</option>
+            </select>
+          </div>
+          <button class="btn primary" id="tracert-run">开始追踪</button>
+        </div>
+        <div class="result" id="tracert-result">
+          <div class="result-empty">
+            <div class="empty-graphic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 7l10 4M7 17l10-4"/></svg>
+            </div>
+            <div>
+              <div class="empty-text">输入目标开始追踪路由</div>
+              <div class="empty-hint">显示数据包到达主机经过的每一跳</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- DNS -->
+      <section class="panel" id="panel-dns">
+        <div class="panel-head">
+          <div class="panel-title">
+            <span class="panel-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/><path d="M17 16l3 2-3 2"/></svg></span>
+            <div>
+              <h2>DNS 查询</h2>
+              <p>查询域名的 DNS 记录（A / MX / NS / TXT / CNAME / SOA）</p>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <input type="text" id="dns-domain" class="input" placeholder="域名，如 example.com" />
+          <div class="select-group">
+            <label>类型</label>
+            <select id="dns-type" class="select">
+              <option value="A">A</option>
+              <option value="AAAA">AAAA</option>
+              <option value="MX">MX</option>
+              <option value="NS">NS</option>
+              <option value="TXT">TXT</option>
+              <option value="CNAME">CNAME</option>
+              <option value="SOA">SOA</option>
+            </select>
+          </div>
+          <button class="btn primary" id="dns-run">查询</button>
+        </div>
+        <div class="result" id="dns-result">
+          <div class="result-empty">
+            <div class="empty-graphic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/><path d="M17 16l3 2-3 2"/></svg>
+            </div>
+            <div>
+              <div class="empty-text">输入域名查询 DNS 记录</div>
+              <div class="empty-hint">支持 A / AAAA / MX / NS / TXT / CNAME / SOA</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Port Check -->
+      <section class="panel" id="panel-port">
+        <div class="panel-head">
+          <div class="panel-title">
+            <span class="panel-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 4v4M15 4v4M9 16v4M15 16v4"/></svg></span>
+            <div>
+              <h2>端口检测</h2>
+              <p>TCP 连接测试，判断远程主机端口是否开放</p>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <input type="text" id="port-host" class="input" placeholder="主机名或 IP" style="flex:2" />
+          <input type="text" id="port-port" class="input" placeholder="端口 1-65535" style="flex:1" />
+          <div class="select-group">
+            <label>超时</label>
+            <select id="port-timeout" class="select">
+              <option value="2000">2s</option>
+              <option value="3000" selected>3s</option>
+              <option value="5000">5s</option>
+              <option value="8000">8s</option>
+            </select>
+          </div>
+          <button class="btn primary" id="port-run">检测</button>
+        </div>
+        <div class="result" id="port-result">
+          <div class="result-empty">
+            <div class="empty-graphic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 4v4M15 4v4M9 16v4M15 16v4"/></svg>
+            </div>
+            <div>
+              <div class="empty-text">输入主机和端口开始检测</div>
+              <div class="empty-hint">判断远程端口是否开放（TCP 连接测试）</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- HTTP Headers -->
+      <section class="panel" id="panel-http">
+        <div class="panel-head">
+          <div class="panel-title">
+            <span class="panel-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span>
+            <div>
+              <h2>HTTP 头分析</h2>
+              <p>获取 URL 的响应状态与全部响应头</p>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <input type="text" id="http-url" class="input" placeholder="完整 URL，如 https://www.baidu.com" />
+          <button class="btn primary" id="http-run">获取</button>
+        </div>
+        <div class="result" id="http-result">
+          <div class="result-empty">
+            <div class="empty-graphic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+            </div>
+            <div>
+              <div class="empty-text">输入 URL 获取响应头</div>
+              <div class="empty-hint">查看 HTTP 状态码和全部响应头信息</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Whois -->
+      <section class="panel" id="panel-whois">
+        <div class="panel-head">
+          <div class="panel-title">
+            <span class="panel-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 4l4 4"/></svg></span>
+            <div>
+              <h2>Whois 域名信息</h2>
+              <p>查询域名的注册商、注册时间、到期时间、DNS 服务器</p>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <input type="text" id="whois-domain" class="input" placeholder="域名，如 google.com" />
+          <button class="btn primary" id="whois-run">查询</button>
+        </div>
+        <div class="result" id="whois-result">
+          <div class="result-empty">
+            <div class="empty-graphic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 4l4 4"/></svg>
+            </div>
+            <div>
+              <div class="empty-text">输入域名查询 Whois 信息</div>
+              <div class="empty-hint">注册商、注册时间、到期时间、DNS 服务器</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- IP Info -->
+      <section class="panel" id="panel-ip">
+        <div class="panel-head">
+          <div class="panel-title">
+            <span class="panel-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3.5 9h17M3.5 15h17M11 3.5a14 14 0 0 0 0 17M13 3.5a14 14 0 0 1 0 17"/></svg></span>
+            <div>
+              <h2>IP 归属查询</h2>
+              <p>查询任意 IP 的地理位置与运营商信息</p>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <input type="text" id="ip-query" class="input" placeholder="留空查询本机公网 IP，或输入任意 IP" />
+          <button class="btn primary" id="ip-run">查询</button>
+          <button class="btn ghost" id="ip-local">查看本机网络</button>
+        </div>
+        <div class="result" id="ip-result">
+          <div class="result-empty">
+            <div class="empty-graphic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3.5 9h17M3.5 15h17M11 3.5a14 14 0 0 0 0 17M13 3.5a14 14 0 0 1 0 17"/></svg>
+            </div>
+            <div>
+              <div class="empty-text">点击查询获取 IP 归属</div>
+              <div class="empty-hint">留空查询本机公网 IP，或输入任意 IP</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

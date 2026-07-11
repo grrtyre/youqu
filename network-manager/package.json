@@ -1,0 +1,48 @@
+{
+  "name": "network-manager",
+  "version": "1.0.0",
+  "description": "网络管家 - 网络诊断一体化桌面应用（Ping / Traceroute / DNS / 端口检测 / HTTP 头 / Whois / IP 信息）",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/test.js",
+    "dist": "electron-builder --win --x64"
+  },
+  "author": "youqu",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.youqu.networkmanager",
+    "productName": "网络管家",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}
