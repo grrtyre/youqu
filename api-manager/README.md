@@ -1,3 +1,12 @@
+## ⬇️ 直接下载
+
+| 版本 | 平台 | 下载链接 |
+|------|------|----------|
+| v1.0.0 安装版 | Windows x64 | [API管家 Setup 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/api-manager-v1.0.0/api-manager-setup-1.0.0.exe) |
+| v1.0.0 便携版 | Windows x64 | [API管家 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/api-manager-v1.0.0/api-manager-1.0.0.exe) |
+
+---
+
 # 🔌 API管家
 
 > 本地优先的 HTTP API 测试工具——集合管理、历史记录、环境变量、JSON 语法高亮，苹果白高端风格。
