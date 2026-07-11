@@ -8,8 +8,8 @@
 
 | 版本 | 下载链接 | 说明 |
 |---|---|---|
-| 安装版（推荐） | [便签管家 Setup 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/sticky-notes-manager-v1.1.0/便签管家.Setup.1.1.0.exe) | 双击安装，自动创建桌面快捷方式 |
-| 免安装便携版 | [便签管家 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/sticky-notes-manager-v1.1.0/便签管家.1.1.0.exe) | 双击即用，不写注册表 |
+| 安装版（推荐） | [便签管家 Setup 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/sticky-notes-manager-v1.1.0/sticky-notes-manager-Setup-1.1.0.exe) | 双击安装，自动创建桌面快捷方式 |
+| 免安装便携版 | [便签管家 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/sticky-notes-manager-v1.1.0/sticky-notes-manager-1.1.0.exe) | 双击即用，不写注册表 |
 
 系统要求：Windows 10/11 x64
 
