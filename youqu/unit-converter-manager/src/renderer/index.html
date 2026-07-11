@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>换算管家</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 顶部导航条 -->
+    <header class="titlebar">
+      <div class="titlebar-left">
+        <div class="traffic-lights">
+          <span class="light red"></span>
+          <span class="light yellow"></span>
+          <span class="light green"></span>
+        </div>
+        <div class="app-title">
+          <span class="app-icon">⚖️</span>
+          <span class="app-name">换算管家</span>
+        </div>
+      </div>
+      <div class="titlebar-center">
+        <div class="search-box">
+          <svg class="search-icon" viewBox="0 0 16 16" width="14" height="14">
+            <path fill="currentColor" d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+          </svg>
+          <input id="search" type="text" placeholder="搜索单位或类别…" autocomplete="off" />
+        </div>
+      </div>
+      <div class="titlebar-right">
+        <button id="history-btn" class="tool-btn" title="历史记录">
+          <svg viewBox="0 0 16 16" width="16" height="16"><path fill="currentColor" d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path fill="currentColor" d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
+        </button>
+        <button id="favorite-btn" class="tool-btn" title="收藏列表">
+          <svg viewBox="0 0 16 16" width="16" height="16"><path fill="currentColor" d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.873 3.545-3.457c.326-.32.157-.888-.277-.953l-4.902-.713-2.19-4.438c-.197-.393-.773-.393-.97 0L7.294 4.933l-4.902.713c-.434.065-.603.633-.277.953l3.545 3.457-.83 4.873z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- 主体内容 -->
+    <main class="content">
+      <!-- 左侧：类别列表 -->
+      <aside class="sidebar">
+        <div class="sidebar-label">类别</div>
+        <ul id="category-list" class="category-list"></ul>
+      </aside>
+
+      <!-- 右侧：换算工作区 -->
+      <section class="workspace">
+        <!-- 当前类别标题 -->
+        <div class="workspace-header">
+          <div>
+            <h2 id="category-title" class="category-title">长度</h2>
+            <p id="category-desc" class="category-desc">在左侧选择类别，输入数值即可实时换算</p>
+          </div>
+          <button id="favorite-toggle" class="favorite-star" title="收藏当前换算">
+            <svg viewBox="0 0 16 16" width="20" height="20"><path fill="currentColor" d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.873 3.545-3.457c.326-.32.157-.888-.277-.953l-4.902-.713-2.19-4.438c-.197-.393-.773-.393-.97 0L7.294 4.933l-4.902.713c-.434.065-.603.633-.277.953l3.545 3.457-.83 4.873z"/></svg>
+          </button>
+        </div>
+
+        <!-- 主输入区 -->
+        <div class="input-area">
+          <div class="input-group">
+            <label class="field-label">输入数值</label>
+            <div class="input-row">
+              <input id="value-input" type="text" inputmode="decimal" placeholder="输入一个数字" autocomplete="off" />
+              <select id="from-unit" class="unit-select"></select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 结果列表 -->
+        <div class="results-area">
+          <div class="results-header">
+            <span class="results-title">换算结果</span>
+            <button id="copy-all" class="text-btn">全部复制</button>
+          </div>
+          <ul id="results-list" class="results-list"></ul>
+        </div>
+      </section>
+    </main>
+
+    <!-- 抽屉：历史记录 -->
+    <div id="history-drawer" class="drawer hidden">
+      <div class="drawer-mask"></div>
+      <div class="drawer-panel">
+        <div class="drawer-header">
+          <h3>历史记录</h3>
+          <div class="drawer-actions">
+            <button id="clear-history" class="text-btn danger">清空</button>
+            <button id="close-history" class="text-btn">关闭</button>
+          </div>
+        </div>
+        <ul id="history-list" class="drawer-list"></ul>
+      </div>
+    </div>
+
+    <!-- 抽屉：收藏 -->
+    <div id="favorite-drawer" class="drawer hidden">
+      <div class="drawer-mask"></div>
+      <div class="drawer-panel">
+        <div class="drawer-header">
+          <h3>我的收藏</h3>
+          <button id="close-favorite" class="text-btn">关闭</button>
+        </div>
+        <ul id="favorite-list" class="drawer-list"></ul>
+      </div>
+    </div>
+
+    <!-- Toast 提示 -->
+    <div id="toast" class="toast hidden">已复制</div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
