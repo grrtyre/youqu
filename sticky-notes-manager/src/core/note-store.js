@@ -46,35 +46,55 @@ function createNote(data) {
   };
 }
 
+// 创建回收站便签对象（在普通便签基础上增加 deletedAt）
+function createTrashNote(data) {
+  const note = createNote(data);
+  note.deletedAt = data.deletedAt || Date.now();
+  return note;
+}
+
 // 读取全部便签
 function loadNotes(dataPath) {
+  return loadAll(dataPath).notes;
+}
+
+// 读取便签 + 回收站（统一入口，向后兼容 v1 数据）
+function loadAll(dataPath) {
   const filePath = dataPath || defaultDataPath();
   try {
     if (!fs.existsSync(filePath)) {
-      return [];
+      return { notes: [], trash: [] };
     }
     const raw = fs.readFileSync(filePath, 'utf-8');
     const data = JSON.parse(raw);
-    if (!Array.isArray(data.notes)) {
-      return [];
-    }
-    return data.notes.map(n => createNote(n));
+    const notes = Array.isArray(data.notes) ? data.notes.map(n => createNote(n)) : [];
+    // v2 新增 trash 字段；v1 旧文件没有 trash，默认空数组
+    const trash = Array.isArray(data.trash) ? data.trash.map(n => createTrashNote(n)) : [];
+    return { notes, trash };
   } catch (e) {
-    return [];
+    return { notes: [], trash: [] };
   }
 }
 
 // 保存全部便签
 function saveNotes(notes, dataPath) {
+  // 兼容旧调用：保留已有回收站数据
+  const existing = loadAll(dataPath);
+  return saveAll(notes, existing.trash, dataPath);
+}
+
+// 保存便签 + 回收站（v2 数据格式）
+function saveAll(notes, trash, dataPath) {
   const filePath = dataPath || defaultDataPath();
   const dir = path.dirname(filePath);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
   const data = {
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
-    notes: notes
+    notes: notes,
+    trash: trash
   };
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
   return true;
@@ -109,6 +129,71 @@ function updateNote(notes, id, patch) {
 // 删除便签
 function deleteNote(notes, id) {
   return notes.filter(n => n.id !== id);
+}
+
+// === 回收站操作 ===
+// 回收站最长保留天数
+const TRASH_MAX_DAYS = 30;
+
+// 移入回收站：从 notes 移除并加入 trash（带 deletedAt 时间戳）
+function moveToTrash(notes, trash, id) {
+  const note = notes.find(n => n.id === id);
+  if (!note) {
+    return { notes, trash, note: null };
+  }
+  const trashed = createTrashNote({ ...note, deletedAt: Date.now() });
+  const newNotes = notes.filter(n => n.id !== id);
+  // 回收站按删除时间倒序（最新删除的在前面）
+  const newTrash = [trashed, ...trash];
+  return { notes: newNotes, trash: newTrash, note: trashed };
+}
+
+// 从回收站恢复：从 trash 移除并加回 notes（清除 deletedAt，取消置顶避免位置混乱）
+function restoreNote(trash, notes, id) {
+  const trashed = trash.find(n => n.id === id);
+  if (!trashed) {
+    return { notes, trash, note: null };
+  }
+  const restored = createNote({
+    ...trashed,
+    deletedAt: undefined,
+    pinned: false, // 恢复后取消置顶，避免突兀置顶
+    updatedAt: Date.now()
+  });
+  delete restored.deletedAt;
+  const newTrash = trash.filter(n => n.id !== id);
+  const newNotes = [restored, ...notes];
+  return { notes: newNotes, trash: newTrash, note: restored };
+}
+
+// 从回收站彻底删除单条
+function deleteFromTrash(trash, id) {
+  return trash.filter(n => n.id !== id);
+}
+
+// 清空回收站
+function emptyTrash(trash) {
+  return [];
+}
+
+// 自动清理过期回收站（超过 TRASH_MAX_DAYS 天）
+function autoCleanTrash(trash, now) {
+  const nowTs = now || Date.now();
+  const maxAgeMs = TRASH_MAX_DAYS * 24 * 60 * 60 * 1000;
+  return trash.filter(n => {
+    if (!n.deletedAt) return true;
+    return (nowTs - n.deletedAt) < maxAgeMs;
+  });
+}
+
+// 计算回收站便签的剩余保留天数
+function getTrashDaysLeft(note, now) {
+  const nowTs = now || Date.now();
+  if (!note.deletedAt) return TRASH_MAX_DAYS;
+  const maxAgeMs = TRASH_MAX_DAYS * 24 * 60 * 60 * 1000;
+  const elapsed = nowTs - note.deletedAt;
+  const left = Math.ceil((maxAgeMs - elapsed) / (24 * 60 * 60 * 1000));
+  return left < 0 ? 0 : left;
 }
 
 // 切换置顶
@@ -209,13 +294,23 @@ function importNotes(jsonStr, existingNotes) {
 module.exports = {
   COLORS,
   CATEGORIES,
+  TRASH_MAX_DAYS,
   generateId,
   createNote,
+  createTrashNote,
   loadNotes,
+  loadAll,
   saveNotes,
+  saveAll,
   addNote,
   updateNote,
   deleteNote,
+  moveToTrash,
+  restoreNote,
+  deleteFromTrash,
+  emptyTrash,
+  autoCleanTrash,
+  getTrashDaysLeft,
   togglePin,
   searchNotes,
   filterByCategory,
