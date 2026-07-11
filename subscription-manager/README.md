@@ -2,6 +2,10 @@
 
 > 追踪你的所有订阅服务，管理周期性支出和续费提醒
 
+## 下载
+
+[Windows 安装包 v1.0.0](https://github.com/grrtyre/youqu/releases/download/subscription-manager-v1.0.0/SubscriptionManagerSetup1.0.0.exe)
+
 在订阅经济时代，我们每人都有 10+ 个订阅服务（流媒体、软件、云服务、会员...），却常常记不清总共花了多少钱、哪个服务即将续费。**订阅管家**帮你一站式管理所有订阅，清晰掌握每月/每年的订阅支出，并在续费前收到提醒。
 
 ## 功能
