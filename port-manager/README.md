@@ -6,8 +6,8 @@
 
 | 版本 | 下载链接 | 说明 |
 |---|---|---|
-| 安装版 v1.1.0 | [端口管家-Setup-1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/port-manager-v1.1.0/端口管家-Setup-1.1.0.exe) | 推荐安装，支持开始菜单和桌面快捷方式 |
-| 便携版 v1.1.0 | [端口管家-1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/port-manager-v1.1.0/端口管家-1.1.0.exe) | 免安装，双击即用 |
+| 安装版 v1.1.0 | [port-manager-setup-1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/port-manager-v1.1.0/port-manager-setup-1.1.0.exe) | 推荐安装，支持开始菜单和桌面快捷方式 |
+| 便携版 v1.1.0 | [port-manager-portable-1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/port-manager-v1.1.0/port-manager-portable-1.1.0.exe) | 免安装，双击即用 |
 | 安装版 v1.0.0 | [port-manager-setup-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/port-manager-v1.0.0/port-manager-setup-1.0.0.exe) | 旧版本 |
 | 便携版 v1.0.0 | [port-manager-portable-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/port-manager-v1.0.0/port-manager-portable-1.0.0.exe) | 旧版本 |
 
