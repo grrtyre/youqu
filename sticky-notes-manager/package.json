@@ -1,6 +1,6 @@
 {
   "name": "sticky-notes-manager",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "便签管家 - 本地优先的快速便签桌面应用",
   "main": "src/main.js",
   "scripts": {
@@ -18,7 +18,7 @@
     "appId": "com.youqu.sticky-notes",
     "productName": "便签管家",
     "directories": {
-      "output": "dist"
+      "output": "dist2"
     },
     "files": [
       "src/**/*",
