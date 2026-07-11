@@ -107,7 +107,7 @@ html, body {
 .card-legend { font-size: 11.5px; color: var(--text-3); font-weight: 400; }
 .card-legend .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin: 0 3px 0 8px; vertical-align: middle; }
 .dot-blue { background: var(--accent); }
-.dot-gray { background: #aeaeb2; }
+.dot-gray { background: #c7c7cc; }
 
 /* === Hero 卡片（全宽，左右分栏） === */
 .hero-card {
@@ -288,7 +288,7 @@ html, body {
   min-height: 3px;
 }
 .bar-done { background: var(--accent); }
-.bar-skip { background: #aeaeb2; }
+.bar-skip { background: #c7c7cc; }
 .bar-day { font-size: 12px; color: var(--text-3); }
 .bar-today { color: var(--accent); font-weight: 600; }
 .bars-empty {
@@ -394,7 +394,7 @@ html, body {
 .switch {
   appearance: none;
   width: 42px; height: 26px;
-  background: #d2d2d7;
+  background: #b0b0b5;
   border-radius: 100px;
   position: relative;
   cursor: pointer;
