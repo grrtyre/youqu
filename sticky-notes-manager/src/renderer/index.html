@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>便签管家</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect x="4" y="6" width="20" height="16" rx="3" stroke="#007aff" stroke-width="2"/>
+            <path d="M9 6V4.5C9 3.67 9.67 3 10.5 3H17.5C18.33 3 19 3.67 19 4.5V6" stroke="#007aff" stroke-width="2" stroke-linecap="round"/>
+            <line x1="9" y1="13" x2="19" y2="13" stroke="#007aff" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="9" y1="17" x2="15" y2="17" stroke="#007aff" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="logo-text">便签管家</span>
+      </div>
+
+      <button class="new-btn" id="newNoteBtn">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M9 3V15M3 9H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        新建便签
+        <span class="shortcut">Ctrl+Alt+N</span>
+      </button>
+
+      <div class="search-box">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="7" cy="7" r="5" stroke="#8e8e93" stroke-width="1.5"/>
+          <line x1="11" y1="11" x2="14" y2="14" stroke="#8e8e93" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <input type="text" id="searchInput" placeholder="搜索便签...">
+      </div>
+
+      <div class="category-list">
+        <div class="category-section-label">分类</div>
+        <div class="category-item active" data-category="全部">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="3" width="12" height="2" rx="1" fill="currentColor"/>
+            <rect x="2" y="7" width="12" height="2" rx="1" fill="currentColor"/>
+            <rect x="2" y="11" width="8" height="2" rx="1" fill="currentColor"/>
+          </svg>
+          <span>全部</span>
+          <span class="count" id="count-全部">0</span>
+        </div>
+        <div class="category-item" data-category="工作">
+          <span class="cat-dot" style="background:#007aff"></span>
+          <span>工作</span>
+          <span class="count" id="count-工作">0</span>
+        </div>
+        <div class="category-item" data-category="个人">
+          <span class="cat-dot" style="background:#34c759"></span>
+          <span>个人</span>
+          <span class="count" id="count-个人">0</span>
+        </div>
+        <div class="category-item" data-category="灵感">
+          <span class="cat-dot" style="background:#ffcc00"></span>
+          <span>灵感</span>
+          <span class="count" id="count-灵感">0</span>
+        </div>
+        <div class="category-item" data-category="待办">
+          <span class="cat-dot" style="background:#ff9500"></span>
+          <span>待办</span>
+          <span class="count" id="count-待办">0</span>
+        </div>
+        <div class="category-item" data-category="其他">
+          <span class="cat-dot" style="background:#8e8e93"></span>
+          <span>其他</span>
+          <span class="count" id="count-其他">0</span>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="stats-card">
+          <div class="stat-item">
+            <span class="stat-num" id="statTotal">0</span>
+            <span class="stat-name">便签</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-num" id="statPinned">0</span>
+            <span class="stat-name">置顶</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-num" id="statWords">0</span>
+            <span class="stat-name">字数</span>
+          </div>
+        </div>
+        <div class="footer-actions">
+          <button class="action-btn" id="importBtn" title="导入便签">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M9 2V12M9 12L5 8M9 12L13 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3 15H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span>导入</span>
+          </button>
+          <button class="action-btn" id="exportBtn" title="导出便签">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M9 12V2M9 2L5 6M9 2L13 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3 15H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span>导出</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="main">
+      <header class="main-header">
+        <h1 id="mainTitle">全部便签</h1>
+        <div class="header-right">
+          <div class="sort-info" id="sortInfo">置顶优先 · 按更新时间</div>
+        </div>
+      </header>
+
+      <!-- 便签网格 -->
+      <div class="notes-grid" id="notesGrid">
+        <!-- 便签卡片由 JS 动态生成 -->
+      </div>
+
+      <!-- 空状态 -->
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <div class="empty-icon">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+            <rect x="12" y="16" width="40" height="36" rx="6" stroke="#d1d1d6" stroke-width="2.5"/>
+            <path d="M20 16V12C20 9.79 21.79 8 24 8H40C42.21 8 44 9.79 44 12V16" stroke="#d1d1d6" stroke-width="2.5"/>
+            <line x1="22" y1="30" x2="42" y2="30" stroke="#d1d1d6" stroke-width="2" stroke-linecap="round"/>
+            <line x1="22" y1="38" x2="34" y2="38" stroke="#d1d1d6" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <p class="empty-title">还没有便签</p>
+        <p class="empty-desc">点击「新建便签」开始记录你的想法</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- 编辑弹窗 -->
+  <div class="modal-overlay" id="modalOverlay" style="display:none;">
+    <div class="modal">
+      <div class="modal-header">
+        <input type="text" id="editTitle" class="modal-title-input" placeholder="标题（可选）">
+        <button class="modal-close" id="modalCloseBtn">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <textarea id="editContent" class="modal-content-input" placeholder="写下你的想法..."></textarea>
+      <div class="modal-footer">
+        <div class="modal-meta">
+          <div class="meta-group">
+            <label>分类</label>
+            <div class="meta-options" id="categoryOptions">
+              <button class="meta-opt" data-cat="工作">工作</button>
+              <button class="meta-opt" data-cat="个人">个人</button>
+              <button class="meta-opt" data-cat="灵感">灵感</button>
+              <button class="meta-opt" data-cat="待办">待办</button>
+              <button class="meta-opt" data-cat="其他">其他</button>
+            </div>
+          </div>
+          <div class="meta-group">
+            <label>颜色</label>
+            <div class="meta-options" id="colorOptions">
+              <button class="color-opt" data-color="default" style="background:#f5f5f7"></button>
+              <button class="color-opt" data-color="blue" style="background:#e3f0ff"></button>
+              <button class="color-opt" data-color="green" style="background:#e8f8ec"></button>
+              <button class="color-opt" data-color="yellow" style="background:#fff9e0"></button>
+              <button class="color-opt" data-color="orange" style="background:#fff0e0"></button>
+              <button class="color-opt" data-color="pink" style="background:#ffe8ef"></button>
+              <button class="color-opt" data-color="purple" style="background:#f3e8ff"></button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <span class="char-count" id="charCount">0 字</span>
+          <button class="btn-delete" id="deleteBtn">删除</button>
+          <button class="btn-save" id="saveBtn">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast 提示 -->
+  <div class="toast" id="toast" style="display:none;"></div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

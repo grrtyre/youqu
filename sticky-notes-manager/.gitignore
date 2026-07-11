@@ -1,0 +1,8 @@
+node_modules/
+dist/
+build/icon-source.png
+build/upload-github.js
+build/demo-notes.json
+*.log
+.DS_Store
+Thumbs.db
