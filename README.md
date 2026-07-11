@@ -66,3 +66,5 @@ _暂无，期待第一个支持者的出现。_
 ## 📄 License
 
 所有项目均采用 [MIT License](./LICENSE)，可自由使用。
+
+| [🔧 环境变量管家](./env-manager) | Windows 环境变量可视化管理：搜索/备份恢复/PATH 拖拽编辑/管理员支持，苹果白风格 | Electron + 原生 JS | ✅ 可用 v1.0.0 |
