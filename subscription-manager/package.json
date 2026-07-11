@@ -1,6 +1,6 @@
 {
   "name": "subscription-manager",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "订阅管家 - 追踪你的所有订阅服务，管理周期性支出和续费提醒",
   "main": "src/main.js",
   "scripts": {
@@ -30,6 +30,10 @@
         {
           "target": "nsis",
           "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
         }
       ]
     },
@@ -37,7 +41,11 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "createStartMenuShortcut": true,
+      "artifactName": "订阅管家 Setup ${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "订阅管家 ${version}.${ext}"
     }
   }
 }

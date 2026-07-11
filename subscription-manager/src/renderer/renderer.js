@@ -1,6 +1,7 @@
 // renderer.js - 渲染进程逻辑
 let appData = { subscriptions: [], settings: { currency: 'CNY', reminderDays: 3 } };
 let editingId = null;
+let pendingDeleteId = null;
 
 // SVG 图标（统一矢量风格）
 const CATEGORY_SVGS = {
@@ -78,6 +79,18 @@ function bindEvents() {
   // 搜索和过滤
   document.getElementById('searchInput').addEventListener('input', renderSubList);
   document.getElementById('filterCategory').addEventListener('change', renderSubList);
+
+  // 数据导出/导入
+  document.getElementById('btnExportJSON').addEventListener('click', doExportJSON);
+  document.getElementById('btnExportCSV').addEventListener('click', doExportCSV);
+  document.getElementById('btnImport').addEventListener('click', doImport);
+
+  // 删除确认弹窗
+  document.getElementById('confirmCancel').addEventListener('click', closeConfirm);
+  document.getElementById('confirmOk').addEventListener('click', confirmDelete);
+  document.getElementById('confirmOverlay').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('confirmOverlay')) closeConfirm();
+  });
 }
 
 function renderAll() {
@@ -175,6 +188,11 @@ function renderSubList() {
     if (search && !s.name.toLowerCase().includes(search) && !(s.note || '').toLowerCase().includes(search)) return false;
     return true;
   });
+  // 已停用的排到后面
+  subs.sort((a, b) => {
+    if ((a.active === false) === (b.active === false)) return 0;
+    return a.active === false ? 1 : -1;
+  });
 
   const list = document.getElementById('subList');
   if (subs.length === 0) {
@@ -182,11 +200,13 @@ function renderSubList() {
     return;
   }
 
-  list.innerHTML = subs.map(sub => `
-    <div class="sub-item" data-id="${sub.id}">
+  list.innerHTML = subs.map(sub => {
+    const inactive = sub.active === false;
+    return `
+    <div class="sub-item${inactive ? ' is-inactive' : ''}" data-id="${sub.id}">
       <div class="sub-icon" style="color:${getCatIconColor(sub.category)};background:${getCatIconColor(sub.category)}18">${getCatIcon(sub.category)}</div>
       <div class="sub-info">
-        <div class="sub-name">${escapeHtml(sub.name)} ${sub.active === false ? '<span style="color:#aeaeb2;font-size:12px">已停用</span>' : ''}</div>
+        <div class="sub-name">${escapeHtml(sub.name)} ${inactive ? '<span class="badge-inactive">已停用</span>' : ''}</div>
         <div class="sub-meta">${escapeHtml(sub.category || '其他')} · ${sub.startDate}${sub.note ? ' · ' + escapeHtml(sub.note) : ''}</div>
       </div>
       <div class="sub-price">
@@ -194,14 +214,18 @@ function renderSubList() {
         <div class="sub-price-cycle">${cycleLabel(sub.cycle)}</div>
       </div>
       <div class="sub-actions">
+        <button class="sub-btn toggle" onclick="event.stopPropagation();toggleActive('${sub.id}')" title="${inactive ? '启用' : '停用'}">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${inactive ? '<path d="M2 8a6 6 0 019.2-4.8M14 8a6 6 0 01-9.2 4.8M2 2l12 12"/>' : '<path d="M2 8a6 6 0 0110.4-4M14 8a6 6 0 01-10.4 4"/><path d="M2 2l12 12" opacity="0"/>'}</svg>
+        </button>
         <button class="sub-btn edit" onclick="event.stopPropagation();openModal('${sub.id}')" title="编辑">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M11.5 1.5l3 3L5 14l-3.5.5L2 11l9.5-9.5z"/></svg>
         </button>
-        <button class="sub-btn delete" onclick="event.stopPropagation();deleteSub('${sub.id}')" title="删除">
+        <button class="sub-btn delete" onclick="event.stopPropagation();askDelete('${sub.id}')" title="删除">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M5 2h6v1h4v2H1V3h4V2zm-2 4h10l-1 9H4L3 6z"/></svg>
         </button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 // 渲染统计
@@ -309,10 +333,76 @@ async function saveSub() {
   renderAll();
 }
 
-async function deleteSub(id) {
+// 删除：二次确认防误删
+function askDelete(id) {
+  const sub = appData.subscriptions.find(s => s.id === id);
+  if (!sub) return;
+  pendingDeleteId = id;
+  document.getElementById('confirmText').textContent = `确定要删除「${sub.name}」吗？此操作不可撤销。`;
+  document.getElementById('confirmOverlay').classList.add('active');
+}
+
+function closeConfirm() {
+  document.getElementById('confirmOverlay').classList.remove('active');
+  pendingDeleteId = null;
+}
+
+async function confirmDelete() {
+  if (!pendingDeleteId) { closeConfirm(); return; }
+  const id = pendingDeleteId;
   appData.subscriptions = appData.subscriptions.filter(s => s.id !== id);
   await window.subAPI.save(appData);
+  closeConfirm();
   renderAll();
+  showToast('已删除');
+}
+
+// 停用 / 启用订阅
+async function toggleActive(id) {
+  const sub = appData.subscriptions.find(s => s.id === id);
+  if (!sub) return;
+  sub.active = sub.active === false ? true : false;
+  await window.subAPI.save(appData);
+  renderAll();
+  showToast(sub.active ? '已启用' : '已停用');
+}
+
+// 数据导出 / 导入
+async function doExportJSON() {
+  const r = await window.subAPI.exportJSON();
+  if (r.canceled) return;
+  if (r.ok) showToast(`已导出 ${r.count} 条订阅（JSON）`);
+  else showToast('导出失败');
+}
+
+async function doExportCSV() {
+  const r = await window.subAPI.exportCSV();
+  if (r.canceled) return;
+  if (r.ok) showToast(`已导出 ${r.count} 条订阅（CSV）`);
+  else showToast('导出失败');
+}
+
+async function doImport() {
+  const r = await window.subAPI.importData();
+  if (r.canceled) return;
+  if (r.ok) {
+    appData = await window.subAPI.getAll();
+    if (!appData.subscriptions) appData.subscriptions = [];
+    renderAll();
+    showToast(r.added > 0 ? `已导入 ${r.added} 条新订阅` : '无新增（已存在）');
+  } else {
+    showToast(r.error ? '导入失败：' + r.error : '导入失败');
+  }
+}
+
+// 轻提示 Toast
+let toastTimer = null;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
 }
 
 function escapeHtml(str) {
@@ -322,6 +412,7 @@ function escapeHtml(str) {
 
 // 暴露给 onclick
 window.openModal = openModal;
-window.deleteSub = deleteSub;
+window.askDelete = askDelete;
+window.toggleActive = toggleActive;
 
 init();

@@ -115,7 +115,48 @@ body {
 }
 
 .sidebar-footer {
-  padding: 12px 16px;
+  padding: 8px 16px 20px;
+}
+
+.footer-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.footer-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.footer-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: inherit;
+}
+
+.footer-btn:hover {
+  background: var(--accent-light);
+  color: var(--accent);
+  border-color: transparent;
+}
+
+.footer-btn svg {
+  flex-shrink: 0;
 }
 
 .btn-add {
@@ -166,9 +207,9 @@ body {
 }
 
 .view-title {
-  font-size: 32px;
+  font-size: 26px;
   font-weight: 700;
-  letter-spacing: -0.8px;
+  letter-spacing: -0.6px;
 }
 
 .view-desc {
@@ -194,7 +235,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 110px;
+  min-height: 120px;
 }
 
 .stat-card:hover {
@@ -208,7 +249,7 @@ body {
 
 .stat-card.primary .stat-value {
   color: var(--accent);
-  font-size: 32px;
+  font-size: 28px;
 }
 
 .stat-card.secondary {
@@ -253,10 +294,14 @@ body {
 .dashboard-grid .card {
   display: flex;
   flex-direction: column;
+  min-height: 280px;
 }
 
 .dashboard-grid .card-body {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 /* 卡片 */
@@ -348,9 +393,11 @@ body {
 .renewal-days {
   font-size: 13px;
   font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 6px;
+  padding: 5px 12px;
+  border-radius: 8px;
   flex-shrink: 0;
+  min-width: 52px;
+  text-align: center;
 }
 
 .renewal-days.urgent {
@@ -366,14 +413,14 @@ body {
 }
 
 .renewal-days.normal {
-  background: #f0faf3;
-  color: #22c55e;
-  border: 1px solid #d4f0db;
+  background: var(--bg);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
 }
 
 /* 分类条形图 */
 .category-bar-item {
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .category-bar-item:last-child {
@@ -396,9 +443,9 @@ body {
 }
 
 .cat-bar-track {
-  height: 8px;
+  height: 6px;
   background: var(--bg);
-  border-radius: 4px;
+  border-radius: 3px;
   overflow: hidden;
 }
 
@@ -718,4 +765,129 @@ body {
   background: var(--text-tertiary);
   border-radius: 3px;
   opacity: 0.3;
+}
+
+/* 停用 / 启用 切换按钮 */
+.sub-btn.toggle:hover {
+  background: #fff7ed;
+  color: var(--warning);
+}
+
+.sub-item.is-inactive {
+  opacity: 0.6;
+}
+
+.sub-item.is-inactive:hover {
+  opacity: 0.85;
+}
+
+.badge-inactive {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  background: var(--bg);
+  padding: 2px 8px;
+  border-radius: 8px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* 危险按钮 */
+.btn-danger {
+  padding: 9px 24px;
+  background: var(--danger);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: inherit;
+}
+
+.btn-danger:hover {
+  background: #e0342b;
+}
+
+/* 删除确认弹窗 */
+.confirm-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(4px);
+  z-index: 1100;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirm-overlay.active {
+  display: flex;
+}
+
+.confirm-modal {
+  background: var(--surface);
+  border-radius: 16px;
+  width: 380px;
+  max-width: 90vw;
+  padding: 28px 28px 24px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  animation: modalIn 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.confirm-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  background: #fff0f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirm-title {
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.confirm-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 22px;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Toast 轻提示 */
+.toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(29, 29, 31, 0.92);
+  color: #fff;
+  padding: 11px 22px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2000;
+  transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }

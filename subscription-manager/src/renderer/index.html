@@ -46,6 +46,24 @@
           <span>统计</span>
         </button>
       </nav>
+
+      <div class="sidebar-footer">
+        <div class="footer-label">数据</div>
+        <div class="footer-actions">
+          <button class="footer-btn" id="btnExportJSON" title="导出 JSON">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v9m0 0l3.5-3.5M8 11L4.5 7.5M2 13.5h12"/></svg>
+            <span>导出</span>
+          </button>
+          <button class="footer-btn" id="btnExportCSV" title="导出 CSV（Excel 可直接打开）">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="2.5" width="11" height="11" rx="1.5"/><path d="M2.5 6h11M5.5 2.5v11M10 2.5v11"/></svg>
+            <span>CSV</span>
+          </button>
+          <button class="footer-btn" id="btnImport" title="导入 JSON / CSV">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 11V2m0 0L4.5 5.5M8 2l3.5 3.5M2 13.5h12"/></svg>
+            <span>导入</span>
+          </button>
+        </div>
+      </div>
     </aside>
 
     <!-- 主内容区 -->
@@ -212,6 +230,24 @@
       </div>
     </div>
   </div>
+
+  <!-- 删除确认弹窗 -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-modal">
+      <div class="confirm-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff3b30" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5M12 16.5v.5"/><path d="M10.3 3.9L2.4 17.5A1.5 1.5 0 003.7 19.8h16.6a1.5 1.5 0 001.3-2.3L13.7 3.9a1.5 1.5 0 00-2.6 0z"/></svg>
+      </div>
+      <h3 class="confirm-title">确认删除</h3>
+      <p class="confirm-text" id="confirmText">确定要删除该订阅吗？此操作不可撤销。</p>
+      <div class="confirm-actions">
+        <button class="btn-secondary" id="confirmCancel">取消</button>
+        <button class="btn-danger" id="confirmOk">删除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 轻提示 Toast -->
+  <div class="toast" id="toast"></div>
 
   <script src="renderer.js"></script>
 </body>

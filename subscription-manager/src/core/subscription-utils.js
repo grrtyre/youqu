@@ -115,6 +115,87 @@ function categoryBreakdown(subscriptions) {
   return result;
 }
 
+// CSV 字段转义：包含逗号、引号或换行时用双引号包裹，内部引号双写
+function csvEscape(val) {
+  const s = val === undefined || val === null ? '' : String(val);
+  if (/[",\n\r]/.test(s)) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
+// 计费周期编码（CSV 用）
+const CYCLE_CSV = { monthly: '月付', yearly: '年付', quarterly: '季付', weekly: '周付' };
+const CYCLE_FROM_CSV = {
+  '月付': 'monthly', 'monthly': 'monthly',
+  '年付': 'yearly', 'yearly': 'yearly',
+  '季付': 'quarterly', 'quarterly': 'quarterly',
+  '周付': 'weekly', 'weekly': 'weekly'
+};
+
+// 订阅列表 -> CSV 字符串（含表头，UTF-8 BOM 由调用方加）
+function toCSV(subscriptions) {
+  const header = '名称,价格,计费周期,开始日期,分类,备注,状态';
+  const lines = (subscriptions || []).map(sub => {
+    const cycle = CYCLE_CSV[sub.cycle] || sub.cycle || '月付';
+    const status = sub.active === false ? '已停用' : '活跃';
+    return [sub.name, sub.price, cycle, sub.startDate, sub.category || '其他', sub.note || '', status]
+      .map(csvEscape).join(',');
+  });
+  return header + '\n' + lines.join('\n') + (lines.length ? '\n' : '');
+}
+
+// 解析一行 CSV（支持引号包裹与内部双写引号）
+function parseCSVLine(line) {
+  const result = [];
+  let cur = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (line[i + 1] === '"') { cur += '"'; i++; }
+        else { inQuotes = false; }
+      } else {
+        cur += ch;
+      }
+    } else {
+      if (ch === '"') { inQuotes = true; }
+      else if (ch === ',') { result.push(cur); cur = ''; }
+      else { cur += ch; }
+    }
+  }
+  result.push(cur);
+  return result;
+}
+
+// CSV 字符串 -> 订阅对象数组（容错：跳过格式不合法的行）
+function fromCSV(csvText) {
+  const text = String(csvText || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const lines = text.split('\n').filter(l => l.length > 0);
+  if (lines.length < 2) return [];
+  // 跳过表头
+  const rows = lines.slice(1);
+  const result = [];
+  for (const row of rows) {
+    const cols = parseCSVLine(row);
+    if (cols.length < 4) continue;
+    const name = (cols[0] || '').trim();
+    const price = parseFloat(cols[1]);
+    const cycle = CYCLE_FROM_CSV[cols[2]] || 'monthly';
+    const startDate = (cols[3] || '').trim();
+    if (!name || isNaN(price)) continue;
+    result.push({
+      id: 'csv' + Date.now() + '_' + result.length + '_' + Math.random().toString(36).slice(2, 6),
+      name, price, cycle, startDate,
+      category: (cols[4] || '其他').trim() || '其他',
+      note: (cols[5] || '').trim(),
+      active: (cols[6] || '').trim() === '已停用' ? false : true
+    });
+  }
+  return result;
+}
+
 module.exports = {
   toMonthly,
   toYearly,
@@ -122,5 +203,7 @@ module.exports = {
   upcomingRenewal,
   daysUntil,
   computeStats,
-  categoryBreakdown
+  categoryBreakdown,
+  toCSV,
+  fromCSV
 };
