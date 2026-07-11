@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>水印管家</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <!-- 顶部标题栏 -->
+    <header class="header">
+      <div class="title-row">
+        <div class="title-left">
+          <div class="logo">💧</div>
+          <div>
+            <h1 class="title">水印管家</h1>
+            <p class="subtitle">屏幕水印防泄密 · 版权标识 · 办公溯源</p>
+          </div>
+        </div>
+        <div class="title-right">
+          <div class="switch-wrap">
+            <span class="switch-label" id="switchLabel">水印关闭中</span>
+            <label class="switch">
+              <input type="checkbox" id="enableSwitch">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主体内容 -->
+    <main class="main">
+      <!-- 左栏：水印内容 + 模板 + 运行设置 -->
+      <section class="panel">
+        <h2 class="panel-title">水印内容</h2>
+
+        <div class="field">
+          <label class="field-label">水印文字</label>
+          <textarea class="textarea" id="contentInput" rows="2" placeholder="输入水印文字"></textarea>
+          <div class="var-tags">
+            <span class="var-tag" data-var="{USERNAME}">+ 用户名</span>
+            <span class="var-tag" data-var="{IP}">+ 本机IP</span>
+            <span class="var-tag" data-var="{TIME}">+ 时间</span>
+            <span class="var-tag" data-var="{DATE}">+ 日期</span>
+            <span class="var-tag" data-var="{MACHINE}">+ 机器名</span>
+          </div>
+          <p class="field-hint">点击标签可在文字中插入对应变量</p>
+        </div>
+
+        <h2 class="panel-title section-gap">快捷模板</h2>
+        <div class="templates" id="templateGrid"></div>
+
+        <h2 class="panel-title section-gap">运行设置</h2>
+        <div class="checkbox-group">
+          <label class="check-item">
+            <input type="checkbox" id="autoStart">
+            <span>开机自动启动</span>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" id="minimizeToTray" checked>
+            <span>关闭窗口时最小化到系统托盘</span>
+          </label>
+        </div>
+
+        <h2 class="panel-title section-gap">使用说明</h2>
+        <div class="tips-box">
+          <div class="tip-item">
+            <span class="tip-num">1</span>
+            <span class="tip-text">输入水印文字，或选择快捷模板</span>
+          </div>
+          <div class="tip-item">
+            <span class="tip-num">2</span>
+            <span class="tip-text">调整字号、颜色、透明度等样式</span>
+          </div>
+          <div class="tip-item">
+            <span class="tip-num">3</span>
+            <span class="tip-text">打开右上角开关，水印将覆盖全屏</span>
+          </div>
+          <div class="tip-item">
+            <span class="tip-num">4</span>
+            <span class="tip-text">水印层鼠标穿透，不影响任何操作</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 右栏：样式设置 + 实时预览 -->
+      <section class="panel">
+        <h2 class="panel-title">样式设置</h2>
+
+        <div class="field">
+          <label class="field-label">字号 <span class="val" id="fontSizeVal">16px</span></label>
+          <input type="range" class="range" id="fontSize" min="8" max="72" value="16">
+        </div>
+
+        <div class="field">
+          <label class="field-label">颜色</label>
+          <div class="color-row">
+            <div class="color-presets">
+              <span class="color-preset active" data-color="#888888" style="background:#888888"></span>
+              <span class="color-preset" data-color="#cc3333" style="background:#cc3333"></span>
+              <span class="color-preset" data-color="#0066cc" style="background:#0066cc"></span>
+              <span class="color-preset" data-color="#1d1d1f" style="background:#1d1d1f"></span>
+              <span class="color-preset" data-color="#ff9900" style="background:#ff9900"></span>
+              <span class="color-preset" data-color="#34c759" style="background:#34c759"></span>
+            </div>
+            <input type="color" class="color-picker" id="color" value="#888888" title="自定义颜色">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field half">
+            <label class="field-label">透明度 <span class="val" id="opacityVal">12%</span></label>
+            <input type="range" class="range" id="opacity" min="2" max="50" value="12">
+          </div>
+          <div class="field half">
+            <label class="field-label">旋转角度 <span class="val" id="rotationVal">-25°</span></label>
+            <input type="range" class="range" id="rotation" min="-90" max="90" value="-25">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field half">
+            <label class="field-label">水平间距 <span class="val" id="gapXVal">320px</span></label>
+            <input type="range" class="range" id="gapX" min="80" max="1000" value="320">
+          </div>
+          <div class="field half">
+            <label class="field-label">垂直间距 <span class="val" id="gapYVal">200px</span></label>
+            <input type="range" class="range" id="gapY" min="60" max="800" value="200">
+          </div>
+        </div>
+
+        <h2 class="panel-title section-gap">实时预览</h2>
+        <div class="preview-box" id="previewBox">
+          <canvas id="previewCanvas"></canvas>
+          <span class="preview-hint">模拟桌面水印效果</span>
+        </div>
+      </section>
+    </main>
+
+    <!-- 底部状态栏 -->
+    <footer class="footer">
+      <div class="footer-left">
+        <span class="footer-info">💧 本地运行 · 数据不外传</span>
+      </div>
+      <div class="footer-right">
+        <span class="status-dot" id="statusDot"></span>
+        <span class="status-text" id="statusText">水印未开启</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
