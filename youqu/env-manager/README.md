@@ -15,19 +15,20 @@ Windows 自带的环境变量编辑器界面狭小、无搜索、无备份、PAT
 - **即时广播** — 修改后自动广播 `WM_SETTINGCHANGE`，其他应用立即可见
 - **苹果白风格** — 白色/浅灰背景、细腻阴影、系统字体、蓝色强调（#007aff），参考 macOS 原生设计
 
-## 📦 下载使用
+## ⬇️ 直接下载
 
-| 平台 | 下载 | 说明 |
+| 版本 | 下载 | 说明 |
 |---|---|---|
-| Windows x64 | 见下方 Release | 安装版 / 便携版 |
+| 🟦 安装版（推荐） | [env-manager-Setup-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/env-manager-v1.0.0/env-manager-Setup-1.0.0.exe) | NSIS 安装向导，含开始菜单/桌面快捷方式 |
+| 🟩 便携版 | [env-manager-Portable-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/env-manager-v1.0.0/env-manager-Portable-1.0.0.exe) | 单文件免安装，双击即用 |
 
-> 前往本仓库 [Releases](https://github.com/grrtyre/youqu/releases) 下载最新版本。
+> 也可前往本仓库 [Releases](https://github.com/grrtyre/youqu/releases/tag/env-manager-v1.0.0) 页面查看所有版本。
 
 ## 🚀 快速开始
 
 ### 方式一：直接下载（推荐普通用户）
 
-1. 在 Release 页下载 `环境变量管家 Setup 1.0.0.exe`（安装版）或 `环境变量管家 1.0.0.exe`（便携版）
+1. 在上方「⬇️ 直接下载」表格中下载 `env-manager-Setup-1.0.0.exe`（安装版）或 `env-manager-Portable-1.0.0.exe`（便携版）
 2. 双击运行
 3. 编辑系统变量时，点击顶部"以管理员重启"按钮授权
 
