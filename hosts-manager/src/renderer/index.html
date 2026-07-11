@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hosts管家</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 顶部栏 -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="logo">
+          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2" />
+            <path d="M8 21h8M12 17v4" />
+            <path d="M6 8h2M6 11h2" />
+          </svg>
+          <span class="logo-text">Hosts管家</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="status-badge" id="statusBadge">
+          <span class="status-dot"></span>
+          <span class="status-text">检查中…</span>
+        </div>
+        <button class="icon-btn" id="openLocationBtn" title="打开 hosts 文件所在目录" style="width:32px;height:32px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        </button>
+        <button class="btn primary" id="applyBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;margin-right:4px"><path d="M20 6L9 17l-5-5"/></svg>
+          应用到系统
+        </button>
+      </div>
+    </header>
+
+    <div class="body">
+      <!-- 左侧栏 -->
+      <aside class="sidebar">
+        <!-- 方案管理 -->
+        <div class="side-section">
+          <div class="side-header">
+            <span class="side-title">方案</span>
+            <button class="icon-btn" id="newProfileBtn" title="新建方案">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+          </div>
+          <div class="profile-list" id="profileList">
+            <div class="empty-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px;display:block;margin:0 auto 2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><span class="empty-title">暂无方案</span><span class="empty-sub">点击 + 新建</span></div>
+          </div>
+        </div>
+
+        <!-- 模板 -->
+        <div class="side-section">
+          <div class="side-header">
+            <span class="side-title">模板</span>
+          </div>
+          <div class="template-list" id="templateList"></div>
+        </div>
+
+        <!-- 备份 -->
+        <div class="side-section">
+          <div class="side-header">
+            <span class="side-title">备份</span>
+            <button class="icon-btn" id="openBackupDirBtn" title="打开备份目录">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            </button>
+          </div>
+          <div class="backup-list" id="backupList">
+            <div class="empty-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px;display:block;margin:0 auto 2px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="empty-title">暂无备份</span><span class="empty-sub">应用后自动备份</span></div>
+          </div>
+        </div>
+
+        <!-- 侧栏底部信息 -->
+        <div class="side-footer">
+          <div class="side-footer-text">Hosts管家 v1.1.0</div>
+          <div class="side-footer-sub">本地化 · 离线运行</div>
+        </div>
+      </aside>
+
+      <!-- 主区域 -->
+      <main class="main">
+        <!-- 工具条 -->
+        <div class="toolbar">
+          <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" id="searchInput" placeholder="搜索 IP 或域名…" class="search-input" />
+          </div>
+          <div class="toolbar-right">
+            <div class="stats" id="stats"></div>
+            <div class="seg-group">
+              <button class="seg-btn active" data-mode="list" id="listModeBtn">列表</button>
+              <button class="seg-btn" data-mode="raw" id="rawModeBtn">源码</button>
+            </div>
+            <button class="btn ghost btn-sm" id="addEntryBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;margin-right:3px"><path d="M12 5v14M5 12h14"/></svg>
+              添加
+            </button>
+          </div>
+        </div>
+
+        <!-- 列表模式 -->
+        <div class="entry-list" id="entryList"></div>
+
+        <!-- 源码模式 -->
+        <div class="raw-mode" id="rawMode" style="display:none">
+          <textarea class="raw-textarea" id="rawTextarea" spellcheck="false" placeholder="# 在这里编辑 hosts 文件源码…&#10;127.0.0.1 localhost"></textarea>
+          <div class="raw-hint">提示：源码模式直接编辑文本，切换回列表模式将重新解析</div>
+        </div>
+      </main>
+    </div>
+
+    <!-- 底部状态栏 -->
+    <footer class="footer">
+      <span class="footer-text" id="footerText">就绪</span>
+      <span class="footer-sep">·</span>
+      <span class="footer-text" id="footerHostsPath">hosts 路径</span>
+    </footer>
+  </div>
+
+  <!-- Toast 提示 -->
+  <div class="toast" id="toast"></div>
+
+  <!-- 新建方案对话框 -->
+  <div class="modal-overlay" id="profileModal" style="display:none">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="profileModalTitle">新建方案</span>
+        <button class="icon-btn" id="profileModalClose">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label">方案名称</label>
+        <input type="text" id="profileNameInput" class="form-input" placeholder="如：工作环境" />
+        <label class="form-label" style="margin-top:12px">方案描述（可选）</label>
+        <input type="text" id="profileDescInput" class="form-input" placeholder="如：开发用 hosts 配置" />
+      </div>
+      <div class="modal-footer">
+        <button class="btn ghost" id="profileModalCancel">取消</button>
+        <button class="btn primary" id="profileModalConfirm">保存方案</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

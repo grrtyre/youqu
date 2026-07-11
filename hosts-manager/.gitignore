@@ -1,0 +1,5 @@
+node_modules/
+dist/
+build/icon-source.png
+build/make_icon.py
+*.log
