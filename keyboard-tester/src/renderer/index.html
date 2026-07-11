@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>键鼠管家</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 顶部导航 -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">⌨</div>
+        <div class="brand-text">
+          <h1>键鼠管家</h1>
+          <span class="brand-sub">键盘 · 鼠标 · 打字 测试工具</span>
+        </div>
+      </div>
+      <nav class="tabs" role="tablist">
+        <button class="tab active" data-tab="keyboard">键盘测试</button>
+        <button class="tab" data-tab="nkro">NKRO</button>
+        <button class="tab" data-tab="stats">按键统计</button>
+        <button class="tab" data-tab="mouse">鼠标测试</button>
+        <button class="tab" data-tab="typing">打字测试</button>
+      </nav>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="exportBtn" title="导出数据">↗</button>
+        <button class="icon-btn danger" id="clearBtn" title="清空所有数据">⌫</button>
+      </div>
+    </header>
+
+    <!-- 主内容 -->
+    <main class="content">
+      <!-- 键盘测试 -->
+      <section class="panel active" id="panel-keyboard">
+        <div class="panel-head">
+          <h2>键盘测试</h2>
+          <p class="hint">按下任意键，虚拟键盘会实时高亮。可检测按键是否响应、连击是否正常。</p>
+        </div>
+        <div class="kbd-stage">
+          <div class="last-key-card">
+            <div class="last-key-label">最近按下</div>
+            <div class="last-key-value" id="lastKeyValue">—</div>
+            <div class="last-key-code" id="lastKeyCode">等待输入</div>
+            <div class="recent-keys-section">
+              <div class="recent-keys-title">按键流水</div>
+              <div class="recent-keys-list" id="recentKeysList">
+                <div class="recent-empty">尚无记录</div>
+              </div>
+            </div>
+          </div>
+          <div class="kbd-wrap" id="keyboardWrap"></div>
+        </div>
+        <div class="status-bar">
+          <span class="status-dot" id="statusDot"></span>
+          <span id="statusText">就绪 · 请聚焦此窗口后按键</span>
+          <span class="status-count">累计按键 <b id="totalKeysMini">0</b></span>
+        </div>
+        <div class="tips-grid">
+          <div class="tip-card">
+            <div class="tip-num tip-num-1">01</div>
+            <div class="tip-text"><b>按键测试</b>逐个按下按键，观察虚拟键盘是否高亮。未高亮说明按键可能故障。</div>
+          </div>
+          <div class="tip-card">
+            <div class="tip-num tip-num-2">02</div>
+            <div class="tip-text"><b>NKRO 测试</b>同时按住多个键，查看键盘最多能识别几键同按。</div>
+          </div>
+          <div class="tip-card">
+            <div class="tip-num tip-num-3">03</div>
+            <div class="tip-text"><b>按键统计</b>累计按键热力图，颜色越深表示使用越频繁。</div>
+          </div>
+          <div class="tip-card">
+            <div class="tip-num tip-num-4">04</div>
+            <div class="tip-text"><b>打字测速</b>逐字输入给定文本，计算 WPM 与准确率。</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- NKRO 测试 -->
+      <section class="panel" id="panel-nkro">
+        <div class="panel-head">
+          <h2>NKRO 测试</h2>
+          <p class="hint">同时按下多个键，查看键盘能识别的最大同时按键数。N-Key Rollover 越高，键盘越好。</p>
+        </div>
+        <div class="nkro-stage">
+          <div class="nkro-counter">
+            <div class="nkro-big" id="nkroCurrent">0</div>
+            <div class="nkro-label">当前同时按下</div>
+            <div class="nkro-best">历史最大 <b id="nkroBest">0</b></div>
+          </div>
+          <div class="nkro-keys" id="nkroKeys">
+            <div class="nkro-placeholder">按住多个键试试 →</div>
+          </div>
+        </div>
+        <div class="kbd-wrap" id="nkroKeyboard"></div>
+      </section>
+
+      <!-- 按键统计 -->
+      <section class="panel" id="panel-stats">
+        <div class="panel-head">
+          <h2>按键统计</h2>
+          <p class="hint">累计按键热力图与排行榜。颜色越深表示使用越频繁。</p>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-blue">K</div>
+            <div class="stat-body">
+              <div class="stat-label">总按键数</div>
+              <div class="stat-value" id="statTotalKeys">0</div>
+              <div class="stat-sub">累计敲击</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-blue">U</div>
+            <div class="stat-body">
+              <div class="stat-label">独立按键数</div>
+              <div class="stat-value" id="statUniqueKeys">0</div>
+              <div class="stat-sub">不同按键</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-blue">M</div>
+            <div class="stat-body">
+              <div class="stat-label">鼠标点击</div>
+              <div class="stat-value" id="statMouseClicks">0</div>
+              <div class="stat-sub">左+右+中</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-blue">W</div>
+            <div class="stat-body">
+              <div class="stat-label">滚轮次数</div>
+              <div class="stat-value" id="statWheel">0</div>
+              <div class="stat-sub">上+下滚动</div>
+            </div>
+          </div>
+        </div>
+        <div class="section-label">
+          <span class="section-label-bar"></span>
+          按键热力图
+          <div class="heat-legend">
+            <span class="heat-legend-label">少</span>
+            <span class="heat-legend-cell heat-0"></span>
+            <span class="heat-legend-cell heat-1"></span>
+            <span class="heat-legend-cell heat-2"></span>
+            <span class="heat-legend-cell heat-3"></span>
+            <span class="heat-legend-cell heat-4"></span>
+            <span class="heat-legend-cell heat-5"></span>
+            <span class="heat-legend-cell heat-6"></span>
+            <span class="heat-legend-label">多</span>
+          </div>
+        </div>
+        <div class="heatmap-container">
+          <div class="heatmap-wrap" id="heatmapKeyboard"></div>
+        </div>
+        <div class="section-label">
+          <span class="section-label-bar"></span>
+          按键排行榜 Top 8
+        </div>
+        <div class="topkeys-card">
+          <div class="topkeys-list" id="topKeysList">
+            <div class="empty">暂无数据，去敲几个键吧。</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 鼠标测试 -->
+      <section class="panel" id="panel-mouse">
+        <div class="panel-head">
+          <h2>鼠标测试</h2>
+          <p class="hint">点击鼠标各按键、滚动滚轮、移动鼠标，实时检测响应。双击测试可检测双击速度。</p>
+        </div>
+        <div class="mouse-grid">
+          <div class="mouse-card click-card" id="clickLeft">
+            <div class="mouse-icon">◐</div>
+            <div class="mouse-label">左键</div>
+            <div class="mouse-count" id="cntLeft">0</div>
+          </div>
+          <div class="mouse-card click-card" id="clickMiddle">
+            <div class="mouse-icon">●</div>
+            <div class="mouse-label">中键</div>
+            <div class="mouse-count" id="cntMiddle">0</div>
+          </div>
+          <div class="mouse-card click-card" id="clickRight">
+            <div class="mouse-icon">◑</div>
+            <div class="mouse-label">右键</div>
+            <div class="mouse-count" id="cntRight">0</div>
+          </div>
+        </div>
+        <div class="mouse-row">
+          <div class="mouse-card wheel-card">
+            <div class="mouse-icon">⇅</div>
+            <div class="mouse-label">滚轮</div>
+            <div class="wheel-row">
+              <span class="wheel-dir">↑ <b id="cntWheelUp">0</b></span>
+              <span class="wheel-dir">↓ <b id="cntWheelDown">0</b></span>
+            </div>
+          </div>
+          <div class="mouse-card move-card">
+            <div class="mouse-icon">✦</div>
+            <div class="mouse-label">移动距离</div>
+            <div class="mouse-count"><span id="cntDistance">0</span> <small>px</small></div>
+          </div>
+          <div class="mouse-card dbl-card">
+            <div class="mouse-icon">⏱</div>
+            <div class="mouse-label">双击间隔</div>
+            <div class="mouse-count"><span id="cntDbl">—</span> <small>ms</small></div>
+            <div class="dbl-hint" id="dblHint">在此卡片上双击</div>
+          </div>
+        </div>
+        <div class="mouse-zone" id="mouseZone">
+          <div class="mouse-zone-hint">将鼠标移到此区域，点击、滚动、双击均可测试</div>
+        </div>
+      </section>
+
+      <!-- 打字测试 -->
+      <section class="panel" id="panel-typing">
+        <div class="panel-head">
+          <h2>打字测试</h2>
+          <p class="hint">按下方文本逐字输入。计算 WPM（每分钟字数）与准确率。</p>
+        </div>
+        <div class="typing-metrics">
+          <div class="metric">
+            <div class="metric-label">WPM</div>
+            <div class="metric-value" id="typeWpm">0</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">准确率</div>
+            <div class="metric-value" id="typeAcc">100%</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">用时</div>
+            <div class="metric-value" id="typeTime">0.0s</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">错误</div>
+            <div class="metric-value" id="typeErr">0</div>
+          </div>
+        </div>
+        <div class="typing-text" id="typingText"></div>
+        <div class="typing-input-wrap">
+          <input type="text" id="typingInput" class="typing-input" placeholder="点击此处开始打字…" autocomplete="off" spellcheck="false" />
+          <button class="btn-secondary" id="typeNew">换一段</button>
+          <button class="btn-secondary" id="typeRetry">重试</button>
+        </div>
+        <div class="typing-result" id="typingResult"></div>
+        <div class="history-card">
+          <h3>历史记录</h3>
+          <div class="history-list" id="historyList">
+            <div class="empty">暂无历史，完成一次测试后会显示。</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="renderer.js"></script>
+</body>
+</html>
