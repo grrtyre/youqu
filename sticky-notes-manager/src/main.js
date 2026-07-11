@@ -170,11 +170,46 @@ if (!gotTheLock) {
 
 // IPC 处理
 ipcMain.handle('notes:load', () => {
-  return noteStore.loadNotes(getDataPath());
+  // 启动时自动清理过期回收站
+  const all = noteStore.loadAll(getDataPath());
+  const cleanedTrash = noteStore.autoCleanTrash(all.trash);
+  if (cleanedTrash.length !== all.trash.length) {
+    noteStore.saveAll(all.notes, cleanedTrash, getDataPath());
+  }
+  return { notes: all.notes, trash: cleanedTrash };
 });
 
-ipcMain.handle('notes:save', (event, notes) => {
-  return noteStore.saveNotes(notes, getDataPath());
+ipcMain.handle('notes:save', (event, notes, trash) => {
+  // trash 可选：未传则保留现有回收站
+  if (trash === undefined) {
+    const existing = noteStore.loadAll(getDataPath());
+    return noteStore.saveAll(notes, existing.trash, getDataPath());
+  }
+  return noteStore.saveAll(notes, trash, getDataPath());
+});
+
+// 回收站：恢复便签
+ipcMain.handle('trash:restore', (event, id) => {
+  const all = noteStore.loadAll(getDataPath());
+  const result = noteStore.restoreNote(all.trash, all.notes, id);
+  noteStore.saveAll(result.notes, result.trash, getDataPath());
+  return { success: !!result.note, notes: result.notes, trash: result.trash };
+});
+
+// 回收站：彻底删除单条
+ipcMain.handle('trash:delete', (event, id) => {
+  const all = noteStore.loadAll(getDataPath());
+  const newTrash = noteStore.deleteFromTrash(all.trash, id);
+  noteStore.saveAll(all.notes, newTrash, getDataPath());
+  return { success: true, trash: newTrash };
+});
+
+// 回收站：清空
+ipcMain.handle('trash:empty', () => {
+  const all = noteStore.loadAll(getDataPath());
+  const newTrash = noteStore.emptyTrash(all.trash);
+  noteStore.saveAll(all.notes, newTrash, getDataPath());
+  return { success: true, trash: newTrash };
 });
 
 ipcMain.handle('notes:export', (event, notes) => {
