@@ -305,6 +305,140 @@ assert(dp.includes('sticky-notes-manager'), '路径应包含项目名');
 assert(dp.endsWith('notes.json'), '路径应以 notes.json 结尾');
 console.log('  OK\n');
 
+// === 15. 回收站：createTrashNote ===
+console.log('15. 回回收站便签对象');
+const trashNote = store.createTrashNote({ title: '回收', content: '内容' });
+assert(typeof trashNote.id === 'string', '回收站便签应有 ID');
+assert(typeof trashNote.deletedAt === 'number', '回收站便签应有 deletedAt');
+assert(trashNote.deletedAt > 0, 'deletedAt 应为有效时间戳');
+const trashNote2 = store.createTrashNote({ title: '指定', deletedAt: 12345 });
+assertEqual(trashNote2.deletedAt, 12345, '应保留指定 deletedAt');
+console.log('  OK\n');
+
+// === 16. 回收站：moveToTrash ===
+console.log('16. 移入回收站');
+let notesT = [store.createNote({ title: 'A', content: '内容A', pinned: true })];
+let trashT = [];
+const moveId = notesT[0].id;
+const moveResult = store.moveToTrash(notesT, trashT, moveId);
+notesT = moveResult.notes;
+trashT = moveResult.trash;
+assertEqual(notesT.length, 0, '移入回收站后 notes 应为空');
+assertEqual(trashT.length, 1, '回收站应有 1 条');
+assertEqual(trashT[0].title, 'A', '回收站便签标题应正确');
+assert(typeof trashT[0].deletedAt === 'number', '回收站便签应有 deletedAt');
+
+// 移入不存在的 ID
+const noMove = store.moveToTrash(notesT, trashT, 'nonexistent');
+assertEqual(noMove.note, null, '移入不存在的 ID 应返回 note: null');
+assertEqual(noMove.trash.length, 1, '回收站数量不应变');
+console.log('  OK\n');
+
+// === 17. 回收站：restoreNote ===
+console.log('17. 恢复便签');
+const restoreId = trashT[0].id;
+const restoreResult = store.restoreNote(trashT, notesT, restoreId);
+notesT = restoreResult.notes;
+trashT = restoreResult.trash;
+assertEqual(trashT.length, 0, '恢复后回收站应为空');
+assertEqual(notesT.length, 1, '恢复后 notes 应有 1 条');
+assertEqual(notesT[0].title, 'A', '恢复的便签标题应正确');
+assert(notesT[0].deletedAt === undefined, '恢复后不应有 deletedAt');
+assertEqual(notesT[0].pinned, false, '恢复后应取消置顶');
+
+// 恢复不存在的 ID
+const noRestore = store.restoreNote(trashT, notesT, 'nonexistent');
+assertEqual(noRestore.note, null, '恢复不存在的 ID 应返回 note: null');
+console.log('  OK\n');
+
+// === 18. 回收站：deleteFromTrash / emptyTrash ===
+console.log('18. 彻底删除 / 清空回收站');
+let trash2 = [
+  store.createTrashNote({ title: 'T1' }),
+  store.createTrashNote({ title: 'T2' })
+];
+const permDeleteId = trash2[0].id;
+trash2 = store.deleteFromTrash(trash2, permDeleteId);
+assertEqual(trash2.length, 1, '彻底删除后应剩 1 条');
+assert(!trash2.find(n => n.id === permDeleteId), '被彻底删除的不应存在');
+
+// 彻底删除不存在的 ID 不报错
+trash2 = store.deleteFromTrash(trash2, 'nonexistent');
+assertEqual(trash2.length, 1, '彻底删除不存在 ID 不影响数量');
+
+// 清空
+const emptied = store.emptyTrash(trash2);
+assertEqual(emptied.length, 0, '清空后应为空数组');
+assertEqual(store.emptyTrash([]).length, 0, '清空空数组应为空');
+console.log('  OK\n');
+
+// === 19. 回收站：autoCleanTrash ===
+console.log('19. 自动清理过期');
+const nowMs = Date.now();
+const DAY = 24 * 60 * 60 * 1000;
+let trash3 = [
+  store.createTrashNote({ title: '刚删除', deletedAt: nowMs - 1000 }), // 1秒前
+  store.createTrashNote({ title: '29天前', deletedAt: nowMs - 29 * DAY }), // 29天前，保留
+  store.createTrashNote({ title: '30天前', deletedAt: nowMs - 30 * DAY - 1000 }), // 30天+，清理
+  store.createTrashNote({ title: '无时间', deletedAt: undefined }) // 无 deletedAt，保留
+];
+// 修复：createTrashNote 会给 deletedAt undefined 补上 now，手动清除
+trash3[3].deletedAt = undefined;
+const cleaned = store.autoCleanTrash(trash3, nowMs);
+assertEqual(cleaned.length, 3, '应保留 3 条（刚删除+29天+无时间）');
+assert(!cleaned.find(n => n.title === '30天前'), '30天前的应被清理');
+assert(cleaned.find(n => n.title === '29天前'), '29天前的应保留');
+assert(cleaned.find(n => n.title === '无时间'), '无时间的应保留');
+console.log('  OK\n');
+
+// === 20. 回收站：getTrashDaysLeft ===
+console.log('20. 剩余天数');
+assertEqual(store.getTrashDaysLeft({ deletedAt: nowMs - 1000 }, nowMs), store.TRASH_MAX_DAYS, '刚删除应剩余最大天数');
+const left29 = store.getTrashDaysLeft({ deletedAt: nowMs - 29 * DAY }, nowMs);
+assert(left29 >= 0 && left29 <= 1, '29天前剩余应接近 0-1 天');
+assertEqual(store.getTrashDaysLeft({ deletedAt: nowMs - 40 * DAY }, nowMs), 0, '40天前剩余应为 0');
+assertEqual(store.getTrashDaysLeft({ deletedAt: undefined }, nowMs), store.TRASH_MAX_DAYS, '无 deletedAt 应返回最大天数');
+console.log('  OK\n');
+
+// === 21. loadAll / saveAll 数据格式 v2 ===
+console.log('21. loadAll / saveAll v2 格式');
+const tmpFile2 = path.join(tmpDir, 'notes-v2.json');
+store.saveAll(
+  [store.createNote({ title: 'V2便签' })],
+  [store.createTrashNote({ title: 'V2回收站' })],
+  tmpFile2
+);
+const rawV2 = JSON.parse(fs.readFileSync(tmpFile2, 'utf-8'));
+assertEqual(rawV2.version, 2, 'v2 格式版本应为 2');
+assert(Array.isArray(rawV2.notes), 'v2 应有 notes 数组');
+assert(Array.isArray(rawV2.trash), 'v2 应有 trash 数组');
+assertEqual(rawV2.notes.length, 1, 'notes 应有 1 条');
+assertEqual(rawV2.trash.length, 1, 'trash 应有 1 条');
+
+const loadedAll = store.loadAll(tmpFile2);
+assertEqual(loadedAll.notes.length, 1, 'loadAll notes 应有 1 条');
+assertEqual(loadedAll.trash.length, 1, 'loadAll trash 应有 1 条');
+assertEqual(loadedAll.notes[0].title, 'V2便签', 'loadAll notes 标题应正确');
+assertEqual(loadedAll.trash[0].title, 'V2回收站', 'loadAll trash 标题应正确');
+
+// v1 旧数据向后兼容：没有 trash 字段
+fs.writeFileSync(tmpFile2, JSON.stringify({ version: 1, notes: [{ title: 'V1', content: 'c', id: 'x', color: 'default', category: '其他', pinned: false, createdAt: 1, updatedAt: 1 }] }), 'utf-8');
+const loadedV1 = store.loadAll(tmpFile2);
+assertEqual(loadedV1.notes.length, 1, 'v1 数据 notes 应兼容');
+assertEqual(loadedV1.trash.length, 0, 'v1 数据 trash 应默认空');
+console.log('  OK\n');
+
+// === 22. saveNotes 保留回收站 ===
+console.log('22. saveNotes 兼容保留回收站');
+store.saveAll([], [store.createTrashNote({ title: '保留的回收站' })], tmpFile2);
+// 用 saveNotes 保存 notes（未传 trash），应保留已有回收站
+store.saveNotes([store.createNote({ title: '新便签' })], tmpFile2);
+const afterSave = store.loadAll(tmpFile2);
+assertEqual(afterSave.notes.length, 1, 'saveNotes 后 notes 应有 1 条');
+assertEqual(afterSave.trash.length, 1, 'saveNotes 应保留已有回收站 1 条');
+assertEqual(afterSave.trash[0].title, '保留的回收站', '保留的回收站标题应正确');
+console.log('  OK\n');
+
 // === 总结 ===
 console.log('========================');
 console.log('通过: ' + passed + ' | 失败: ' + failed);
