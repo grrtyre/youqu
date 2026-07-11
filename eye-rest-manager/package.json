@@ -1,0 +1,49 @@
+{
+  "name": "eye-rest-manager",
+  "version": "1.0.1",
+  "description": "Windows 上优雅的护眼休息提醒桌面管家 - 20-20-20 法则、可定制休息周期、眼保健操引导、本地统计",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "test": "node test/test.js",
+    "dist": "electron-builder --win --x64",
+    "pack": "electron-builder --win --x64 --dir"
+  },
+  "author": "grrtyre",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.0.0"
+  },
+  "build": {
+    "appId": "com.grrtyre.eyerest",
+    "productName": "护眼管家",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "build/icon.ico",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "displayLanguageSelector": false,
+      "language": "2052",
+      "artifactName": "护眼管家.Setup.${version}.exe"
+    },
+    "portable": {
+      "artifactName": "护眼管家.Portable.${version}.exe"
+    }
+  }
+}

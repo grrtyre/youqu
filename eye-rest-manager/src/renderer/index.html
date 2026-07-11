@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+<title>护眼管家</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-logo" aria-hidden="true">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+        <path d="M2 12C2 12 5.5 6 12 6C18.5 6 22 12 22 12C22 12 18.5 18 12 18C5.5 18 2 12 2 12Z" stroke="#007aff" stroke-width="2" stroke-linejoin="round" fill="#eef5ff"/>
+        <circle cx="12" cy="12" r="3.2" fill="#007aff"/>
+        <circle cx="13" cy="11" r="1" fill="#ffffff"/>
+      </svg>
+    </div>
+    <div class="brand-text">
+      <div class="brand-title">护眼管家</div>
+    </div>
+  </div>
+</header>
+
+<main class="layout">
+
+  <!-- 顶部：倒计时 + 今日统计（全宽，左右分栏） -->
+  <section class="card hero-card">
+    <div class="hero-left">
+      <div class="hero-status" id="hero-status">载入中…</div>
+      <div class="hero-ring">
+        <svg width="156" height="156" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="86" stroke="#ececf0" stroke-width="16" fill="none"/>
+        <circle id="ring-progress" cx="100" cy="100" r="86" stroke="#007aff" stroke-width="16" fill="none"
+                stroke-linecap="round" transform="rotate(-90 100 100)"
+                stroke-dasharray="540.35" stroke-dashoffset="540.35"/>
+      </svg>
+        <div class="hero-time" id="hero-time">--:--</div>
+        <div class="hero-ring-bg-label">距下次休息</div>
+      </div>
+      <div class="hero-desc" id="hero-desc">让眼睛每隔一会儿休息一下</div>
+      <div class="hero-actions">
+        <button class="btn-primary" id="btn-rest-now">立即休息</button>
+        <button class="btn-secondary" id="btn-pause">暂停 30 分钟</button>
+        <button class="btn-secondary hidden" id="btn-resume">恢复提醒</button>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="card-title">今日</div>
+      <div class="stat-grid">
+        <div class="stat-item">
+          <div class="stat-num primary"><span id="stat-today-completed">0</span><span class="stat-unit">次</span></div>
+          <div class="stat-cap">完成休息</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num muted"><span id="stat-today-skipped">0</span><span class="stat-unit">次</span></div>
+          <div class="stat-cap">已跳过</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num"><span id="stat-today-seconds">0</span><span class="stat-unit">分钟</span></div>
+          <div class="stat-cap">累计护眼时长</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num"><span id="stat-streak">0</span><span class="stat-unit">天</span></div>
+          <div class="stat-cap">连续达标</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 近 7 天柱状图（全宽） -->
+  <section class="card chart-card">
+    <div class="card-title">
+      <span>近 7 天</span>
+      <span class="card-legend"><i class="dot dot-blue"></i>完成 <i class="dot dot-gray"></i>跳过</span>
+    </div>
+    <div class="chart-wrap" id="chart-wrap">
+      <div class="chart-yaxis" id="chart-yaxis"></div>
+      <div class="bars" id="bars"></div>
+    </div>
+  </section>
+
+  <!-- 设置区分隔 -->
+  <div class="section-divider"><span class="section-icon">⚙</span><span>自定义设置</span><span class="section-line"></span></div>
+
+  <!-- 全宽：休息周期设置 -->
+  <section class="card setting-card">
+    <div class="card-title">休息周期</div>
+    <div class="break-rows" id="break-rows"></div>
+  </section>
+
+  <!-- 全宽：偏好设置 -->
+  <section class="card setting-card">
+    <div class="card-title">偏好</div>
+    <div class="pref-list">
+      <label class="pref-row">
+        <span>休息前预警</span>
+        <input type="checkbox" id="pref-warning" class="switch">
+      </label>
+      <label class="pref-row">
+        <span>预警提前秒数</span>
+        <input type="number" id="pref-warning-lead" min="0" max="60" class="num-input">
+      </label>
+      <label class="pref-row">
+        <span>提示音</span>
+        <input type="checkbox" id="pref-sound" class="switch">
+      </label>
+      <label class="pref-row">
+        <span>全屏时自动推迟</span>
+        <input type="checkbox" id="pref-fullscreen" class="switch">
+      </label>
+      <label class="pref-row">
+        <span>开机自启</span>
+        <input type="checkbox" id="pref-launch" class="switch">
+      </label>
+      <div class="pref-row full">
+        <span>免打扰时段</span>
+        <div class="dnd-controls">
+          <input type="checkbox" id="pref-dnd" class="switch">
+          <input type="time" id="pref-dnd-start" class="time-input">
+          <span>至</span>
+          <input type="time" id="pref-dnd-end" class="time-input">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-left">
+      <span id="footer-version">护眼管家 v1.0.0</span> · 纯本地运行 · 不联网 · 不上传任何数据
+    </div>
+    <div class="footer-right">
+      <button class="btn-ghost" id="btn-export" title="导出数据">导出</button>
+      <button class="btn-ghost" id="btn-import" title="导入数据">导入</button>
+      <button class="btn-ghost" id="btn-clear" title="清空所有休息记录">清空记录</button>
+      <span class="footer-sep">·</span>
+      <a href="#" id="link-afdian">支持我们</a> · <a href="#" id="link-quit">退出</a>
+    </div>
+  </footer>
+
+</main>
+
+<script src="renderer.js"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline';">
+<title>休息一下</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="overlay-body">
+<div class="overlay">
+  <div class="overlay-top">
+    <div class="overlay-title" id="overlay-title">休息一下</div>
+    <div class="overlay-sub" id="overlay-sub">放下手头工作，让眼睛放松片刻</div>
+  </div>
+
+  <div class="overlay-ring">
+    <svg width="220" height="220" viewBox="0 0 220 220">
+      <circle cx="110" cy="110" r="98" stroke="#e8e8ed" stroke-width="14" fill="none"/>
+      <circle id="overlay-ring-progress" cx="110" cy="110" r="98" stroke="#34c759" stroke-width="14" fill="none"
+              stroke-linecap="round" transform="rotate(-90 110 110)"
+              stroke-dasharray="615.75" stroke-dashoffset="0"/>
+    </svg>
+    <div class="overlay-count" id="overlay-count">--</div>
+    <div class="overlay-count-label">秒后结束</div>
+  </div>
+
+  <div class="exercise-card" id="exercise-card">
+    <div class="exercise-icon" id="exercise-icon">👁</div>
+    <div class="exercise-title" id="exercise-title">轻柔眨眼</div>
+    <div class="exercise-instruction" id="exercise-instruction">缓慢闭合双眼，停顿 2 秒，再缓缓睁开。</div>
+    <div class="exercise-dots" id="exercise-dots"></div>
+  </div>
+
+  <div class="overlay-actions">
+    <button class="btn-primary" id="btn-complete">完成休息</button>
+    <button class="btn-secondary" id="btn-skip">跳过</button>
+    <button class="btn-secondary" id="btn-snooze">延后 5 分钟</button>
+  </div>
+
+  <div class="overlay-hint">提示：每完成一次休息，眼睛都会感谢你</div>
+</div>
+
+<script src="overlay.js"></script>
+</body>
+</html>
