@@ -8,8 +8,8 @@
 
 | 平台 | 下载 | 说明 |
 | --- | --- | --- |
-| Windows x64 | [换算管家 1.0.0.exe（免安装版）](https://github.com/grrtyre/youqu/releases/tag/unit-converter-v1.0.0) | 双击即可运行 |
-| Windows x64 | [换算管家 Setup 1.0.0.exe（安装版）](https://github.com/grrtyre/youqu/releases/tag/unit-converter-v1.0.0) | 可选安装到本机 |
+| Windows x64 | [换算管家 1.0.0.exe（免安装版）](https://github.com/grrtyre/youqu/releases/download/unit-converter-v1.0.0/unit-converter-1.0.0.exe) | 双击即可运行 |
+| Windows x64 | [换算管家 Setup 1.0.0.exe（安装版）](https://github.com/grrtyre/youqu/releases/download/unit-converter-v1.0.0/unit-converter-setup-1.0.0.exe) | 可选安装到本机 |
 
 ## ✨ 功能特性
 
