@@ -60,8 +60,8 @@ npm test
 
 | 平台 | 下载 |
 |---|---|
-| Windows x64（安装版） | [校验管家 Setup 1.0.0.exe](../../releases) |
-| Windows x64（便携版） | [校验管家 1.0.0.exe](../../releases) |
+| Windows x64（安装版） | [checksum-manager-setup-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/checksum-manager-v1.0.0/checksum-manager-setup-1.0.0.exe) |
+| Windows x64（便携版） | [checksum-manager-portable-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/checksum-manager-v1.0.0/checksum-manager-portable-1.0.0.exe) |
 
 ## 🛠️ 技术栈
 
