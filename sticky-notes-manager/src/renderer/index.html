@@ -76,6 +76,17 @@
         </div>
       </div>
 
+      <div class="trash-section">
+        <div class="category-section-label">回收站</div>
+        <div class="category-item trash-item" id="trashEntry" data-view="trash">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 4H13M6 4V3C6 2.45 6.45 2 7 2H9C9.55 2 10 2.45 10 3V4M5 4L5.5 13C5.55 13.83 6.17 14.5 7 14.5H9C9.83 14.5 10.45 13.83 10.5 13L11 4" stroke="#8e8e93" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>回收站</span>
+          <span class="count" id="count-trash">0</span>
+        </div>
+      </div>
+
       <div class="sidebar-footer">
         <div class="stats-card">
           <div class="stat-item">
@@ -118,12 +129,18 @@
         <h1 id="mainTitle">全部便签</h1>
         <div class="header-right">
           <div class="sort-info" id="sortInfo">置顶优先 · 按更新时间</div>
+          <button class="empty-trash-btn" id="emptyTrashBtn" style="display:none;">清空回收站</button>
         </div>
       </header>
 
       <!-- 便签网格 -->
       <div class="notes-grid" id="notesGrid">
         <!-- 便签卡片由 JS 动态生成 -->
+      </div>
+
+      <!-- 回收站列表 -->
+      <div class="trash-list" id="trashList" style="display:none;">
+        <!-- 回收站条目由 JS 动态生成 -->
       </div>
 
       <!-- 空状态 -->
