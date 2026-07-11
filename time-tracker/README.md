@@ -6,8 +6,8 @@
 
 | 平台 | 下载 |
 |---|---|
-| Windows 安装版 | [Setup.1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/time-tracker-v1.0.0/Setup.1.0.0.exe) |
-| Windows 便携版 | [1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/time-tracker-v1.0.0/1.0.0.exe) |
+| Windows 安装版 | [Setup.1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/time-tracker-v1.1.0/Setup.1.1.0.exe) |
+| Windows 便携版 | [1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/time-tracker-v1.1.0/1.1.0.exe) |
 
 ## ✨ 功能
 
@@ -15,7 +15,7 @@
 - **多项目管理** —— 创建多个项目，自定义颜色标识，快速切换
 - **今日记录** —— 自动汇总当日所有计时记录，时间区间一目了然
 - **统计分析** —— 今日/本周/本月总览、项目分布环形图、近 7 天趋势柱状图
-- **数据导出** —— 支持 CSV 和 JSON 双格式导出，数据完全由你掌控
+- **数据导入导出** —— 支持 CSV / JSON 双格式导出，JSON 导入恢复，数据完全由你掌控
 - **系统托盘** —— 后台常驻托盘，右键菜单快速停止/开始计时
 - **本地存储** —— 所有数据存储在本地 JSON 文件，无需联网，零隐私泄露
 - **迷你进度条** —— 侧边栏项目列表显示今日时长占比，直观了解时间分配
@@ -49,13 +49,52 @@ npm run dist
 
 ## 🎨 设计特点
 
-- **苹果白高端风格** —— 白色/浅灰背景、细腻阴影、系统字体
+- **苹果白高端风格** —— 白色/浅灰背景、细腻阴影、系统字体（-apple-system, "PingFang SC"）
 - **蓝色强调** —— #007aff 主色调，参考 macOS/iOS 原生设计
 - **清晰的信息层级** —— 计时器为核心焦点，统计卡片辅助，记录列表补充
+- **圆角胶囊按钮** —— 主操作采用 980px 圆角胶囊形，次要操作弱化为文字链
+- **下拉菜单交互** —— 数据导入导出整合为下拉菜单，避免突兀的 confirm 弹窗
+
+## 📁 项目结构
+
+```
+time-tracker/
+├── src/
+│   ├── main.js              # 主进程：窗口、IPC、托盘
+│   ├── preload.js           # 预加载桥接：安全暴露 API
+│   ├── core/
+│   │   ├── time-store.js    # 数据层：项目/记录/计时/导入导出
+│   │   ├── time-utils.js    # 工具：时长格式化、日期键
+│   │   └── stats-utils.js   # 统计：今日/本周/分布/趋势
+│   └── renderer/
+│       ├── index.html       # 页面结构
+│       ├── renderer.js      # 渲染逻辑
+│       └── styles.css       # 苹果白样式
+├── test/
+│   └── test.js              # 核心逻辑测试（40 用例）
+├── build/
+│   ├── icon.ico            # 应用图标
+│   └── shot-bg-v1.1.ps1    # 后台截图脚本
+└── package.json
+```
 
 ## 📸 截图
 
 ![时间管家](../../raw/main/time-tracker/screenshot.png)
+
+## 📝 更新日志
+
+### v1.1.0
+
+- **新增** JSON 导入功能（完整 IPC 链路 + 结构校验，导入失败不覆盖原数据）
+- **修复** CSV 导出未按 RFC 4180 转义（含逗号/引号的项目名和备注会破坏列结构）
+- **优化** 将 `confirm()` 弹窗替换为苹果白风格下拉菜单，交互更优雅
+- **优化** 计时区留白、按钮主次关系、统计卡片对齐、卡片阴影层次
+- **补充** 测试用例 18 → 40（含 CSV 状态机解析器、importJSON 校验）
+
+### v1.0.0
+
+- 首个正式版本：计时、项目管理、记录、统计、CSV/JSON 导出、系统托盘
 
 ## ☕ 支持我们
 

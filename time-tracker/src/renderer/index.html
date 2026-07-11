@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>时间管家</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="13" r="8" stroke="#fff" stroke-width="2"/>
+            <path d="M12 13V9M12 13l3 2" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+            <path d="M9 3h6" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="logo-text">时间管家</span>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" data-tab="timer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="2"/><path d="M12 13V9M12 13l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9 3h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span>计时</span>
+        </button>
+        <button class="nav-item" data-tab="records">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span>记录</span>
+        </button>
+        <button class="nav-item" data-tab="stats">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span>统计</span>
+        </button>
+        <div class="export-wrap">
+          <button class="nav-item export-nav" id="exportBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span>数据导入导出</span>
+            <svg class="caret" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="export-menu" id="exportMenu">
+            <button class="menu-item" data-act="exportCSV">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z" stroke="currentColor" stroke-width="1.6"/><path d="M14 3v5h5M9 14h6M9 17h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              <span>导出为 CSV</span>
+            </button>
+            <button class="menu-item" data-act="exportJSON">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z" stroke="currentColor" stroke-width="1.6"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M9.5 13c0 .83.67 1.5 1.5 1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5-1.5.67-1.5 1.5M9 13c0-.55.45-1 1-1h2c.55 0 1 .45 1 1v4c0 .55-.45 1-1 1h-2c-.55 0-1-.45-1-1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              <span>导出为 JSON</span>
+            </button>
+            <div class="menu-divider"></div>
+            <button class="menu-item" data-act="importJSON">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 15V3m0 0L8 7m4-4l4 4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>从 JSON 导入</span>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <div class="sidebar-projects">
+        <div class="section-label">
+          <span>项目</span>
+          <button class="add-btn" id="addProjectBtn" title="新建项目">+</button>
+        </div>
+        <div class="project-list" id="projectList"></div>
+      </div>
+
+      <div class="sidebar-foot">
+        <span class="foot-brand">时间管家 v1.1</span>
+      </div>
+
+    </aside>
+
+    <!-- 主内容 -->
+    <main class="main">
+      <!-- 计时页 -->
+      <section class="tab-pane active" id="pane-timer">
+        <div class="timer-hero">
+          <div class="timer-status" id="timerStatus">未开始计时</div>
+          <div class="timer-display" id="timerDisplay">00:00:00</div>
+          <div class="timer-project" id="timerProject">选择左侧项目开始</div>
+          <div class="timer-controls">
+            <button class="btn-start" id="btnStart" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              开始
+            </button>
+            <button class="btn-stop" id="btnStop" style="display:none">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="3"/></svg>
+              停止
+            </button>
+            <button class="btn-cancel" id="btnCancel" style="display:none">取消</button>
+          </div>
+        </div>
+
+        <div class="overview-cards">
+          <div class="stat-card">
+            <div class="stat-icon today-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="stat-body">
+              <div class="stat-label">今日</div>
+              <div class="stat-value" id="todayTotal">0分</div>
+              <div class="stat-sub" id="todaySub">0 条记录</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon week-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="stat-body">
+              <div class="stat-label">本周</div>
+              <div class="stat-value" id="weekTotal">0分</div>
+              <div class="stat-sub">本周累计</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon month-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 17l5-5 4 3 8-8M21 7v6M21 7h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="stat-body">
+              <div class="stat-label">本月</div>
+              <div class="stat-value" id="monthTotal">0分</div>
+              <div class="stat-sub">月度总览</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="recent-section">
+          <div class="recent-header">
+            <h3>今日记录</h3>
+            <button class="link-btn" id="viewAllRecords">
+              查看全部
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+          <div class="recent-list" id="recentList">
+            <div class="empty-state-sm">今天还没有记录</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 记录页 -->
+      <section class="tab-pane" id="pane-records">
+        <div class="pane-header">
+          <h2>时间记录</h2>
+          <span class="record-count" id="recordCount"></span>
+        </div>
+        <div class="records-list" id="recordsList">
+          <div class="empty-state">暂无记录</div>
+        </div>
+      </section>
+
+      <!-- 统计页 -->
+      <section class="tab-pane" id="pane-stats">
+        <div class="pane-header">
+          <h2>统计分析</h2>
+        </div>
+        <div class="stats-range">
+          <button class="range-btn active" data-range="today">今日</button>
+          <button class="range-btn" data-range="week">本周</button>
+          <button class="range-btn" data-range="month">本月</button>
+        </div>
+        <div class="stats-grid">
+          <div class="chart-card">
+            <h3>项目分布</h3>
+            <div class="donut-wrap">
+              <div class="donut" id="donutChart"></div>
+              <div class="donut-center" id="donutCenter"></div>
+            </div>
+            <div class="legend" id="donutLegend"></div>
+          </div>
+          <div class="chart-card chart-wide">
+            <h3>近 7 天趋势</h3>
+            <div class="bars" id="barChart"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- 新建项目弹窗 -->
+  <div class="modal-mask" id="projectModal" style="display:none">
+    <div class="modal">
+      <h3 id="modalTitle">新建项目</h3>
+      <label class="field-label">项目名称</label>
+      <input type="text" id="projectName" class="field-input" placeholder="如：写作、开发" />
+      <label class="field-label">颜色</label>
+      <div class="color-picker" id="colorPicker">
+        <span class="color-dot active" data-color="#007aff" style="background:#007aff"></span>
+        <span class="color-dot" data-color="#34c759" style="background:#34c759"></span>
+        <span class="color-dot" data-color="#ff9500" style="background:#ff9500"></span>
+        <span class="color-dot" data-color="#ff3b30" style="background:#ff3b30"></span>
+        <span class="color-dot" data-color="#af52de" style="background:#af52de"></span>
+        <span class="color-dot" data-color="#5ac8fa" style="background:#5ac8fa"></span>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-ghost" id="modalCancel">取消</button>
+        <button class="btn-primary" id="modalConfirm">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
