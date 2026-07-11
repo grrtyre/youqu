@@ -8,7 +8,7 @@
 
 | 平台 | 下载 |
 |---|---|
-| Windows x64 | [便签管家 Setup 1.0.0.exe](../../releases/tag/sticky-notes-manager-v1.0.0) |
+| Windows x64 | [便签管家-Setup-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/sticky-notes-manager-v1.0.0/-Setup-1.0.0.exe) |
 
 ## ✨ 功能特性
 
