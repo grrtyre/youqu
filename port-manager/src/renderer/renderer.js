@@ -117,19 +117,32 @@ function bindEvents() {
 async function doScan() {
   btnRefresh.classList.add('spinning');
   try {
-    let conns = await window.api.scan();
-    // fallback：如果扫描结果为空，使用内置演示数据（确保界面有内容）
+    const conns = await window.api.scan();
     if (!conns || conns.length === 0) {
-      conns = getBuiltinDemoData();
+      // 扫描为空时显示空状态，不静默填充演示数据（避免误导）
+      allConnections = [];
+      await refreshFavorites();
+      renderAll();
+      updateLastUpdate();
+      showToast('当前无网络连接', '');
+    } else {
+      allConnections = conns;
+      await refreshFavorites();
+      // 同步收藏标记到连接列表（修复刷新后星标丢失的问题）
+      allConnections.forEach((c) => {
+        c.favorite = favorites.includes(c.localPort);
+      });
+      renderAll();
+      updateLastUpdate();
     }
-    allConnections = conns;
-    await refreshFavorites();
-    renderAll();
-    updateLastUpdate();
   } catch (e) {
-    // 出错时也用演示数据填充，避免界面空白
+    // 出错时用演示数据填充，避免界面空白
     allConnections = getBuiltinDemoData();
     await refreshFavorites();
+    // 同步收藏标记到演示数据
+    allConnections.forEach((c) => {
+      c.favorite = favorites.includes(c.localPort);
+    });
     renderAll();
     showToast('扫描失败，已加载演示数据', 'error');
   } finally {
@@ -150,6 +163,7 @@ function getBuiltinDemoData() {
     { proto: 'TCP', localAddr: '192.168.1.100', localPort: 51250, foreignAddr: '20.42.65.92', foreignPort: 443, state: 'ESTABLISHED', pid: 8800, processName: 'Code.exe', memUsage: '456,700 K', favorite: false },
     { proto: 'TCP', localAddr: '192.168.1.100', localPort: 51260, foreignAddr: '104.16.123.96', foreignPort: 443, state: 'TIME_WAIT', pid: 0, processName: '(已释放)', memUsage: '', favorite: false },
     { proto: 'TCP', localAddr: '192.168.1.100', localPort: 51270, foreignAddr: '140.82.114.4', foreignPort: 22, state: 'CLOSE_WAIT', pid: 12000, processName: 'chrome.exe', memUsage: '234,560 K', favorite: false },
+    { proto: 'TCP', localAddr: '192.168.1.100', localPort: 51280, foreignAddr: '20.205.243.166', foreignPort: 443, state: 'SYN_SENT', pid: 8800, processName: 'Code.exe', memUsage: '456,700 K', favorite: false },
     { proto: 'UDP', localAddr: '0.0.0.0', localPort: 5353, foreignAddr: '*', foreignPort: 0, state: '', pid: 2468, processName: 'chrome.exe', memUsage: '234,560 K', favorite: false },
     { proto: 'UDP', localAddr: '0.0.0.0', localPort: 1900, foreignAddr: '*', foreignPort: 0, state: '', pid: 2345, processName: 'svchost.exe', memUsage: '8,192 K', favorite: false },
   ];
@@ -248,12 +262,14 @@ function renderFilterCounts() {
   $('count-listening').textContent = stats.listening;
   $('count-established').textContent = stats.established;
   $('count-timewait').textContent = stats.timeWait;
+  $('count-closewait').textContent = stats.closeWait;
   $('count-udp').textContent = stats.udpCount;
   // 计数为 0 的筛选项降权（"全部"除外）
   const counts = {
     LISTENING: stats.listening,
     ESTABLISHED: stats.established,
     TIME_WAIT: stats.timeWait,
+    CLOSE_WAIT: stats.closeWait,
     UDP: stats.udpCount,
   };
   document.querySelectorAll('.tab').forEach((tab) => {
@@ -270,6 +286,8 @@ function stateClass(state) {
   if (s === 'ESTABLISHED') return 'established';
   if (s === 'TIME_WAIT') return 'time_wait';
   if (s === 'CLOSE_WAIT') return 'close_wait';
+  if (s === 'SYN_SENT') return 'syn_sent';
+  if (s === 'FIN_WAIT' || s === 'FIN_WAIT_1' || s === 'FIN_WAIT_2') return 'fin_wait';
   if (!s) return 'none';
   return 'other';
 }

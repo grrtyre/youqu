@@ -1,6 +1,6 @@
 {
   "name": "port-manager",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "端口管家 - 本地网络端口监控与管理桌面应用",
   "main": "src/main.js",
   "scripts": {

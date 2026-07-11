@@ -61,8 +61,13 @@
         </div>
       </div>
 
+      <div class="tip-card">
+        <div class="tip-title">💡 端口小知识</div>
+        <div class="tip-text">CLOSE_WAIT 过多通常意味着应用未正确关闭连接，需检查代码逻辑。</div>
+      </div>
+
       <div class="sidebar-footer">
-        <div class="footer-info">端口管家 v1.0</div>
+        <div class="footer-info">端口管家 v1.1</div>
       </div>
     </aside>
 
@@ -124,6 +129,7 @@
         <button class="tab" data-filter="LISTENING">监听 <span class="tab-count" id="count-listening">0</span></button>
         <button class="tab" data-filter="ESTABLISHED">已连接 <span class="tab-count" id="count-established">0</span></button>
         <button class="tab" data-filter="TIME_WAIT">TIME_WAIT <span class="tab-count" id="count-timewait">0</span></button>
+        <button class="tab" data-filter="CLOSE_WAIT">CLOSE_WAIT <span class="tab-count" id="count-closewait">0</span></button>
         <button class="tab" data-filter="UDP">UDP <span class="tab-count" id="count-udp">0</span></button>
       </div>
 

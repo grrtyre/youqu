@@ -6,8 +6,10 @@
 
 | 版本 | 下载链接 | 说明 |
 |---|---|---|
-| 安装版 v1.0.0 | [port-manager-setup-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/port-manager-v1.0.0/port-manager-setup-1.0.0.exe) | 推荐安装，支持开始菜单和桌面快捷方式 |
-| 便携版 v1.0.0 | [port-manager-portable-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/port-manager-v1.0.0/port-manager-portable-1.0.0.exe) | 免安装，双击即用 |
+| 安装版 v1.1.0 | [端口管家-Setup-1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/port-manager-v1.1.0/端口管家-Setup-1.1.0.exe) | 推荐安装，支持开始菜单和桌面快捷方式 |
+| 便携版 v1.1.0 | [端口管家-1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/port-manager-v1.1.0/端口管家-1.1.0.exe) | 免安装，双击即用 |
+| 安装版 v1.0.0 | [port-manager-setup-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/port-manager-v1.0.0/port-manager-setup-1.0.0.exe) | 旧版本 |
+| 便携版 v1.0.0 | [port-manager-portable-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/port-manager-v1.0.0/port-manager-portable-1.0.0.exe) | 旧版本 |
 
 ## 功能说明
 
@@ -18,9 +20,20 @@
 - **端口扫描** — 一键扫描本机所有 TCP/UDP 连接，显示协议、本地地址、外部地址、状态、PID、进程名、内存占用
 - **进程管理** — 点击 PID 查看进程详情（路径、连接数、监听端口），一键结束占用端口的进程
 - **端口收藏** — 收藏常用端口，快速查看监听状态
-- **搜索筛选** — 按端口、进程名、地址、PID 实时搜索；按状态（监听/已连接/TIME_WAIT/UDP）筛选
+- **搜索筛选** — 按端口、进程名、地址、PID 实时搜索；按状态（监听/已连接/TIME_WAIT/CLOSE_WAIT/UDP）筛选
+- **状态识别** — 完整支持 LISTENING/ESTABLISHED/TIME_WAIT/CLOSE_WAIT/SYN_SENT/FIN_WAIT 等状态，语义化配色
 - **自动刷新** — 可选 5 秒自动刷新，实时监控连接变化
 - **数据导出** — 导出 CSV / JSON 格式，便于分析和记录
+- **端口小知识** — 侧边栏内置端口状态说明，帮助理解 CLOSE_WAIT 等异常状态
+
+### v1.1.0 更新内容
+
+- 新增 CLOSE_WAIT 筛选标签，便于排查网络异常
+- 新增 SYN_SENT 演示数据，状态标签语义化配色（紫/粉/绿/蓝/橙/红）
+- 修复收藏端口刷新后星标丢失的问题
+- 优化扫描为空时显示空状态，不再静默填充演示数据
+- 移除表格斑马纹，改用纯白+细分割线（苹果白一致性）
+- 加宽侧边栏，新增端口小知识提示卡片
 
 ## 使用方式
 

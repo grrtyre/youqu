@@ -219,6 +219,8 @@ function getDemoData() {
     { proto: 'TCP', localAddr: '192.168.1.100', localPort: 51234, foreignAddr: '142.250.80.46', foreignPort: 443, state: 'ESTABLISHED', pid: 12000, processName: 'chrome.exe', memUsage: '234,560 K', favorite: false },
     { proto: 'TCP', localAddr: '192.168.1.100', localPort: 51240, foreignAddr: '151.101.1.69', foreignPort: 443, state: 'ESTABLISHED', pid: 8800, processName: 'Code.exe', memUsage: '456,700 K', favorite: false },
     { proto: 'TCP', localAddr: '192.168.1.100', localPort: 51260, foreignAddr: '104.16.123.96', foreignPort: 443, state: 'TIME_WAIT', pid: 0, processName: '(已释放)', memUsage: '', favorite: false },
+    { proto: 'TCP', localAddr: '192.168.1.100', localPort: 51270, foreignAddr: '140.82.114.4', foreignPort: 22, state: 'CLOSE_WAIT', pid: 12000, processName: 'chrome.exe', memUsage: '234,560 K', favorite: false },
+    { proto: 'TCP', localAddr: '192.168.1.100', localPort: 51280, foreignAddr: '20.205.243.166', foreignPort: 443, state: 'SYN_SENT', pid: 8800, processName: 'Code.exe', memUsage: '456,700 K', favorite: false },
     { proto: 'UDP', localAddr: '0.0.0.0', localPort: 5353, foreignAddr: '*', foreignPort: 0, state: '', pid: 2468, processName: 'chrome.exe', memUsage: '234,560 K', favorite: false },
   ];
   return demo;

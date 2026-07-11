@@ -31,7 +31,7 @@
   --radius: 14px;
   --radius-sm: 10px;
   --radius-xs: 8px;
-  --sidebar-w: 240px;
+  --sidebar-w: 260px;
 }
 
 html, body {
@@ -138,11 +138,11 @@ html, body {
 .stat-row:nth-child(2) .stat-card.sm:nth-child(1)::before { background: var(--purple); }
 .stat-row:nth-child(2) .stat-card.sm:nth-child(2)::before { background: var(--orange); }
 
-/* 卡片淡彩底色，增强视觉锚点 */
-.stat-row:nth-child(1) .stat-card.sm:nth-child(1) { background: linear-gradient(135deg, rgba(0,122,255,0.05), var(--card)); }
-.stat-row:nth-child(1) .stat-card.sm:nth-child(2) { background: linear-gradient(135deg, rgba(52,199,89,0.05), var(--card)); }
-.stat-row:nth-child(2) .stat-card.sm:nth-child(1) { background: linear-gradient(135deg, rgba(175,82,222,0.05), var(--card)); }
-.stat-row:nth-child(2) .stat-card.sm:nth-child(2) { background: linear-gradient(135deg, rgba(255,149,0,0.05), var(--card)); }
+/* 卡片统一纯白底色，仅用彩色左边框区分（苹果白一致性） */
+.stat-row:nth-child(1) .stat-card.sm:nth-child(1),
+.stat-row:nth-child(1) .stat-card.sm:nth-child(2),
+.stat-row:nth-child(2) .stat-card.sm:nth-child(1),
+.stat-row:nth-child(2) .stat-card.sm:nth-child(2) { background: var(--card); }
 
 .stat-content {
   flex: 1;
@@ -164,7 +164,7 @@ html, body {
 }
 
 .stat-card.sm .stat-value {
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .stat-value.blue { color: var(--blue); }
@@ -312,6 +312,28 @@ html, body {
   gap: 4px;
 }
 
+/* 提示卡片 */
+.tip-card {
+  background: var(--blue-soft);
+  border-radius: var(--radius-xs);
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(0, 122, 255, 0.12);
+}
+
+.tip-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+  margin-bottom: 4px;
+}
+
+.tip-text {
+  font-size: 11px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
 .footer-info {
   padding: 8px 12px;
   background: var(--card);
@@ -373,13 +395,12 @@ html, body {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 10px;
-  background: var(--blue-soft);
-  color: var(--blue);
-  font-size: 11px;
+  padding: 4px 12px;
+  background: var(--blue);
+  color: #fff;
+  font-size: 12px;
   font-weight: 600;
-  border-radius: 10px;
-  border: 1px solid rgba(0, 122, 255, 0.2);
+  border-radius: 12px;
 }
 
 .page-badge::before {
@@ -408,7 +429,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .search-wrap {
@@ -569,22 +590,23 @@ html, body {
 /* 筛选标签 */
 .filter-tabs {
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 
 .tab {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 7px 15px;
+  gap: 5px;
+  padding: 6px 12px;
   border: 1px solid var(--border-strong);
   background: var(--card);
-  color: var(--text-2);
-  font-size: 13px;
+  color: var(--text);
+  font-size: 12px;
   font-weight: 500;
   font-family: inherit;
-  border-radius: 20px;
+  border-radius: 18px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -663,7 +685,7 @@ html, body {
   font-weight: 600;
   font-size: 12px;
   color: var(--text-2);
-  background: #fbfbfd;
+  background: var(--bg);
   border-bottom: 1px solid var(--border-strong);
   white-space: nowrap;
   text-transform: uppercase;
@@ -671,7 +693,7 @@ html, body {
 }
 
 .conn-table td {
-  padding: 7px 12px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--border);
   color: var(--text);
   font-variant-numeric: tabular-nums;
@@ -685,10 +707,6 @@ html, body {
 
 .conn-table tbody tr {
   transition: background 0.1s ease;
-}
-
-.conn-table tbody tr:nth-child(even) {
-  background: #f2f2f5;
 }
 
 .conn-table tbody tr:hover {
@@ -736,6 +754,8 @@ html, body {
 .state-tag.established { background: var(--blue-soft); color: var(--blue); }
 .state-tag.time_wait { background: var(--orange-soft); color: #c77c00; }
 .state-tag.close_wait { background: var(--red-soft); color: var(--red); }
+.state-tag.syn_sent { background: rgba(175, 82, 222, 0.12); color: #7a3da8; }
+.state-tag.fin_wait { background: rgba(255, 55, 95, 0.12); color: #d63a5c; }
 .state-tag.other { background: var(--gray-soft); color: #8e8e93; }
 .state-tag.none { background: var(--gray-soft); color: var(--text-3); }
 
@@ -758,7 +778,7 @@ html, body {
 .fav-star {
   cursor: pointer;
   color: var(--text-3);
-  font-size: 14px;
+  font-size: 16px;
   transition: all 0.15s ease;
   background: none;
   border: none;
@@ -768,7 +788,7 @@ html, body {
 }
 
 .conn-table tbody tr:hover .fav-star {
-  opacity: 0.35;
+  opacity: 0.5;
 }
 
 .fav-star:hover {
@@ -899,7 +919,7 @@ html, body {
   padding: 11px 18px;
   font-size: 13px;
   color: var(--text);
-  background: #fbfbfd;
+  background: var(--card);
   border-top: 1px solid var(--border);
   font-weight: 600;
   flex-shrink: 0;
