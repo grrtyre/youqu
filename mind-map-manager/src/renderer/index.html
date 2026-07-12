@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>思维导图管家</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- 自定义标题栏 -->
+  <header class="titlebar">
+    <div class="titlebar-left">
+      <span class="dot dot-red" id="btnClose" title="关闭"></span>
+      <span class="dot dot-yellow" id="btnMin" title="最小化"></span>
+      <span class="dot dot-green" id="btnMax" title="最大化"></span>
+    </div>
+    <div class="titlebar-center">
+      <svg class="title-logo" width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="4" cy="8" r="2.5" fill="#007aff"/>
+        <circle cx="12" cy="4" r="1.8" fill="#34c759"/>
+        <circle cx="12" cy="8" r="1.8" fill="#ff9500"/>
+        <circle cx="12" cy="12" r="1.8" fill="#5856d6"/>
+        <path d="M6.5 8C8 8 10 4 12 4M6.5 8C8 8 10 8 12 8M6.5 8C8 8 10 12 12 12" stroke="#c7c7cc" stroke-width="1" fill="none"/>
+      </svg>
+      <span class="app-title">思维导图管家</span>
+    </div>
+    <div class="titlebar-right">
+      <span class="doc-meta" id="metaInfo">未打开文档</span>
+    </div>
+  </header>
+
+  <!-- 主体 -->
+  <div class="main">
+    <!-- 侧边栏：文档列表 -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-title">文档</span>
+        <div class="sidebar-header-actions">
+          <button class="icon-btn" id="btnImport" title="导入 JSON">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v8m0 0L5 7m3 3l3-3M3 13h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="icon-btn" id="btnNewDoc" title="新建思维导图">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="sidebar-search">
+        <input type="text" id="searchInput" placeholder="搜索文档…" />
+      </div>
+      <div class="doc-list" id="docList">
+        <!-- 文档项动态生成 -->
+      </div>
+      <div class="sidebar-tip">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 5v3.5M8 10.5v1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <span>数据本地存储 · 不上传</span>
+      </div>
+    </aside>
+
+    <!-- 工具栏 + 画布 -->
+    <section class="content">
+      <!-- 工具栏 -->
+      <div class="toolbar">
+        <div class="toolbar-group">
+          <button class="tool-btn icon-only" id="btnSave" title="保存 (Ctrl+S)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.5 2H11l2 2v9.5a.5.5 0 01-.5.5h-9a.5.5 0 01-.5-.5v-11a.5.5 0 01.5-.5z" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M5 2.5v2.5a.5.5 0 00.5.5h4a.5.5 0 00.5-.5V2.5M5 9h6v4H5z" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>
+          </button>
+          <button class="tool-btn icon-only" id="btnExport" title="导出">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v8m0 0L5 7m3 3l3-3M3 13h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <div class="toolbar-group">
+          <button class="tool-btn icon-only" id="btnUndo" title="撤销 (Ctrl+Z)" disabled>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L3 7l3 3M3 7h7a3 3 0 010 6h-2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          </button>
+          <button class="tool-btn icon-only" id="btnRedo" title="重做 (Ctrl+Y)" disabled>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4l3 3-3 3M13 7H6a3 3 0 000 6h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          </button>
+        </div>
+        <div class="toolbar-group">
+          <button class="tool-btn icon-only" id="btnAddChild" title="添加子节点 (Tab)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4h6M6 1v6M11 12h4M13 9v6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="3" cy="12" r="1.5" stroke="currentColor" stroke-width="1.3"/></svg>
+          </button>
+          <button class="tool-btn icon-only" id="btnAddSibling" title="添加兄弟节点 (Enter)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M8 1v6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </button>
+          <button class="tool-btn icon-only" id="btnRemoveNode" title="删除节点 (Delete)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 5h10M6 5V3.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5V5M5 5l.7 8.1a.5.5 0 00.5.4h3.6a.5.5 0 00.5-.4L11 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M6.5 7.5v4M9.5 7.5v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </button>
+          <button class="tool-btn icon-only" id="btnToggleCollapse" title="折叠/展开">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 4 5-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          </button>
+        </div>
+        <div class="toolbar-group">
+          <button class="tool-btn icon-only" id="btnColor" title="节点颜色">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="2.5" fill="currentColor" id="colorPreview"/></svg>
+          </button>
+        </div>
+        <div class="toolbar-spacer"></div>
+        <div class="toolbar-group zoom-group">
+          <button class="tool-btn icon-only" id="btnZoomOut" title="缩小">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M10.5 10.5L14 14M5 7h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </button>
+          <span class="zoom-label" id="zoomLabel">100%</span>
+          <button class="tool-btn icon-only" id="btnZoomIn" title="放大">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M10.5 10.5L14 14M7 5v4M5 7h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </button>
+          <button class="tool-btn icon-only" id="btnFit" title="适应屏幕">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 5V2h3M14 5V2h-3M2 11v3h3M14 11v3h-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 画布区域 -->
+      <div class="canvas-wrap" id="canvasWrap">
+        <svg id="canvas" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <!-- 连线样式定义 -->
+          </defs>
+          <g id="canvasGroup">
+            <g id="linksLayer"></g>
+            <g id="nodesLayer"></g>
+          </g>
+        </svg>
+        <!-- 空状态 -->
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+              <rect x="8" y="26" width="20" height="12" rx="3" stroke="#c7c7cc" stroke-width="2" fill="none"/>
+              <rect x="40" y="12" width="16" height="10" rx="2.5" stroke="#c7c7cc" stroke-width="2" fill="none"/>
+              <rect x="40" y="30" width="16" height="10" rx="2.5" stroke="#c7c7cc" stroke-width="2" fill="none"/>
+              <rect x="40" y="48" width="16" height="10" rx="2.5" stroke="#c7c7cc" stroke-width="2" fill="none"/>
+              <path d="M28 32h6l6-14M28 32h6l6 6M28 32h6l6-6" stroke="#c7c7cc" stroke-width="2" fill="none" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <p class="empty-text">左侧选择或新建一个思维导图</p>
+          <button class="primary-btn" id="btnNewDocEmpty">新建思维导图</button>
+        </div>
+        <!-- 节点编辑输入框（浮动） -->
+        <input type="text" class="node-editor" id="nodeEditor" style="display:none;" />
+        <!-- 颜色选择面板 -->
+        <div class="color-panel" id="colorPanel" style="display:none;">
+          <div class="color-grid">
+            <button class="color-swatch" data-color="" title="默认"></button>
+            <button class="color-swatch" data-color="#007aff" style="background:#007aff" title="蓝色"></button>
+            <button class="color-swatch" data-color="#ff3b30" style="background:#ff3b30" title="红色"></button>
+            <button class="color-swatch" data-color="#ff9500" style="background:#ff9500" title="橙色"></button>
+            <button class="color-swatch" data-color="#34c759" style="background:#34c759" title="绿色"></button>
+            <button class="color-swatch" data-color="#5856d6" style="background:#5856d6" title="紫色"></button>
+            <button class="color-swatch" data-color="#af52de" style="background:#af52de" title="品红"></button>
+            <button class="color-swatch" data-color="#ff2d55" style="background:#ff2d55" title="粉红"></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 状态栏 -->
+      <div class="statusbar">
+        <span class="status-saved" id="statusSaved">未保存</span>
+        <span class="status-divider"></span>
+        <span class="status-item"><span class="status-label">节点</span><span id="statusNodes">0</span></span>
+        <span class="status-divider"></span>
+        <span class="status-item"><span class="status-label">深度</span><span id="statusDepth">0</span></span>
+        <span class="status-hint">Tab 子节点 · Enter 兄弟 · F2 编辑</span>
+      </div>
+    </section>
+  </div>
+
+  <!-- 关于弹窗 -->
+  <div class="modal-mask" id="aboutModal" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-icon">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+          <rect x="6" y="22" width="20" height="12" rx="3" stroke="#007aff" stroke-width="2" fill="#eaf3ff"/>
+          <rect x="36" y="8" width="14" height="10" rx="2.5" stroke="#007aff" stroke-width="2" fill="none"/>
+          <rect x="36" y="26" width="14" height="10" rx="2.5" stroke="#007aff" stroke-width="2" fill="none"/>
+          <rect x="36" y="44" width="14" height="10" rx="2.5" stroke="#007aff" stroke-width="2" fill="none"/>
+          <path d="M26 28h4l6-14M26 28h4l6 6M26 28h4l6-6" stroke="#007aff" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h2 class="modal-title">思维导图管家</h2>
+      <p class="modal-version" id="aboutVersion">版本 1.0.0</p>
+      <p class="modal-desc">本地优先的思维导图工具 · 数据不出本机</p>
+      <div class="modal-actions">
+        <a class="text-link" id="aboutAfdian">支持我们 →</a>
+        <button class="primary-btn small" id="aboutClose">知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast 提示 -->
+  <div class="toast" id="toast" style="display:none;"></div>
+
+  <script src="mm-core.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
