@@ -8,7 +8,7 @@
 
 | 平台 | 下载 | 大小 |
 |---|---|---|
-| Windows x64 | [启动项管家 Setup 1.0.0.exe](https://github.com/grrtyre/youqu/releases/tag/startup-manager-v1.0.0) | ~73 MB |
+| Windows x64 | [启动项管家 Setup 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/startup-manager-v1.0.0/Setup.1.0.0.exe) | ~73 MB |
 
 > 下载后双击安装即可使用，无需任何依赖。
 
