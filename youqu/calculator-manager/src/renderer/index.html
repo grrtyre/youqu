@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self';" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>计算器管家</title>
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 顶栏 -->
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-icon">=</span>
+        <h1 class="brand-title">计算器管家</h1>
+      </div>
+      <nav class="mode-tabs" role="tablist">
+        <button class="mode-tab" data-mode="basic" role="tab">基础</button>
+        <button class="mode-tab active" data-mode="scientific" role="tab">科学</button>
+        <button class="mode-tab" data-mode="programmer" role="tab">程序员</button>
+      </nav>
+      <div class="header-actions">
+        <button class="icon-btn" id="btn-help" title="帮助">?</button>
+      </div>
+    </header>
+
+    <!-- 主体 -->
+    <main class="app-main">
+      <!-- 左侧：计算器面板 -->
+      <section class="calc-panel">
+        <!-- 显示区 -->
+        <div class="display-area">
+          <div class="display-expr" id="display-expr" contenteditable="true" spellcheck="false" data-placeholder="输入表达式… 例如 2+3*4 或 sin(pi/4)">2+3*4</div>
+          <div class="display-result" id="display-result">
+            <span class="result-eq">=</span>
+            <span class="result-value" id="result-value">0</span>
+          </div>
+          <div class="display-meta">
+            <span class="meta-hint" id="meta-hint">按 Enter 计算 · Tab 切换模式</span>
+            <span class="meta-error" id="meta-error"></span>
+          </div>
+        </div>
+
+        <!-- 程序员模式：进制显示 -->
+        <div class="base-panel hidden" id="base-panel">
+          <div class="base-row">
+            <span class="base-label">HEX</span>
+            <span class="base-value" id="base-hex">0</span>
+            <button class="base-copy" data-base="hex" title="复制">⧉</button>
+          </div>
+          <div class="base-row">
+            <span class="base-label">DEC</span>
+            <span class="base-value" id="base-dec">0</span>
+            <button class="base-copy" data-base="dec" title="复制">⧉</button>
+          </div>
+          <div class="base-row">
+            <span class="base-label">OCT</span>
+            <span class="base-value" id="base-oct">0</span>
+            <button class="base-copy" data-base="oct" title="复制">⧉</button>
+          </div>
+          <div class="base-row">
+            <span class="base-label">BIN</span>
+            <span class="base-value" id="base-bin">0</span>
+            <button class="base-copy" data-base="bin" title="复制">⧉</button>
+          </div>
+        </div>
+
+        <!-- 按钮键盘 -->
+        <div class="keypad" id="keypad">
+          <!-- 按钮由 renderer.js 渲染 -->
+        </div>
+
+        <!-- 操作栏 -->
+        <div class="action-bar">
+          <button class="action-btn" id="btn-assign" title="赋值变量 (例: x = 5)">赋值</button>
+          <button class="action-btn" id="btn-copy-result" title="复制结果">复制结果</button>
+          <button class="action-btn danger" id="btn-clear-history" title="清空所有历史">清空历史</button>
+        </div>
+      </section>
+
+      <!-- 右侧：侧边面板 -->
+      <aside class="side-panel">
+        <nav class="side-tabs" role="tablist">
+          <button class="side-tab active" data-side="history" role="tab">历史</button>
+          <button class="side-tab" data-side="vars" role="tab">变量</button>
+          <button class="side-tab" data-side="help" role="tab">帮助</button>
+        </nav>
+        <div class="side-content">
+          <!-- 历史 -->
+          <div class="side-pane active" id="pane-history">
+            <div class="pane-empty" id="history-empty">
+              <span class="empty-icon">⏱</span>
+              <p>暂无历史记录</p>
+              <small>计算后会在这里显示</small>
+            </div>
+            <ul class="history-list" id="history-list"></ul>
+          </div>
+          <!-- 变量 -->
+          <div class="side-pane" id="pane-vars">
+            <div class="pane-empty" id="vars-empty">
+              <span class="empty-icon">🔤</span>
+              <p>暂无变量</p>
+              <small>使用 <code>x = 5</code> 形式定义变量</small>
+            </div>
+            <ul class="vars-list" id="vars-list"></ul>
+          </div>
+          <!-- 帮助 -->
+          <div class="side-pane" id="pane-help">
+            <div class="help-content">
+              <h3>键盘快捷键</h3>
+              <ul class="help-list">
+                <li><kbd>Enter</kbd> 计算当前表达式</li>
+                <li><kbd>Shift</kbd>+<kbd>Enter</kbd> 换行</li>
+                <li><kbd>Esc</kbd> 清空输入</li>
+                <li><kbd>Backspace</kbd> 删除前一字符</li>
+                <li><kbd>↑</kbd> / <kbd>↓</kbd> 浏览历史</li>
+                <li><kbd>Tab</kbd> 切换模式</li>
+              </ul>
+              <h3>支持的函数</h3>
+              <p class="help-fns">
+                <code>sin cos tan asin acos atan</code>
+                <code>sinh cosh tanh</code>
+                <code>log ln log2</code>
+                <code>sqrt cbrt abs exp</code>
+                <code>floor ceil round sign</code>
+                <code>pow(x,y) atan2(y,x)</code>
+                <code>max(a,b) min(a,b)</code>
+                <code>gcd(a,b) lcm(a,b) rand</code>
+              </p>
+              <h3>常量</h3>
+              <p class="help-fns">
+                <code>pi</code> 圆周率
+                <code>e</code> 自然底数
+                <code>tau</code> 2π
+                <code>phi</code> 黄金比例
+              </p>
+              <h3>语法示例</h3>
+              <ul class="help-list">
+                <li><code>2+3*4</code> → 14</li>
+                <li><code>sin(pi/4)^2 + cos(pi/4)^2</code> → 1</li>
+                <li><code>5!</code> → 120</li>
+                <li><code>2^10</code> → 1024</li>
+                <li><code>x = 5</code> 然后输入 <code>x*x</code></li>
+                <li><code>log(1000)</code> → 3</li>
+                <li><code>gcd(12, 18)</code> → 6</li>
+              </ul>
+              <h3>隐私说明</h3>
+              <p class="privacy-note">所有计算与历史仅保存在你的本地电脑，不上传任何数据。</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Toast 提示 -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+  <script src="./renderer.js"></script>
+</body>
+</html>

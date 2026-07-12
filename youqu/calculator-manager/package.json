@@ -1,0 +1,43 @@
+{
+  "name": "calculator-manager",
+  "version": "1.0.0",
+  "description": "科学计算器管家 - 苹果白风格桌面计算器：科学模式、程序员模式、表达式历史、变量定义，纯本地隐私优先",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron . --no-sandbox",
+    "test": "node test/test.js",
+    "pack": "electron-builder --win --x64"
+  },
+  "author": "youqu",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.6.4"
+  },
+  "build": {
+    "appId": "com.youqu.calculator-manager",
+    "productName": "计算器管家",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "计算器管家"
+    }
+  }
+}
