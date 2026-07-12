@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#007aff" />
+  <meta name="description" content="苹果白风格 9 合 1 开发者工具：颜色转换 / JSON 格式化 / 时间戳 / 正则测试 / 文本 Diff / Base64 / URL 编解码 / JWT 解码 / 生成器" />
+  <title>开发者工具箱 · dev-toolbox</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="工具箱" />
+</head>
+<body>
+  <div class="app">
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">🧰</div>
+        <div class="brand-text">
+          <div class="brand-title">开发者工具箱</div>
+          <div class="brand-sub">dev-toolbox</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <button class="nav-item active" data-tool="color" data-index="1">
+          <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3C9 8 6 11 6 14a6 6 0 0012 0c0-3-3-6-6-11z"/><circle cx="9.5" cy="14" r="1.2" fill="currentColor" stroke="none"/><circle cx="14.5" cy="13" r="1.2" fill="currentColor" stroke="none"/></svg><span>颜色转换</span><kbd class="nav-kbd">1</kbd>
+        </button>
+        <button class="nav-item" data-tool="json" data-index="2">
+          <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4c-2 0-3 1-3 3v2c0 1.2-.8 2-2 2 1.2 0 2 .8 2 2v2c0 2 1 3 3 3"/><path d="M16 4c2 0 3 1 3 3v2c0 1.2.8 2 2 2-1.2 0-2 .8-2 2v2c0 2-1 3-3 3"/></svg><span>JSON 格式化</span><kbd class="nav-kbd">2</kbd>
+        </button>
+        <button class="nav-item" data-tool="timestamp" data-index="3">
+          <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg><span>时间戳转换</span><kbd class="nav-kbd">3</kbd>
+        </button>
+        <button class="nav-item" data-tool="regex" data-index="4">
+          <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6"/><path d="M19 19l-4.5-4.5"/></svg><span>正则测试</span><kbd class="nav-kbd">4</kbd>
+        </button>
+        <button class="nav-item" data-tool="diff" data-index="5">
+          <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v5m-2.5-2.5h5"/><path d="M17 20v-5m2.5 2.5h-5"/><path d="M8 14l8-4"/></svg><span>文本 Diff</span><kbd class="nav-kbd">5</kbd>
+        </button>
+        <button class="nav-item" data-tool="base64" data-index="6">
+          <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg><span>Base64</span><kbd class="nav-kbd">6</kbd>
+        </button>
+        <button class="nav-item" data-tool="url" data-index="7">
+          <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 005.5 0l2.5-2.5a4 4 0 00-5.5-5.5L11 7.5"/><path d="M14 10a4 4 0 00-5.5 0L6 12.5a4 4 0 005.5 5.5L13 16.5"/></svg><span>URL 编码</span><kbd class="nav-kbd">7</kbd>
+        </button>
+        <button class="nav-item" data-tool="jwt" data-index="8">
+          <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="3"/><path d="M10.5 12.5L18 5"/><path d="M15 5l3 3"/><path d="M13.5 6.5l3 3"/></svg><span>JWT 解码</span><kbd class="nav-kbd">8</kbd>
+        </button>
+        <button class="nav-item" data-tool="generator" data-index="9">
+          <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v4M3 5h4M6 17v4M4 19h4M13 3l2.5 6.5L22 12l-6.5 2.5L13 21l-2.5-6.5L4 12l6.5-2.5z"/></svg><span>生成器</span><kbd class="nav-kbd">9</kbd>
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="https://www.ifdian.net/a/giquwei" target="_blank" rel="noopener" class="nav-item support-link">
+          <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span>支持我们</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- 主区域 -->
+    <main class="main">
+      <header class="main-header">
+        <div class="header-row">
+          <div>
+            <h1 id="toolTitle" class="tool-title">颜色转换</h1>
+            <p id="toolDesc" class="tool-desc">HEX / RGB / HSL / CSS 互转，支持透明度</p>
+          </div>
+          <div class="header-actions">
+            <span class="kbd-hint" title="键盘快捷键"><kbd>⌘/Ctrl</kbd>+<kbd>1-9</kbd> 切换</span>
+            <button id="installBtn" class="btn ghost install-btn" hidden>安装到桌面</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- 颜色转换 -->
+      <section class="panel active" data-panel="color">
+        <div class="row">
+          <label class="field">
+            <span class="label">输入颜色</span>
+            <div class="input-group">
+              <input type="text" id="colorInput" class="input" placeholder="#007aff 或 rgba(0,122,255,0.8)" value="#007aff" />
+              <input type="color" id="colorPicker" class="color-picker" value="#007aff" />
+            </div>
+          </label>
+          <button class="btn primary" id="colorBtn">转换</button>
+        </div>
+        <div class="result-block">
+          <div class="color-preview" id="colorPreview"></div>
+          <div class="result-grid" id="colorResult"></div>
+        </div>
+      </section>
+
+      <!-- JSON 格式化 -->
+      <section class="panel" data-panel="json">
+        <div class="row">
+          <label class="field flex-1">
+            <span class="label">JSON 文本</span>
+            <textarea id="jsonInput" class="textarea" rows="6" placeholder='{"name":"dev-toolbox","stars":128}'>{"name":"dev-toolbox","stars":128,"tags":["json","color","regex"]}</textarea>
+          </label>
+        </div>
+        <div class="row">
+          <div class="seg">
+            <button class="seg-btn active" data-indent="2">缩进 2</button>
+            <button class="seg-btn" data-indent="4">缩进 4</button>
+            <button class="seg-btn" data-indent="0">压缩</button>
+          </div>
+          <button class="btn primary" id="jsonBtn">格式化</button>
+        </div>
+        <div class="result-block">
+          <textarea id="jsonOutput" class="textarea mono" rows="10" readonly></textarea>
+          <div class="result-actions">
+            <button class="btn ghost copy-btn" data-copy="jsonOutput">复制</button>
+            <button class="btn ghost" id="jsonDownloadBtn">⬇ 下载 .json</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 时间戳转换 -->
+      <section class="panel" data-panel="timestamp">
+        <div class="row">
+          <label class="field flex-1">
+            <span class="label">输入（时间戳 / 日期字符串 / now）</span>
+            <input type="text" id="tsInput" class="input" placeholder="1700000000 或 2026-07-04 或 now" value="now" />
+          </label>
+          <button class="btn primary" id="tsBtn">转换</button>
+        </div>
+        <div class="result-block">
+          <div class="result-grid" id="tsResult"></div>
+        </div>
+      </section>
+
+      <!-- 正则测试 -->
+      <section class="panel" data-panel="regex">
+        <div class="row">
+          <label class="field">
+            <span class="label">正则表达式</span>
+            <div class="input-group">
+              <span class="prefix">/</span>
+              <input type="text" id="rePattern" class="input" placeholder="\\d+" value="\\d+" />
+              <span class="prefix">/</span>
+              <input type="text" id="reFlags" class="input small" placeholder="gi" value="g" />
+            </div>
+          </label>
+          <button class="btn primary" id="reBtn">测试</button>
+        </div>
+        <label class="field">
+          <span class="label">待匹配文本</span>
+          <textarea id="reText" class="textarea mono" rows="4" placeholder="输入文本">订单号 20260704，金额 99.5 元，编号 A123B456</textarea>
+        </label>
+        <div class="result-block">
+          <div class="result-list" id="reResult"></div>
+        </div>
+      </section>
+
+      <!-- 文本 Diff -->
+      <section class="panel" data-panel="diff">
+        <div class="row two-col">
+          <label class="field">
+            <span class="label">原始文本 A <span class="drag-hint">· 可拖拽文件</span></span>
+            <textarea id="diffA" class="textarea mono drop-target" rows="6" placeholder="可拖拽 .txt/.json/.js 文件">第一行
+第二行
+第三行
+第四行</textarea>
+          </label>
+          <label class="field">
+            <span class="label">对比文本 B <span class="drag-hint">· 可拖拽文件</span></span>
+            <textarea id="diffB" class="textarea mono drop-target" rows="6" placeholder="可拖拽 .txt/.json/.js 文件">第一行
+第二行修改
+第三行
+新增行
+第四行</textarea>
+          </label>
+        </div>
+        <div class="row">
+          <button class="btn primary" id="diffBtn">对比差异</button>
+          <button class="btn ghost" id="diffSwapBtn">⇄ 交换 A/B</button>
+          <button class="btn ghost" id="diffExportBtn">⬇ 导出 HTML</button>
+        </div>
+        <div class="result-block">
+          <div class="diff-stats" id="diffStats"></div>
+          <div class="diff-view mono" id="diffResult"></div>
+        </div>
+      </section>
+
+      <!-- Base64 -->
+      <section class="panel" data-panel="base64">
+        <div class="row">
+          <label class="field flex-1">
+            <span class="label">输入文本</span>
+            <textarea id="b64Input" class="textarea" rows="4" placeholder="输入要编码/解码的内容">你好，dev-toolbox！</textarea>
+          </label>
+        </div>
+        <div class="row">
+          <div class="seg">
+            <button class="seg-btn active" data-mode="encode">编码</button>
+            <button class="seg-btn" data-mode="decode">解码</button>
+          </div>
+          <button class="btn primary" id="b64Btn">执行</button>
+        </div>
+        <div class="result-block">
+          <textarea id="b64Output" class="textarea mono" rows="4" readonly></textarea>
+          <button class="btn ghost copy-btn" data-copy="b64Output">复制</button>
+        </div>
+      </section>
+
+      <!-- URL 编码 -->
+      <section class="panel" data-panel="url">
+        <div class="row">
+          <label class="field flex-1">
+            <span class="label">输入文本</span>
+            <textarea id="urlInput" class="textarea" rows="4" placeholder="输入 URL 或文本">https://example.com/搜索?q=开发者工具</textarea>
+          </label>
+        </div>
+        <div class="row">
+          <div class="seg">
+            <button class="seg-btn active" data-mode="encode">编码</button>
+            <button class="seg-btn" data-mode="decode">解码</button>
+          </div>
+          <button class="btn primary" id="urlBtn">执行</button>
+        </div>
+        <div class="result-block">
+          <textarea id="urlOutput" class="textarea mono" rows="4" readonly></textarea>
+          <button class="btn ghost copy-btn" data-copy="urlOutput">复制</button>
+        </div>
+      </section>
+
+      <!-- JWT 解码 -->
+      <section class="panel" data-panel="jwt">
+        <div class="row">
+          <label class="field flex-1">
+            <span class="label">JWT Token（header.payload.signature）</span>
+            <textarea id="jwtInput" class="textarea mono" rows="3" placeholder="粘贴 JWT 字符串">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZXYtdG9vbGJveCIsIm5hbWUiOiLlvIDlj5HogIXlt6XlhbfnrrEiLCJpYXQiOjE3MDAwMDAwMDAsImV4cCI6MTg5MzQ1NjAwMH0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c</textarea>
+          </label>
+        </div>
+        <div class="row">
+          <button class="btn primary" id="jwtBtn">解码</button>
+          <span class="jwt-note">仅解码不验签，适合本地调试</span>
+        </div>
+        <div class="result-block" id="jwtResult"></div>
+      </section>
+
+      <!-- 生成器 -->
+      <section class="panel" data-panel="generator">
+        <div class="row">
+          <div class="seg">
+            <button class="seg-btn active" data-genmode="uuid">UUID</button>
+            <button class="seg-btn" data-genmode="password">密码</button>
+          </div>
+        </div>
+
+        <!-- UUID 模式 -->
+        <div class="gen-section" data-gen-section="uuid">
+          <div class="row gen-form-row">
+            <label class="field">
+              <span class="label">格式</span>
+              <select id="uuidFormat" class="input gen-input">
+                <option value="lower">小写带连字符（默认）</option>
+                <option value="upper">大写带连字符</option>
+                <option value="nohyphen">小写无连字符</option>
+                <option value="braces">花括号 {…}</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="label">数量</span>
+              <input type="number" id="uuidCount" class="input small gen-input" value="1" min="1" max="100" />
+            </label>
+            <button class="btn primary gen-btn" id="genBtn">生成</button>
+          </div>
+          <div class="result-block gen-result">
+            <textarea id="uuidOutput" class="textarea mono gen-output" rows="1" readonly placeholder="点击「生成」按钮"></textarea>
+            <div class="result-actions gen-actions">
+              <button class="btn ghost copy-btn" data-copy="uuidOutput">复制</button>
+              <button class="btn ghost" id="uuidDownloadBtn">⬇ 下载 .txt</button>
+            </div>
+          </div>
+          <div class="gen-tips">
+            <div class="gen-tip-item">
+              <span class="gen-tip-icon">🔐</span>
+              <div>
+                <div class="gen-tip-title">安全随机源</div>
+                <div class="gen-tip-desc">基于 Web Crypto API，浏览器级加密随机数，非 Math.random 伪随机</div>
+              </div>
+            </div>
+            <div class="gen-tip-item">
+              <span class="gen-tip-icon">📋</span>
+              <div>
+                <div class="gen-tip-title">RFC 4122 v4 标准</div>
+                <div class="gen-tip-desc">版本位固定为 4，变体位为 8/9/a/b，符合 UUID 规范</div>
+              </div>
+            </div>
+            <div class="gen-tip-item">
+              <span class="gen-tip-icon">⌘</span>
+              <div>
+                <div class="gen-tip-title">快捷键</div>
+                <div class="gen-tip-desc">Ctrl/Cmd + Enter 快速生成，Ctrl/Cmd + 9 切换到此工具</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 密码模式 -->
+        <div class="gen-section" data-gen-section="password" hidden>
+          <div class="row gen-form-row">
+            <label class="field flex-1">
+              <span class="label">长度：<span id="pwdLenLabel">16</span> 位</span>
+              <input type="range" id="pwdLength" class="range" min="4" max="64" value="16" />
+            </label>
+            <button class="btn primary gen-btn" id="genBtn2">生成</button>
+          </div>
+          <div class="row gen-checks">
+            <label class="check-label"><input type="checkbox" id="pwdLower" checked /> 小写 a-z</label>
+            <label class="check-label"><input type="checkbox" id="pwdUpper" checked /> 大写 A-Z</label>
+            <label class="check-label"><input type="checkbox" id="pwdDigits" checked /> 数字 0-9</label>
+            <label class="check-label"><input type="checkbox" id="pwdSymbols" checked /> 符号 !@#$</label>
+            <label class="check-label"><input type="checkbox" id="pwdExcludeAmb" /> 排除易混 0/O 1/l</label>
+          </div>
+          <div class="result-block gen-result">
+            <div class="pwd-output-row">
+              <input type="text" id="pwdOutput" class="input mono" readonly placeholder="点击「生成」按钮" />
+              <button class="btn ghost copy-btn" data-copy="pwdOutput">复制</button>
+            </div>
+            <div class="pwd-strength-row" id="pwdStrength"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Toast 提示 -->
+  <div class="toast" id="toast"></div>
+
+  <script src="toolbox-core.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
