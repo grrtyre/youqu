@@ -2,6 +2,15 @@
 
 > 一款苹果白高端风格的本地表情符号管理工具，告别 Windows 自带面板的简陋。
 
+## ⬇️ 直接下载
+
+| 版本 | 下载链接 | 说明 |
+| --- | --- | --- |
+| v1.0.0 安装版 | [emoji-manager-setup-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/emoji-manager-v1.0.0/emoji-manager-setup-1.0.0.exe) | 72.8 MB · 含开始菜单与桌面快捷方式 |
+| v1.0.0 绿色版 | [emoji-manager-portable-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/emoji-manager-v1.0.0/emoji-manager-portable-1.0.0.exe) | 72.7 MB · 免安装，双击即用 |
+
+> 完整发布说明见 [Release v1.0.0](https://github.com/grrtyre/youqu/releases/tag/emoji-manager-v1.0.0)。
+
 ## ✨ 功能特性
 
 - **完整 emoji 库**：内置 600+ 表情符号，覆盖笑脸、手势、动物、食物、活动、旅行、物品、符号、旗帜等 9 大分类
