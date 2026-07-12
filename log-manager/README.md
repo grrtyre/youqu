@@ -93,8 +93,8 @@ npm test
 
 | 平台 | 下载 | 说明 |
 |---|---|---|
-| Windows x64 | [日志管家 1.0.0.exe](../../releases/tag/log-manager-v1.0.0) | 安装版，可选择安装目录 |
-| Windows x64 | [日志管家 Setup 1.0.0.exe](../../releases/tag/log-manager-v1.0.0) | 便携版，双击即用 |
+| Windows x64 | [日志管家 Setup 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/log-manager-v1.0.0/-Setup-1.0.0.exe) | 安装版，可选择安装目录 |
+| Windows x64 | [日志管家 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/log-manager-v1.0.0/-1.0.0.exe) | 便携版，双击即用 |
 
 > 下载链接在 GitHub Release 发布后生效。
 
