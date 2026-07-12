@@ -1,3 +1,10 @@
+## ⬇️ 直接下载
+
+| 平台 | 下载链接 |
+|---|---|
+| Windows 便携版 | [JSON管家 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/json-manager-v1.0.0/JSON.1.0.0.exe) |
+| Windows 安装版 | [JSON管家 Setup 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/json-manager-v1.0.0/JSON.Setup.1.0.0.exe) |
+
 # 🧩 JSON管家 · json-manager
 
 > 苹果白高端风格的 JSON 深度处理桌面工具：格式化、树形浏览、jq 过滤、JSON 对比、格式转换、Schema 校验，6 合 1 一站搞定。
