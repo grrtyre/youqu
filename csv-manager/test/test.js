@@ -176,6 +176,25 @@ console.log('[numericSeries]');
   eq(s, [1, 3], '只取数值');
 })();
 
+// ---------- valueCounts ----------
+console.log('[valueCounts]');
+(function () {
+  const rows = [
+    ['北京'], ['上海'], ['北京'], ['广州'], ['北京'], ['上海'], [''], ['深圳']
+  ];
+  const vc = csv.valueCounts(rows, 0);
+  eq(vc.length, 4, '去重计数');
+  eq(vc[0], { value: '北京', count: 3 }, '按计数降序首位');
+  eq(vc[1], { value: '上海', count: 2 }, '第二位');
+  // 空值不计入
+  eq(vc.filter(function (x) { return x.value === ''; }).length, 0, '空值被忽略');
+  // limit 截断
+  const vc2 = csv.valueCounts(rows, 0, 2);
+  eq(vc2.length, 2, 'limit 截断');
+  // 空数据
+  eq(csv.valueCounts([], 0), [], '空数据返回空数组');
+})();
+
 console.log('\n--------------------------------');
 console.log('通过: ' + pass + '  失败: ' + fail);
 console.log('--------------------------------\n');

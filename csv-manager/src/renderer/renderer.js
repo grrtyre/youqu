@@ -18,7 +18,10 @@ const state = {
   sortDir: 'asc',
   search: '',
   pageSize: 500,
-  rendered: 0
+  rendered: 0,
+  chartOpen: false,
+  chartCol: -1,
+  chartType: 'auto'
 };
 
 const DEMO_CSV = `产品名称,类别,单价,库存,上架日期,地区
@@ -45,11 +48,27 @@ async function init() {
   bindSearch();
   bindDropZone();
   bindAbout();
-  await refreshRecent();
   // 截图演示模式：自动加载示例数据
   if (window.cm.demoMode && window.cm.demoMode()) {
     loadFromText(DEMO_CSV, '示例数据.csv', '');
+    // 演示模式填充示例最近文件
+    renderDemoRecent();
+  } else {
+    await refreshRecent();
   }
+}
+
+// 演示模式下的示例最近文件
+function renderDemoRecent() {
+  const wrap = $('recentList');
+  const demos = ['销售数据_2024Q1.csv', '用户行为分析.tsv', '库存明细.csv'];
+  wrap.innerHTML = '';
+  demos.forEach(name => {
+    const btn = document.createElement('button');
+    btn.className = 'recent-item';
+    btn.innerHTML = '<svg viewBox="0 0 20 20" width="13" height="13"><path d="M6 4h6l3 3v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="1.4"/></svg><span>' + escapeHtml(name) + '</span>';
+    wrap.appendChild(btn);
+  });
 }
 
 function bindWindowControls() {
@@ -71,6 +90,19 @@ function bindButtons() {
   $('delSelect').addEventListener('change', (e) => {
     state.delimiter = e.target.value;
     reparse();
+  });
+  $('btnChart').addEventListener('click', toggleChart);
+  $('chartColSelect').addEventListener('change', (e) => {
+    state.chartCol = parseInt(e.target.value, 10);
+    renderChart();
+  });
+  $('chartTypeToggle').addEventListener('click', (e) => {
+    const btn = e.target.closest('.chart-type-btn');
+    if (!btn) return;
+    state.chartType = btn.dataset.type;
+    $('chartTypeToggle').querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderChart();
   });
 }
 
@@ -174,9 +206,15 @@ function loadFromText(text, name, filePath) {
   state.sortCol = -1;
   state.sortDir = 'asc';
   state.search = '';
+  state.chartCol = -1;
   $('searchInput').value = '';
   parse();
   render();
+  // 数据更新后刷新图表
+  if (state.chartOpen) {
+    populateChartColumns();
+    renderChart();
+  }
 }
 
 function parse() {
@@ -196,6 +234,10 @@ function reparse() {
   if (!state.rawText) return;
   parse();
   render();
+  if (state.chartOpen) {
+    populateChartColumns();
+    renderChart();
+  }
 }
 
 function applyFilter(silent) {
@@ -214,8 +256,10 @@ function render() {
   $('emptyState').hidden = true;
   $('dataView').hidden = false;
   $('fileName').textContent = state.fileName;
+  $('metaPill').textContent = fmtNum(state.rows.length) + ' 行 · ' + fmtSize(state.rawText.length);
   $('delWrap').hidden = false;
   $('delSelect').value = state.delimiter;
+  $('btnChart').disabled = false;
 
   renderStatCards();
   renderTable();
@@ -225,6 +269,136 @@ function render() {
 
 function enableExport(on) {
   ['exportCSV', 'exportJSON', 'exportMD', 'copyMD'].forEach(id => { $(id).disabled = !on; });
+}
+
+// ---------- 图表可视化 ----------
+function toggleChart() {
+  state.chartOpen = !state.chartOpen;
+  $('chartPanel').hidden = !state.chartOpen;
+  $('btnChart').classList.toggle('active', state.chartOpen);
+  if (state.chartOpen) {
+    populateChartColumns();
+    renderChart();
+  }
+}
+
+function populateChartColumns() {
+  const sel = $('chartColSelect');
+  sel.innerHTML = '';
+  state.headers.forEach((h, i) => {
+    const col = state.cols[i] || { type: 'text' };
+    const typeLabel = col.type === 'number' || col.type === 'mixed-number' ? '数值' : col.type === 'date' ? '日期' : '文本';
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = h + '（' + typeLabel + '）';
+    sel.appendChild(opt);
+  });
+  // 默认选第一个数值列，没有则第一列
+  if (state.chartCol < 0 || state.chartCol >= state.headers.length) {
+    let numIdx = -1;
+    for (let i = 0; i < state.cols.length; i++) {
+      if (state.cols[i].type === 'number' || state.cols[i].type === 'mixed-number') { numIdx = i; break; }
+    }
+    state.chartCol = numIdx >= 0 ? numIdx : 0;
+  }
+  sel.value = String(state.chartCol);
+}
+
+function renderChart() {
+  if (!state.chartOpen) return;
+  const body = $('chartBody');
+  const col = state.chartCol;
+  if (col < 0 || col >= state.headers.length) {
+    body.innerHTML = '<div class="chart-empty">请选择列</div>';
+    return;
+  }
+  const colInfo = state.cols[col] || { type: 'text' };
+  const isNumeric = colInfo.type === 'number' || colInfo.type === 'mixed-number';
+
+  // 决定图表类型：auto 时数值列用直方图、其他用计数图
+  let type = state.chartType;
+  if (type === 'auto') {
+    type = isNumeric ? 'histogram' : 'counts';
+  }
+  // 文本列不支持直方图，回退到计数图
+  if (type === 'histogram' && !isNumeric) {
+    type = 'counts';
+  }
+
+  if (type === 'histogram') {
+    renderHistogram(col, colInfo);
+  } else {
+    renderValueCounts(col);
+  }
+}
+
+function renderHistogram(col, colInfo) {
+  const body = $('chartBody');
+  const values = csv.numericSeries(state.rows, col, 5000);
+  if (values.length === 0) {
+    body.innerHTML = '<div class="chart-empty">该列无数值数据</div>';
+    return;
+  }
+  const bins = 10;
+  const hRaw = csv.histogram(values, bins);
+  // 过滤掉零值区间，避免浪费纵向空间
+  const h = hRaw.filter(function (b) { return b.count > 0; });
+  let maxCount = 0;
+  for (let i = 0; i < h.length; i++) { if (h[i].count > maxCount) maxCount = h[i].count; }
+  const stats = colInfo.stats || {};
+  const subtitle = '分布直方图 · ' + values.length + ' 个数值 · 平均 ' +
+    (stats.avg !== undefined ? stats.avg : '—') + ' · 范围 [' +
+    (stats.min !== undefined ? stats.min : '—') + ', ' +
+    (stats.max !== undefined ? stats.max : '—') + ']';
+
+  let html = '<div class="chart-subtitle">' + escapeHtml(subtitle) + '</div>';
+  if (h.length === 0) {
+    body.innerHTML = '<div class="chart-empty">无有效分布区间</div>';
+    return;
+  }
+  html += '<div class="chart-bars">';
+  for (let i = 0; i < h.length; i++) {
+    const pct = maxCount > 0 ? (h[i].count / maxCount * 100) : 0;
+    const label = h[i].from === h[i].to ? String(h[i].from) : (h[i].from + ' ~ ' + h[i].to);
+    // 平滑色阶渐变：从深蓝到浅蓝，逐行递减
+    const lightness = 55 + Math.round(15 * (i / Math.max(h.length - 1, 1)));
+    const bg = 'linear-gradient(90deg, hsl(210,85%,' + lightness + '%) 0%, hsl(205,80%,' + (lightness + 7) + '%) 100%)';
+    html += '<div class="chart-bar-row">' +
+      '<div class="chart-bar-label" title="' + escapeHtml(label) + '">' + escapeHtml(label) + '</div>' +
+      '<div class="chart-bar-track"><div class="chart-bar-fill" style="width:' + pct.toFixed(1) + '%;background:' + bg + '"></div></div>' +
+      '<div class="chart-bar-count">' + h[i].count + '</div>' +
+      '</div>';
+  }
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+function renderValueCounts(col) {
+  const body = $('chartBody');
+  const vc = csv.valueCounts(state.rows, col, 15);
+  if (vc.length === 0) {
+    body.innerHTML = '<div class="chart-empty">该列无数据</div>';
+    return;
+  }
+  const maxCount = vc[0].count;
+  const total = state.rows.length;
+  const subtitle = '值计数图 · 前 ' + vc.length + ' 个 · 共 ' + total + ' 行';
+
+  let html = '<div class="chart-subtitle">' + escapeHtml(subtitle) + '</div>';
+  html += '<div class="chart-bars">';
+  for (let i = 0; i < vc.length; i++) {
+    const pct = maxCount > 0 ? (vc[i].count / maxCount * 100) : 0;
+    const pctTotal = total > 0 ? (vc[i].count / total * 100).toFixed(1) : '0';
+    const lightness = 55 + Math.round(15 * (i / Math.max(vc.length - 1, 1)));
+    const bg = 'linear-gradient(90deg, hsl(210,85%,' + lightness + '%) 0%, hsl(205,80%,' + (lightness + 7) + '%) 100%)';
+    html += '<div class="chart-bar-row">' +
+      '<div class="chart-bar-label" title="' + escapeHtml(vc[i].value) + '">' + escapeHtml(vc[i].value) + '</div>' +
+      '<div class="chart-bar-track"><div class="chart-bar-fill" style="width:' + pct.toFixed(1) + '%;background:' + bg + '"></div></div>' +
+      '<div class="chart-bar-count">' + vc[i].count + ' <span class="chart-pct">(' + pctTotal + '%)</span></div>' +
+      '</div>';
+  }
+  html += '</div>';
+  body.innerHTML = html;
 }
 
 function renderStatCards() {
@@ -238,10 +412,10 @@ function renderStatCards() {
 
   // 4 个核心卡片，统一蓝色系，仅用图标区分功能
   const cards = [
-    { label: '数据行数', value: fmtNum(rowCount), icon: '<path d="M4 16V9M10 16V4M16 16v-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>' },
-    { label: '数据列数', value: colCount, icon: '<path d="M4 5h12M4 10h12M4 15h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>' },
-    { label: '数值列', value: numCols, icon: '<path d="M7 5L3 10l4 5M13 5l4 5-4 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' },
-    { label: '日期列', value: dateCols, icon: '<rect x="4" y="5" width="12" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 9h12M7 3v4M13 3v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>' }
+    { label: '数据行数', value: fmtNum(rowCount), icon: '<path d="M4 16V9M10 16V4M16 16v-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>' },
+    { label: '数据列数', value: colCount, icon: '<path d="M4 5h12M4 10h12M4 15h12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>' },
+    { label: '数值列', value: numCols, icon: '<path d="M7 5L3 10l4 5M13 5l4 5-4 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' },
+    { label: '日期列', value: dateCols, icon: '<rect x="4" y="5" width="12" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 9h12M7 3v4M13 3v4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>' }
   ];
   cards.forEach(c => {
     const el = document.createElement('div');
@@ -297,10 +471,7 @@ function renderTable() {
     const sorted = state.sortCol === i;
     if (sorted) th.classList.add('sorted');
     const arrow = state.sortDir === 'asc' ? '▲' : '▼';
-    // 类型用彩色圆点表示，更轻量
-    const dotClass = col.type === 'number' || col.type === 'mixed-number' ? 'dot-num' : col.type === 'date' ? 'dot-date' : 'dot-text';
     th.innerHTML = '<span class="th-content">' +
-      '<span class="type-dot ' + dotClass + '" title="' + (col.type === 'number' ? '数值' : col.type === 'mixed-number' ? '数值*' : col.type === 'date' ? '日期' : '文本') + '"></span>' +
       '<span>' + escapeHtml(h) + '</span>' +
       '<span class="sort-arrow">' + arrow + '</span>' +
       '</span>';
@@ -384,10 +555,10 @@ function loadMore() {
 function renderStatus() {
   const shown = Math.min(state.rendered, state.filteredIdx.length);
   const total = fmtNum(state.filteredIdx.length);
-  const left = '共 ' + fmtNum(state.rows.length) + ' 行 · ' + state.headers.length + ' 列' + (shown < total ? ' · 已显示 ' + shown + '/' + total : '');
+  const left = state.headers.length + ' 列' + (shown < total ? ' · 已显示 ' + shown + '/' + total : '');
   const right = state.search
     ? '搜索命中 ' + fmtNum(state.filteredIdx.length) + ' 行'
-    : delLabel(state.detectedDelimiter) + ' · ' + fmtSize(state.rawText.length);
+    : delLabel(state.detectedDelimiter);
   $('statusInfo').textContent = left;
   $('filterInfo').textContent = right;
 }

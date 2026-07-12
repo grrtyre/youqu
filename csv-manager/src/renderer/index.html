@@ -132,11 +132,34 @@
                   <option value="|">竖线 |</option>
                 </select>
               </div>
+              <button class="tool-btn" id="btnChart" title="图表可视化" disabled>
+                <svg viewBox="0 0 20 20" width="14" height="14"><path d="M4 16V10M10 16V4M16 16v-7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>
+                <span>图表</span>
+              </button>
             </div>
           </div>
 
           <!-- 统计卡片 -->
           <div class="stat-cards" id="statCards"></div>
+
+          <!-- 图表面板 -->
+          <section class="chart-panel" id="chartPanel" hidden>
+            <div class="chart-header">
+              <div class="chart-title">
+                <svg viewBox="0 0 20 20" width="15" height="15"><path d="M4 16V10M10 16V4M16 16v-7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>
+                <span>数据可视化</span>
+              </div>
+              <div class="chart-controls">
+                <select id="chartColSelect" class="chart-select"></select>
+                <div class="chart-type-toggle" id="chartTypeToggle">
+                  <button class="chart-type-btn active" data-type="auto">自动</button>
+                  <button class="chart-type-btn" data-type="histogram">直方图</button>
+                  <button class="chart-type-btn" data-type="counts">计数图</button>
+                </div>
+              </div>
+            </div>
+            <div class="chart-body" id="chartBody"></div>
+          </section>
 
           <!-- 数据表格容器 -->
           <div class="table-wrap" id="tableWrap">
@@ -170,7 +193,7 @@
         </svg>
       </div>
       <div class="modal-title">表格管家</div>
-      <div class="modal-version" id="aboutVersion">版本 1.0.0</div>
+      <div class="modal-version" id="aboutVersion">版本 1.1.0</div>
       <p class="modal-desc">本地 CSV / TSV 数据查看与分析工具，数据不出本机。</p>
       <div class="modal-actions">
         <button class="primary-btn sm" id="aboutClose">好的</button>

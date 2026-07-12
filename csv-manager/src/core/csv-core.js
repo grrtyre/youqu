@@ -296,6 +296,27 @@ function numericSeries(rows, col, limit) {
 }
 
 /**
+ * 分类列值计数（取出现次数最多的前 N 个）
+ * @param {string[][]} rows
+ * @param {number} col
+ * @param {number} limit  返回前 N 个，默认 15
+ * @returns {{ value: string, count: number }[]}
+ */
+function valueCounts(rows, col, limit) {
+  limit = limit || 15;
+  const counts = {};
+  for (let i = 0; i < rows.length; i++) {
+    const v = String(rows[i][col] === undefined ? '' : rows[i][col]).trim();
+    if (v === '') continue;
+    counts[v] = (counts[v] || 0) + 1;
+  }
+  return Object.keys(counts)
+    .map(function (k) { return { value: k, count: counts[k] }; })
+    .sort(function (a, b) { return b.count - a.count; })
+    .slice(0, limit);
+}
+
+/**
  * 简易直方图分桶
  */
 function histogram(values, bins) {
@@ -332,6 +353,7 @@ const csvApi = {
   toMarkdown,
   numericSeries,
   histogram,
+  valueCounts,
   round2
 };
 
