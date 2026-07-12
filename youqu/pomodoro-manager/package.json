@@ -1,0 +1,43 @@
+{
+  "name": "pomodoro-manager",
+  "version": "1.0.0",
+  "description": "番茄管家 - 本地优先的番茄工作法专注桌面应用",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron . --no-sandbox",
+    "test": "node test/test.js",
+    "pack": "electron-builder --win --x64"
+  },
+  "author": "youqu",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.youqu.pomodoro",
+    "productName": "番茄管家",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "build/icon.ico"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}
