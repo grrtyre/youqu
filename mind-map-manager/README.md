@@ -25,8 +25,8 @@
 
 | 平台 | 下载 |
 |------|------|
-| Windows 安装版 | [思维导图管家 Setup 1.0.0.exe](../../releases/tag/mind-map-manager-v1.0.0) |
-| Windows 便携版 | [思维导图管家 1.0.0.exe](../../releases/tag/mind-map-manager-v1.0.0) |
+| Windows 安装版 | [mind-map-manager-setup-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/mind-map-manager-v1.0.0/mind-map-manager-setup-1.0.0.exe) |
+| Windows 便携版 | [mind-map-manager-1.0.0-portable.exe](https://github.com/grrtyre/youqu/releases/download/mind-map-manager-v1.0.0/mind-map-manager-1.0.0-portable.exe) |
 
 ### 从源码运行
 
