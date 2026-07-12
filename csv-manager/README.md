@@ -84,7 +84,7 @@ csv-manager/
 
 | 平台 | 版本 | 下载 |
 | --- | --- | --- |
-| Windows x64 | v1.0.0 | [表格管家 1.0.0.exe](待发布后填充) |
+| Windows x64 | v1.0.0 | [表格管家 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/csv-manager-v1.0.0/1.0.0.exe) |
 
 ## ☕ 支持我们
 
