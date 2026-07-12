@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';" />
+  <title>JSON管家</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 顶部头部 -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="logo">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <rect x="2" y="2" width="20" height="20" rx="5" fill="#007aff"/>
+            <path d="M9 8c-1.5 0-2.5 1-2.5 2.5S7.5 13 9 13h1.5v1H9m6-6c1.5 0 2.5 1 2.5 2.5S16.5 13 15 13h-1.5v1H15" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+          <span class="logo-text">JSON管家</span>
+          <span class="logo-version">1.0.0</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn" id="btn-open" title="打开 JSON 文件">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h6l2 2h10v11H3z"/></svg>
+          打开文件
+        </button>
+        <button class="btn" id="btn-save" title="保存输出">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h12l4 4v14H5z"/><path d="M7 3v6h10V3"/></svg>
+          保存
+        </button>
+        <button class="btn" id="btn-clear" title="清空输入">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+          清空
+        </button>
+        <button class="btn" id="btn-history" title="历史记录">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          历史
+        </button>
+      </div>
+    </header>
+
+    <div class="body">
+      <!-- 左侧边栏 -->
+      <aside class="sidebar">
+        <nav class="nav">
+          <button class="nav-item active" data-tool="format">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h16"/></svg>
+            <span>格式化</span>
+          </button>
+          <button class="nav-item" data-tool="tree">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4v8h6V4M11 8h8M11 12v8h8"/></svg>
+            <span>树形浏览</span>
+          </button>
+          <button class="nav-item" data-tool="jq">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <span>jq 过滤</span>
+          </button>
+          <button class="nav-item" data-tool="diff">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v18M15 3v18M3 9h6M15 9h6M3 15h6M15 15h6"/></svg>
+            <span>JSON 对比</span>
+          </button>
+          <button class="nav-item" data-tool="convert">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h13l-3-3M20 17H7l3 3"/></svg>
+            <span>格式转换</span>
+          </button>
+          <button class="nav-item" data-tool="schema">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 4v5c0 5-3.5 8-9 9-5.5-1-9-4-9-9V7z"/><path d="M9 12l2 2 4-4"/></svg>
+            <span>Schema 校验</span>
+          </button>
+        </nav>
+        <div class="sidebar-footer">
+          <a href="https://www.ifdian.net/a/giquwei" target="_blank" class="afdian-link">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="#c0c0c8" stroke="none"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5 6.5 5c2 0 3.5 1 5.5 3 2-2 3.5-3 5.5-3 4 0 5.5 4 4 7-2.5 4.5-9.5 9-9.5 9z"/></svg>
+            支持我们 · 爱发电
+          </a>
+        </div>
+      </aside>
+
+      <!-- 主内容区 -->
+      <main class="main" id="main">
+        <!-- 工具面板由 JS 渲染 -->
+      </main>
+    </div>
+
+    <!-- 底部状态栏 -->
+    <footer class="statusbar">
+      <span id="status-info">就绪</span>
+      <span class="status-right" id="status-stats"></span>
+    </footer>
+  </div>
+
+  <!-- 历史抽屉 -->
+  <div class="drawer-mask" id="drawer-mask"></div>
+  <aside class="drawer" id="drawer">
+    <div class="drawer-head">
+      <h3>历史记录</h3>
+      <div>
+        <button class="btn btn-text" id="btn-history-clear">清空</button>
+        <button class="btn btn-text" id="btn-history-close">关闭</button>
+      </div>
+    </div>
+    <div class="drawer-body" id="history-list"></div>
+  </aside>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

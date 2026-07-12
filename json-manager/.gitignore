@@ -1,0 +1,16 @@
+node_modules/
+dist/
+dist2/
+build/*.log
+build/*.txt
+build/*.json
+build/*.ps1
+build/*.cs
+build/*.py
+src/main-error.log
+*.log
+electron-*.log
+npm-install.log
+electron-diag*.log
+.DS_Store
+Thumbs.db

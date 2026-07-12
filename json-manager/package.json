@@ -1,0 +1,52 @@
+{
+  "name": "json-manager",
+  "version": "1.0.0",
+  "description": "JSON管家 - 苹果白风格JSON深度处理工具（格式化/树形浏览/jq过滤/对比/转换/Schema校验）",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/test.js",
+    "build": "electron-builder --win --x64"
+  },
+  "author": "youqu",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.youqu.jsonmanager",
+    "productName": "JSON管家",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "build/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "JSON管家",
+      "artifactName": "JSON管家 Setup ${version}.exe"
+    },
+    "portable": {
+      "artifactName": "JSON管家 ${version}.exe"
+    }
+  }
+}
