@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>水印层</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: transparent;
+    }
+    #canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script>
+    // 水印层渲染：用 Canvas 绘制平铺旋转水印
+    // 通过 preload 暴露的 waterAPI 接收配置（nodeIntegration:false 下不能直接 require）
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    let currentConfig = null;
+    let currentVars = null;
+    let renderedOnce = false;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      drawWatermark();
+    }
+
+    function drawWatermark() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (!currentConfig || !currentVars) return;
+
+      const content = resolveContent(currentConfig.content, currentVars);
+      if (!content) return;
+
+      const fontSize = currentConfig.fontSize;
+      const color = currentConfig.color;
+      const opacity = currentConfig.opacity;
+      const rotation = currentConfig.rotation;
+      const gapX = currentConfig.gapX;
+      const gapY = currentConfig.gapY;
+
+      ctx.font = fontSize + 'px -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif';
+      ctx.fillStyle = color;
+      ctx.globalAlpha = opacity;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // 平铺水印：按间距网格绘制
+      // 以画布中心为原点旋转
+      ctx.save();
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate(rotation * Math.PI / 180);
+
+      // 计算旋转后需要覆盖的范围（对角线长度）
+      const diag = Math.sqrt(canvas.width * canvas.width + canvas.height * canvas.height);
+      const startX = -diag / 2;
+      const startY = -diag / 2;
+      const endX = diag / 2;
+      const endY = diag / 2;
+
+      for (let y = startY; y < endY; y += gapY) {
+        for (let x = startX; x < endX; x += gapX) {
+          ctx.fillText(content, x, y);
+        }
+      }
+      ctx.restore();
+
+      // 首次绘制成功后通知主进程（验证覆盖层真正加载）
+      if (!renderedOnce) {
+        renderedOnce = true;
+        try { window.waterAPI.overlayRendered(); } catch (_) {}
+      }
+    }
+
+    function resolveContent(content, vars) {
+      if (!content) return '';
+      let result = content;
+      const replacements = {
+        '{USERNAME}': vars.username || '',
+        '{IP}': vars.ip || '',
+        '{TIME}': vars.time || '',
+        '{DATE}': vars.date || '',
+        '{MACHINE}': vars.machine || ''
+      };
+      for (const [key, val] of Object.entries(replacements)) {
+        result = result.split(key).join(val);
+      }
+      return result;
+    }
+
+    window.waterAPI.onOverlayUpdate((_payload) => {
+      currentConfig = _payload.config;
+      currentVars = _payload.vars;
+      drawWatermark();
+    });
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+  </script>
+</body>
+</html>
