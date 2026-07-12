@@ -1,0 +1,55 @@
+{
+  "name": "ocr-manager",
+  "version": "1.0.1",
+  "description": "识字管家 - 本地离线 OCR 文字识别工具，支持中英文、截图识别、批量识别、历史记录",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/test.js",
+    "dist": "electron-builder --win --x64",
+    "icon": "python build/make_icon.py"
+  },
+  "author": "youqu",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "electron-store": "^8.2.0",
+    "tesseract.js": "^5.1.1"
+  },
+  "build": {
+    "appId": "com.youqu.ocrmanager",
+    "productName": "识字管家",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "识字管家"
+    }
+  }
+}
