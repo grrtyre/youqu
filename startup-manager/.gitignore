@@ -1,0 +1,12 @@
+node_modules/
+dist/
+*.log
+build/*.txt
+build/*.json
+build/*.ps1
+build/*.py
+build/icon-source.png
+electron-*.log
+npm-*.log
+mimo-*.log
+.DS_Store
