@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>表情管家</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- 自定义标题栏 -->
+  <div class="titlebar">
+    <div class="titlebar-drag">
+      <div class="window-controls">
+        <button class="win-btn win-close" id="btnClose" title="关闭"></button>
+        <button class="win-btn win-min" id="btnMin" title="最小化"></button>
+        <button class="win-btn win-max" id="btnMax" title="最大化"></button>
+      </div>
+      <div class="title-text">表情管家</div>
+      <div class="title-spacer"></div>
+    </div>
+  </div>
+
+  <!-- 主体 -->
+  <div class="app">
+    <!-- 左侧分类栏 -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-title">分类</span>
+      </div>
+      <nav class="category-list" id="categoryList"></nav>
+      <div class="sidebar-footer">
+        <div class="shortcut-hint">快捷键 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>E</kbd> 唤出</div>
+      </div>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="content">
+      <!-- 搜索栏 -->
+      <div class="search-wrap">
+        <div class="search-box">
+          <svg class="search-icon" viewBox="0 0 16 16" width="16" height="16">
+            <path fill="currentColor" d="M11.5 7a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Zm-.82 4.74a6 6 0 1 1 1.06-1.06l3.04 3.04a.75.75 0 1 1-1.06 1.06l-3.04-3.04Z"/>
+          </svg>
+          <input type="text" id="searchInput" class="search-input" placeholder="搜索表情、关键词、颜文字…" autocomplete="off" spellcheck="false">
+          <button class="search-clear" id="searchClear" title="清空" style="display:none;">✕</button>
+        </div>
+        <div class="result-count" id="resultCount"></div>
+      </div>
+
+      <!-- emoji 网格 -->
+      <div class="grid-scroll">
+        <div class="emoji-grid" id="emojiGrid"></div>
+        <div class="empty-state" id="emptyState" style="display:none;">
+          <div class="empty-icon">🔍</div>
+          <div class="empty-text">没有找到匹配的表情</div>
+        </div>
+      </div>
+
+      <!-- 底部历史栏 -->
+      <div class="history-bar">
+        <div class="history-label">
+          <span class="history-label-text"><span class="history-label-icon">⏱</span>最近使用</span>
+          <button class="history-clear" id="historyClear" title="清空历史">清空</button>
+        </div>
+        <div class="history-list" id="historyList">
+          <div class="history-empty">暂无使用记录</div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 右侧详情面板 -->
+    <aside class="detail-panel" id="detailPanel">
+      <div class="detail-content" id="detailContent">
+        <div class="detail-placeholder">
+          <div class="placeholder-icon">😀</div>
+          <div class="placeholder-text">点击任意表情查看详情</div>
+          <div class="placeholder-sub">支持复制 · 收藏 · 查看 Unicode 码点</div>
+          <div class="placeholder-tips">
+            <div class="tip-item"><span class="tip-key is-click">点击</span>复制到剪贴板</div>
+            <div class="tip-item"><span class="tip-key is-star">★</span>加入收藏夹</div>
+            <div class="tip-item"><span class="tip-key is-search">搜索</span>关键词或字符</div>
+          </div>
+          <div class="placeholder-stats" id="placeholderStats"></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- 复制提示 -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
