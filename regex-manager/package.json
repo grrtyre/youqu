@@ -1,6 +1,6 @@
 {
   "name": "regex-manager",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "正则管家 - 苹果白风格正则表达式测试与构建工具",
   "main": "src/main.js",
   "scripts": {

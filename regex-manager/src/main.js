@@ -23,11 +23,17 @@ function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
-      nodeIntegration: false
+      nodeIntegration: false,
+      sandbox: false
     }
   });
 
-  mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+  // 通过 query 参数传递初始标签页（用于截图等场景）
+  const loadOpts = {};
+  if (process.env.REGEX_TAB) {
+    loadOpts.query = { tab: process.env.REGEX_TAB };
+  }
+  mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'), loadOpts);
 
   // 窗口准备好后再显示，避免白屏闪烁
   mainWindow.once('ready-to-show', () => {

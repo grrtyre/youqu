@@ -49,6 +49,22 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* 细滚动条样式 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
 .app {
   display: flex;
   flex-direction: column;
@@ -146,26 +162,29 @@ body {
 .main {
   flex: 1;
   display: flex;
-  gap: 14px;
+  gap: 0;
   padding: 14px 24px;
   overflow: hidden;
   min-height: 0;
 }
 
 .left-panel {
-  flex: 1;
+  flex: 0.85;
   display: flex;
   flex-direction: column;
   gap: 12px;
   min-width: 0;
+  padding-right: 7px;
+  border-right: 1px solid var(--border-light);
 }
 
 .right-panel {
-  flex: 1;
+  flex: 1.15;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   min-width: 0;
+  padding-left: 7px;
 }
 
 /* ========== 卡片 ========== */
@@ -298,14 +317,14 @@ body {
 }
 
 .flag-chip.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+  background: var(--accent-light);
+  border-color: var(--accent-medium);
+  color: var(--accent);
+  box-shadow: 0 1px 4px rgba(0, 122, 255, 0.1);
 }
 
 .flag-chip.active span {
-  color: #fff;
+  color: var(--accent);
 }
 
 .pattern-status {
@@ -353,7 +372,6 @@ body {
 .result-card {
   flex: 1;
   min-height: 0;
-  max-height: 320px;
 }
 
 .match-count-badge {
@@ -413,7 +431,7 @@ body {
 }
 
 .placeholder-text {
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   font-family: -apple-system, "PingFang SC", sans-serif;
   font-size: 13px;
   text-align: center;
@@ -424,7 +442,6 @@ body {
 .detail-card {
   flex: 1;
   min-height: 0;
-  max-height: 260px;
 }
 
 .match-details {
@@ -507,14 +524,14 @@ body {
 .replacement-input {
   border: 2px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 12px 14px;
+  padding: 10px 14px;
   font-family: "SF Mono", "Menlo", "Consolas", monospace;
   font-size: 14px;
   color: var(--text-primary);
   background: #fff;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .replacement-input:focus {
@@ -559,9 +576,11 @@ body {
 /* ========== 底部标签区 ========== */
 .bottom-section {
   flex-shrink: 0;
-  max-height: 240px;
+  max-height: 260px;
   margin: 0 24px 14px;
   padding-bottom: 4px;
+  border-top: 1px solid var(--border-light);
+  padding-top: 14px;
 }
 
 .tabs {
@@ -573,8 +592,8 @@ body {
 
 .tab-btn {
   padding: 7px 18px;
-  border: none;
-  background: var(--bg);
+  border: 1px solid transparent;
+  background: transparent;
   font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
@@ -590,9 +609,10 @@ body {
 }
 
 .tab-btn.active {
-  color: #fff;
-  background: var(--accent);
-  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.25);
+  color: var(--accent);
+  background: var(--accent-light);
+  border-color: var(--accent-medium);
+  font-weight: 700;
 }
 
 .tab-panel {
@@ -788,6 +808,135 @@ body {
 .favorite-item-delete:hover {
   color: var(--error);
   background: rgba(255, 59, 48, 0.08);
+}
+
+/* ========== 正则解释 ========== */
+.explain-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.explain-flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--border-light);
+}
+
+.explain-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: 3px 10px;
+}
+
+.explain-flag code {
+  font-family: "SF Mono", monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  border-radius: 5px;
+  padding: 1px 7px;
+  min-width: 16px;
+  text-align: center;
+}
+
+.explain-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.explain-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 5px 10px;
+  border-radius: var(--radius-xs);
+  transition: background 0.15s ease;
+}
+
+.explain-row:hover {
+  background: var(--bg);
+}
+
+.explain-row.has-error {
+  background: rgba(255, 59, 48, 0.06);
+}
+
+.explain-raw {
+  font-family: "SF Mono", "Menlo", monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-light);
+  border: 1px solid var(--accent-medium);
+  border-radius: 6px;
+  padding: 4px 12px;
+  min-width: 52px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* 按 token 类型上色 */
+.explain-row.type-group-cap .explain-raw,
+.explain-row.type-group-named .explain-raw {
+  color: #af52de;
+  background: rgba(175, 82, 222, 0.1);
+  border-color: rgba(175, 82, 222, 0.2);
+}
+
+.explain-row.type-quant .explain-raw {
+  color: #ff9500;
+  background: rgba(255, 149, 0, 0.1);
+  border-color: rgba(255, 149, 0, 0.2);
+}
+
+.explain-row.type-anchor .explain-raw {
+  color: #34c759;
+  background: rgba(52, 199, 89, 0.1);
+  border-color: rgba(52, 199, 89, 0.2);
+}
+
+.explain-row.type-class .explain-raw,
+.explain-row.type-escape .explain-raw {
+  color: #ff2d55;
+  background: rgba(255, 45, 85, 0.08);
+  border-color: rgba(255, 45, 85, 0.18);
+}
+
+.explain-row.type-alt .explain-raw {
+  color: #5856d6;
+  background: rgba(88, 86, 214, 0.1);
+  border-color: rgba(88, 86, 214, 0.2);
+}
+
+.explain-row.type-dot .explain-raw {
+  color: #00c7be;
+  background: rgba(0, 199, 190, 0.1);
+  border-color: rgba(0, 199, 190, 0.2);
+}
+
+.explain-desc {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.explain-summary {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  padding-top: 6px;
+  border-top: 1px dashed var(--border-light);
+  text-align: right;
 }
 
 /* ========== Toast ========== */

@@ -95,6 +95,7 @@
       detailCard.style.display = 'none';
       replaceOutput.innerHTML = '<div class="placeholder-text">输入替换文本后在此预览结果</div>';
       currentMatches = [];
+      renderExplain();
       return;
     }
 
@@ -109,6 +110,7 @@
       detailCard.style.display = 'none';
       currentMatches = [];
       runReplace();
+      renderExplain();
       return;
     }
 
@@ -133,6 +135,9 @@
 
     // 渲染替换
     runReplace();
+
+    // 渲染正则解释
+    renderExplain();
 
     // 记录历史（防抖）
     scheduleHistorySave(pattern, flags);
@@ -450,6 +455,59 @@
     });
   }
 
+  // ========== 正则解释 ==========
+  function renderExplain() {
+    const container = document.getElementById('explain-content');
+    const pattern = patternInput.value;
+    const flags = flagsInput.value;
+
+    if (!pattern) {
+      container.innerHTML = '<div class="placeholder-text">输入正则后，此处逐段解释其含义</div>';
+      return;
+    }
+
+    const result = window.explainerApi.explain(pattern, flags);
+
+    if (!result.ok) {
+      container.innerHTML = '<div class="placeholder-text" style="color:var(--error);">' + escapeHtml(result.error) + '</div>';
+      return;
+    }
+
+    let html = '';
+
+    // 标志说明
+    if (result.flagsDesc && result.flagsDesc.length > 0) {
+      html += '<div class="explain-flags">';
+      result.flagsDesc.forEach(function (f) {
+        html += '<span class="explain-flag"><code>' + escapeHtml(f.flag) + '</code>' + escapeHtml(f.desc) + '</span>';
+      });
+      html += '</div>';
+    }
+
+    // 分段逐项解释
+    if (result.tokens.length === 0) {
+      html += '<div class="placeholder-text">无可解释的内容</div>';
+    } else {
+      html += '<div class="explain-list">';
+      result.tokens.forEach(function (t) {
+        const indent = (t.depth || 0) * 18;
+        const cls = 'explain-row type-' + (t.type || 'literal') + (t.error ? ' has-error' : '');
+        html += '<div class="' + cls + '" style="margin-left:' + indent + 'px">';
+        html += '<span class="explain-raw">' + escapeHtml(t.raw) + '</span>';
+        html += '<span class="explain-desc">' + escapeHtml(t.desc) + '</span>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    // 分组计数
+    if (result.groupCount > 0) {
+      html += '<div class="explain-summary">共 ' + result.groupCount + ' 个捕获组</div>';
+    }
+
+    container.innerHTML = html;
+  }
+
   // ========== 标签切换 ==========
   function setupTabs() {
     const tabBtns = document.querySelectorAll('.tab-btn');
@@ -547,7 +605,20 @@
     flagsInput.value = 'g';
     syncCheckboxesFromInput();
     testString.value = '订单号：20260712001\n金额：￥1,299.00\n手机：13812345678\n邮箱：test@example.com\nIP地址：192.168.1.1\n日期：2026-07-12\n备注：contact admin@site.org for details';
+    replacementInput.value = '【$&】';
     runMatch();
+
+    // 支持通过 URL query / 环境变量 / hash 指定初始标签页（用于截图等场景）
+    const urlParams = new URLSearchParams(location.search);
+    const queryTab = urlParams.get('tab');
+    const envTab = (window.envApi && window.envApi.regexTab) || '';
+    const hashTab = (location.hash || '').replace('#', '');
+    const initialTab = queryTab || envTab || hashTab;
+    if (initialTab && document.querySelector('.tab-btn[data-tab="' + initialTab + '"]')) {
+      const btn = document.querySelector('.tab-btn[data-tab="' + initialTab + '"]');
+      btn.click();
+    }
+
     patternInput.focus();
   }
 

@@ -6,6 +6,7 @@
 const assert = require('assert');
 const { executeRegex, executeReplace, buildHighlightSegments, escapeHtml, escapeRegExp, parseFlags } = require('../src/core/regex-engine');
 const { PATTERNS } = require('../src/core/pattern-library');
+const { explainRegex, explainFlags } = require('../src/core/regex-explainer');
 
 let passed = 0;
 let failed = 0;
@@ -269,6 +270,248 @@ test('手机号模式能匹配手机号', () => {
   const r = executeRegex(phonePattern.pattern, phonePattern.flags, '13812345678');
   assert.strictEqual(r.matches.length, 1);
   assert.strictEqual(r.matches[0].value, '13812345678');
+});
+
+// ========== 正则解释器 测试 ==========
+console.log('\n【正则解释器 explainFlags 测试】');
+
+test('explainFlags 解析标志', () => {
+  const f = explainFlags('gim');
+  assert.strictEqual(f.length, 3);
+  assert.strictEqual(f[0].flag, 'g');
+  assert.ok(f[0].desc.includes('全局'));
+  assert.strictEqual(f[1].flag, 'i');
+  assert.ok(f[1].desc.includes('大小写'));
+});
+
+test('explainFlags 去重', () => {
+  const f = explainFlags('ggg');
+  assert.strictEqual(f.length, 1);
+});
+
+test('explainFlags 空标志', () => {
+  assert.strictEqual(explainFlags('').length, 0);
+});
+
+console.log('\n【正则解释器 explainRegex 测试】');
+
+test('空正则返回错误', () => {
+  const r = explainRegex('', 'g');
+  assert.strictEqual(r.ok, false);
+  assert.ok(r.error);
+});
+
+test('语法错误返回错误', () => {
+  const r = explainRegex('[invalid', 'g');
+  assert.strictEqual(r.ok, false);
+  assert.ok(r.error.includes('语法错误'));
+});
+
+test('字面量字符', () => {
+  const r = explainRegex('abc', '');
+  assert.strictEqual(r.ok, true);
+  assert.strictEqual(r.tokens.length, 3);
+  assert.strictEqual(r.tokens[0].raw, 'a');
+  assert.ok(r.tokens[0].desc.includes('字面量'));
+});
+
+test('字符类简写 \\d \\w \\s', () => {
+  const r = explainRegex('\\d\\w\\s', '');
+  assert.strictEqual(r.tokens.length, 3);
+  assert.ok(r.tokens[0].desc.includes('数字'));
+  assert.ok(r.tokens[1].desc.includes('单词字符'));
+  assert.ok(r.tokens[2].desc.includes('空白'));
+});
+
+test('大写字符类简写 \\D \\W \\S', () => {
+  const r = explainRegex('\\D\\W\\S', '');
+  assert.ok(r.tokens[0].desc.includes('非数字'));
+  assert.ok(r.tokens[1].desc.includes('非单词'));
+  assert.ok(r.tokens[2].desc.includes('非空白'));
+});
+
+test('锚点 ^ $ \\b \\B', () => {
+  const r = explainRegex('^a$b\\b\\B', '');
+  assert.ok(r.tokens[0].desc.includes('开头'));
+  assert.ok(r.tokens[2].desc.includes('结尾'));
+  assert.ok(r.tokens[4].desc.includes('单词边界'));
+  assert.ok(r.tokens[5].desc.includes('非单词边界'));
+});
+
+test('m 标志下 ^ $ 为行首行尾', () => {
+  const r = explainRegex('^$', 'm');
+  assert.ok(r.tokens[0].desc.includes('行首'));
+  assert.ok(r.tokens[1].desc.includes('行尾'));
+});
+
+test('点号 .', () => {
+  const r = explainRegex('.', '');
+  assert.ok(r.tokens[0].desc.includes('不含换行'));
+  const r2 = explainRegex('.', 's');
+  assert.ok(r2.tokens[0].desc.includes('含换行'));
+});
+
+test('基本量词 * + ?', () => {
+  const r = explainRegex('a*b+c?', '');
+  assert.ok(r.tokens[1].desc.includes('0 次或多次'));
+  assert.ok(r.tokens[3].desc.includes('1 次或多次'));
+  assert.ok(r.tokens[5].desc.includes('0 次或 1 次'));
+  assert.strictEqual(r.tokens[1].type, 'quant');
+});
+
+test('惰性量词 *? +? ?', () => {
+  const r = explainRegex('a*?b+?', '');
+  assert.ok(r.tokens[1].desc.includes('惰性'));
+  assert.ok(r.tokens[3].desc.includes('惰性'));
+  assert.strictEqual(r.tokens[1].raw, '*?');
+  assert.strictEqual(r.tokens[3].raw, '+?');
+});
+
+test('花括号量词 {n} {n,} {n,m}', () => {
+  const r = explainRegex('a{3}b{2,}c{1,5}', '');
+  assert.ok(r.tokens[1].desc.includes('恰好'));
+  assert.ok(r.tokens[1].desc.includes('3 次'));
+  assert.ok(r.tokens[3].desc.includes('至少'));
+  assert.ok(r.tokens[3].desc.includes('2 次'));
+  assert.ok(r.tokens[5].desc.includes('1 到 5'));
+});
+
+test('花括号惰性 {n,m}?', () => {
+  const r = explainRegex('a{1,3}?', '');
+  assert.ok(r.tokens[1].desc.includes('惰性'));
+  assert.strictEqual(r.tokens[1].raw, '{1,3}?');
+});
+
+test('非量词花括号按字面量处理', () => {
+  const r = explainRegex('{abc}', '');
+  // { 不构成合法量词，按字面量
+  assert.strictEqual(r.tokens[0].raw, '{');
+  assert.ok(r.tokens[0].desc.includes('字面量'));
+});
+
+test('捕获组计数', () => {
+  const r = explainRegex('(a)(b)(?:c)', '');
+  assert.strictEqual(r.groupCount, 2);
+  assert.ok(r.tokens[0].desc.includes('第 1 组'));
+  assert.ok(r.tokens[3].desc.includes('第 2 组'));
+  assert.ok(r.tokens[6].desc.includes('非捕获组'));
+});
+
+test('命名捕获组', () => {
+  const r = explainRegex('(?<year>\\d{4})', '');
+  assert.strictEqual(r.groupCount, 1);
+  assert.ok(r.tokens[0].desc.includes('year'));
+  assert.ok(r.tokens[0].desc.includes('命名捕获组'));
+});
+
+test('先行/后行断言', () => {
+  const r = explainRegex('(?=a)(?!b)(?<=c)(?<!d)', '');
+  // (?= a ) (?! b ) (?<= c ) (?<! d )
+  // 0  1 2  3  4 5   6  7 8   9  10 11
+  assert.ok(r.tokens[0].desc.includes('正向先行'));
+  assert.ok(r.tokens[3].desc.includes('负向先行'));
+  assert.ok(r.tokens[6].desc.includes('正向后行'));
+  assert.ok(r.tokens[9].desc.includes('负向后行'));
+});
+
+test('分组嵌套 depth', () => {
+  const r = explainRegex('(a(b)c)', '');
+  // ( depth0 -> 内部 a depth1 -> ( depth1 -> b depth2 -> ) depth1 -> c depth1 -> ) depth0
+  assert.strictEqual(r.tokens[0].depth, 0); // (
+  assert.strictEqual(r.tokens[1].depth, 1); // a
+  assert.strictEqual(r.tokens[2].depth, 1); // (
+  assert.strictEqual(r.tokens[3].depth, 2); // b
+  assert.strictEqual(r.tokens[4].depth, 1); // )
+  assert.strictEqual(r.tokens[5].depth, 1); // c
+  assert.strictEqual(r.tokens[6].depth, 0); // )
+});
+
+test('字符类 [abc]', () => {
+  const r = explainRegex('[abc]', '');
+  assert.strictEqual(r.tokens.length, 1);
+  assert.ok(r.tokens[0].desc.includes('a'));
+  assert.ok(r.tokens[0].desc.includes('b'));
+  assert.ok(r.tokens[0].desc.includes('c'));
+  assert.strictEqual(r.tokens[0].type, 'class');
+});
+
+test('否定字符类 [^abc]', () => {
+  const r = explainRegex('[^abc]', '');
+  assert.ok(r.tokens[0].desc.includes('不在'));
+});
+
+test('字符类范围 [a-z]', () => {
+  const r = explainRegex('[a-z0-9]', '');
+  assert.ok(r.tokens[0].desc.includes('a 到 z'));
+  assert.ok(r.tokens[0].desc.includes('0 到 9'));
+});
+
+test('交替 |', () => {
+  const r = explainRegex('a|b', '');
+  assert.strictEqual(r.tokens[1].raw, '|');
+  assert.ok(r.tokens[1].desc.includes('或'));
+  assert.strictEqual(r.tokens[1].type, 'alt');
+});
+
+test('转义 \\n \\t \\r', () => {
+  const r = explainRegex('\\n\\t\\r', '');
+  assert.ok(r.tokens[0].desc.includes('换行'));
+  assert.ok(r.tokens[1].desc.includes('制表'));
+  assert.ok(r.tokens[2].desc.includes('回车'));
+});
+
+test('Unicode 转义 \\uXXXX', () => {
+  const r = explainRegex('\\u4e00', '');
+  assert.ok(r.tokens[0].desc.includes('U+4E00'));
+});
+
+test('十六进制转义 \\xHH', () => {
+  const r = explainRegex('\\x41', '');
+  assert.ok(r.tokens[0].desc.includes('0x41'));
+});
+
+test('字面量转义 \\. \\* \\(', () => {
+  const r = explainRegex('\\.\\*\\(', '');
+  assert.ok(r.tokens[0].desc.includes('字面量'));
+  assert.ok(r.tokens[0].desc.includes('.'));
+  assert.strictEqual(r.tokens[1].raw, '\\*');
+  assert.strictEqual(r.tokens[2].raw, '\\(');
+});
+
+test('反向引用 \\1', () => {
+  const r = explainRegex('(a)\\1', '');
+  // ( a ) \1
+  // 0 1 2 3
+  assert.ok(r.tokens[3].desc.includes('反向引用'));
+  assert.ok(r.tokens[3].desc.includes('第 1 组'));
+});
+
+test('命名反向引用 \\k<name>', () => {
+  const r = explainRegex('(?<x>a)\\k<x>', '');
+  assert.ok(r.tokens[3].desc.includes('反向引用'));
+  assert.ok(r.tokens[3].desc.includes('x'));
+});
+
+test('标志说明附加在结果中', () => {
+  const r = explainRegex('a', 'gi');
+  assert.strictEqual(r.flagsDesc.length, 2);
+  assert.strictEqual(r.flagsDesc[0].flag, 'g');
+  assert.strictEqual(r.flagsDesc[1].flag, 'i');
+});
+
+test('复杂正则解释不报错', () => {
+  const r = explainRegex('^(?<scheme>https?)://(?<host>[\\w.]+)(?::(\\d+))?(?<path>/[^\\s]*)?$', 'i');
+  assert.strictEqual(r.ok, true);
+  assert.ok(r.groupCount >= 4);
+  assert.ok(r.tokens.length > 10);
+});
+
+test('所有 token 都有 raw 和 desc', () => {
+  const r = explainRegex('(\\d+)[a-z]{2,4}|^\\b\\w+', 'gm');
+  r.tokens.forEach(t => {
+    assert.ok(typeof t.raw === 'string' && t.raw.length > 0, 'token raw 缺失');
+    assert.ok(typeof t.desc === 'string' && t.desc.length > 0, 'token desc 缺失');
+  });
 });
 
 // ========== 结果 ==========
