@@ -6,7 +6,8 @@
 
 | 平台 | 下载 | 说明 |
 |---|---|---|
-| Windows x64 | [识字管家 Setup 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/ocr-manager-v1.0.0/ShiZiGuanJia-Setup-1.0.0.exe) | NSIS 安装包（推荐），可选择安装目录 |
+| Windows x64 | [识字管家 Setup 1.0.1.exe](https://github.com/grrtyre/youqu/releases/download/ocr-manager-v1.0.1/ShiZiGuanJia-Setup-1.0.1.exe) | NSIS 安装包（推荐），可选择安装目录 |
+| Windows x64 | [识字管家 1.0.1.exe](https://github.com/grrtyre/youqu/releases/download/ocr-manager-v1.0.1/ShiZiGuanJia-1.0.1.exe) | 免安装便携版，双击即用 |
 
 > 下载链接在 GitHub Release 发布后生效。如显示 404，请稍候片刻等待 GitHub 处理。
 
@@ -26,12 +27,12 @@
 ## 🚀 使用方式
 
 ### 安装版
-1. 下载 `识字管家 Setup 1.0.0.exe`
+1. 下载 `识字管家 Setup 1.0.1.exe`
 2. 双击运行，按提示安装
 3. 从开始菜单或桌面快捷方式启动
 
 ### 便携版
-1. 下载 `识字管家 1.0.0.exe`
+1. 下载 `识字管家 1.0.1.exe`
 2. 双击即可运行，无需安装
 
 ### 快捷键
