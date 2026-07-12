@@ -14,9 +14,9 @@
   --accent-2: #34c759;
   --warn: #ff9500;
   --danger: #ff3b30;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.04);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.04);
-  --shadow-lg: 0 12px 32px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05), 0 2px 6px rgba(0,0,0,0.05);
+  --shadow-md: 0 6px 18px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+  --shadow-lg: 0 16px 40px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.04);
   --radius: 14px;
   --radius-lg: 20px;
 }
@@ -115,11 +115,11 @@ html, body {
 .stat-unit { font-size: 13px; color: var(--text-3); }
 .stat-progress { flex: 1; }
 .stat-progress-bar {
-  height: 6px; background: var(--border); border-radius: 999px; overflow: hidden;
+  height: 6px; background: #d8d8de; border-radius: 999px; overflow: hidden;
   margin-bottom: 4px;
 }
 .stat-progress-fill {
-  height: 100%; background: linear-gradient(90deg, #5ac8fa, var(--accent));
+  height: 100%; background: linear-gradient(90deg, var(--accent), #5ac8fa);
   border-radius: 999px; transition: width 0.4s ease; width: 0%;
 }
 .stat-pct { display: none; }
@@ -138,11 +138,11 @@ html, body {
   background: var(--surface-2); padding: 2px 8px; border-radius: 999px;
 }
 .task-add {
-  display: flex; gap: 6px; margin-bottom: 14px;
-  flex-shrink: 0;
+  display: flex; gap: 8px; margin-bottom: 14px;
+  flex-shrink: 0; align-items: center;
 }
 .task-add input[type="text"] {
-  flex: 1; height: 34px;
+  flex: 1; height: 36px;
   border: 1px solid var(--border); border-radius: 9px;
   padding: 0 12px; font-size: 13px; color: var(--text);
   background: var(--surface-2); outline: none;
@@ -150,10 +150,11 @@ html, body {
 }
 .task-add input[type="text"]:focus { border-color: var(--accent); background: #fff; }
 .task-add input[type="number"] {
-  width: 48px; height: 34px;
+  width: 42px; height: 36px;
   border: 1px solid var(--border); border-radius: 9px;
   text-align: center; font-size: 13px; color: var(--text);
   background: var(--surface-2); outline: none;
+  flex-shrink: 0;
 }
 .mini-btn {
   height: 34px; min-width: 34px; padding: 0 10px;
@@ -178,7 +179,7 @@ html, body {
   margin-bottom: 4px;
 }
 .task-item:hover { background: var(--surface-2); }
-.task-item.current { background: var(--accent-soft); border-color: rgba(0,122,255,0.2); }
+.task-item.current { background: rgba(0,122,255,0.045); border-color: rgba(0,122,255,0.14); box-shadow: inset 3px 0 0 var(--accent); }
 .task-item.done { opacity: 0.5; }
 .task-item.done .task-title { text-decoration: line-through; }
 .task-radio {
@@ -187,7 +188,7 @@ html, body {
   flex-shrink: 0; display: flex; align-items: center; justify-content: center;
   transition: border 0.15s, background 0.15s;
 }
-.task-item.done .task-radio { background: var(--accent-2); border-color: var(--accent-2); }
+.task-item.done .task-radio { background: var(--accent); border-color: var(--accent); }
 .task-item.done .task-radio::after { content: '✓'; color: #fff; font-size: 11px; font-weight: bold; }
 .task-body { flex: 1; min-width: 0; }
 .task-title { font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -219,15 +220,15 @@ html, body {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  padding: 24px 28px;
-  overflow: hidden;
+  padding: 22px 28px;
+  overflow-y: auto;
 }
 
 .phase-tabs {
   display: flex; gap: 4px;
   background: var(--surface-2);
   padding: 4px; border-radius: 12px;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 .phase-tab {
   border: none; background: transparent;
@@ -248,21 +249,21 @@ html, body {
 /* 圆环 */
 .timer-ring-wrap {
   position: relative;
-  width: 260px; height: 260px;
-  margin-bottom: 18px;
+  width: 240px; height: 240px;
+  margin-bottom: 16px;
   filter: drop-shadow(0 4px 12px rgba(0,122,255,0.08));
 }
 .timer-ring { width: 100%; height: 100%; transform: rotate(-90deg); }
 .ring-track {
-  fill: none; stroke: #d8d8de; stroke-width: 8;
+  fill: none; stroke: #eef0f4; stroke-width: 8;
 }
 .ring-progress {
-  fill: none; stroke: var(--accent); stroke-width: 8;
+  fill: none; stroke: var(--accent); stroke-width: 9;
   stroke-linecap: round;
   stroke-dasharray: 879.6; /* 2*PI*140 */
   stroke-dashoffset: 879.6;
   transition: stroke-dashoffset 0.5s linear, stroke 0.3s;
-  filter: drop-shadow(0 0 6px rgba(0,122,255,0.25));
+  filter: drop-shadow(0 0 8px rgba(0,122,255,0.3));
 }
 .ring-progress.short_break { stroke: var(--accent-2); filter: drop-shadow(0 0 6px rgba(52,199,89,0.25)); }
 .ring-progress.long_break { stroke: var(--warn); filter: drop-shadow(0 0 6px rgba(255,149,0,0.25)); }
@@ -271,7 +272,7 @@ html, body {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
 .timer-time {
-  font-size: 50px; font-weight: 200; letter-spacing: -1px;
+  font-size: 48px; font-weight: 200; letter-spacing: -1px;
   color: var(--text); font-variant-numeric: tabular-nums;
   line-height: 1;
 }
@@ -322,24 +323,37 @@ html, body {
 .ctrl-primary.running:hover { background: var(--surface-2); }
 .ctrl-label {
   font-size: 13px; color: var(--text-2); font-weight: 500;
-  margin-bottom: 16px;
+  margin-bottom: 6px;
 }
+.kbd-hint {
+  font-size: 10.5px; color: var(--text-3); margin-bottom: 14px;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  flex-wrap: wrap; letter-spacing: 0.1px;
+}
+.kbd-hint kbd {
+  font-family: inherit; font-size: 10px; font-weight: 500;
+  color: var(--text-2);
+  background: transparent; border: none;
+  padding: 0 1px; margin: 0 1px;
+  line-height: 1.4;
+}
+.kbd-hint .kbd-sep { color: var(--border); }
 
 /* 当前任务 */
 .current-task {
   display: flex; align-items: center; gap: 10px;
-  padding: 9px 16px;
+  padding: 10px 16px;
   background: var(--surface-2);
   border: 1px solid var(--border);
+  border-left: 2px solid var(--accent);
   border-radius: 12px;
   margin-bottom: 14px;
   max-width: 380px; width: 100%;
 }
 .current-task-label {
-  font-size: 11px; color: var(--text-3); font-weight: 600;
-  flex-shrink: 0;
-  padding: 2px 8px; background: var(--surface); border-radius: 6px;
-  border: 1px solid var(--border);
+  font-size: 10px; color: var(--accent); font-weight: 600;
+  flex-shrink: 0; letter-spacing: 0.3px;
+  padding: 2px 7px; background: var(--accent-soft); border-radius: 5px;
 }
 .current-task-name {
   font-size: 13px; color: var(--text); font-weight: 500;
@@ -349,6 +363,9 @@ html, body {
 /* 本周柱状图 */
 .week-section {
   width: 100%; max-width: 380px;
+  flex-shrink: 0;
+  margin-top: 4px;
+  padding-bottom: 6px;
 }
 .week-title {
   display: flex; justify-content: space-between; align-items: baseline;
@@ -358,9 +375,9 @@ html, body {
 }
 .week-total { color: var(--accent); font-weight: 600; }
 .week-chart {
-  display: flex; align-items: flex-end; gap: 10px;
-  height: 74px; width: 100%;
-  padding: 8px 6px 0;
+  display: flex; align-items: flex-end; gap: 8px;
+  height: 78px; width: 100%;
+  padding: 6px 4px 2px;
   border-top: 1px solid var(--border);
 }
 .week-bar-wrap {
@@ -368,22 +385,23 @@ html, body {
   height: 100%; justify-content: flex-end;
 }
 .week-bar {
-  width: 100%; max-width: 48px;
-  background: linear-gradient(180deg, var(--accent), #5ac8fa);
+  width: 100%; max-width: 44px;
+  background: linear-gradient(180deg, #8ab8f5, #b8d4f7);
   border-radius: 6px 6px 2px 2px;
   min-height: 4px;
   transition: height 0.4s ease;
-  opacity: 0.9;
+  opacity: 0.85;
 }
 .week-bar.today {
   opacity: 1;
-  background: linear-gradient(180deg, #ff9500, #ff7a45);
-  box-shadow: 0 0 0 2px rgba(255,149,0,0.2);
+  background: linear-gradient(180deg, var(--accent), #5ac8fa);
+  box-shadow: 0 0 0 2px rgba(0,122,255,0.16);
 }
 .week-bar.empty { background: var(--border); opacity: 0.5; }
 .week-bar-label { font-size: 10px; color: var(--text-3); }
 .week-bar-count { font-size: 11px; color: var(--text-2); font-weight: 600; min-height: 14px; }
-.week-bar-wrap.today .week-bar-label { color: #ff7a45; font-weight: 600; }
+.week-bar-wrap.today .week-bar-label { color: var(--accent); font-weight: 600; }
+.week-bar-wrap.today .week-bar-count { color: var(--accent); }
 
 /* 设置弹层 */
 .modal-mask {

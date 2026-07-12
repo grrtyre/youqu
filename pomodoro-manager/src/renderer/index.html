@@ -96,6 +96,7 @@
         </button>
       </div>
       <div class="ctrl-label" id="startText">开始专注</div>
+      <div class="kbd-hint"><kbd>空格</kbd>开始/暂停<span class="kbd-sep">·</span><kbd>R</kbd>重置<span class="kbd-sep">·</span><kbd>S</kbd>跳过</div>
 
       <!-- 当前任务 -->
       <div class="current-task" id="currentTask">
@@ -145,6 +146,14 @@
         <div class="setting-row setting-switch">
           <label>严格模式（不可跳过休息）</label>
           <input type="checkbox" id="cfgStrict">
+        </div>
+        <div class="setting-row setting-switch">
+          <label>自动开始休息</label>
+          <input type="checkbox" id="cfgAutoBreak" checked>
+        </div>
+        <div class="setting-row setting-switch">
+          <label>休息后自动开始专注</label>
+          <input type="checkbox" id="cfgAutoWork">
         </div>
         <div class="setting-row setting-switch">
           <label>提示音</label>

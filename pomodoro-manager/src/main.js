@@ -88,19 +88,29 @@ function startTicking() {
 
 function handlePhaseChange(event) {
   saveData();
+  // 自动开始控制：若关闭自动开始休息/工作，则暂停下一阶段等待用户操作
+  let pausedForAutoStart = false;
+  if (event.completedWork && core.config.autoStartBreak === false) {
+    core.pause();
+    pausedForAutoStart = true;
+  } else if (event.nextPhase === 'working' && core.config.autoStartWork === false) {
+    core.pause();
+    pausedForAutoStart = true;
+  }
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send('phase', {
       state: core.state,
       remainingMs: core.remainingMs,
       cycleCount: core.cycleCount,
-      event
+      event,
+      pausedForAutoStart
     });
   }
   // 通知
   let title = '', body = '';
   if (event.completedWork) {
     title = '番茄完成 🍅';
-    body = `已完成 ${event.workSessionsToday} 个番茄，进入${core.state === 'long_break' ? '长休息' : '短休息'}`;
+    body = `已完成 ${event.workSessionsToday} 个番茄，进入${event.nextPhase === 'long_break' ? '长休息' : '短休息'}`;
     playChime();
   } else if (event.nextPhase === 'working') {
     title = '休息结束';
@@ -127,9 +137,9 @@ function playChime() {
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1000,
-    height: 760,
+    height: 800,
     minWidth: 860,
-    minHeight: 680,
+    minHeight: 700,
     show: false,
     frame: true,
     autoHideMenuBar: true,
@@ -286,6 +296,14 @@ function registerIpc() {
     broadcastState();
     if (ev) handlePhaseChange(ev);
     return ev;
+  });
+  ipcMain.handle('timer:switch', (e, phase) => {
+    const ok = core.switchPhase(phase);
+    if (!ok) return false;
+    saveData();
+    broadcastState();
+    updateTray();
+    return true;
   });
   ipcMain.handle('task:add', (e, title, estimate) => {
     const t = core.addTask(title, estimate);

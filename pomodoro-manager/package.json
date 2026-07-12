@@ -1,6 +1,6 @@
 {
   "name": "pomodoro-manager",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "番茄管家 - 本地优先的番茄工作法专注桌面应用",
   "main": "src/main.js",
   "scripts": {

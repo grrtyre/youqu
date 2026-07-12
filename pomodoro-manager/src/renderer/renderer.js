@@ -229,13 +229,14 @@ function renderWeekChart(daily) {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   })();
+  const maxBarPx = 48; // 固定像素高度，避免百分比在 flex 中渲染不一致
   el.weekChart.innerHTML = daily.map(d => {
-    const h = Math.round((d.workSessions / max) * 100);
+    const h = Math.round((d.workSessions / max) * maxBarPx);
     const isToday = d.date === todayKey;
     return `
       <div class="week-bar-wrap ${isToday ? 'today' : ''}">
         <span class="week-bar-count">${d.workSessions || ''}</span>
-        <div class="week-bar ${d.workSessions ? '' : 'empty'} ${isToday ? 'today' : ''}" style="height:${Math.max(5, h)}%"></div>
+        <div class="week-bar ${d.workSessions ? '' : 'empty'} ${isToday ? 'today' : ''}" style="height:${Math.max(4, h)}px"></div>
         <span class="week-bar-label">${d.label}</span>
       </div>`;
   }).join('');
@@ -279,9 +280,14 @@ el.skipBtn.addEventListener('click', async () => {
   if (!ev) toast('当前阶段不可跳过');
 });
 
-el.phaseTabs.addEventListener('click', (e) => {
-  // 仅作为视觉提示，实际阶段由计时器推进；点击切换提示当前选择
-  // 这里不强制切换阶段，避免破坏番茄工作法节奏
+el.phaseTabs.addEventListener('click', async (e) => {
+  const tab = e.target.closest('.phase-tab');
+  if (!tab) return;
+  const phase = tab.dataset.phase;
+  if (!phase) return;
+  await window.api.switchPhase(phase);
+  const label = PHASE_TAB_LABEL[phase] || '';
+  toast(`已切换到「${label}」`);
 });
 
 el.taskAddBtn.addEventListener('click', addTask);
@@ -328,6 +334,8 @@ function openSettings() {
   document.getElementById('cfgStrict').checked = !!current.config.strictMode;
   document.getElementById('cfgSound').checked = !!current.config.soundEnabled;
   document.getElementById('cfgNoise').checked = !!current.config.whiteNoise;
+  document.getElementById('cfgAutoBreak').checked = current.config.autoStartBreak !== false;
+  document.getElementById('cfgAutoWork').checked = !!current.config.autoStartWork;
   el.settingsMask.classList.add('show');
 }
 
@@ -340,7 +348,9 @@ el.settingsSave.addEventListener('click', async () => {
     dailyGoal: clamp(parseInt(document.getElementById('cfgGoal').value,10), 1, 30),
     strictMode: document.getElementById('cfgStrict').checked,
     soundEnabled: document.getElementById('cfgSound').checked,
-    whiteNoise: document.getElementById('cfgNoise').checked
+    whiteNoise: document.getElementById('cfgNoise').checked,
+    autoStartBreak: document.getElementById('cfgAutoBreak').checked,
+    autoStartWork: document.getElementById('cfgAutoWork').checked
   };
   await window.api.saveConfig(cfg);
   if (cfg.whiteNoise) startWhiteNoise(); else stopWhiteNoise();
@@ -376,6 +386,32 @@ el.importFile.addEventListener('change', async (e) => {
 
 function clamp(v, min, max) { return Math.max(min, Math.min(max, isNaN(v) ? min : v)); }
 
+// ---- 键盘快捷键 ----
+// Space 开始/暂停，R 重置，S 跳过；输入框中不触发
+document.addEventListener('keydown', async (e) => {
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'textarea' || e.target.isContentEditable) return;
+  if (el.settingsMask.classList.contains('show')) return;
+  const key = e.key.toLowerCase();
+  if (key === ' ' || key === 'spacebar') {
+    e.preventDefault();
+    ensureAudio();
+    if (current && (current.state === 'working' || current.state === 'short_break' || current.state === 'long_break')) {
+      await window.api.pause();
+    } else {
+      await window.api.start();
+    }
+  } else if (key === 'r') {
+    e.preventDefault();
+    await window.api.reset();
+    toast('已重置');
+  } else if (key === 's') {
+    e.preventDefault();
+    const ev = await window.api.skip();
+    if (!ev) toast('当前阶段不可跳过');
+  }
+});
+
 // ---- IPC 接收 ----
 window.api.onTick((data) => {
   if (!current) return;
@@ -400,6 +436,10 @@ window.api.onPhase((data) => {
       toast(`🍅 完成第 ${data.event.workSessionsToday} 个番茄！`);
     } else {
       renderTimer(current);
+    }
+    // 阶段切换后若因关闭自动开始而暂停，提示用户
+    if (data.pausedForAutoStart) {
+      toast('已暂停，按空格继续');
     }
   }
 });

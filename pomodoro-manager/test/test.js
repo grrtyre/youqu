@@ -251,5 +251,43 @@ console.log('[测试] 进度计算');
   assert(p > 0.49 && p < 0.51, `半程进度约 0.5 (实际 ${p.toFixed(3)})`);
 }
 
+// 测试 16：手动切换阶段 switchPhase
+console.log('[测试] 手动切换阶段');
+{
+  const core = new PomodoroCore({ workDuration: 25, shortBreak: 5, longBreak: 15 });
+  // 从 idle 切换到短休息
+  assert(core.switchPhase('short_break'), '切换到短休息返回 true');
+  assertEq(core.state, 'short_break', '状态为 short_break');
+  assertEq(core.remainingMs, 5 * 60 * 1000, '剩余时间为短休息时长');
+  // 切换到长休息
+  assert(core.switchPhase('long_break'), '切换到长休息返回 true');
+  assertEq(core.state, 'long_break', '状态为 long_break');
+  assertEq(core.remainingMs, 15 * 60 * 1000, '剩余时间为长休息时长');
+  // 切换到工作
+  assert(core.switchPhase('working'), '切换到工作返回 true');
+  assertEq(core.state, 'working', '状态为 working');
+  assertEq(core.remainingMs, 25 * 60 * 1000, '剩余时间为工作时长');
+  // 暂停后切换应清除暂停态
+  core.pause();
+  assertEq(core.state, 'paused', '暂停后状态 paused');
+  core.switchPhase('working');
+  assertEq(core.state, 'working', '切换后清除暂停');
+  assertEq(core.pausedState, null, 'pausedState 清空');
+  // 非法阶段返回 false
+  assert(core.switchPhase('idle') === false, '非法阶段返回 false');
+  assert(core.switchPhase('unknown') === false, '未知阶段返回 false');
+}
+
+// 测试 17：自动开始配置默认值
+console.log('[测试] 自动开始配置');
+{
+  const core = new PomodoroCore();
+  assertEq(core.config.autoStartBreak, true, '默认自动开始休息');
+  assertEq(core.config.autoStartWork, false, '默认不自动开始工作');
+  const core2 = new PomodoroCore({ autoStartBreak: false, autoStartWork: true });
+  assertEq(core2.config.autoStartBreak, false, '可关闭自动开始休息');
+  assertEq(core2.config.autoStartWork, true, '可开启自动开始工作');
+}
+
 console.log(`\n结果：${passed} 通过, ${failed} 失败`);
 process.exit(failed > 0 ? 1 : 0);

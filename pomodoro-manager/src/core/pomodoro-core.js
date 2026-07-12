@@ -138,6 +138,15 @@ class PomodoroCore {
     return this._advancePhase();
   }
 
+  // 手动切换到指定阶段（用于阶段标签页点击），立即开始该阶段计时
+  switchPhase(phase) {
+    if (!['working', 'short_break', 'long_break'].includes(phase)) return false;
+    this.state = phase;
+    this.pausedState = null;
+    this.remainingMs = this.phaseDuration(phase);
+    return true;
+  }
+
   // ---- 任务管理 ----
   addTask(title, estimate = 1) {
     const task = {

@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('api', {
   resume: () => ipcRenderer.invoke('timer:resume'),
   reset: () => ipcRenderer.invoke('timer:reset'),
   skip: () => ipcRenderer.invoke('timer:skip'),
+  switchPhase: (phase) => ipcRenderer.invoke('timer:switch', phase),
   addTask: (title, estimate) => ipcRenderer.invoke('task:add', title, estimate),
   setCurrentTask: (id) => ipcRenderer.invoke('task:current', id),
   completeTask: (id) => ipcRenderer.invoke('task:complete', id),
