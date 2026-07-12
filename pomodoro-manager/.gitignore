@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.log
+build/*.png
+build/*.log
+build/*.txt
+build/*.ps1
+build/*.cs
+.DS_Store
