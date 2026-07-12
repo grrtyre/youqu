@@ -15,6 +15,19 @@ navItems.forEach((item) => {
   });
 });
 
+// ===== 空状态示例 chip 点击填充输入框 =====
+document.addEventListener('click', (e) => {
+  const chip = e.target.closest('.empty-chip');
+  if (!chip) return;
+  const targetId = chip.dataset.fill;
+  if (!targetId) return;
+  const input = document.getElementById(targetId);
+  if (input) {
+    input.value = chip.textContent.trim();
+    input.focus();
+  }
+});
+
 // ===== Toast =====
 const toastEl = document.getElementById('toast');
 let toastTimer = null;
@@ -35,6 +48,29 @@ function setError(el, msg) {
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
+
+// ===== 结果复制：缓存最近一次结果，工具栏按钮触发复制 =====
+const lastResults = {}; // { tool: { data, meta } }
+
+// 为结果区包裹一个带「复制结果」按钮的工具栏
+function wrapResult(tool, innerHtml) {
+  return `<div class="result-toolbar"><button class="copy-btn" data-tool="${tool}">复制结果</button></div>${innerHtml}`;
+}
+
+// 统一的复制入口
+async function copyResult(tool) {
+  const entry = lastResults[tool];
+  if (!entry) { toast('暂无可复制的结果'); return; }
+  const text = api.formatResultText(tool, entry.data, entry.meta);
+  const ok = await api.copyText(text);
+  toast(ok ? '已复制到剪贴板' : '复制失败');
+}
+
+// 事件委托：所有 .copy-btn 点击
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.copy-btn');
+  if (btn) copyResult(btn.dataset.tool);
+});
 
 // ===== Ping =====
 const pingRun = document.getElementById('ping-run');
@@ -62,6 +98,7 @@ function renderPing(el, r, host) {
     el.innerHTML = `<div class="result-error"><span>⚠️</span><span>未收到任何响应，请检查主机名或网络</span></div>`;
     return;
   }
+  lastResults.ping = { data: r, meta: { host } };
   const maxTime = Math.max(...r.samples.map((s) => s.time), 1);
   // Y 轴刻度：向上取整到 30 的倍数，三等分出整齐刻度
   const yMax = Math.max(30, Math.ceil(maxTime / 30) * 30);
@@ -84,7 +121,7 @@ function renderPing(el, r, host) {
       <td>${s.ttl}</td>
       <td>${s.bytes} B</td>
     </tr>`).join('');
-  el.innerHTML = `
+  el.innerHTML = wrapResult('ping', `
     <div class="stats-row">
       <div class="stat-card">
         <div class="sc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></div>
@@ -132,7 +169,7 @@ function renderPing(el, r, host) {
       <div class="ps-item"><span class="ps-label">抖动</span><span class="ps-value">${(r.max - r.min) || 0} ms</span></div>
       <div class="ps-divider"></div>
       <div class="ps-item"><span class="ps-label">目标</span><span class="ps-value" style="font-family:'SF Mono','Consolas',monospace;font-size:12px">${escapeHtml(host)}</span></div>
-    </div>`;
+    </div>`);
 }
 
 // ===== Traceroute =====
@@ -159,6 +196,7 @@ function renderTracert(el, hops, host) {
     el.innerHTML = `<div class="result-error"><span>⚠️</span><span>未追踪到任何路由节点</span></div>`;
     return;
   }
+  lastResults.tracert = { data: hops, meta: { host } };
   const items = hops.map((h) => {
     const times = h.times.map((t) => t === null
       ? `<span class="hop-time timeout">超时</span>`
@@ -172,7 +210,7 @@ function renderTracert(el, hops, host) {
       <div class="hop-times">${times}</div>
     </div>`;
   }).join('');
-  el.innerHTML = `<div class="hop-list">${items}</div>`;
+  el.innerHTML = wrapResult('tracert', `<div class="hop-list">${items}</div>`);
 }
 
 // ===== DNS =====
@@ -199,6 +237,7 @@ function renderDns(el, records, domain, type) {
     el.innerHTML = `<div class="result-error"><span>⚠️</span><span>未找到 ${escapeHtml(domain)} 的 ${type} 记录</span></div>`;
     return;
   }
+  lastResults.dns = { data: records, meta: { domain, type } };
   const items = records.map((r) => {
     const t = (r.type || 'A').toLowerCase();
     return `<div class="record-item">
@@ -208,7 +247,7 @@ function renderDns(el, records, domain, type) {
       ${r.name ? `<div class="record-pref">${escapeHtml(r.name)}</div>` : ''}
     </div>`;
   }).join('');
-  el.innerHTML = `<div class="record-list">${items}</div>`;
+  el.innerHTML = wrapResult('dns', `<div class="record-list">${items}</div>`);
 }
 
 // ===== Port Check =====
@@ -235,13 +274,14 @@ document.getElementById('port-run').addEventListener('click', async () => {
 function renderPort(el, res, host, port) {
   const ok = res.reachable;
   const reasonText = ok ? '' : `（${res.reason === 'timeout' ? '连接超时' : escapeHtml(res.reason || '拒绝')}）`;
-  el.innerHTML = `<div class="port-result-card ${ok ? 'ok' : 'fail'}">
+  lastResults.port = { data: res, meta: { host, port } };
+  el.innerHTML = wrapResult('port', `<div class="port-result-card ${ok ? 'ok' : 'fail'}">
     <div class="port-icon">${ok ? '✓' : '✕'}</div>
     <div class="port-info">
       <div class="pi-status">${ok ? '端口开放' : '端口不可达'} ${reasonText}</div>
       <div class="pi-detail">${escapeHtml(host)}:${escapeHtml(port)} · 耗时 ${res.elapsed} ms</div>
     </div>
-  </div>`;
+  </div>`);
 }
 
 // ===== HTTP Headers =====
@@ -266,18 +306,19 @@ function renderHttp(el, res, url) {
   let cls = 'green';
   if (status >= 400) cls = 'red';
   else if (status >= 300) cls = 'orange';
+  lastResults.http = { data: res, meta: { url } };
   const rows = res.headers.map((h) => `
     <div class="header-item">
       <div class="hk">${escapeHtml(h.key)}</div>
       <div class="hv">${escapeHtml(h.value)}</div>
     </div>`).join('');
-  el.innerHTML = `
+  el.innerHTML = wrapResult('http', `
     <div class="http-status ${cls}">
       <div class="hs-code">${status}</div>
       <div class="hs-text">${escapeHtml(res.statusText || '')}</div>
       <div class="hs-time">${res.elapsed} ms</div>
     </div>
-    <div class="header-list">${rows}</div>`;
+    <div class="header-list">${rows}</div>`);
 }
 
 // ===== Whois =====
@@ -302,7 +343,8 @@ function renderWhois(el, info, domain) {
   const ns = info.nameServers.length
     ? `<div class="whois-ns">${info.nameServers.map((n) => `<span class="ns-chip">${escapeHtml(n)}</span>`).join('')}</div>`
     : '<span style="color:var(--text-3)">—</span>';
-  el.innerHTML = `
+  lastResults.whois = { data: info, meta: { domain } };
+  el.innerHTML = wrapResult('whois', `
     <div class="whois-grid">
       <div class="whois-field"><div class="wf-label">域名</div><div class="wf-value">${escapeHtml(domain)}</div></div>
       <div class="whois-field"><div class="wf-label">注册商</div><div class="wf-value">${escapeHtml(info.registrar || '—')}</div></div>
@@ -311,7 +353,7 @@ function renderWhois(el, info, domain) {
       <div class="whois-field"><div class="wf-label">更新时间</div><div class="wf-value">${escapeHtml(info.updatedDate || '—')}</div></div>
       <div class="whois-field"><div class="wf-label">域名服务器</div><div class="wf-value">${ns}</div></div>
     </div>
-    <div class="raw-block"><pre>${escapeHtml(info.raw || '无原始数据')}</pre></div>`;
+    <div class="raw-block"><pre>${escapeHtml(info.raw || '无原始数据')}</pre></div>`);
 }
 
 // ===== IP Info =====
@@ -342,7 +384,8 @@ document.getElementById('ip-local').addEventListener('click', async () => {
 
 function renderIp(el, data) {
   const flag = (data.countryCode || '').toUpperCase().slice(0, 2);
-  el.innerHTML = `
+  lastResults.ip = { data: data, meta: {} };
+  el.innerHTML = wrapResult('ip', `
     <div class="ip-card">
       <div class="ip-flag">🌐</div>
       <div class="ip-main">
@@ -359,7 +402,7 @@ function renderIp(el, data) {
       <div class="ip-field"><div class="if-label">时区</div><div class="if-value">${escapeHtml(data.timezone || '—')}</div></div>
       <div class="ip-field"><div class="if-label">运营商 (ISP)</div><div class="if-value">${escapeHtml(data.isp || '—')}</div></div>
       <div class="ip-field"><div class="if-label">组织 / AS</div><div class="if-value">${escapeHtml(data.org || '—')} ${escapeHtml(data.as || '')}</div></div>
-    </div>`;
+    </div>`);
 }
 
 // ===== 历史 =====
@@ -376,16 +419,37 @@ async function refreshHistory() {
   }
   el.innerHTML = list.map((h, i) => `
     <div class="hist-item">
-      <div class="hi-tool">${TOOL_LABELS[h.tool] || h.tool}</div>
-      <div class="hi-target">${escapeHtml(h.target || '')}</div>
-      <div class="hi-summary">${escapeHtml(h.summary || '')}</div>
-      <div class="hi-time">${api.timeAgo(h.ts)}</div>
+      <div class="hi-main">
+        <div class="hi-tool">${TOOL_LABELS[h.tool] || h.tool}</div>
+        <div class="hi-target">${escapeHtml(h.target || '')}</div>
+        <div class="hi-summary">${escapeHtml(h.summary || '')}</div>
+        <div class="hi-time">${api.timeAgo(h.ts)}</div>
+      </div>
+      <button class="hi-del" data-idx="${i}" title="删除此条">×</button>
     </div>`).join('');
 }
+// 历史单条删除（事件委托）
+document.getElementById('hist-list').addEventListener('click', async (e) => {
+  const btn = e.target.closest('.hi-del');
+  if (!btn) return;
+  const idx = parseInt(btn.dataset.idx, 10);
+  await api.removeHistory(idx);
+  refreshHistory();
+  toast('已删除');
+});
 document.getElementById('hist-clear').addEventListener('click', async () => {
   await api.clearHistory();
   refreshHistory();
   toast('历史已清空');
+});
+// 导出 CSV / JSON
+document.getElementById('hist-export-csv').addEventListener('click', async () => {
+  const res = await api.exportCsv();
+  toast(res.ok ? '已导出 CSV' : (res.msg || '导出失败'));
+});
+document.getElementById('hist-export-json').addEventListener('click', async () => {
+  const res = await api.exportJson();
+  toast(res.ok ? '已导出 JSON' : (res.msg || '导出失败'));
 });
 
 // 回车快捷
@@ -427,12 +491,16 @@ function initDemoData() {
     { tool: '📡 Ping', target: 'baidu.com', summary: '6/6 包 · 丢失 0% · 平均 48ms', time: '刚刚' },
     { tool: '🛤️ 路由追踪', target: 'github.com', summary: '12 跳', time: '5 分钟前' },
     { tool: '🔌 端口检测', target: 'baidu.com:443', summary: '可达 (23ms)', time: '1 小时前' },
+    { tool: '📖 DNS', target: 'example.com (A)', summary: '2 条记录', time: '2 小时前' },
   ].map((h) => `
     <div class="hist-item">
-      <div class="hi-tool">${h.tool}</div>
-      <div class="hi-target">${h.target}</div>
-      <div class="hi-summary">${h.summary}</div>
-      <div class="hi-time">${h.time}</div>
+      <div class="hi-main">
+        <div class="hi-tool">${h.tool}</div>
+        <div class="hi-target">${h.target}</div>
+        <div class="hi-summary">${h.summary}</div>
+        <div class="hi-time">${h.time}</div>
+      </div>
+      <button class="hi-del" title="删除此条">×</button>
     </div>`).join('');
 }
 // 暴露给 main 进程调用

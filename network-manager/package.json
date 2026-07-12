@@ -1,6 +1,6 @@
 {
   "name": "network-manager",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "网络管家 - 网络诊断一体化桌面应用（Ping / Traceroute / DNS / 端口检测 / HTTP 头 / Whois / IP 信息）",
   "main": "src/main.js",
   "scripts": {

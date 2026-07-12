@@ -1,5 +1,5 @@
 // Electron 主进程 - 网络管家
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, clipboard, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
@@ -16,9 +16,12 @@ const {
   parseNslookupOutput,
   parseWhoisOutput,
   parseHttpHeaders,
+  historyToCsv,
+  historyToJson,
 } = require('./core/net-core');
 
 let mainWindow;
+let tray = null;
 let history = []; // 诊断历史
 
 function histPath() {
@@ -53,11 +56,13 @@ function addHistory(entry) {
 }
 
 function createWindow() {
+  const isDemo = process.env.NM_DEMO === '1' || process.argv.includes('--demo');
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 920,
     minWidth: 980,
     minHeight: 600,
+    show: false,
     title: '网络管家',
     backgroundColor: '#f5f5f7',
     autoHideMenuBar: true,
@@ -70,10 +75,24 @@ function createWindow() {
     },
   });
 
-  mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+  mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'), isDemo ? { query: { demo: '1' } } : undefined);
 
   mainWindow.webContents.on('console-message', (e, level, message) => {
     console.log('[renderer]', message);
+  });
+
+  // 演示/截图模式：显示但不抢焦点；正常模式：正常显示
+  mainWindow.once('ready-to-show', () => {
+    if (isDemo) mainWindow.showInactive();
+    else mainWindow.show();
+  });
+
+  // 关闭时隐藏到托盘，不退出（托盘常驻）
+  mainWindow.on('close', (e) => {
+    if (!app.isQuitting) {
+      e.preventDefault();
+      mainWindow.hide();
+    }
   });
 
   // 演示模式由 renderer.js 的 init() 自行检测（api.isDemo()），无需主进程重复注入
@@ -83,17 +102,74 @@ function createWindow() {
   }
 }
 
-app.whenReady().then(() => {
-  loadHistory();
-  createWindow();
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+// ---- 系统托盘 ----
+function createTray() {
+  const iconPath = path.join(__dirname, '..', 'build', 'icon.ico');
+  let img;
+  try {
+    img = nativeImage.createFromPath(iconPath);
+    if (img.isEmpty()) img = nativeImage.createEmpty();
+  } catch (e) {
+    img = nativeImage.createEmpty();
+  }
+  tray = new Tray(img);
+  tray.setToolTip('网络管家 - 网络诊断工具集');
+  tray.on('click', () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
+      mainWindow.focus();
+    }
   });
-});
+  tray.on('right-click', () => {
+    const menu = Menu.buildFromTemplate([
+      { label: '显示主窗口', click: () => { if (mainWindow) { mainWindow.show(); mainWindow.focus(); } } },
+      { type: 'separator' },
+      { label: '退出', click: () => { app.isQuitting = true; app.quit(); } },
+    ]);
+    tray.popUpContextMenu(menu);
+  });
+  updateTray();
+}
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
-});
+function updateTray() {
+  if (!tray) return;
+  const menu = Menu.buildFromTemplate([
+    { label: '网络管家', enabled: false },
+    { type: 'separator' },
+    { label: '显示主窗口', click: () => { if (mainWindow) { mainWindow.show(); mainWindow.focus(); } } },
+    { label: '退出', click: () => { app.isQuitting = true; app.quit(); } },
+  ]);
+  tray.setContextMenu(menu);
+}
+
+// ---- 单实例锁 ----
+const gotLock = app.requestSingleInstanceLock();
+if (!gotLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  });
+
+  app.whenReady().then(() => {
+    loadHistory();
+    createWindow();
+    createTray();
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    });
+  });
+
+  app.on('window-all-closed', () => {
+    // 不退出，留在托盘
+  });
+  app.on('before-quit', () => { app.isQuitting = true; });
+}
 
 // ===== 运行系统命令（spawn，支持中文） =====
 function runCmd(cmd, args, opts = {}) {
@@ -311,4 +387,48 @@ ipcMain.handle('hist:remove', (e, index) => {
     saveHistory();
   }
   return history.slice();
+});
+
+// ===== 剪贴板（复制诊断结果） =====
+ipcMain.handle('clip:writeText', (e, text) => {
+  try {
+    clipboard.writeText(String(text || ''));
+    return true;
+  } catch (err) {
+    return false;
+  }
+});
+
+// ===== 历史导出（CSV / JSON） =====
+ipcMain.handle('hist:exportCsv', async () => {
+  const csv = historyToCsv(history);
+  const res = await dialog.showSaveDialog(mainWindow, {
+    title: '导出历史记录为 CSV',
+    defaultPath: 'network-history.csv',
+    filters: [{ name: 'CSV 文件', extensions: ['csv'] }],
+  });
+  if (res.canceled || !res.filePath) return { ok: false, msg: '已取消' };
+  try {
+    // 加 UTF-8 BOM，保证 Excel 正确识别中文
+    fs.writeFileSync(res.filePath, '\uFEFF' + csv, 'utf-8');
+    return { ok: true, path: res.filePath };
+  } catch (err) {
+    return { ok: false, msg: err.message };
+  }
+});
+
+ipcMain.handle('hist:exportJson', async () => {
+  const json = historyToJson(history);
+  const res = await dialog.showSaveDialog(mainWindow, {
+    title: '导出历史记录为 JSON',
+    defaultPath: 'network-history.json',
+    filters: [{ name: 'JSON 文件', extensions: ['json'] }],
+  });
+  if (res.canceled || !res.filePath) return { ok: false, msg: '已取消' };
+  try {
+    fs.writeFileSync(res.filePath, json, 'utf-8');
+    return { ok: true, path: res.filePath };
+  } catch (err) {
+    return { ok: false, msg: err.message };
+  }
 });

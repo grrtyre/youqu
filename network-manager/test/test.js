@@ -16,6 +16,11 @@ const {
   latencyRating,
   formatBytes,
   timeAgo,
+  formatResultText,
+  escapeCsv,
+  formatTs,
+  historyToCsv,
+  historyToJson,
 } = require('../src/core/net-core');
 
 let pass = 0;
@@ -252,6 +257,106 @@ assertEq(timeAgo(now), '刚刚', '刚刚');
 assertEq(timeAgo(now - 120000), '2 分钟前', '2分钟前');
 assertEq(timeAgo(now - 7200000), '2 小时前', '2小时前');
 assertEq(timeAgo(now - 86400000), '1 天前', '1天前');
+
+console.log('== formatResultText (ping) ==');
+const pingData = { host: 'baidu.com', ip: '110.242.68.66', sent: 4, received: 4, loss: 0, min: 11, max: 16, avg: 13, samples: [{ ip: '110.242.68.66', bytes: 32, time: 12, ttl: 54 }, { ip: '110.242.68.66', bytes: 32, time: 16, ttl: 54 }] };
+const pingText = formatResultText('ping', pingData, { host: 'baidu.com' });
+assert(pingText.indexOf('Ping 探测 - baidu.com') >= 0, 'ping 标题');
+assert(pingText.indexOf('110.242.68.66') >= 0, 'ping 含 IP');
+assert(pingText.indexOf('已发送: 4') >= 0, 'ping 已发送');
+assert(pingText.indexOf('丢包率: 0%') >= 0, 'ping 丢包率');
+assert(pingText.indexOf('#1') >= 0 && pingText.indexOf('#2') >= 0, 'ping 样本序号');
+assert(pingText.indexOf('TTL=54') >= 0, 'ping TTL');
+
+console.log('== formatResultText (tracert) ==');
+const tracertData = [{ hop: 1, host: '192.168.1.1', ip: '192.168.1.1', times: [1, 1, 1] }, { hop: 2, host: '', ip: '', times: [null, null, null] }];
+const tracertText = formatResultText('tracert', tracertData, { host: 'baidu.com' });
+assert(tracertText.indexOf('路由追踪 - baidu.com') >= 0, 'tracert 标题');
+assert(tracertText.indexOf('192.168.1.1') >= 0, 'tracert 含第一跳');
+assert(tracertText.indexOf('超时') >= 0, 'tracert 含超时');
+assert(tracertText.indexOf('(匿名)') >= 0, 'tracert 匿名节点');
+
+console.log('== formatResultText (dns) ==');
+const dnsData = [{ type: 'A', address: '93.184.216.34' }, { type: 'MX', address: 'mail.example.com.', preference: 10 }];
+const dnsText = formatResultText('dns', dnsData, { domain: 'example.com', type: 'A' });
+assert(dnsText.indexOf('DNS 查询 - example.com (A)') >= 0, 'dns 标题');
+assert(dnsText.indexOf('93.184.216.34') >= 0, 'dns 含地址');
+assert(dnsText.indexOf('优先级 10') >= 0, 'dns MX 优先级');
+
+console.log('== formatResultText (port) ==');
+const portDataOk = { reachable: true, elapsed: 23 };
+const portTextOk = formatResultText('port', portDataOk, { host: 'baidu.com', port: 443 });
+assert(portTextOk.indexOf('端口检测 - baidu.com:443') >= 0, 'port 标题');
+assert(portTextOk.indexOf('端口开放') >= 0, 'port 开放状态');
+assert(portTextOk.indexOf('耗时: 23ms') >= 0, 'port 耗时');
+const portDataFail = { reachable: false, elapsed: 3000, reason: 'timeout' };
+const portTextFail = formatResultText('port', portDataFail, { host: '1.2.3.4', port: 80 });
+assert(portTextFail.indexOf('端口不可达') >= 0, 'port 不可达');
+assert(portTextFail.indexOf('连接超时') >= 0, 'port 超时原因');
+
+console.log('== formatResultText (http) ==');
+const httpData = { status: 200, statusText: 'OK', elapsed: 45, headers: [{ key: 'Content-Type', value: 'text/html' }, { key: 'Server', value: 'bfe' }] };
+const httpText = formatResultText('http', httpData, { url: 'https://www.baidu.com' });
+assert(httpText.indexOf('HTTP 头分析 - https://www.baidu.com') >= 0, 'http 标题');
+assert(httpText.indexOf('状态: 200 OK') >= 0, 'http 状态');
+assert(httpText.indexOf('Content-Type: text/html') >= 0, 'http 响应头');
+assert(httpText.indexOf('Server: bfe') >= 0, 'http Server 头');
+
+console.log('== formatResultText (whois) ==');
+const whoisData = { registrar: 'MarkMonitor Inc.', createdDate: '1999-10-11', expiryDate: '2026-10-11', updatedDate: '2023-09-15', nameServers: ['ns1.baidu.com', 'ns2.baidu.com'], status: [], raw: '' };
+const whoisText = formatResultText('whois', whoisData, { domain: 'google.com' });
+assert(whoisText.indexOf('Whois 域名信息 - google.com') >= 0, 'whois 标题');
+assert(whoisText.indexOf('MarkMonitor Inc.') >= 0, 'whois 注册商');
+assert(whoisText.indexOf('ns1.baidu.com, ns2.baidu.com') >= 0, 'whois NS 列表');
+
+console.log('== formatResultText (ip) ==');
+const ipData = { query: '8.8.8.8', country: 'United States', countryCode: 'US', regionName: 'California', city: 'Mountain View', zip: '94043', lat: 37.4, lon: -122.1, timezone: 'America/Los_Angeles', isp: 'Google LLC', org: 'Google LLC', as: 'AS15169' };
+const ipText = formatResultText('ip', ipData, {});
+assert(ipText.indexOf('IP 归属 - 8.8.8.8') >= 0, 'ip 标题');
+assert(ipText.indexOf('United States (US)') >= 0, 'ip 国家');
+assert(ipText.indexOf('Google LLC') >= 0, 'ip 运营商');
+assert(ipText.indexOf('AS15169') >= 0, 'ip AS');
+
+console.log('== formatResultText (边界) ==');
+assertEq(formatResultText('', {}, {}), '', '空 tool 返回空');
+assertEq(formatResultText('unknown', { a: 1 }, {}), '', '未知 tool 返回空');
+assertEq(formatResultText('ping', null, {}), '', 'null data 返回空');
+
+console.log('== escapeCsv ==');
+assertEq(escapeCsv('hello'), 'hello', '普通文本不转义');
+assertEq(escapeCsv('a,b'), '"a,b"', '含逗号加引号');
+assertEq(escapeCsv('a"b'), '"a""b"', '含引号双写');
+assertEq(escapeCsv('a\nb'), '"a\nb"', '含换行加引号');
+assertEq(escapeCsv(null), '', 'null 返回空');
+assertEq(escapeCsv(undefined), '', 'undefined 返回空');
+assertEq(escapeCsv(123), '123', '数字转字符串');
+
+console.log('== formatTs ==');
+const ts = new Date(2026, 6, 12, 10, 30, 45).getTime(); // 2026-07-12 10:30:45 本地
+assertEq(formatTs(ts), '2026-07-12 10:30:45', '完整时间格式');
+assertEq(formatTs(null), '', 'null 返回空');
+assertEq(formatTs(undefined), '', 'undefined 返回空');
+
+console.log('== historyToCsv ==');
+const histCsv = historyToCsv([{ ts: new Date(2026, 6, 12, 10, 30, 0).getTime(), tool: 'ping', target: 'baidu.com', summary: '4/4 包, 丢失 0%' }]);
+assert(histCsv.indexOf('时间,工具,目标,摘要') === 0, 'CSV 表头');
+assert(histCsv.indexOf('baidu.com') >= 0, 'CSV 含目标');
+assert(histCsv.indexOf('"4/4 包, 丢失 0%"') >= 0, 'CSV 摘要含逗号被转义');
+assert(histCsv.indexOf('2026-07-12 10:30:00') >= 0, 'CSV 含格式化时间');
+const emptyCsv = historyToCsv([]);
+assertEq(emptyCsv, '时间,工具,目标,摘要\r\n', '空历史仅表头');
+const nullCsv = historyToCsv(null);
+assertEq(nullCsv, '时间,工具,目标,摘要\r\n', 'null 仅表头');
+
+console.log('== historyToJson ==');
+const histJson = historyToJson([{ ts: new Date(2026, 6, 12, 10, 30, 0).getTime(), tool: 'ping', target: 'baidu.com', summary: 'ok' }]);
+const parsed = JSON.parse(histJson);
+assertEq(parsed.length, 1, 'JSON 一条记录');
+assertEq(parsed[0].tool, 'ping', 'JSON 工具字段');
+assertEq(parsed[0].target, 'baidu.com', 'JSON 目标字段');
+assertEq(parsed[0].time, '2026-07-12 10:30:00', 'JSON 时间格式化');
+assertEq(historyToJson([]), '[]', '空历史返回空数组');
+assertEq(historyToJson(null), '[]', 'null 返回空数组');
 
 console.log('\n=========================');
 console.log(`  通过: ${pass}  失败: ${fail}`);

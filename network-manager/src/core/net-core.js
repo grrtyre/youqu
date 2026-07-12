@@ -368,6 +368,158 @@ function timeAgo(ts) {
   return Math.floor(diff / 86400000) + ' 天前';
 }
 
+// ===== 结果转纯文本（用于复制到剪贴板） =====
+
+// 将诊断结果格式化为可分享的纯文本
+// tool: 'ping' | 'tracert' | 'dns' | 'port' | 'http' | 'whois' | 'ip'
+// data: 该工具解析后的结果对象
+// meta: { host, domain, type, port, url } 输入元信息
+function formatResultText(tool, data, meta) {
+  if (!tool || !data) return '';
+  meta = meta || {};
+  switch (tool) {
+    case 'ping': return _fmtPing(data, meta.host);
+    case 'tracert': return _fmtTracert(data, meta.host);
+    case 'dns': return _fmtDns(data, meta.domain, meta.type);
+    case 'port': return _fmtPort(data, meta.host, meta.port);
+    case 'http': return _fmtHttp(data, meta.url);
+    case 'whois': return _fmtWhois(data, meta.domain);
+    case 'ip': return _fmtIp(data);
+    default: return '';
+  }
+}
+
+function _fmtPing(r, host) {
+  const lines = [];
+  lines.push(`Ping 探测 - ${host || r.host || ''}${r.ip ? ' [' + r.ip + ']' : ''}`);
+  lines.push(`已发送: ${r.sent}  已接收: ${r.received}  丢包率: ${r.loss}%  平均延迟: ${r.avg}ms (最小 ${r.min || '—'}ms / 最大 ${r.max || '—'}ms)`);
+  lines.push('');
+  if (r.samples && r.samples.length) {
+    r.samples.forEach((s, i) => {
+      lines.push(`#${i + 1}  ${s.ip || host || ''}  ${s.time}ms  TTL=${s.ttl}  ${s.bytes}B`);
+    });
+  }
+  return lines.join('\n');
+}
+
+function _fmtTracert(hops, host) {
+  const lines = [];
+  lines.push(`路由追踪 - ${host || ''}`);
+  if (hops && hops.length) {
+    hops.forEach((h) => {
+      const times = h.times.map((t) => (t === null ? '超时' : t + 'ms')).join(' / ');
+      const name = h.host || '(匿名)';
+      const ip = h.ip ? ' [' + h.ip + ']' : '';
+      lines.push(` ${h.hop}  ${name}${ip}  ${times}`);
+    });
+  }
+  return lines.join('\n');
+}
+
+function _fmtDns(records, domain, type) {
+  const lines = [];
+  lines.push(`DNS 查询 - ${domain || ''} (${type || 'A'})`);
+  if (records && records.length) {
+    records.forEach((r) => {
+      const pref = r.preference != null ? `  优先级 ${r.preference}` : '';
+      lines.push(`${r.type || type || 'A'}\t${r.address}${pref}`);
+    });
+  }
+  return lines.join('\n');
+}
+
+function _fmtPort(res, host, port) {
+  const ok = res.reachable;
+  const reason = ok ? '' : `（${res.reason === 'timeout' ? '连接超时' : (res.reason || '拒绝')}）`;
+  return [
+    `端口检测 - ${host || ''}:${port || ''}`,
+    `状态: ${ok ? '端口开放' : '端口不可达'}${reason}`,
+    `耗时: ${res.elapsed}ms`,
+  ].join('\n');
+}
+
+function _fmtHttp(res, url) {
+  const lines = [];
+  lines.push(`HTTP 头分析 - ${url || ''}`);
+  lines.push(`状态: ${res.status} ${res.statusText || ''}  耗时: ${res.elapsed}ms`);
+  lines.push('');
+  if (res.headers && res.headers.length) {
+    res.headers.forEach((h) => lines.push(`${h.key}: ${h.value}`));
+  }
+  return lines.join('\n');
+}
+
+function _fmtWhois(info, domain) {
+  const lines = [];
+  lines.push(`Whois 域名信息 - ${domain || ''}`);
+  lines.push(`注册商: ${info.registrar || '—'}`);
+  lines.push(`注册时间: ${info.createdDate || '—'}`);
+  lines.push(`到期时间: ${info.expiryDate || '—'}`);
+  lines.push(`更新时间: ${info.updatedDate || '—'}`);
+  lines.push(`域名服务器: ${(info.nameServers && info.nameServers.length) ? info.nameServers.join(', ') : '—'}`);
+  return lines.join('\n');
+}
+
+function _fmtIp(d) {
+  const lines = [];
+  lines.push(`IP 归属 - ${d.query || ''}`);
+  lines.push(`国家/地区: ${d.country || '—'} ${d.countryCode ? '(' + d.countryCode + ')' : ''}`);
+  lines.push(`省/州: ${d.regionName || '—'}`);
+  lines.push(`城市: ${d.city || '—'}`);
+  lines.push(`邮编: ${d.zip || '—'}`);
+  lines.push(`经纬度: ${d.lat != null ? d.lat + ', ' + d.lon : '—'}`);
+  lines.push(`时区: ${d.timezone || '—'}`);
+  lines.push(`运营商: ${d.isp || '—'}`);
+  lines.push(`组织/AS: ${[d.org, d.as].filter(Boolean).join(' ') || '—'}`);
+  return lines.join('\n');
+}
+
+// ===== 历史记录导出 CSV =====
+
+// CSV 字段转义：包含逗号、引号或换行时用双引号包裹，内部引号双写
+function escapeCsv(value) {
+  if (value === null || value === undefined) return '';
+  const s = String(value);
+  if (/[",\r\n]/.test(s)) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
+// 时间戳格式化为 yyyy-MM-dd HH:mm:ss
+function formatTs(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+// 历史记录转 CSV 文本
+function historyToCsv(history) {
+  if (!Array.isArray(history) || history.length === 0) return '时间,工具,目标,摘要\r\n';
+  const rows = ['时间,工具,目标,摘要'];
+  history.forEach((h) => {
+    rows.push([
+      escapeCsv(formatTs(h.ts)),
+      escapeCsv(h.tool),
+      escapeCsv(h.target),
+      escapeCsv(h.summary),
+    ].join(','));
+  });
+  return rows.join('\r\n') + '\r\n';
+}
+
+// 历史记录转 JSON 文本
+function historyToJson(history) {
+  if (!Array.isArray(history)) return '[]';
+  return JSON.stringify(history.map((h) => ({
+    time: formatTs(h.ts),
+    tool: h.tool,
+    target: h.target || '',
+    summary: h.summary || '',
+  })), null, 2);
+}
+
 module.exports = {
   parseHostPort,
   isIPv4,
@@ -385,4 +537,9 @@ module.exports = {
   latencyRating,
   formatBytes,
   timeAgo,
+  formatResultText,
+  escapeCsv,
+  formatTs,
+  historyToCsv,
+  historyToJson,
 };

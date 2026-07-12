@@ -14,7 +14,9 @@
 - **HTTP 头分析** —— 状态码色彩分级（2xx 绿/3xx 橙/4xx+ 红），全部响应头键值列表，响应耗时
 - **Whois 域名信息** —— 注册商、注册/到期/更新时间、域名服务器、域名状态，原始数据可展开
 - **IP 归属查询** —— 国家/省/市/邮编/经纬度/时区/运营商/AS 信息，留空查询本机公网 IP，一键查看本机网络配置
-- **诊断历史** —— 自动记录每次诊断（工具/目标/摘要/时间），最多 100 条，一键清空
+- **诊断历史** —— 自动记录每次诊断（工具/目标/摘要/时间），最多 100 条，单条删除、一键清空、导出 CSV/JSON
+- **🆕 复制结果** —— 每项诊断结果支持一键复制为纯文本，方便分享给同事或贴进 bug 报告
+- **🆕 系统托盘** —— 常驻托盘，关闭窗口不退出，点击托盘快速唤起，单实例锁防多开
 - **回车快捷** —— 所有输入框支持回车直接执行
 - **苹果白高端风格** —— 参考 macOS 原生设计，白底浅灰、细腻多层阴影、系统字体、蓝色 `#007aff` 强调
 
@@ -22,15 +24,15 @@
 
 | 平台 | 下载 | 说明 |
 |------|------|------|
-| Windows x64 | [network-manager-setup-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/network-manager-v1.0.0/network-manager-setup-1.0.0.exe) | 安装版，自动创建快捷方式 |
-| Windows x64 | [network-manager-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/network-manager-v1.0.0/network-manager-1.0.0.exe) | 便携版，双击即用 |
+| Windows x64 | [网络管家 Setup 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/network-manager-v1.1.0/network-manager-setup-1.1.0.exe) | v1.1.0 安装版，自动创建快捷方式 |
+| Windows x64 | [网络管家 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/network-manager-v1.1.0/network-manager-1.1.0.exe) | v1.1.0 便携版，双击即用 |
 
-> 前往 [Releases 页面](https://github.com/grrtyre/youqu/releases/tag/network-manager-v1.0.0) 查看所有版本。
+> 前往 [Releases 页面](https://github.com/grrtyre/youqu/releases/tag/network-manager-v1.1.0) 查看所有版本。
 
 ## 🚀 使用方式
 
 ### 方式一：直接下载（推荐）
-前往 [Releases](https://github.com/grrtyre/youqu/releases) 下载「网络管家 Setup 1.0.0.exe」安装版，或「网络管家 1.0.0.exe」便携版双击即用。
+前往 [Releases](https://github.com/grrtyre/youqu/releases) 下载「网络管家 Setup 1.1.0.exe」安装版，或「网络管家 1.1.0.exe」便携版双击即用。
 
 ### 方式二：源码运行
 ```bash
@@ -80,7 +82,7 @@ network-manager/
 │       ├── index.html         # 界面结构
 │       ├── styles.css         # 苹果白高端风格样式
 │       └── renderer.js        # 渲染层逻辑（7 大工具交互、历史、演示模式）
-├── test/test.js               # 核心逻辑测试（116 项断言）
+├── test/test.js               # 核心逻辑测试（170 项断言）
 ├── build/                     # 图标资源
 └── package.json
 ```
@@ -93,7 +95,7 @@ network-manager/
 npm test
 ```
 
-共 **116 项断言**，覆盖纯函数逻辑，无外部依赖。
+共 **170 项断言**，覆盖纯函数逻辑，无外部依赖。
 
 ## 📐 设计理念
 
@@ -103,6 +105,13 @@ npm test
 - **零框架依赖** —— 渲染层原生 JS，启动快、体积小
 
 ## 📝 更新日志
+
+### v1.1.0（2026-07-12）
+- 🆕 **复制结果**：每项诊断结果新增「复制结果」按钮，一键将 Ping/路由/DNS/端口/HTTP/Whois/IP 结果转为纯文本复制到剪贴板，方便分享与协作
+- 🆕 **系统托盘 + 单实例锁**：关闭窗口自动隐藏到托盘不退出，点击托盘图标快速唤起；单实例锁防止多开冲突
+- 🆕 **历史导出**：诊断历史支持导出为 CSV（带 UTF-8 BOM，Excel 中文不乱码）和 JSON，便于存档与二次分析
+- 🆕 **历史单条删除**：每条历史记录支持单独删除（hover 显示 × 按钮），不必每次清空全部
+- 🧪 单元测试从 116 项增至 170 项，覆盖结果文本格式化、CSV 转义、时间格式化、历史导出
 
 ### v1.0.0
 - 🎉 首个发布版本
