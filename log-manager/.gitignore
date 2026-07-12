@@ -1,0 +1,8 @@
+node_modules/
+dist/
+dist-v1.0/
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+build/icon-source-*.png

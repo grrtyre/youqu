@@ -1,0 +1,47 @@
+2026-07-12 09:00:00.123 INFO  [main] 日志管家启动成功，版本 v1.0.0
+2026-07-12 09:00:00.234 DEBUG [init] 加载配置文件 config/app.json
+2026-07-12 09:00:00.456 DEBUG [init] 配置项: { "theme": "light", "fontSize": 13, "autoScroll": true }
+2026-07-12 09:00:00.789 INFO  [main] 窗口创建完成，尺寸 1200x800
+2026-07-12 09:00:01.012 INFO  [ipc] 注册文件打开通道 log:open
+2026-07-12 09:00:01.123 INFO  [ipc] 注册文件监听通道 log:watch
+2026-07-12 09:00:01.234 DEBUG [fs] 用户数据目录 C:\Users\dev\AppData\Roaming\log-manager
+2026-07-12 09:00:01.456 INFO  [watcher] 初始化文件监听模块
+2026-07-12 09:00:02.001 WARN  [cache] 缓存目录不存在，已自动创建
+2026-07-12 09:00:02.123 INFO  [renderer] 渲染进程就绪
+2026-07-12 09:00:02.234 DEBUG [vdom] 虚拟滚动模块初始化，行高 22px
+2026-07-12 09:00:02.456 INFO  [search] 搜索引擎就绪，支持正则与大小写敏感
+2026-07-12 09:00:03.001 INFO  [main] 应用启动完成，耗时 3.001s
+2026-07-12 09:00:10.123 INFO  [user] 用户打开文件 app-server.log (2.4 MB)
+2026-07-12 09:00:10.234 DEBUG [parser] 开始解析日志内容
+2026-07-12 09:00:10.456 DEBUG [parser] 编码检测: utf-8
+2026-07-12 09:00:10.567 INFO  [parser] 解析完成，共 12583 行
+2026-07-12 09:00:10.678 DEBUG [stats] 级别统计: INFO=9821 WARN=2103 ERROR=612 FATAL=47
+2026-07-12 09:00:11.001 INFO  [render] 虚拟列表渲染，可见区间 [0, 38]
+2026-07-12 09:00:15.234 WARN  [scroll] 滚动位置接近底部，触发自动滚动
+2026-07-12 09:00:20.123 INFO  [user] 用户启用 ERROR 级别过滤
+2026-07-12 09:00:20.234 DEBUG [filter] 过滤后剩余 659 行
+2026-07-12 09:00:25.001 INFO  [user] 用户搜索关键词 "NullPointerException"
+2026-07-12 09:00:25.123 DEBUG [search] 匹配结果 3 行
+2026-07-12 09:00:30.456 ERROR [handler] 处理请求异常 NullPointerException at UserService.findUser(UserService.java:142)
+2026-07-12 09:00:30.457 ERROR [handler]   at UserController.getUser(UserController.java:78)
+2026-07-12 09:00:30.458 ERROR [handler]   at RequestRouter.dispatch(RequestRouter.java:215)
+2026-07-12 09:00:30.459 WARN  [retry] 第 1 次重试，等待 200ms
+2026-07-12 09:00:30.678 WARN  [retry] 第 2 次重试，等待 400ms
+2026-07-12 09:00:31.123 FATAL [handler] 重试次数耗尽，请求处理失败 requestId=txn_8a3f2b1c
+2026-07-12 09:00:31.234 ERROR [response] 返回 500 错误给客户端 192.168.1.42
+2026-07-12 09:00:35.001 INFO  [user] 用户跳转到第 2 个匹配项
+2026-07-12 09:00:40.123 INFO  [watcher] 检测到文件变化，新增 12 行
+2026-07-12 09:00:40.234 DEBUG [watcher] 读取新增字节 2048 bytes
+2026-07-12 09:00:40.456 INFO  [render] 追加渲染 12 行
+2026-07-12 09:01:00.001 INFO  [stats] 更新统计: ERROR +2 FATAL +1
+2026-07-12 09:01:05.123 INFO  [user] 用户切换到统计视图
+2026-07-12 09:01:05.234 DEBUG [chart] 渲染级别分布条形图
+2026-07-12 09:01:10.001 INFO  [user] 用户导出筛选结果 (659 行)
+2026-07-12 09:01:10.123 INFO  [export] 已保存至 D:\logs\app-server_filtered.txt
+2026-07-12 09:01:15.456 WARN  [memory] 内存占用 142MB，建议关注
+2026-07-12 09:01:20.001 INFO  [main] 用户最小化窗口
+2026-07-12 09:02:00.123 INFO  [watcher] 后台监听持续运行
+2026-07-12 09:02:30.456 ERROR [db] 数据库连接超时 (timeout=5000ms)
+2026-07-12 09:02:30.457 WARN  [pool] 连接池活跃数 8/10
+2026-07-12 09:02:31.123 INFO  [db] 重连成功
+2026-07-12 09:03:00.001 INFO  [main] 日志管家运行正常，已处理 12595 行
