@@ -11,7 +11,7 @@ const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
 let cachedSettings = null;
-let countdownRingCircumference = 2 * Math.PI * 86; // 540.35
+let countdownRingCircumference = 2 * Math.PI * 84; // 527.79
 
 // 初始化
 async function init() {
@@ -145,25 +145,21 @@ function renderBars(weekly) {
   weekly.forEach(d => {
     const col = document.createElement('div');
     col.className = 'bar-col';
-    const valLab = document.createElement('div');
-    valLab.className = 'bar-value';
-    valLab.textContent = (d.completed + d.skipped) > 0 ? (d.completed + d.skipped) : '';
     const stack = document.createElement('div');
     stack.className = 'bar-stack';
     stack.title = `${d.date} · 完成 ${d.completed} / 跳过 ${d.skipped}`;
     const done = document.createElement('div');
     done.className = 'bar-done';
-    done.style.height = `${(d.completed / maxVal) * 104}px`;
+    done.style.height = `${(d.completed / maxVal) * 82}px`;
     const skip = document.createElement('div');
     skip.className = 'bar-skip';
-    skip.style.height = `${(d.skipped / maxVal) * 104}px`;
+    skip.style.height = `${(d.skipped / maxVal) * 82}px`;
     stack.appendChild(done);
     stack.appendChild(skip);
     const day = document.createElement('div');
     day.className = 'bar-day' + (d.date === todayKey ? ' bar-today' : '');
     const dt = new Date(d.date);
     day.textContent = ['日','一','二','三','四','五','六'][dt.getDay()];
-    col.appendChild(valLab);
     col.appendChild(stack);
     col.appendChild(day);
     container.appendChild(col);
@@ -236,6 +232,7 @@ function renderPrefs(s) {
   $('#pref-warning-lead').value = s.warning.leadTime;
   $('#pref-sound').checked = s.sound;
   $('#pref-fullscreen').checked = s.fullscreenSuppress;
+  $('#pref-strict').checked = s.strictMode;
   $('#pref-launch').checked = s.launchAtLogin;
   $('#pref-dnd').checked = s.dnd.enabled;
   $('#pref-dnd-start').value = s.dnd.start;
@@ -267,6 +264,9 @@ function bindActions() {
   });
   $('#pref-fullscreen').addEventListener('change', async (e) => {
     cachedSettings = await window.api.saveSettings({ fullscreenSuppress: e.target.checked });
+  });
+  $('#pref-strict').addEventListener('change', async (e) => {
+    cachedSettings = await window.api.saveSettings({ strictMode: e.target.checked });
   });
   $('#pref-launch').addEventListener('change', async (e) => {
     await window.api.setLaunchAtLogin(e.target.checked);

@@ -37,9 +37,9 @@ function historyFile()  { return path.join(userDataDir(), store.HISTORY_FILE); }
 function createMainWindow() {
   mainWindow = new BrowserWindow({
     width: 1120,
-    height: 920,
+    height: 1140,
     minWidth: 880,
-    minHeight: 600,
+    minHeight: 720,
     title: APP_NAME,
     backgroundColor: '#f5f5f7',
     autoHideMenuBar: true,
@@ -76,6 +76,7 @@ function createMainWindow() {
 function createOverlayWindow(breakInfo) {
   const { screen } = require('electron');
   const primary = screen.getPrimaryDisplay();
+  const strict = !!(settings && settings.strictMode);
   overlayWindow = new BrowserWindow({
     width: Math.min(primary.workAreaSize.width, 1100),
     height: Math.min(primary.workAreaSize.height, 760),
@@ -83,8 +84,11 @@ function createOverlayWindow(breakInfo) {
     y: primary.workArea.y + Math.floor((primary.workAreaSize.height - Math.min(primary.workAreaSize.height, 760)) / 2),
     frame: true,
     resizable: true,
-    minimizable: true,
+    minimizable: !strict,
     maximizable: false,
+    closable: !strict,
+    alwaysOnTop: strict,
+    skipTaskbar: false,
     backgroundColor: '#f5f5f7',
     title: '休息一下 · ' + APP_NAME,
     webPreferences: {
@@ -95,11 +99,18 @@ function createOverlayWindow(breakInfo) {
     },
     icon: path.join(__dirname, '..', 'build', 'icon.ico')
   });
+  // 严格模式下拦截 Alt+F4 和系统菜单的关闭
+  if (strict) {
+    overlayWindow.on('close', (e) => {
+      // 倒计时未结束前阻止关闭
+      if (!overlayWindow.__breakFinished) e.preventDefault();
+    });
+  }
   overlayWindow.loadFile(path.join(__dirname, 'renderer', 'overlay.html'));
   overlayWindow.once('ready-to-show', () => {
     overlayWindow.show();
     overlayWindow.focus();
-    overlayWindow.webContents.send('break-start', breakInfo);
+    overlayWindow.webContents.send('break-start', { ...breakInfo, strictMode: strict });
   });
   overlayWindow.on('closed', () => { overlayWindow = null; });
 }
@@ -177,12 +188,13 @@ function loadInitialSettings() {
 function seedDemoHistory() {
   const now = Date.now();
   const demo = [];
-  // 过去 6 天，每天 3-6 次完成 + 0-1 次跳过
+  // 过去 6 天，每天 3-6 次完成 + 0-1 次跳过（确定性数据保证图表满柱）
+  const dailyCounts = [3, 5, 4, 6, 3, 5]; // 过去 6 天每天的完成数
   for (let d = 6; d >= 1; d--) {
     const dayBase = now - d * 86400000;
-    const completedCount = 3 + Math.floor(Math.random() * 4); // 3-6
+    const completedCount = dailyCounts[6 - d];
     for (let i = 0; i < completedCount; i++) {
-      const ts = new Date(dayBase - i * 25 * 60 * 1000); // 每天往回数 25 分钟一次
+      const ts = new Date(dayBase - i * 25 * 60 * 1000);
       demo.push({
         ts: ts.toISOString(),
         type: i % 5 === 0 ? 'short' : 'micro',
@@ -190,7 +202,8 @@ function seedDemoHistory() {
         durationSec: i % 5 === 0 ? 180 : 20
       });
     }
-    if (Math.random() < 0.5) {
+    // 每 2 天有 1 次跳过
+    if (d % 2 === 0) {
       demo.push({
         ts: new Date(dayBase - 50 * 60 * 1000).toISOString(),
         type: 'micro',
@@ -199,7 +212,7 @@ function seedDemoHistory() {
       });
     }
   }
-  // 今天：2 次完成 + 1 次跳过
+  // 今天：3 次完成 + 1 次跳过
   demo.push({ ts: new Date(now - 90 * 60 * 1000).toISOString(), type: 'micro', action: 'completed', durationSec: 20 });
   demo.push({ ts: new Date(now - 60 * 60 * 1000).toISOString(), type: 'micro', action: 'skipped', durationSec: 0 });
   demo.push({ ts: new Date(now - 30 * 60 * 1000).toISOString(), type: 'micro', action: 'completed', durationSec: 20 });
@@ -302,6 +315,7 @@ function finishBreak(action, durationSec) {
   });
   // 关闭覆盖层
   if (overlayWindow) {
+    overlayWindow.__breakFinished = true;
     try { overlayWindow.close(); } catch (e) {}
     overlayWindow = null;
   }
@@ -384,8 +398,8 @@ function broadcastCountdown() {
 // === 启动 ===
 app.whenReady().then(() => {
   loadInitialSettings();
-  // 首次运行：注入演示历史数据，让统计图表有内容可看
-  if (!fs.existsSync(historyFile())) {
+  // 首次运行或截图演示模式：注入演示历史数据，让统计图表有内容可看
+  if (!fs.existsSync(historyFile()) || process.argv.includes('--screenshot-demo')) {
     seedDemoHistory();
   }
   createMainWindow();

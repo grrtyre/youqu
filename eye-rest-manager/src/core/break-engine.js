@@ -15,6 +15,7 @@ const DEFAULT_SETTINGS = {
   warning: { enabled: true, leadTime: 10 },                    // 休息前 10 秒预警
   dnd:     { enabled: false, start: '22:00', end: '08:00' },   // 免打扰时段
   fullscreenSuppress: true,                                    // 全屏时抑制休息
+  strictMode: false,                                           // 严格模式：休息时不可跳过/延后/关闭窗口
   sound: true,
   launchAtLogin: false
 };
@@ -53,6 +54,7 @@ function normalizeSettings(user) {
     };
   }
   out.fullscreenSuppress = boolOr(user.fullscreenSuppress, out.fullscreenSuppress);
+  out.strictMode = boolOr(user.strictMode, out.strictMode);
   out.sound = boolOr(user.sound, out.sound);
   out.launchAtLogin = boolOr(user.launchAtLogin, out.launchAtLogin);
   return out;

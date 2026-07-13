@@ -9,6 +9,7 @@ let tickHandle = null;
 let exercises = [];
 let exerciseIdx = 0;
 let exerciseHandle = null;
+let strictMode = false;
 
 const EXERCISE_LIBRARY = {
   micro: [
@@ -35,10 +36,21 @@ function startBreak(info) {
   exercises = EXERCISE_LIBRARY[info.type] || EXERCISE_LIBRARY.micro;
   totalSec = info.durationSec;
   countdownSec = info.durationSec;
+  strictMode = !!info.strictMode;
 
   const titleMap = { micro: '微休息', short: '短休息', long: '长休息' };
   $('#overlay-title').textContent = titleMap[info.type] || '休息一下';
   $('#overlay-sub').textContent = `共 ${info.durationSec} 秒，跟着引导放松眼睛`;
+
+  // 严格模式：隐藏跳过/延后，禁用完成按钮，显示徽章
+  if (strictMode) {
+    $('#btn-skip').classList.add('hidden');
+    $('#btn-snooze').classList.add('hidden');
+    $('#btn-complete').classList.add('disabled');
+    $('#btn-complete').disabled = true;
+    $('#btn-complete').textContent = '请等待倒计时结束';
+    $('#strict-badge').classList.remove('hidden');
+  }
 
   // 渲染动作指示点
   const dots = $('#exercise-dots');

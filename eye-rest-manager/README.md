@@ -10,23 +10,21 @@
 - **休息覆盖层** — 全屏休息引导界面，圆环倒计时 + 动作演示 + 进度指示
 - **本地统计** — 今日完成/跳过次数、累计护眼时长、连续达标天数、近 7 天柱状图
 - **智能调度** — 免打扰时段、全屏自动推迟、休息前预警通知、系统托盘常驻
+- **🔒 严格模式** — 开启后休息时不可跳过、延后或关闭窗口，强制完成完整倒计时，杜绝"习惯性跳过"
 - **数据导入导出** — JSON 格式备份恢复，纯本地存储，不联网不上传
 
 ## 📸 截图
 
 ![护眼管家主界面](./build/screenshot.png)
 
-## 🚀 下载使用
+## ⬇️ 直接下载
 
-### 方式一：安装版（推荐）
+| 版本 | 下载链接 | 说明 |
+|---|---|---|
+| 安装版（推荐） | [护眼管家 Setup 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/eye-rest-manager-v1.1.0/护眼管家.Setup.1.1.0.exe) | 双击安装，自动创建桌面快捷方式 |
+| 免安装便携版 | [护眼管家 Portable 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/eye-rest-manager-v1.1.0/护眼管家.Portable.1.1.0.exe) | 双击即用，不写注册表 |
 
-下载 `护眼管家.Setup.1.0.1.exe`，双击安装后即可使用。
-
-👉 [前往 GitHub Releases 下载](https://github.com/grrtyre/youqu/releases)
-
-### 方式二：便携版
-
-下载 `护眼管家.Portable.1.0.1.exe`，无需安装，双击即用。
+系统要求：Windows 10/11 x64
 
 ## 🛠 技术栈
 
@@ -54,7 +52,7 @@ eye-rest-manager/
 │       ├── renderer.js      # 主界面逻辑
 │       └── overlay.js       # 覆盖层逻辑
 ├── test/
-│   └── test.js              # 24 个单元测试
+│   └── test.js              # 27 个单元测试
 ├── build/
 │   ├── icon.ico             # 应用图标
 │   └── screenshot.ps1       # PrintWindow 后台截图脚本
@@ -67,7 +65,19 @@ eye-rest-manager/
 npm test
 ```
 
-24 个单元测试覆盖：break-engine（11）、stats-utils（7）、exercises（3）、store（4）。
+27 个单元测试覆盖：break-engine（14）、stats-utils（6）、exercises（3）、store（4）。
+
+## 📝 更新日志
+
+### v1.1.0（2026-07-13）
+- 🔒 **新增严格模式**：开启后休息时不可跳过、延后或关闭窗口，强制完成完整倒计时，杜绝"习惯性跳过"
+  - 休息覆盖层隐藏「跳过」「延后」按钮，禁用「完成休息」按钮（仅倒计时结束自动完成）
+  - 窗口设为始终置顶、不可关闭、不可最小化，拦截 Alt+F4
+  - 显示橙色「严格模式」徽章提示
+- 🧪 **单元测试增至 27 个**：新增 strictMode 设置归一化测试（默认值/开启/非布尔值容错）
+
+### v1.0.0
+- 首次发布：20-20-20 法则、三级休息周期、眼保健操引导、休息覆盖层、本地统计、智能调度、数据导入导出
 
 ## ☕ 支持我们
 

@@ -42,6 +42,25 @@ test('normalizeSettings 不破坏未提供的字段', () => {
   assert.strictEqual(s.breaks.micro.enabled, true, '其他字段保持默认');
 });
 
+test('normalizeSettings strictMode 默认为 false', () => {
+  const s = engine.normalizeSettings({});
+  assert.strictEqual(s.strictMode, false, 'strictMode 默认关闭');
+});
+
+test('normalizeSettings strictMode 可开启且保留其他字段', () => {
+  const s = engine.normalizeSettings({ strictMode: true, sound: false });
+  assert.strictEqual(s.strictMode, true, 'strictMode 已开启');
+  assert.strictEqual(s.sound, false, '其他字段不受影响');
+  assert.strictEqual(s.breaks.micro.enabled, true, '休息周期保持默认');
+});
+
+test('normalizeSettings strictMode 非布尔值被夹取为默认 false', () => {
+  const s = engine.normalizeSettings({ strictMode: 'yes' });
+  assert.strictEqual(s.strictMode, false, '字符串非布尔值回退为 false');
+  const s2 = engine.normalizeSettings({ strictMode: 1 });
+  assert.strictEqual(s2.strictMode, false, '数字非布尔值回退为 false');
+});
+
 test('isInDND 在免打扰时段内返回 true', () => {
   const dnd = { enabled: true, start: '22:00', end: '08:00' };
   const n1 = new Date(2026, 6, 11, 23, 30);
