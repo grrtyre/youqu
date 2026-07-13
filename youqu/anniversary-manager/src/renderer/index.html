@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>纪念日管家</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 顶部栏 -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon">💌</div>
+        <div class="brand-text">
+          <div class="brand-title">纪念日管家</div>
+          <div class="brand-sub" id="todayLabel">今天</div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="搜索纪念日或姓名…" />
+        </div>
+        <button class="btn btn-ghost" id="importBtn" title="导入">↥</button>
+        <button class="btn btn-ghost" id="exportBtn" title="导出">↧</button>
+        <button class="btn btn-primary" id="addBtn">
+          <span class="btn-plus">＋</span> 新建
+        </button>
+      </div>
+    </header>
+
+    <div class="body">
+      <!-- 侧边栏 -->
+      <aside class="sidebar">
+        <div class="side-section">
+          <div class="side-title">分类</div>
+          <ul class="cat-list" id="catList"></ul>
+        </div>
+        <div class="side-section">
+          <div class="side-title">即将到来</div>
+          <ul class="upcoming-list" id="upcomingList"></ul>
+        </div>
+        <div class="side-foot">
+          <div class="side-stat" id="statTotal">0 个纪念日</div>
+          <div class="side-hint">数据存储于本地，不上传任何服务器</div>
+        </div>
+      </aside>
+
+      <!-- 主内容 -->
+      <main class="content">
+        <div class="content-head">
+          <div class="content-title" id="contentTitle">全部纪念日</div>
+          <div class="content-sort">
+            <span>排序</span>
+            <select id="sortSelect">
+              <option value="upcoming">按临近日期</option>
+              <option value="name">按名称</option>
+              <option value="date">按日期</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-grid" id="cardGrid"></div>
+        <div class="empty-state" id="emptyState" hidden>
+          <div class="empty-icon">🗓️</div>
+          <div class="empty-title">还没有纪念日</div>
+          <div class="empty-sub">点击右上角「新建」，记录第一个重要的日子</div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- 新建/编辑 弹窗 -->
+  <div class="modal-mask" id="modalMask" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title" id="modalTitle">新建纪念日</div>
+        <button class="modal-close" id="modalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <label>名称</label>
+          <input type="text" id="fName" placeholder="如：妈妈、结婚纪念日" maxlength="50" />
+        </div>
+        <div class="form-row">
+          <label>类型</label>
+          <div class="seg" id="fType">
+            <button data-v="birthday" class="seg-btn active">🎂 生日</button>
+            <button data-v="anniversary" class="seg-btn">💞 纪念日</button>
+            <button data-v="memorial" class="seg-btn">🕊️ 忌日</button>
+            <button data-v="custom" class="seg-btn">📌 自定义</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>分类</label>
+          <div class="seg" id="fCat">
+            <button data-v="family" class="seg-btn active">👨‍👩‍👧 家人</button>
+            <button data-v="friend" class="seg-btn">🤝 朋友</button>
+            <button data-v="colleague" class="seg-btn">💼 同事</button>
+            <button data-v="other" class="seg-btn">🌟 其他</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>历法</label>
+          <div class="seg" id="fDateType">
+            <button data-v="solar" class="seg-btn active">公历</button>
+            <button data-v="lunar" class="seg-btn">农历</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>日期</label>
+          <input type="date" id="fDate" />
+          <label class="leap-check" id="leapWrap" hidden>
+            <input type="checkbox" id="fLeap" /> 闰月
+          </label>
+        </div>
+        <div class="form-row">
+          <label>关系</label>
+          <input type="text" id="fRel" placeholder="如：母亲、大学室友" maxlength="30" />
+        </div>
+        <div class="form-row">
+          <label>备注</label>
+          <textarea id="fNotes" placeholder="如：记得提前订蛋糕" maxlength="500" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-danger" id="delBtn" hidden>删除</button>
+        <div class="modal-foot-right">
+          <button class="btn btn-ghost" id="cancelBtn">取消</button>
+          <button class="btn btn-primary" id="saveBtn">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

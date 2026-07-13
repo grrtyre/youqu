@@ -1,0 +1,14 @@
+node_modules/
+dist/
+*.log
+*.exe
+*.blockmap
+electron-out.log
+electron-err.log
+electron-run.log
+npm-install.log
+run-shot.ps1
+shot-bg.ps1
+build-dist.ps1
+.DS_Store
+Thumbs.db
