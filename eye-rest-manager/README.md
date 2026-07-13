@@ -21,8 +21,8 @@
 
 | 版本 | 下载链接 | 说明 |
 |---|---|---|
-| 安装版（推荐） | [护眼管家 Setup 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/eye-rest-manager-v1.1.0/护眼管家.Setup.1.1.0.exe) | 双击安装，自动创建桌面快捷方式 |
-| 免安装便携版 | [护眼管家 Portable 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/eye-rest-manager-v1.1.0/护眼管家.Portable.1.1.0.exe) | 双击即用，不写注册表 |
+| 安装版（推荐） | [护眼管家 Setup 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/eye-rest-manager-v1.1.0/Setup.1.1.0.exe) | 双击安装，自动创建桌面快捷方式 |
+| 免安装便携版 | [护眼管家 Portable 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/eye-rest-manager-v1.1.0/Portable.1.1.0.exe) | 双击即用，不写注册表 |
 
 系统要求：Windows 10/11 x64
 
