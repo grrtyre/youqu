@@ -6,8 +6,8 @@
 
 | 平台 | 下载 | 说明 |
 |---|---|---|
-| Windows x64 | [剧集管家 Setup 1.0.0.exe](https://github.com/grrtyre/youqu/releases/tag/watching-manager-v1.0.0) | 安装版，自动创建快捷方式 |
-| Windows x64 | [剧集管家 1.0.0.exe](https://github.com/grrtyre/youqu/releases/tag/watching-manager-v1.0.0) | 便携版，双击即用 |
+| Windows x64 | [watching-manager-setup-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/watching-manager-v1.0.0/watching-manager-setup-1.0.0.exe) | 安装版，自动创建快捷方式 |
+| Windows x64 | [watching-manager-portable-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/watching-manager-v1.0.0/watching-manager-portable-1.0.0.exe) | 便携版，双击即用 |
 
 ## ✨ 功能特点
 
