@@ -1,0 +1,8 @@
+node_modules/
+dist/
+*.log
+*.exe
+build/*.png
+build/*.txt
+.env
+.DS_Store

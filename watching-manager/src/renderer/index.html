@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self';" />
+  <title>剧集管家</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- 自定义标题栏 -->
+  <header class="titlebar">
+    <div class="drag"></div>
+    <div class="brand">
+      <div class="brand-logo">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <circle cx="12" cy="12" r="11" fill="#007aff"/>
+          <path d="M10 8 L17 12 L10 16 Z" fill="#fff"/>
+        </svg>
+      </div>
+      <div class="brand-name">剧集管家</div>
+    </div>
+    <div class="win-controls">
+      <button class="win-btn" id="winMin" title="最小化">─</button>
+      <button class="win-btn" id="winMax" title="最大化">▢</button>
+      <button class="win-btn win-close" id="winClose" title="关闭">✕</button>
+    </div>
+  </header>
+
+  <div class="app">
+    <!-- 侧边导航 -->
+    <nav class="sidebar">
+      <ul class="nav-list">
+        <li class="nav-item active" data-view="library"><span class="nav-ico">🎬</span><span>剧集库</span></li>
+        <li class="nav-item" data-view="stats"><span class="nav-ico">📊</span><span>统计</span></li>
+        <li class="nav-item" data-view="reminders"><span class="nav-ico">🔔</span><span>提醒</span></li>
+        <li class="nav-item" data-view="settings"><span class="nav-ico">⚙️</span><span>设置</span></li>
+      </ul>
+      <div class="sidebar-foot">
+        <div class="foot-tip"><span class="dot"></span>本地存储 · 不联网</div>
+      </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="content">
+      <!-- 剧集库 -->
+      <section class="view view-library active" id="view-library">
+        <div class="toolbar">
+          <div class="search-wrap">
+            <input type="text" id="searchInput" class="search-input" placeholder="搜索剧名 / 标签 / 备注" />
+          </div>
+          <div class="filters">
+            <select id="filterStatus" class="select">
+              <option value="">全部状态</option>
+              <option value="watching">观看中</option>
+              <option value="planning">想看</option>
+              <option value="completed">已看完</option>
+              <option value="dropped">弃剧</option>
+            </select>
+            <select id="filterType" class="select">
+              <option value="">全部类型</option>
+              <option value="tv">电视剧</option>
+              <option value="anime">动漫</option>
+              <option value="variety">综艺</option>
+              <option value="movie">电影</option>
+              <option value="doc">纪录片</option>
+            </select>
+            <select id="sortBy" class="select">
+              <option value="updated">最近更新</option>
+              <option value="added">添加时间</option>
+              <option value="lastWatched">上次观看</option>
+              <option value="title">剧名</option>
+              <option value="rating">评分</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="addBtn">＋ 添加剧集</button>
+        </div>
+
+        <div class="grid" id="showGrid"></div>
+        <div class="empty" id="emptyState">
+          <div class="empty-ico">🍿</div>
+          <div class="empty-title">还没有剧集</div>
+          <div class="empty-desc">点击「添加剧集」开始你的追剧档案</div>
+        </div>
+      </section>
+
+      <!-- 统计 -->
+      <section class="view view-stats" id="view-stats">
+        <h2 class="view-title">追剧统计</h2>
+        <div class="stats-grid" id="statsGrid"></div>
+        <h3 class="section-title">类型分布</h3>
+        <div class="bar-list" id="typeBars"></div>
+        <h3 class="section-title">热门标签</h3>
+        <div class="tag-cloud" id="tagCloud"></div>
+      </section>
+
+      <!-- 提醒 -->
+      <section class="view view-reminders" id="view-reminders">
+        <h2 class="view-title">追剧提醒</h2>
+        <div class="reminder-tip">以下剧集已经 3 天以上没有更新进度，是不是该追下一集了？</div>
+        <div class="reminder-list" id="reminderList"></div>
+      </section>
+
+      <!-- 设置 -->
+      <section class="view view-settings" id="view-settings">
+        <h2 class="view-title">设置</h2>
+        <div class="setting-group">
+          <h3 class="section-title">数据</h3>
+          <div class="setting-row">
+            <div class="setting-label">导出全部数据到 JSON 文件，便于备份或迁移</div>
+            <button class="btn" id="exportBtn">导出数据</button>
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">从 JSON 文件导入剧集（同 ID 会覆盖）</div>
+            <button class="btn" id="importBtn">导入数据</button>
+          </div>
+        </div>
+        <div class="setting-group">
+          <h3 class="section-title">关于</h3>
+          <div class="setting-row">
+            <div class="setting-label">剧集管家 v1.0.0 — 纯本地追剧进度管理工具</div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">支持我们的开发</div>
+            <button class="btn btn-link" id="afdianBtn">☕ 支持我们</button>
+          </div>
+        </div>
+        <div class="setting-group danger-group">
+          <h3 class="section-title">危险操作</h3>
+          <div class="setting-row">
+            <div class="setting-label">清空全部剧集数据（不可恢复）</div>
+            <button class="btn btn-danger" id="clearBtn">清空数据</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- 添加/编辑 弹窗 -->
+  <div class="modal-mask" id="modalMask">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title" id="modalTitle">添加剧集</div>
+        <button class="modal-close" id="modalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <label>海报</label>
+          <div class="poster-pick">
+            <div class="poster-preview" id="posterPreview">
+              <span class="poster-placeholder">点击选择海报</span>
+            </div>
+            <div class="poster-actions">
+              <button type="button" class="btn btn-mini" id="pickPosterBtn">选择图片</button>
+              <button type="button" class="btn btn-mini" id="clearPosterBtn">清除</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>剧名 <span class="req">*</span></label>
+          <input type="text" id="fTitle" class="input" placeholder="例：漫长的季节" />
+        </div>
+        <div class="form-row form-row-2">
+          <div>
+            <label>类型</label>
+            <select id="fType" class="select">
+              <option value="tv">电视剧</option>
+              <option value="anime">动漫</option>
+              <option value="variety">综艺</option>
+              <option value="movie">电影</option>
+              <option value="doc">纪录片</option>
+            </select>
+          </div>
+          <div>
+            <label>状态</label>
+            <select id="fStatus" class="select">
+              <option value="planning">想看</option>
+              <option value="watching">观看中</option>
+              <option value="completed">已看完</option>
+              <option value="dropped">弃剧</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row form-row-2">
+          <div>
+            <label>当前季</label>
+            <input type="number" id="fSeason" class="input" min="1" value="1" />
+          </div>
+          <div>
+            <label>当前集</label>
+            <input type="number" id="fEpisode" class="input" min="0" value="0" />
+          </div>
+        </div>
+        <div class="form-row form-row-2">
+          <div>
+            <label>总季数</label>
+            <input type="number" id="fTotalSeasons" class="input" min="0" value="0" placeholder="0=不限" />
+          </div>
+          <div>
+            <label>每季总集数</label>
+            <input type="number" id="fTotalEpisodes" class="input" min="0" value="0" placeholder="0=不限" />
+          </div>
+        </div>
+        <div class="form-row">
+          <label>评分（0-10）</label>
+          <input type="number" id="fRating" class="input" min="0" max="10" step="0.1" value="0" />
+        </div>
+        <div class="form-row">
+          <label>标签（逗号分隔）</label>
+          <input type="text" id="fTags" class="input" placeholder="例：悬疑, 国产, 烧脑" />
+        </div>
+        <div class="form-row">
+          <label>备注</label>
+          <textarea id="fNote" class="textarea" rows="3" placeholder="随便写点什么..."></textarea>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" id="modalCancel">取消</button>
+        <button class="btn btn-primary" id="modalSave">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
