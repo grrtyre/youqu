@@ -1,0 +1,10 @@
+node_modules/
+dist/
+build-output/
+*.log
+npm-install.log
+electron-*.log
+mimo-*.log
+*.tmp
+.demo
+.DS_Store

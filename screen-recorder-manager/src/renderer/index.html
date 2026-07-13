@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>录屏管家</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- 标题栏 -->
+  <header class="titlebar">
+    <div class="titlebar-drag">
+      <div class="app-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <rect x="2" y="4" width="20" height="14" rx="3" fill="#007aff"/>
+          <circle cx="12" cy="11" r="3.2" fill="#ffffff"/>
+          <path d="M9 20h6" stroke="#007aff" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="app-title">录屏管家</span>
+      <span class="app-sub" id="statusHint">就绪</span>
+    </div>
+    <div class="titlebar-actions">
+      <button class="win-btn" id="btnMin" title="最小化">
+        <svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
+      <button class="win-btn" id="btnMax" title="最大化">
+        <svg width="12" height="12" viewBox="0 0 12 12"><rect x="2.2" y="2.2" width="7.6" height="7.6" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>
+      </button>
+      <button class="win-btn win-btn-close" id="btnClose" title="关闭">
+        <svg width="12" height="12" viewBox="0 0 12 12"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- 主体 -->
+  <main class="main">
+    <!-- 左侧：录制控制 -->
+    <section class="panel control-panel">
+      <div class="panel-header">
+        <h2>录制</h2>
+        <span class="panel-sub">选择画面与音频，开始录制</span>
+      </div>
+
+      <!-- 录制源选择 -->
+      <div class="field">
+        <label class="field-label">录制画面</label>
+        <div class="source-tabs">
+          <button class="tab active" data-type="screen">屏幕</button>
+          <button class="tab" data-type="window">窗口</button>
+        </div>
+        <div class="source-grid" id="sourceGrid">
+          <div class="source-loading">正在获取画面…</div>
+        </div>
+      </div>
+
+      <!-- 音频选项 -->
+      <div class="field">
+        <label class="field-label">音频来源</label>
+        <div class="audio-options">
+          <label class="check-item">
+            <input type="checkbox" id="optSystemAudio" checked>
+            <span class="check-box"></span>
+            <span class="check-text">系统声音</span>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" id="optMic">
+            <span class="check-box"></span>
+            <span class="check-text">麦克风</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 画质 -->
+      <div class="field">
+        <label class="field-label">画质</label>
+        <div class="quality-options" id="qualityOptions">
+          <button class="q-btn" data-fps="10" data-label="流畅">流畅 · 10fps</button>
+          <button class="q-btn active" data-fps="24" data-label="标准">标准 · 24fps</button>
+          <button class="q-btn" data-fps="30" data-label="高清">高清 · 30fps</button>
+        </div>
+      </div>
+
+      <!-- 录制按钮区 -->
+      <div class="record-area">
+        <div class="timer-row">
+          <span class="rec-dot" id="recDot"></span>
+          <span class="timer" id="timer">00:00</span>
+          <span class="rec-state" id="recState">未开始</span>
+        </div>
+        <div class="record-buttons">
+          <button class="btn-rec" id="btnRecord" disabled>
+            <span class="btn-rec-icon"></span>
+            <span class="btn-rec-text">开始录制</span>
+          </button>
+          <button class="btn-secondary" id="btnPause" disabled>暂停</button>
+          <button class="btn-secondary btn-danger" id="btnCancel" disabled>取消</button>
+        </div>
+        <div class="hint" id="hint">提示：快捷键 Ctrl+Shift+R 可快速开始/停止录制</div>
+      </div>
+    </section>
+
+    <!-- 右侧：历史 -->
+    <section class="panel history-panel">
+      <div class="panel-header">
+        <h2>录制历史</h2>
+        <span class="panel-sub" id="historyCount">0 条</span>
+      </div>
+      <div class="history-list" id="historyList">
+        <div class="empty-state">
+          <div class="empty-icon-wrap">
+            <svg width="44" height="44" viewBox="0 0 48 48" fill="none">
+              <rect x="8" y="10" width="32" height="24" rx="3" fill="none" stroke="#a1a1a6" stroke-width="2"/>
+              <circle cx="24" cy="22" r="5" fill="none" stroke="#a1a1a6" stroke-width="2"/>
+              <path d="M18 38h12" stroke="#a1a1a6" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="24" cy="22" r="2" fill="#007aff"/>
+            </svg>
+          </div>
+          <p>还没有录制记录</p>
+          <p class="empty-sub">选择画面后点击「开始录制」</p>
+          <div class="empty-shortcut">快捷键 Ctrl+Shift+R 快速开始</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 视频预览弹层 -->
+  <div class="modal" id="previewModal">
+    <div class="modal-mask"></div>
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title" id="previewTitle">预览</span>
+        <button class="modal-close" id="previewClose">
+          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <video id="previewVideo" controls></video>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="previewSaveAs">另存为</button>
+        <button class="btn-secondary" id="previewFolder">在文件夹中显示</button>
+        <button class="btn-secondary btn-danger" id="previewDelete">删除</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
