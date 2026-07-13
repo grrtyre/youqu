@@ -8,6 +8,7 @@
 |---|---|---|---|
 | [⏰ Cron 中文可视化](./cron-zh) | 中文原生的 Cron 表达式可视化生成器：5/6 字段自动识别（支持 Spring/Quartz 带秒表达式）、`?` 标记兼容、实时中文解读、字段可视化、下次执行预览、常用预设 | 纯 HTML/CSS/JS | ✅ 可用 v2.0 |
 | [📋 剪贴板管家](./clipboard-manager) | Windows 桌面剪贴板历史管理器：苹果白风格、键盘导航、一键粘贴到前台、智能分类、纯本地隐私优先 | Electron + 原生 JS | ✅ 可用 |
+| [📋 剪贴板管家·便携版](./clipboard-manager/portable) | 输入法式体验的剪贴板历史管理器：原生 Python + PySide6、全局热键 Ctrl+Shift+V、失焦自动隐藏、托盘常驻、380x500 紧凑窗口、单 EXE 便携分发 | Python + PySide6 | ✅ 可用 v1.0.0 |
 | [📝 Markdown 预览器](./markdown-preview) | 苹果白风格本地 Markdown 预览器：实时编辑、GFM 语法、中文排版优化、保存 .md、阅读时长估算、一键导出 HTML/PDF、PWA 离线可用 | 纯 HTML/CSS/JS · PWA | ✅ 可用 v2.2 |
 | [🧰 开发者工具箱](./dev-toolbox) | 苹果白风格 8 合 1 开发者工具：颜色转换 / JSON 格式化 / 时间戳 / 正则测试 / 文本 Diff / Base64 / URL 编解码 / JWT 解码 | 纯 HTML/CSS/JS | ✅ 可用 v2.1 |
 | [🎨 拾色管家](./color-picker) | 苹果白风格屏幕取色器：全局快捷键、放大镜精准取色、多调色板管理、WCAG 对比度检查、调色板多格式导出（CSS/SCSS/JSON/GPL/ASE）、托盘常驻、纯本地隐私 | Electron + 原生 JS | ✅ 可用 v1.1.0 |
@@ -46,6 +47,7 @@
 | [🧠 思维导图管家](./mind-map-manager) | 本地优先的思维导图桌面工具：多文档管理、键盘流操作、自动树形布局、彩色分支、折叠展开、多格式导出（PNG/JSON/Markdown），数据不出本机 | Electron + 原生 SVG | ✅ 可用 v1.0.0 |
 | [🎬 录屏管家](./screen-recorder-manager) | 苹果白高端风格本地屏幕录制工具：屏幕/窗口录制、系统声音+麦克风混音、暂停继续、历史管理、全局快捷键、托盘常驻，纯本地隐私优先 | Electron + 原生 JS | ✅ 可用 v1.0.0 |
 | [🎡 抽签转盘管家](./wheel-manager) | 苹果白风格桌面随机选择工具：加权随机、多名单管理、批量导入、不重复抽奖、历史记录、音效、自定义设置，纯本地隐私优先 | Electron + 原生 JS | ✅ 可用 v1.0.0 |
+| [💌 纪念日管家](./anniversary-manager) | 本地优先的纪念日管理桌面应用：公历+农历双历法、生日/纪念日/忌日/自定义四类型、生肖星座、倒计时、即将到来侧栏、分类筛选、搜索排序、JSON导入导出、纯本地隐私优先 | Electron + 原生 JS | ✅ 可用 v1.0.0 |
 <!-- 新项目在这里追加一行 -->
 
 ## 🎯 共同特点
