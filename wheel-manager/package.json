@@ -1,0 +1,44 @@
+{
+  "name": "wheel-manager",
+  "version": "1.0.0",
+  "description": "抽签转盘管家 - 苹果白风格桌面随机选择工具",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/test.js",
+    "pack": "electron-builder --win --x64",
+    "icon": "python build/make_icon.py"
+  },
+  "author": "youqu",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.youqu.wheelmanager",
+    "productName": "抽签转盘管家",
+    "files": [
+      "src/**/*",
+      "build/icon.ico"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "deleteAppDataOnUninstall": false
+    },
+    "directories": {
+      "output": "dist"
+    }
+  }
+}

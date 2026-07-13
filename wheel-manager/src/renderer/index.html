@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>抽签转盘管家</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 左侧：名单管理 -->
+    <aside class="sidebar sidebar-left">
+      <div class="side-header">
+        <h2>名单</h2>
+        <button class="btn-icon" id="btnNewList" title="新建名单">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="list-scroll" id="listContainer"></div>
+      <div class="side-footer">
+        <div class="stats-card" id="leftStats"></div>
+        <button class="btn-ghost btn-block" id="btnSettings">设置</button>
+      </div>
+    </aside>
+
+    <!-- 中间：转盘 -->
+    <main class="stage">
+      <header class="stage-header">
+        <div class="title-wrap">
+          <h1 id="activeListName">未选择名单</h1>
+          <span class="entry-count" id="entryCount">0 项</span>
+        </div>
+      </header>
+
+      <div class="wheel-wrap">
+        <div class="wheel-frame">
+          <div class="pointer"></div>
+          <canvas id="wheel" width="560" height="560"></canvas>
+          <button class="spin-btn" id="btnSpin">开始</button>
+        </div>
+      </div>
+
+      <div class="result-bar" id="resultBar">
+        <span class="result-label">结果</span>
+        <span class="result-text empty" id="resultText">等待抽取</span>
+        <button class="btn-mini" id="btnCopyResult" title="复制结果" hidden>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10" stroke="currentColor" stroke-width="2"/></svg>
+        </button>
+      </div>
+    </main>
+
+    <!-- 右侧：条目编辑 + 历史 -->
+    <aside class="sidebar sidebar-right">
+      <div class="tabs">
+        <button class="tab active" data-tab="entries">条目</button>
+        <button class="tab" data-tab="history">历史</button>
+      </div>
+      <div class="tab-panel active" id="panelEntries">
+        <div class="bulk-wrap">
+          <textarea id="bulkInput" placeholder="批量输入：一行一个选项&#10;例如：&#10;张三&#10;李四&#10;王五" rows="6"></textarea>
+          <button class="btn-primary btn-sm" id="btnAddBulk">导入</button>
+        </div>
+        <div class="entries-scroll" id="entriesContainer"></div>
+        <div class="entries-footer">
+          <button class="btn-ghost btn-sm" id="btnClearEntries">清空</button>
+          <span class="entries-stat" id="entriesStat"></span>
+        </div>
+      </div>
+      <div class="tab-panel" id="panelHistory">
+        <div class="history-head">
+          <span id="historyCount">0 条记录</span>
+          <button class="btn-ghost btn-sm" id="btnClearHistory">清空</button>
+        </div>
+        <div class="history-scroll" id="historyContainer"></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- 设置弹层 -->
+  <div class="modal-mask" id="settingsModal" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <h3>设置</h3>
+        <button class="btn-icon" id="btnCloseSettings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <label class="setting-row">
+          <span>转动时长</span>
+          <div class="range-wrap">
+            <input type="range" id="rangeDuration" min="2000" max="10000" step="500" />
+            <span class="range-val" id="durationVal">4.5 秒</span>
+          </div>
+        </label>
+        <label class="setting-row">
+          <span>音效</span>
+          <input type="checkbox" id="chkSound" />
+        </label>
+        <label class="setting-row">
+          <span>抽中后自动剔除（不重复抽奖）</span>
+          <input type="checkbox" id="chkExclude" />
+        </label>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-primary" id="btnSaveSettings">完成</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
