@@ -6,7 +6,7 @@
 
 | 工具 | 简介 | 技术栈 | 状态 |
 |---|---|---|---|
-| [⏰ Cron 中文可视化](./cron-zh) | 中文原生的 Cron 表达式可视化生成器：5/6 字段自动识别（支持 Spring/Quartz 带秒表达式）、`?` 标记兼容、实时中文解读、字段可视化、下次执行预览、常用预设 | 纯 HTML/CSS/JS | ✅ 可用 v2.0 |
+| [⏰ Cron 中文可视化](./cron-zh) | 中文原生的 Cron 表达式可视化生成器：5/6 字段自动识别（支持 Spring/Quartz 带秒表达式）、`?` 标记兼容、实时中文解读、字段可视化、下次执行预览、常用预设、🕐 最近使用历史、📖 语法速查 | 纯 HTML/CSS/JS | ✅ 可用 v2.1 |
 | [📋 剪贴板管家](./clipboard-manager) | Windows 桌面剪贴板历史管理器：苹果白风格、键盘导航、一键粘贴到前台、智能分类、纯本地隐私优先 | Electron + 原生 JS | ✅ 可用 |
 | [📋 剪贴板管家·便携版](./clipboard-manager/portable) | 输入法式体验的剪贴板历史管理器：原生 Python + PySide6、全局热键 Ctrl+Shift+V、失焦自动隐藏、托盘常驻、380x500 紧凑窗口、单 EXE 便携分发 | Python + PySide6 | ✅ 可用 v1.0.0 |
 | [📝 Markdown 预览器](./markdown-preview) | 苹果白风格本地 Markdown 预览器：实时编辑、GFM 语法、中文排版优化、保存 .md、阅读时长估算、一键导出 HTML/PDF、PWA 离线可用 | 纯 HTML/CSS/JS · PWA | ✅ 可用 v2.2 |
@@ -50,6 +50,97 @@
 | [💌 纪念日管家](./anniversary-manager) | 本地优先的纪念日管理桌面应用：公历+农历双历法、生日/纪念日/忌日/自定义四类型、生肖星座、倒计时、即将到来侧栏、分类筛选、搜索排序、JSON导入导出、**✨ 桌面通知提醒**（每小时检查 7 天内事件）、系统托盘常驻、单实例锁、纯本地隐私优先 | Electron + 原生 JS | ✅ 可用 v1.1.0 |
 | [🎬 剧集管家](./watching-manager) | 本地追剧进度管理桌面应用：剧集档案、一键推进下一集（跨季自动+1、终集自动标记已看完）、状态管理、评分标签、统计概览、追剧提醒、搜索筛选、数据导入导出，纯本地存储不联网 | Electron + 原生 JS | ✅ 可用 v1.0.0 |
 <!-- 新项目在这里追加一行 -->
+
+## 📸 截图墙
+
+> 所有工具的实时截图，由后台 **PrintWindow + Edge headless** 自动截取，不打扰用户。点击图片跳转项目。
+
+<div align="center">
+
+<table>
+<tr>
+<td align="center"><a href="./cron-zh"><img src="docs/assets/img/cron-zh.webp" width="200" alt="Cron 中文可视化"><br><sub>⏰ Cron 中文可视化</sub></a></td>
+<td align="center"><a href="./clipboard-manager"><img src="docs/assets/img/clipboard-manager.webp" width="200" alt="剪贴板管家"><br><sub>📋 剪贴板管家</sub></a></td>
+<td align="center"><a href="./markdown-preview"><img src="docs/assets/img/markdown-preview.webp" width="200" alt="Markdown 预览器"><br><sub>📝 Markdown 预览器</sub></a></td>
+<td align="center"><a href="./dev-toolbox"><img src="docs/assets/img/dev-toolbox.webp" width="200" alt="开发者工具箱"><br><sub>🧰 开发者工具箱</sub></a></td>
+</tr>
+<tr>
+<td align="center"><a href="./color-picker"><img src="docs/assets/img/color-picker.webp" width="200" alt="拾色管家"><br><sub>🎨 拾色管家</sub></a></td>
+<td align="center"><a href="./screenshot-manager"><img src="docs/assets/img/screenshot-manager.webp" width="200" alt="截图管家"><br><sub>📸 截图管家</sub></a></td>
+<td align="center"><a href="./world-clock"><img src="docs/assets/img/world-clock.webp" width="200" alt="世界时钟"><br><sub>🌐 世界时钟</sub></a></td>
+<td align="center"><a href="./file-rename-manager"><img src="docs/assets/img/file-rename-manager.webp" width="200" alt="重命名管家"><br><sub>📁 重命名管家</sub></a></td>
+</tr>
+<tr>
+<td align="center"><a href="./quick-look"><img src="docs/assets/img/quick-look.webp" width="200" alt="速览管家"><br><sub>👁 速览管家</sub></a></td>
+<td align="center"><a href="./text-manager"><img src="docs/assets/img/text-manager.webp" width="200" alt="文本管家"><br><sub>📝 文本管家</sub></a></td>
+<td align="center"><a href="./duplicate-finder"><img src="docs/assets/img/duplicate-finder.webp" width="200" alt="清重管家"><br><sub>📦 清重管家</sub></a></td>
+<td align="center"><a href="./screen-ruler"><img src="docs/assets/img/screen-ruler.webp" width="200" alt="屏幕尺管家"><br><sub>📏 屏幕尺管家</sub></a></td>
+</tr>
+<tr>
+<td align="center"><a href="./font-manager"><img src="docs/assets/img/font-manager.webp" width="200" alt="字体管家"><br><sub>🔤 字体管家</sub></a></td>
+<td align="center"><a href="./pdf-toolbox"><img src="docs/assets/img/pdf-toolbox.webp" width="200" alt="PDF管家"><br><sub>📖 PDF管家</sub></a></td>
+<td align="center"><a href="./diff-checker"><img src="docs/assets/img/diff-checker.webp" width="200" alt="文本对比管家"><br><sub>⚖️ 文本对比管家</sub></a></td>
+<td align="center"><a href="./countdown-manager"><img src="docs/assets/img/countdown-manager.webp" width="200" alt="倒计时管家"><br><sub>⏳ 倒计时管家</sub></a></td>
+</tr>
+<tr>
+<td align="center"><a href="./qr-manager"><img src="docs/assets/img/qr-manager.webp" width="200" alt="二维码管家"><br><sub>📱 二维码管家</sub></a></td>
+<td align="center"><a href="./habit-keeper"><img src="docs/assets/img/habit-keeper.webp" width="200" alt="习惯管家"><br><sub>📋 习惯管家</sub></a></td>
+<td align="center"><a href="./accounting-manager"><img src="docs/assets/img/accounting-manager.webp" width="200" alt="记账管家"><br><sub>💰 记账管家</sub></a></td>
+<td align="center"><a href="./snippet-manager"><img src="docs/assets/img/snippet-manager.webp" width="200" alt="代码片段管家"><br><sub>📋 代码片段管家</sub></a></td>
+</tr>
+<tr>
+<td align="center"><a href="./time-tracker"><img src="docs/assets/img/time-tracker.webp" width="200" alt="时间管家"><br><sub>⏱️ 时间管家</sub></a></td>
+<td align="center"><a href="./port-manager"><img src="docs/assets/img/port-manager.webp" width="200" alt="端口管家"><br><sub>🔌 端口管家</sub></a></td>
+<td align="center"><a href="./checksum-manager"><img src="docs/assets/img/checksum-manager.webp" width="200" alt="校验管家"><br><sub>🛡️ 校验管家</sub></a></td>
+<td align="center"><a href="./api-manager"><img src="docs/assets/img/api-manager.webp" width="200" alt="API管家"><br><sub>🔌 API管家</sub></a></td>
+</tr>
+<tr>
+<td align="center"><a href="./topmost-manager"><img src="docs/assets/img/topmost-manager.webp" width="200" alt="置顶管家"><br><sub>📌 置顶管家</sub></a></td>
+<td align="center"><a href="./eye-rest-manager"><img src="docs/assets/img/eye-rest-manager.webp" width="200" alt="护眼管家"><br><sub>👁 护眼管家</sub></a></td>
+<td align="center"><a href="./hosts-manager"><img src="docs/assets/img/hosts-manager.webp" width="200" alt="Hosts管家"><br><sub>🖥️ Hosts管家</sub></a></td>
+<td align="center"><a href="./network-manager"><img src="docs/assets/img/network-manager.webp" width="200" alt="网络管家"><br><sub>🌐 网络管家</sub></a></td>
+</tr>
+<tr>
+<td align="center"><a href="./subscription-manager"><img src="docs/assets/img/subscription-manager.webp" width="200" alt="订阅管家"><br><sub>💰 订阅管家</sub></a></td>
+<td align="center"><a href="./sticky-notes-manager"><img src="docs/assets/img/sticky-notes-manager.webp" width="200" alt="便签管家"><br><sub>📝 便签管家</sub></a></td>
+<td align="center"><a href="./watermark-manager"><img src="docs/assets/img/watermark-manager.webp" width="200" alt="水印管家"><br><sub>💧 水印管家</sub></a></td>
+<td align="center"><a href="./regex-manager"><img src="docs/assets/img/regex-manager.webp" width="200" alt="正则管家"><br><sub>📐 正则管家</sub></a></td>
+</tr>
+<tr>
+<td align="center"><a href="./csv-manager"><img src="docs/assets/img/csv-manager.webp" width="200" alt="表格管家"><br><sub>📊 表格管家</sub></a></td>
+<td align="center"><a href="./startup-manager"><img src="docs/assets/img/startup-manager.webp" width="200" alt="启动项管家"><br><sub>🚀 启动项管家</sub></a></td>
+<td align="center"><a href="./pomodoro-manager"><img src="docs/assets/img/pomodoro-manager.webp" width="200" alt="番茄管家"><br><sub>🍅 番茄管家</sub></a></td>
+<td align="center"><a href="./ocr-manager"><img src="docs/assets/img/ocr-manager.webp" width="200" alt="识字管家"><br><sub>👁 识字管家</sub></a></td>
+</tr>
+<tr>
+<td align="center"><a href="./calculator-manager"><img src="docs/assets/img/calculator-manager.webp" width="200" alt="计算器管家"><br><sub>🧮 计算器管家</sub></a></td>
+<td align="center"><a href="./mind-map-manager"><img src="docs/assets/img/mind-map-manager.webp" width="200" alt="思维导图管家"><br><sub>🧠 思维导图管家</sub></a></td>
+<td align="center"><a href="./screen-recorder-manager"><img src="docs/assets/img/screen-recorder-manager.webp" width="200" alt="录屏管家"><br><sub>🎬 录屏管家</sub></a></td>
+<td align="center"><a href="./wheel-manager"><img src="docs/assets/img/wheel-manager.webp" width="200" alt="抽签转盘管家"><br><sub>🎡 抽签转盘管家</sub></a></td>
+</tr>
+<tr>
+<td align="center"><a href="./anniversary-manager"><img src="docs/assets/img/anniversary-manager.webp" width="200" alt="纪念日管家"><br><sub>💌 纪念日管家</sub></a></td>
+<td align="center"><a href="./watching-manager"><img src="docs/assets/img/watching-manager.webp" width="200" alt="剧集管家"><br><sub>🎬 剧集管家</sub></a></td>
+<td align="center"><a href="./disk-manager"><img src="docs/assets/img/disk-manager.webp" width="200" alt="磁盘管家"><br><sub>💾 磁盘管家</sub></a></td>
+<td align="center"><a href="./log-manager"><img src="docs/assets/img/log-manager.webp" width="200" alt="日志管家"><br><sub>📜 日志管家</sub></a></td>
+</tr>
+<tr>
+<td align="center"><a href="./env-manager"><img src="docs/assets/img/env-manager.webp" width="200" alt="环境变量管家"><br><sub>🌍 环境变量管家</sub></a></td>
+<td align="center"><a href="./exif-manager"><img src="docs/assets/img/exif-manager.webp" width="200" alt="EXIF管家"><br><sub>📷 EXIF管家</sub></a></td>
+<td align="center"><a href="./keyboard-tester"><img src="docs/assets/img/keyboard-tester.webp" width="200" alt="键盘测试管家"><br><sub>⌨️ 键盘测试管家</sub></a></td>
+<td align="center"><a href="./image-converter"><img src="docs/assets/img/image-converter.webp" width="200" alt="图片转换管家"><br><sub>🖼️ 图片转换管家</sub></a></td>
+</tr>
+<tr>
+<td align="center"><a href="./json-manager"><img src="docs/assets/img/json-manager.webp" width="200" alt="JSON管家"><br><sub>🔧 JSON管家</sub></a></td>
+<td align="center"><a href="./prompt-manager"><img src="docs/assets/img/prompt-manager.webp" width="200" alt="Prompt管家"><br><sub>💬 Prompt管家</sub></a></td>
+<td align="center"><a href="./whiteboard-manager"><img src="docs/assets/img/whiteboard-manager.webp" width="200" alt="白板管家"><br><sub>🎨 白板管家</sub></a></td>
+<td align="center"><a href="./screenshot-manager"><img src="docs/assets/img/screenshot-manager.webp" width="200" alt="截图管家"><br><sub>📸 截图管家</sub></a></td>
+</tr>
+</table>
+
+<p><em>💡 截图由 mimo 审美评分，评分角标在 <a href="https://grrtyre.github.io/youqu/">在线展示站</a> 卡片上显示</em></p>
+
+</div>
 
 ## 🎯 共同特点
 
