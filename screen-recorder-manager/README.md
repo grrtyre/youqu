@@ -6,8 +6,8 @@
 
 | 平台 | 下载 | 说明 |
 |---|---|---|
-| Windows x64 | [录屏管家 Setup 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/screen-recorder-manager-v1.0.0/screen-recorder-manager-setup-1.0.0.exe) | NSIS 安装包 |
-| Windows x64 | [录屏管家 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/screen-recorder-manager-v1.0.0/screen-recorder-manager-portable-1.0.0.exe) | 便携版（免安装） |
+| Windows x64 | [录屏管家 Setup 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/screen-recorder-manager-v1.0.0/screen-recorder-setup-1.0.0.exe) | NSIS 安装包 |
+| Windows x64 | [录屏管家 1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/screen-recorder-manager-v1.0.0/screen-recorder-portable-1.0.0.exe) | 便携版（免安装） |
 
 ## ✨ 功能特性
 
