@@ -211,6 +211,56 @@ ok('5字段无 second 字段', C.parse('0 9 * * 1-5').fields.second === undefine
 var cr = C.nextRun('0 9 * * 1-5', new Date('2026-07-04T10:00:00'), 1);
 eq('5字段结果秒=0', cr[0].getSeconds(), 0);
 
+console.log('\n=== 11. 最近使用历史逻辑（mock localStorage） ===');
+// 模拟 app.js 中的历史管理逻辑
+var mockStore = {};
+var mockLocalStorage = {
+  getItem: function (k) { return mockStore[k] || null; },
+  setItem: function (k, v) { mockStore[k] = v; },
+  removeItem: function (k) { delete mockStore[k]; }
+};
+var HKEY = 'cron-history';
+var HMAX = 8;
+
+function hLoad() {
+  var raw = mockLocalStorage.getItem(HKEY);
+  if (!raw) return [];
+  var arr = JSON.parse(raw);
+  return Array.isArray(arr) ? arr : [];
+}
+function hSave(list) { mockLocalStorage.setItem(HKEY, JSON.stringify(list)); }
+function hAdd(expr) {
+  if (!expr) return;
+  var list = hLoad();
+  var idx = list.indexOf(expr);
+  if (idx !== -1) list.splice(idx, 1);
+  list.unshift(expr);
+  if (list.length > HMAX) list = list.slice(0, HMAX);
+  hSave(list);
+}
+
+// 空历史
+eq('初始为空', hLoad(), []);
+// 添加一条
+hAdd('0 9 * * 1-5');
+eq('添加一条后长度1', hLoad(), ['0 9 * * 1-5']);
+// 添加第二条
+hAdd('*/5 * * * *');
+eq('添加两条后顺序', hLoad(), ['*/5 * * * *', '0 9 * * 1-5']);
+// 去重：重复添加移到首位
+hAdd('0 9 * * 1-5');
+eq('去重后移到首位', hLoad(), ['0 9 * * 1-5', '*/5 * * * *']);
+// 超过上限截断
+for (var hi = 0; hi < 10; hi++) { hAdd('expr-' + hi); }
+ok('超过上限截断为8条', hLoad().length === HMAX);
+eq('最新的在首位', hLoad()[0], 'expr-9');
+// 空值不添加
+hAdd('');
+ok('空值不添加', hLoad().length === HMAX);
+// 清空
+hSave([]);
+eq('清空后为空', hLoad(), []);
+
 console.log('\n=========================');
 console.log('通过: ' + pass + ' / 失败: ' + fail);
 console.log('=========================');

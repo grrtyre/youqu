@@ -53,6 +53,15 @@
         <div class="describe-label">中文解读</div>
         <div id="describe" class="describe">工作日 09:00</div>
       </div>
+
+      <!-- 最近使用 -->
+      <div class="recent-wrap" id="recentWrap" style="display:none;">
+        <div class="recent-label">
+          <span>最近使用</span>
+          <button class="recent-clear" id="recentClear" title="清空历史">清空</button>
+        </div>
+        <div class="recent-list" id="recentList"></div>
+      </div>
     </section>
 
     <!-- 字段可视化 -->
@@ -106,6 +115,46 @@
       </div>
       <div class="next-list" id="nextList">
         <!-- 由 JS 渲染 -->
+      </div>
+    </section>
+
+    <!-- 语法速查 -->
+    <section class="card cheat-card">
+      <button class="cheat-toggle" id="cheatToggle" aria-expanded="false">
+        <span class="cheat-title">📖 语法速查</span>
+        <span class="cheat-arrow" id="cheatArrow">›</span>
+      </button>
+      <div class="cheat-body" id="cheatBody">
+        <div class="cheat-section">
+          <div class="cheat-section-title">特殊字符</div>
+          <div class="cheat-table">
+            <div class="cheat-row"><code>*</code><span>任意值</span><em>每分钟 / 每小时</em></div>
+            <div class="cheat-row"><code>,</code><span>列表</span><em>1,3,5 = 第 1、3、5</em></div>
+            <div class="cheat-row"><code>-</code><span>范围</span><em>1-5 = 第 1 到 5</em></div>
+            <div class="cheat-row"><code>/</code><span>步长</span><em>*/5 = 每 5 个单位</em></div>
+            <div class="cheat-row"><code>?</code><span>不指定</span><em>仅日/周（Quartz）</em></div>
+          </div>
+        </div>
+        <div class="cheat-section">
+          <div class="cheat-section-title">字段取值范围</div>
+          <div class="cheat-table">
+            <div class="cheat-row"><code>秒</code><span>0-59</span><em>仅 6 字段模式</em></div>
+            <div class="cheat-row"><code>分</code><span>0-59</span><em>—</em></div>
+            <div class="cheat-row"><code>时</code><span>0-23</span><em>—</em></div>
+            <div class="cheat-row"><code>日</code><span>1-31</span><em>—</em></div>
+            <div class="cheat-row"><code>月</code><span>1-12</span><em>—</em></div>
+            <div class="cheat-row"><code>周</code><span>0-6</span><em>0 = 周日</em></div>
+          </div>
+        </div>
+        <div class="cheat-section">
+          <div class="cheat-section-title">示例</div>
+          <div class="cheat-table">
+            <div class="cheat-row"><code>*/5 * * * *</code><span>每 5 分钟</span><em>—</em></div>
+            <div class="cheat-row"><code>0 9 * * 1-5</code><span>工作日 9 点</span><em>—</em></div>
+            <div class="cheat-row"><code>0 0 1 * *</code><span>每月 1 号 0 点</span><em>—</em></div>
+            <div class="cheat-row"><code>0 0/2 * * *</code><span>每 2 小时整点</span><em>—</em></div>
+          </div>
+        </div>
       </div>
     </section>
   </main>

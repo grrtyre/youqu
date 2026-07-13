@@ -12,6 +12,72 @@
   var toastEl = $('toast');
   var themeToggle = $('themeToggle');
   var modeBadge = $('modeBadge');
+  var recentWrap = $('recentWrap');
+  var recentList = $('recentList');
+  var recentClear = $('recentClear');
+  var cheatToggle = $('cheatToggle');
+  var cheatBody = $('cheatBody');
+  var cheatArrow = $('cheatArrow');
+
+  // ===== 最近使用历史 =====
+  var HISTORY_KEY = 'cron-history';
+  var HISTORY_MAX = 8;
+
+  function loadHistory() {
+    try {
+      var raw = localStorage.getItem(HISTORY_KEY);
+      if (!raw) return [];
+      var arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) { return []; }
+  }
+
+  function saveHistory(list) {
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(list)); } catch (e) {}
+  }
+
+  function addHistory(expr) {
+    if (!expr) return;
+    var list = loadHistory();
+    // 去重：移除已存在的相同表达式
+    var idx = list.indexOf(expr);
+    if (idx !== -1) list.splice(idx, 1);
+    list.unshift(expr);
+    if (list.length > HISTORY_MAX) list = list.slice(0, HISTORY_MAX);
+    saveHistory(list);
+    renderHistory();
+  }
+
+  function renderHistory() {
+    var list = loadHistory();
+    if (list.length === 0) {
+      recentWrap.style.display = 'none';
+      return;
+    }
+    recentWrap.style.display = '';
+    var html = '';
+    for (var i = 0; i < list.length; i++) {
+      html += '<button class="recent-chip" data-cron="' + escapeHtml(list[i]) + '" title="点击使用">' +
+              escapeHtml(list[i]) + '</button>';
+    }
+    recentList.innerHTML = html;
+  }
+
+  // 历史点击复用
+  recentList.addEventListener('click', function (e) {
+    var target = e.target;
+    if (target && target.classList.contains('recent-chip')) {
+      exprInput.value = target.getAttribute('data-cron');
+      update();
+    }
+  });
+
+  // 清空历史
+  recentClear.addEventListener('click', function () {
+    saveHistory([]);
+    renderHistory();
+    showToast('已清空历史');
+  });
 
   // ===== 字段元信息（5 个标准字段，秒字段按需前置） =====
   var FIELD_META = [
@@ -215,6 +281,7 @@
   }
 
   // ===== 主更新 =====
+  var historyTimer = null;
   function update() {
     var expr = exprInput.value.trim();
     if (!expr) {
@@ -224,6 +291,7 @@
       fieldsGrid.innerHTML = '';
       nextList.innerHTML = '<div class="next-empty">输入有效表达式后显示</div>';
       updateModeBadge(false, false);
+      clearTimeout(historyTimer);
       return;
     }
     var parsed = CronUtils.parse(expr);
@@ -234,6 +302,7 @@
       renderFields({ ok: false, fields: { minute: '*', hour: '*', dom: '*', month: '*', dow: '*' } });
       nextList.innerHTML = '<div class="next-empty">表达式无效</div>';
       updateModeBadge(false, false);
+      clearTimeout(historyTimer);
       return;
     }
     exprStatus.className = 'expr-status status-ok';
@@ -246,6 +315,9 @@
     var u = new URL(location);
     u.searchParams.set('cron', expr);
     history.replaceState(null, '', u);
+    // 防抖记录历史：表达式稳定 1.2 秒后写入
+    clearTimeout(historyTimer);
+    historyTimer = setTimeout(function () { addHistory(expr); }, 1200);
   }
 
   // ===== 事件 =====
@@ -312,10 +384,26 @@
     if (saved) applyTheme(saved);
   } catch (e) {}
 
+  // 语法速查折叠
+  cheatToggle.addEventListener('click', function () {
+    var expanded = cheatBody.classList.toggle('open');
+    cheatToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    cheatArrow.textContent = expanded ? '⌄' : '›';
+  });
+
   // 初始化：URL 参数优先
   var params = new URLSearchParams(location.search);
   var cronParam = params.get('cron');
   if (cronParam) exprInput.value = cronParam;
 
+  // demo 模式：预置历史 + 展开语法速查（仅用于截图展示）
+  if (params.get('demo') === '1') {
+    saveHistory(['0 9 * * 1-5', '*/5 * * * *', '0 0 1 * *', '0 0 * * 0', '0 18 * * 5']);
+    cheatBody.classList.add('open');
+    cheatToggle.setAttribute('aria-expanded', 'true');
+    cheatArrow.textContent = '⌄';
+  }
+
+  renderHistory();
   update();
 })();
