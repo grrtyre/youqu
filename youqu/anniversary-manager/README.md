@@ -79,7 +79,8 @@ anniversary-manager/
 
 | 平台 | 下载 | 说明 |
 | --- | --- | --- |
-| Windows | [纪念日管家 1.0.0.exe](../../releases/tag/anniversary-manager-v1.0.0) | 安装版，含开始菜单快捷方式 |
+| Windows 便携版 | [anniversary-manager-1.0.0-portable.exe](https://github.com/grrtyre/youqu/releases/download/anniversary-manager-v1.0.0/anniversary-manager-1.0.0-portable.exe) | 双击即用，无需安装（74 MB） |
+| Windows 安装版 | [anniversary-manager-1.0.0-setup.exe](https://github.com/grrtyre/youqu/releases/download/anniversary-manager-v1.0.0/anniversary-manager-1.0.0-setup.exe) | 含开始菜单快捷方式（75 MB） |
 
 ## ☕ 支持我们
 
