@@ -8,8 +8,8 @@
 
 | 文件 | 平台 | 说明 | 下载 |
 | --- | --- | --- | --- |
-| 记账管家 Setup 1.2.0.exe | Windows x64 | NSIS 安装包，支持自定义安装路径 | [⬇️ 下载](https://github.com/grrtyre/youqu/releases/download/accounting-manager-v1.2.0/accounting-manager-setup-1.2.0.exe) |
-| 记账管家 1.2.0.exe | Windows x64 | 便携版，双击即用 | [⬇️ 下载](https://github.com/grrtyre/youqu/releases/download/accounting-manager-v1.2.0/accounting-manager-1.2.0.exe) |
+| 记账管家 Setup 1.2.0.exe | Windows x64 | NSIS 安装包，支持自定义安装路径 | [⬇️ 下载](https://github.com/grrtyre/youqu/releases/download/accounting-manager-v1.2.0/Setup.1.2.0.exe) |
+| 记账管家 1.2.0.exe | Windows x64 | 便携版，双击即用 | [⬇️ 下载](https://github.com/grrtyre/youqu/releases/download/accounting-manager-v1.2.0/Portable-1.2.0.exe) |
 
 ## ✨ 核心功能
 
