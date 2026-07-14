@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>youqu · 实用工具集合 — 41 个开源工具，苹果白高端风格</title>
+<meta name="description" content="由 Trae + MiMo Code 人机协作打造的开源实用工具集合。41 个工具，每个解决一个真实痛点。纯本地、零门槛、苹果白高端风格。">
+<meta name="theme-color" content="#f5f5f7">
+<meta property="og:title" content="youqu · 实用工具集合">
+<meta property="og:description" content="41 个开源实用工具，苹果白高端风格，纯本地隐私优先。">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://grrtyre.github.io/youqu/assets/img/og-cover.png">
+<meta property="og:image" content="https://grrtyre.github.io/youqu/assets/img/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="youqu 实用工具集合 — 41 个开源工具，苹果白高端风格">
+<meta name="twitter:title" content="youqu · 实用工具集合">
+<meta name="twitter:description" content="41 个开源实用工具，苹果白高端风格，纯本地隐私优先。">
+<link rel="canonical" href="https://grrtyre.github.io/youqu/">
+<style>
+  :root{--bg:#f5f5f7;--card:#fff;--ink:#1d1d1f;--ink2:#6e6e73;--ink3:#86868b;--line:#d2d2d7;--accent:#007aff;--accent-soft:#e8f1ff;--radius:18px;--shadow:0 1px 3px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);--shadow-lg:0 4px 12px rgba(0,0,0,.06),0 24px 48px rgba(0,0,0,.10)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI","Microsoft YaHei",sans-serif;background:var(--bg);background-image:radial-gradient(circle at 1px 1px,rgba(0,0,0,.018) 1px,transparent 0);background-size:32px 32px;color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden}
+  img{max-width:100%;display:block}
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit;cursor:pointer;border:none;background:none}
+  ::selection{background:#007aff;color:#fff}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+</style>
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="preconnect" href="https://github.com">
+</head>
+<body>
+
+<!-- 滚动进度条 -->
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<!-- 顶部导航 -->
+<nav class="nav" id="nav">
+  <div class="nav__inner">
+    <a class="nav__brand" href="#top" aria-label="youqu 首页">
+      <span class="nav__logo">柚</span><span class="nav__name">youqu</span>
+    </a>
+    <div class="nav__links">
+      <a href="#projects">项目</a>
+      <a href="#changelog">更新</a>
+      <a href="#support">支持</a>
+      <a class="nav__gh" href="https://github.com/grrtyre/youqu" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<header class="hero" id="top">
+  <div class="hero__orb hero__orb--1" aria-hidden="true"></div>
+  <div class="hero__orb hero__orb--2" aria-hidden="true"></div>
+  <div class="hero__orb hero__orb--3" aria-hidden="true"></div>
+  <div class="hero__content">
+    <span class="hero__badge">开源 · MIT 协议 · <span id="hero-count">41</span> 个工具</span>
+    <h1 class="hero__title">实用工具<span class="hero__title-accent">集合</span></h1>
+    <p class="hero__sub">每个工具都解决一个真实痛点，不是只能看的玩具。</p>
+    <div class="hero__actions">
+      <a class="btn btn--primary" href="#projects">浏览全部工具</a>
+      <a class="btn btn--ghost" href="https://www.ifdian.net/a/giquwei" target="_blank" rel="noopener">☕ 爱发电支持</a>
+    </div>
+  </div>
+</header>
+
+<!-- 工具栏：搜索 + 筛选 -->
+<section class="toolbar" id="projects">
+  <div class="toolbar__inner">
+    <div class="toolbar__head">
+      <h2 class="section__title">全部工具</h2>
+      <p class="section__desc">点击卡片查看详情，支持搜索与分类筛选</p>
+    </div>
+    <div class="toolbar__row">
+      <div class="search">
+        <svg class="search__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="m15 15-3-3"/></svg>
+        <input class="search__input" id="search" type="search" placeholder="搜索工具名称、功能、关键词…" aria-label="搜索工具">
+        <button class="search__clear" id="search-clear" aria-label="清空搜索" hidden>×</button>
+      </div>
+      <div class="chips" id="chips" role="tablist">
+        <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">全部</button>
+        <button class="chip" data-filter="dev" role="tab">开发</button>
+        <button class="chip" data-filter="system" role="tab">系统</button>
+        <button class="chip" data-filter="efficiency" role="tab">效率</button>
+        <button class="chip" data-filter="design" role="tab">设计</button>
+      </div>
+    </div>
+    <div class="toolbar__count" id="count" aria-live="polite">共 41 个工具</div>
+  </div>
+</section>
+
+<!-- 项目卡片墙 -->
+<main class="grid-wrap">
+  <div class="grid" id="grid"><!-- JS 渲染 --></div>
+  <div class="empty" id="empty" hidden>
+    <span class="empty__icon">🔍</span>
+    <p>没有找到匹配的工具</p>
+    <button class="btn btn--ghost btn--sm" id="reset">重置筛选</button>
+  </div>
+</main>
+
+<!-- 更新日志 -->
+<section class="changelog" id="changelog">
+  <div class="container">
+    <h2 class="section__title">更新日志</h2>
+    <p class="section__desc">按时间倒序，记录每次迭代</p>
+    <div class="timeline">
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-14</div>
+        <div class="tl__card">
+          <h3>展示站点细节打磨（第三轮 · 卡片重构）</h3>
+          <p>重构卡片视觉系统：移除风格不一的项目截图缩略图，改用统一风格的分类标签 + 项目名文字布局；新增分类色渐变背景（开发蓝/系统绿/效率橙/设计紫），顶部色条分类着色；chips 筛选按钮加分类色点指示器、active 状态改为深色填充；Hero 标题"集合"改纯蓝色、字号收敛、副标题精简；版本号标签加大加粗、改深色；卡片阴影层次加强、信息密度优化、按钮固定底部对齐。</p>
+        </div>
+      </div>
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-14</div>
+        <div class="tl__card">
+          <h3>展示站点细节打磨（第二轮）</h3>
+          <p>修复 52 张项目截图全部缺失导致卡片空白的问题：PIL 压缩生成卡片尺寸（480px / 平均 5KB）+ 大图尺寸（1200px / 平均 22KB）双版本，首屏前 4 张立即加载并高优先级；新增卡片 hover 鼠标光晕、图片渐显、筛选淡入淡出过渡、返回顶部圆形进度环、Hero 标题渐变流光、og:image 社交分享预览图、ItemList 结构化数据。</p>
+        </div>
+      </div>
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-13</div>
+        <div class="tl__card">
+          <h3>展示站点上线</h3>
+          <p>GitHub Pages 展示站点首次发布：苹果白高端风格、41 个工具卡片墙、搜索筛选、详情弹窗、滚动动效。</p>
+        </div>
+      </div>
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-07</div>
+        <div class="tl__card">
+          <h3>Cron 中文可视化 v2.0</h3>
+          <p>新增 6 字段（带秒）Quartz/Spring cron 支持、<code>?</code> 标记兼容、预设标签页切换。</p>
+        </div>
+      </div>
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-05</div>
+        <div class="tl__card">
+          <h3>剪贴板管家 v1.3.0</h3>
+          <p>新增图片剪贴板支持、条目编辑功能、筛选图片分类、底部状态栏优化。</p>
+        </div>
+      </div>
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">持续迭代</div>
+        <div class="tl__card">
+          <h3>更多工具陆续上线</h3>
+          <p>从 Cron 可视化起步，逐步扩展到系统工具、效率工具、设计工具四大类，全部苹果白高端风格、纯本地隐私优先。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 支持我们 -->
+<section class="support" id="support">
+  <div class="container support__inner">
+    <div class="support__text">
+      <h2 class="section__title">支持我们</h2>
+      <p class="section__desc">如果这些工具帮到了你，欢迎在爱发电请我们喝杯咖啡。你的支持是我们持续做下去的动力。</p>
+      <a class="btn btn--primary btn--lg" href="https://www.ifdian.net/a/giquwei" target="_blank" rel="noopener">☕ 爱发电支持</a>
+    </div>
+    <div class="support__thanks">
+      <h3>🙏 鸣谢</h3>
+      <p>感谢以下朋友的支持（按支持时间排序）：</p>
+      <div class="thanks__list">
+        <span class="thanks__empty">_暂无，期待第一个支持者的出现。_</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 页脚 -->
+<footer class="footer">
+  <div class="container footer__inner">
+    <div class="footer__brand">
+      <span class="nav__logo">柚</span>
+      <div>
+        <strong>youqu · 实用工具集合</strong>
+        <p>由 Trae + MiMo Code 人机协作打造</p>
+      </div>
+    </div>
+    <div class="footer__links">
+      <a href="https://github.com/grrtyre/youqu" target="_blank" rel="noopener">GitHub 仓库</a>
+      <a href="https://github.com/grrtyre/youqu/releases" target="_blank" rel="noopener">下载发布</a>
+      <a href="https://www.ifdian.net/a/giquwei" target="_blank" rel="noopener">爱发电</a>
+    </div>
+    <div class="footer__copy">
+      <p>© 2026 youqu · MIT License</p>
+      <p class="footer__made">用 ❤️ 与 Trae IDE 打造</p>
+    </div>
+  </div>
+</footer>
+
+<!-- 返回顶部（带圆形滚动进度环） -->
+<button class="to-top" id="to-top" aria-label="返回顶部" hidden>
+  <svg class="to-top__ring" viewBox="0 0 40 40" aria-hidden="true">
+    <circle cx="20" cy="20" r="18" fill="none" stroke="rgba(0,0,0,.08)" stroke-width="2"/>
+    <circle id="to-top-ring" cx="20" cy="20" r="18" fill="none" stroke="#007aff" stroke-width="2" stroke-linecap="round" stroke-dasharray="113.1" stroke-dashoffset="113.1" transform="rotate(-90 20 20)"/>
+  </svg>
+  <svg class="to-top__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+
+<!-- 项目详情弹窗 -->
+<div class="modal" id="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal__backdrop" data-close></div>
+  <div class="modal__panel">
+    <button class="modal__close" data-close aria-label="关闭">×</button>
+    <div class="modal__body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- 截图 Lightbox -->
+<div class="lightbox" id="lightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="截图大图">
+  <div class="lightbox__backdrop" data-lb-close></div>
+  <button class="lightbox__close" data-lb-close aria-label="关闭">×</button>
+  <img class="lightbox__img" id="lightbox-img" src="" alt="截图大图">
+</div>
+
+<noscript>
+  <div style="max-width:900px;margin:40px auto;padding:0 20px">
+    <h2>youqu 工具列表</h2>
+    <p>本页需要 JavaScript 运行动效与筛选。请访问 <a href="https://github.com/grrtyre/youqu">GitHub 仓库</a> 查看完整列表。</p>
+  </div>
+</noscript>
+
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"youqu 实用工具集合","applicationCategory":"UtilitiesApplication","operatingSystem":"Windows, Web","offers":{"@type":"Offer","price":"0","priceCurrency":"CNY"},"author":{"@type":"Organization","name":"grrtyre"}}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"ItemList","name":"youqu 工具列表","itemListElement":[{"@type":"ListItem","position":1,"name":"Cron 中文可视化","url":"https://github.com/grrtyre/youqu/tree/main/cron-zh"},{"@type":"ListItem","position":2,"name":"剪贴板管家","url":"https://github.com/grrtyre/youqu/tree/main/clipboard-manager"},{"@type":"ListItem","position":3,"name":"Markdown 预览器","url":"https://github.com/grrtyre/youqu/tree/main/markdown-preview"},{"@type":"ListItem","position":4,"name":"开发者工具箱","url":"https://github.com/grrtyre/youqu/tree/main/dev-toolbox"},{"@type":"ListItem","position":5,"name":"拾色管家","url":"https://github.com/grrtyre/youqu/tree/main/color-picker"},{"@type":"ListItem","position":6,"name":"表格管家","url":"https://github.com/grrtyre/youqu/tree/main/csv-manager"},{"@type":"ListItem","position":7,"name":"二维码管家","url":"https://github.com/grrtyre/youqu/tree/main/qr-manager"},{"@type":"ListItem","position":8,"name":"记账管家","url":"https://github.com/grrtyre/youqu/tree/main/accounting-manager"},{"@type":"ListItem","position":9,"name":"速览管家","url":"https://github.com/grrtyre/youqu/tree/main/quick-look"},{"@type":"ListItem","position":10,"name":"时间管家","url":"https://github.com/grrtyre/youqu/tree/main/time-tracker"}]}
+</script>
+<script src="assets/js/main.js" defer></script>
+</body>
+</html>
