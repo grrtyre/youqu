@@ -44,16 +44,19 @@ shared-assets/
 ## 📦 资源清单
 
 ### icons/（通用功能图标）
-已生成（1024×1024 源 + 多尺寸 + ICO，统一 frame 外框）：
+已生成（1024×1024 源 + 多尺寸 + ICO，统一 frame 外框，线宽归一 16px）：
 - `settings`（设置：齿轮）
 - `search`（搜索：放大镜）
 - `close`（关闭：X）
-- `minimize`（最小化：横线）
+- `minimize`（最小化：双横线）
 - `add`（添加：加号）
+- `maximize`（最大化：外方框 + 四角 L 标）
+- `delete`（删除：垃圾桶）
+- `edit`（编辑：铅笔 -60° + 下划线）
 
 文件命名：`<name>-source.png`（1024 源）/ `<name>-16.png` ... `<name>-512.png` / `<name>.ico`
 
-后续规划：maximize / delete / edit / save / share
+后续规划：save / share / refresh / filter
 
 ### illustrations/（空状态插画）
 > 待生成。规划：empty-list / no-result / error / success / loading
