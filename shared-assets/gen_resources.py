@@ -164,7 +164,7 @@ def draw_settings(im, d):
         y1 = cy + (R_out - tooth_len // 2) * math.sin(ang)
         x2 = cx + (R_out + tooth_len // 2) * math.cos(ang)
         y2 = cy + (R_out + tooth_len // 2) * math.sin(ang)
-        d.line([(x1, y1), (x2, y2)], fill=BLUE, width=LINE_W + 12)
+        d.line([(x1, y1), (x2, y2)], fill=BLUE, width=LINE_W)  # 齿线宽归一
     # 外环（描边）
     d.ellipse([cx - R_out, cy - R_out, cx + R_out, cy + R_out], outline=BLUE, width=LINE_W)
     # 中心描边小圆（不填充，与其他图标统一纯线性风格）
@@ -177,31 +177,129 @@ def draw_search(im, d):
     cx, cy = 440, 440
     r = 260
     d.ellipse([cx - r, cy - r, cx + r, cy + r], outline=BLUE, width=LINE_W)
-    # 手柄加粗 + 圆角端点
-    line_round(d, [(cx + r * 0.72, cy + r * 0.72), (820, 820)], width=LINE_W + 10)
+    # 手柄线宽归一 + 圆角端点
+    line_round(d, [(cx + r * 0.72, cy + r * 0.72), (820, 820)], width=LINE_W)
 
 
 def draw_close(im, d):
-    """关闭：frame + X（最大化 + 圆角端点）"""
+    """关闭：frame + X（线宽归一为 LINE_W，与其他图标完全统一）"""
     draw_frame(d)
     m = 260  # 接近 frame 内边（frame 80-944）
-    w = LINE_W + 16
-    line_round(d, [(m, m), (SRC_SIZE - m, SRC_SIZE - m)], width=w)
-    line_round(d, [(SRC_SIZE - m, m), (m, SRC_SIZE - m)], width=w)
+    line_round(d, [(m, m), (SRC_SIZE - m, SRC_SIZE - m)], width=LINE_W)
+    line_round(d, [(SRC_SIZE - m, m), (m, SRC_SIZE - m)], width=LINE_W)
 
 
 def draw_minimize(im, d):
-    """最小化：frame + 横线（最大化 + 圆角端点）"""
+    """最小化：frame + 双横线（间距 100，确保缩略图可辨；线宽归一 LINE_W）"""
     draw_frame(d)
-    line_round(d, [(220, 512), (804, 512)], width=LINE_W + 16)
+    # 双横线，间距 100，上下对称居中（512±50），缩略图下清晰可辨
+    line_round(d, [(220, 462), (804, 462)], width=LINE_W)
+    line_round(d, [(220, 562), (804, 562)], width=LINE_W)
 
 
 def draw_add(im, d):
-    """添加：frame + 加号（最大化 + 圆角端点）"""
+    """添加：frame + 加号（线宽归一 + 圆角端点）"""
     draw_frame(d)
-    w = LINE_W + 16
-    line_round(d, [(512, 220), (512, 804)], width=w)
-    line_round(d, [(220, 512), (804, 512)], width=w)
+    line_round(d, [(512, 220), (512, 804)], width=LINE_W)
+    line_round(d, [(220, 512), (804, 512)], width=LINE_W)
+
+
+def draw_maximize(im, d):
+    """最大化：frame + 外大方框 + 四角内 L 形角标（窗口最大化语义）
+    全部线宽归一 LINE_W，端点大圆点统一"""
+    draw_frame(d)
+    # 外层大圆角方（描边）
+    rounded_rect(d, [240, 240, 760, 760], radius=40)
+    # 四角内 L 形角标（最大化窗口语义，4 个角各一个 L）
+    L = 90  # 角标边长
+    inset = 40  # 距外框边距（第 5 轮最佳配置）
+    L_W = LINE_W  # L 标记线宽归一，与 frame 完全一致
+    # 左上角 L
+    d.line([(inset, inset), (inset + L, inset)], fill=BLUE, width=L_W, joint="curve")
+    d.line([(inset, inset), (inset, inset + L)], fill=BLUE, width=L_W, joint="curve")
+    # 右上角 L
+    d.line([(SRC_SIZE - inset - L, inset), (SRC_SIZE - inset, inset)], fill=BLUE, width=L_W, joint="curve")
+    d.line([(SRC_SIZE - inset, inset), (SRC_SIZE - inset, inset + L)], fill=BLUE, width=L_W, joint="curve")
+    # 左下角 L
+    d.line([(inset, SRC_SIZE - inset), (inset + L, SRC_SIZE - inset)], fill=BLUE, width=L_W, joint="curve")
+    d.line([(inset, SRC_SIZE - inset - L), (inset, SRC_SIZE - inset)], fill=BLUE, width=L_W, joint="curve")
+    # 右下角 L
+    d.line([(SRC_SIZE - inset - L, SRC_SIZE - inset), (SRC_SIZE - inset, SRC_SIZE - inset)], fill=BLUE, width=L_W, joint="curve")
+    d.line([(SRC_SIZE - inset, SRC_SIZE - inset - L), (SRC_SIZE - inset, SRC_SIZE - inset)], fill=BLUE, width=L_W, joint="curve")
+    # 四角端点圆点（半径 14，与圆角端点统一，避免过重）
+    r = 14
+    corners = [(inset, inset), (SRC_SIZE - inset, inset),
+               (inset, SRC_SIZE - inset), (SRC_SIZE - inset, SRC_SIZE - inset)]
+    for (x, y) in corners:
+        d.ellipse([x - r, y - r, x + r, y + r], fill=BLUE)
+
+
+def draw_delete(im, d):
+    """删除：frame + 垃圾桶（桶把+桶盖+桶身+2 条内线），桶身 256×380 第 5 轮最佳配置"""
+    draw_frame(d)
+    # 顶部桶把（U 形把手）
+    line_round(d, [(420, 260), (420, 210), (604, 210), (604, 260)], width=LINE_W)
+    # 桶盖（横条，略宽于桶身）
+    rounded_rect(d, [340, 290, 684, 350], radius=14)
+    # 桶身（宽 256，高 380，第 5 轮最佳比例）
+    d.line([(384, 350), (384, 730)], fill=BLUE, width=LINE_W)
+    d.line([(640, 350), (640, 730)], fill=BLUE, width=LINE_W)
+    d.line([(384, 730), (640, 730)], fill=BLUE, width=LINE_W, joint="curve")
+    # 底部圆角端点
+    r = LINE_W // 2
+    d.ellipse([384 - r, 730 - r, 384 + r, 730 + r], fill=BLUE)
+    d.ellipse([640 - r, 730 - r, 640 + r, 730 + r], fill=BLUE)
+    # 桶身内 2 条竖向分隔线（线宽 3/4 主线，作为次线层级）
+    d.line([(470, 390), (470, 690)], fill=BLUE, width=LINE_W * 3 // 4)
+    d.line([(554, 390), (554, 690)], fill=BLUE, width=LINE_W * 3 // 4)
+
+
+def draw_edit(im, d):
+    """编辑：frame + 铅笔（笔身+笔尖+橡皮+底部下划线），斜放 -60°（更竖，与 PDF 扳手 -45° 区分）"""
+    draw_frame(d)
+    # 铅笔主体（斜 -60° 方向，笔尖朝右上方略偏上，避免与 PDF 扳手姿态雷同）
+    # 几何参数：铅笔沿轴线方向，整体长 480，宽 96
+    import math
+    cx, cy = 512, 512
+    ang = -math.pi / 3  # -60°（更接近竖直，与 -45° 扳手明显区分）
+    length = 480
+    half_l = length / 2
+    width = 96
+    half_w = width / 2
+    cos_a = math.cos(ang)
+    sin_a = math.sin(ang)
+    # 笔身四角（长方形旋转）
+    def rot(dx, dy):
+        return (cx + dx * cos_a - dy * sin_a, cy + dx * sin_a + dy * cos_a)
+    # 笔身：从橡皮端到笔尖端
+    p1 = rot(-half_l + 80, -half_w)   # 橡皮端上
+    p2 = rot(half_l - 80, -half_w)    # 笔尖肩上
+    p3 = rot(half_l - 80, half_w)     # 笔尖肩下
+    p4 = rot(-half_l + 80, half_w)    # 橡皮端下
+    d.line([p1, p2], fill=BLUE, width=LINE_W, joint="curve")
+    d.line([p2, p3], fill=BLUE, width=LINE_W, joint="curve")
+    d.line([p3, p4], fill=BLUE, width=LINE_W, joint="curve")
+    d.line([p4, p1], fill=BLUE, width=LINE_W, joint="curve")
+    # 橡皮端（短段，稍粗描边）
+    eraser_top1 = rot(-half_l, -half_w)
+    eraser_top2 = rot(-half_l, half_w)
+    eraser_shoulder1 = rot(-half_l + 80, -half_w)
+    eraser_shoulder2 = rot(-half_l + 80, half_w)
+    d.line([eraser_top1, eraser_shoulder1], fill=BLUE, width=LINE_W, joint="curve")
+    d.line([eraser_top2, eraser_shoulder2], fill=BLUE, width=LINE_W, joint="curve")
+    d.line([eraser_top1, eraser_top2], fill=BLUE, width=LINE_W, joint="curve")
+    # 橡皮/笔身分隔线（垂直笔身的短线）
+    d.line([eraser_shoulder1, eraser_shoulder2], fill=BLUE, width=LINE_W, joint="curve")
+    # 笔尖（三角形，从笔身肩部到尖端）
+    tip = rot(half_l, 0)
+    d.line([p2, tip], fill=BLUE, width=LINE_W, joint="curve")
+    d.line([tip, p3], fill=BLUE, width=LINE_W, joint="curve")
+    # 笔尖与笔身分隔线（金属箍）
+    tip_shoulder1 = rot(half_l - 80, -half_w)
+    tip_shoulder2 = rot(half_l - 80, half_w)
+    d.line([tip_shoulder1, tip_shoulder2], fill=BLUE, width=LINE_W, joint="curve")
+    # 底部下划线（编辑语义的"书写"提示）
+    line_round(d, [(300, 820), (724, 820)], width=LINE_W)
 
 
 # ============ 注册表 ============
@@ -218,6 +316,9 @@ GENERIC_ICONS = [
     ("close", draw_close),
     ("minimize", draw_minimize),
     ("add", draw_add),
+    ("maximize", draw_maximize),
+    ("delete", draw_delete),
+    ("edit", draw_edit),
 ]
 
 
