@@ -13,6 +13,7 @@ contextBridge.exposeInMainWorld('api', {
   addTask: (title, estimate) => ipcRenderer.invoke('task:add', title, estimate),
   setCurrentTask: (id) => ipcRenderer.invoke('task:current', id),
   completeTask: (id) => ipcRenderer.invoke('task:complete', id),
+  updateTask: (id, updates) => ipcRenderer.invoke('task:update', id, updates),
   deleteTask: (id) => ipcRenderer.invoke('task:delete', id),
   saveConfig: (cfg) => ipcRenderer.invoke('config:save', cfg),
   exportData: () => ipcRenderer.invoke('data:export'),

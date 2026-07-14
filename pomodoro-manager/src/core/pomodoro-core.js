@@ -169,6 +169,21 @@ class PomodoroCore {
     return false;
   }
 
+  // 编辑任务（标题/预估番茄数）。仅允许修改未完成任务
+  updateTask(id, updates) {
+    const task = this.tasks.find(t => t.id === id);
+    if (!task || task.completed) return false;
+    if (Object.prototype.hasOwnProperty.call(updates, 'title')) {
+      const title = String(updates.title).trim();
+      if (!title) return false;
+      task.title = title;
+    }
+    if (Object.prototype.hasOwnProperty.call(updates, 'estimate')) {
+      task.estimate = Math.max(1, parseInt(updates.estimate, 10) || 1);
+    }
+    return true;
+  }
+
   completeTask(id) {
     const task = this.tasks.find(t => t.id === id);
     if (task && !task.completed) {

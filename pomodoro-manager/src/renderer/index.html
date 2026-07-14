@@ -11,12 +11,12 @@
   <!-- 顶栏 -->
   <header class="topbar">
     <div class="brand">
-      <span class="brand-icon">🍅</span>
+      <span class="brand-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="13" r="8" fill="#007aff"/><path d="M12 5c0-1.5 1-3 3-3" stroke="#34c759" stroke-width="2" stroke-linecap="round"/><path d="M12 5c0-1.2.8-2.2 2-2.6" stroke="#34c759" stroke-width="1.6" stroke-linecap="round"/></svg></span>
       <span class="brand-name">番茄管家</span>
     </div>
     <div class="topbar-right">
       <div class="streak-badge" id="streakBadge" title="连续达标天数">
-        <span class="streak-flame">🔥</span>
+        <span class="streak-flame"><svg width="13" height="13" viewBox="0 0 24 24" fill="#ff9500"><path d="M12 2c0 3-2 4-2 7 0 2 1 3 2 3s2-1 2-3c1 1 2 2.5 2 5 0 3.3-2.7 6-6 6s-6-2.7-6-6c0-4 4-6 4-12z"/></svg></span>
         <span id="streakNum">0</span>
         <span class="streak-label">天连续</span>
       </div>
@@ -37,7 +37,7 @@
         <div class="stat-row">
           <div class="stat-big">
             <span class="stat-num" id="todayCount">0</span>
-            <span class="stat-unit">/ <span id="todayGoal">8</span> 🍅</span>
+            <span class="stat-unit">/ <span id="todayGoal">8</span></span>
           </div>
           <div class="stat-progress">
             <div class="stat-progress-bar"><div class="stat-progress-fill" id="todayBar"></div></div>
@@ -47,6 +47,7 @@
         <div class="stat-mini">
           <div><span id="todayMinutes">0</span> 分钟专注</div>
           <div>本周 <span id="weekCount">0</span> 🍅</div>
+          <div>累计 <span id="totalMinutes">0</span> 小时</div>
         </div>
       </section>
 
@@ -58,9 +59,10 @@
         <div class="task-add">
           <input type="text" id="taskInput" placeholder="添加一个任务，回车确认…" maxlength="80">
           <input type="number" id="taskEstimate" min="1" max="20" value="1" title="预计番茄数">
-          <button id="taskAddBtn" class="mini-btn" title="添加">＋</button>
+          <button id="taskAddBtn" class="mini-btn primary" title="添加">＋</button>
         </div>
         <ul class="task-list" id="taskList"></ul>
+        <div class="task-footer" id="taskFooter"></div>
       </section>
     </aside>
 
@@ -73,6 +75,7 @@
       </div>
 
       <div class="timer-ring-wrap">
+        <div class="ring-ripple" id="ringRipple"></div>
         <svg class="timer-ring" viewBox="0 0 320 320" preserveAspectRatio="xMidYMid meet">
           <circle class="ring-track" cx="160" cy="160" r="140"/>
           <circle class="ring-progress" id="ringProgress" cx="160" cy="160" r="140"/>
@@ -123,45 +126,54 @@
         <button class="icon-btn" id="settingsClose">×</button>
       </div>
       <div class="modal-body">
-        <div class="setting-row">
-          <label>专注时长（分钟）</label>
-          <input type="number" id="cfgWork" min="1" max="90" value="25">
+        <div class="setting-group">
+          <div class="group-title">时长配置</div>
+          <div class="setting-row">
+            <label>专注时长（分钟）</label>
+            <input type="number" id="cfgWork" min="1" max="90" value="25">
+          </div>
+          <div class="setting-row">
+            <label>短休息（分钟）</label>
+            <input type="number" id="cfgShort" min="1" max="30" value="5">
+          </div>
+          <div class="setting-row">
+            <label>长休息（分钟）</label>
+            <input type="number" id="cfgLong" min="1" max="60" value="15">
+          </div>
+          <div class="setting-row">
+            <label>长休息间隔（个）</label>
+            <input type="number" id="cfgInterval" min="2" max="12" value="4">
+          </div>
+          <div class="setting-row">
+            <label>每日目标（番茄数）</label>
+            <input type="number" id="cfgGoal" min="1" max="30" value="8">
+          </div>
         </div>
-        <div class="setting-row">
-          <label>短休息（分钟）</label>
-          <input type="number" id="cfgShort" min="1" max="30" value="5">
+        <div class="setting-group">
+          <div class="group-title">行为模式</div>
+          <div class="setting-row setting-switch">
+            <label>严格模式（不可跳过休息）</label>
+            <input type="checkbox" id="cfgStrict">
+          </div>
+          <div class="setting-row setting-switch">
+            <label>自动开始休息</label>
+            <input type="checkbox" id="cfgAutoBreak" checked>
+          </div>
+          <div class="setting-row setting-switch">
+            <label>休息后自动开始专注</label>
+            <input type="checkbox" id="cfgAutoWork">
+          </div>
         </div>
-        <div class="setting-row">
-          <label>长休息（分钟）</label>
-          <input type="number" id="cfgLong" min="1" max="60" value="15">
-        </div>
-        <div class="setting-row">
-          <label>长休息间隔（个）</label>
-          <input type="number" id="cfgInterval" min="2" max="12" value="4">
-        </div>
-        <div class="setting-row">
-          <label>每日目标（番茄数）</label>
-          <input type="number" id="cfgGoal" min="1" max="30" value="8">
-        </div>
-        <div class="setting-row setting-switch">
-          <label>严格模式（不可跳过休息）</label>
-          <input type="checkbox" id="cfgStrict">
-        </div>
-        <div class="setting-row setting-switch">
-          <label>自动开始休息</label>
-          <input type="checkbox" id="cfgAutoBreak" checked>
-        </div>
-        <div class="setting-row setting-switch">
-          <label>休息后自动开始专注</label>
-          <input type="checkbox" id="cfgAutoWork">
-        </div>
-        <div class="setting-row setting-switch">
-          <label>提示音</label>
-          <input type="checkbox" id="cfgSound" checked>
-        </div>
-        <div class="setting-row setting-switch">
-          <label>白噪音背景音</label>
-          <input type="checkbox" id="cfgNoise">
+        <div class="setting-group">
+          <div class="group-title">声音</div>
+          <div class="setting-row setting-switch">
+            <label>提示音</label>
+            <input type="checkbox" id="cfgSound" checked>
+          </div>
+          <div class="setting-row setting-switch">
+            <label>白噪音背景音</label>
+            <input type="checkbox" id="cfgNoise">
+          </div>
         </div>
       </div>
       <div class="modal-foot">

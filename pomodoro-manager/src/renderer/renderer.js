@@ -20,6 +20,8 @@ const el = {
   timerPhase: document.getElementById('timerPhase'),
   timerCycle: document.getElementById('timerCycle'),
   ringProgress: document.getElementById('ringProgress'),
+  ringWrap: document.querySelector('.timer-ring-wrap'),
+  ringRipple: document.getElementById('ringRipple'),
   startBtn: document.getElementById('startBtn'),
   startIcon: document.getElementById('startIcon'),
   startText: document.getElementById('startText'),
@@ -29,6 +31,7 @@ const el = {
   todayCount: document.getElementById('todayCount'),
   todayGoal: document.getElementById('todayGoal'),
   todayMinutes: document.getElementById('todayMinutes'),
+  totalMinutes: document.getElementById('totalMinutes'),
   todayBar: document.getElementById('todayBar'),
   todayPct: document.getElementById('todayPct'),
   todayDate: document.getElementById('todayDate'),
@@ -42,6 +45,7 @@ const el = {
   taskEstimate: document.getElementById('taskEstimate'),
   taskAddBtn: document.getElementById('taskAddBtn'),
   taskCount: document.getElementById('taskCount'),
+  taskFooter: document.getElementById('taskFooter'),
   settingsBtn: document.getElementById('settingsBtn'),
   settingsMask: document.getElementById('settingsMask'),
   settingsClose: document.getElementById('settingsClose'),
@@ -141,6 +145,13 @@ function renderTimer(state) {
   if (phase === 'short_break') el.ringProgress.classList.add('short_break');
   else if (phase === 'long_break') el.ringProgress.classList.add('long_break');
 
+  // 呼吸光晕：运行中（非暂停/空闲）才脉动，并同步阶段颜色到 wrap
+  const running = state.state === 'working' || state.state === 'short_break' || state.state === 'long_break';
+  el.ringWrap.classList.toggle('breathing', running);
+  el.ringWrap.classList.remove('short_break', 'long_break');
+  if (running && phase === 'short_break') el.ringWrap.classList.add('short_break');
+  else if (running && phase === 'long_break') el.ringWrap.classList.add('long_break');
+
   // 周期点
   const interval = (state.config && state.config.longBreakInterval) || 4;
   const cycle = state.cycleCount || 0;
@@ -182,6 +193,9 @@ function renderStats(state) {
   el.todayMinutes.textContent = today.totalMinutes || 0;
   const week = state.week || { workSessions: 0 };
   el.weekCount.textContent = week.workSessions || 0;
+  // 累计专注时长（全量历史）
+  const total = state.total || { workSessions: 0, totalMinutes: 0 };
+  el.totalMinutes.textContent = formatHours(total.totalMinutes || 0);
   const pct = goal > 0 ? Math.min(100, Math.round((today.workSessions / goal) * 100)) : 0;
   el.todayBar.style.width = pct + '%';
   el.todayPct.textContent = pct + '%';
@@ -194,11 +208,18 @@ function renderStats(state) {
 function renderTasks(state) {
   const tasks = state.tasks || [];
   const active = tasks.filter(t => !t.completed);
+  const doneCount = tasks.length - active.length;
   el.taskCount.textContent = `${active.length} 项`;
   // 当前任务显示
   const cur = tasks.find(t => t.id === state.currentTaskId && !t.completed);
   el.currentTaskName.textContent = cur ? cur.title : '未选择任务';
   el.currentTaskName.style.color = cur ? 'var(--text)' : 'var(--text-3)';
+  // 底部统计条带：已完成数 + 投入/预估番茄
+  const totalEst = tasks.reduce((s, t) => s + (t.estimate || 1), 0);
+  const totalPomo = tasks.reduce((s, t) => s + (t.pomodoros || 0), 0);
+  el.taskFooter.innerHTML = tasks.length === 0
+    ? `<span class="tf-label">暂无任务，开始添加吧</span>`
+    : `<span class="tf-label">已完成 <span class="tf-done">${doneCount}</span><span class="tf-sep">/</span><span class="tf-total">${tasks.length}</span></span><span class="tf-label">投入 <span class="tf-total">${totalPomo}</span><span class="tf-sep">/</span><span class="tf-total">${totalEst}</span></span>`;
   if (tasks.length === 0) {
     el.taskList.innerHTML = '<li class="task-empty">还没有任务，添加一个开始专注吧</li>';
     return;
@@ -212,7 +233,7 @@ function renderTasks(state) {
         <div class="task-radio" data-action="complete"></div>
         <div class="task-body">
           <div class="task-title">${escapeHtml(t.title)}</div>
-          <div class="task-meta">${t.pomodoros || 0} / ${t.estimate || 1} 🍅</div>
+          <div class="task-meta">${t.pomodoros || 0} / ${t.estimate || 1}</div>
         </div>
         <span class="task-current-dot ${isCurrent ? '' : 'empty'}" data-action="current" title="设为当前任务"></span>
         <button class="task-del" data-action="delete" title="删除">×</button>
@@ -224,7 +245,7 @@ function renderWeekChart(daily) {
   if (!daily || daily.length === 0) { el.weekChart.innerHTML = ''; return; }
   const max = Math.max(1, ...daily.map(d => d.workSessions));
   const total = daily.reduce((s, d) => s + (d.workSessions || 0), 0);
-  el.weekTotal.textContent = `共 ${total} 🍅`;
+  el.weekTotal.textContent = `共 ${total}`;
   const todayKey = (() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -247,6 +268,22 @@ function formatTime(ms) {
   const m = Math.floor(total / 60);
   const s = total % 60;
   return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+// 累计专注时长格式化：整数小时不带小数，否则保留一位
+function formatHours(min) {
+  const h = (min || 0) / 60;
+  return Number.isInteger(h) ? String(h) : h.toFixed(1);
+}
+
+// 番茄完成庆祝动效：圆环波纹扩散 + 时间数字弹跳
+function celebrate() {
+  el.ringRipple.classList.remove('celebrate');
+  void el.ringRipple.offsetWidth; // 强制重排以重置动画
+  el.ringRipple.classList.add('celebrate');
+  el.timerTime.classList.remove('bounce');
+  void el.timerTime.offsetWidth;
+  el.timerTime.classList.add('bounce');
 }
 
 function escapeHtml(s) {
@@ -318,6 +355,53 @@ el.taskList.addEventListener('click', async (e) => {
     await window.api.setCurrentTask(id);
   }
 });
+
+// 双击任务标题进入 inline 编辑（已完成任务不可编辑）
+el.taskList.addEventListener('dblclick', (e) => {
+  const item = e.target.closest('.task-item');
+  if (!item || item.classList.contains('done')) return;
+  if (e.target.closest('.task-radio') || e.target.closest('.task-del') || e.target.closest('.task-current-dot')) return;
+  const id = item.dataset.id;
+  const task = ((current && current.tasks) || []).find(t => t.id === id);
+  if (!task) return;
+  enterTaskEdit(item, task);
+});
+
+function enterTaskEdit(item, task) {
+  const body = item.querySelector('.task-body');
+  if (!body || body.classList.contains('editing')) return;
+  const origTitle = task.title;
+  const origEst = task.estimate || 1;
+  body.classList.add('editing');
+  body.innerHTML = `<input class="task-edit-input" type="text" maxlength="80" value="${escapeHtml(origTitle)}"><input class="task-edit-est" type="number" min="1" max="20" value="${origEst}" title="预估番茄数">`;
+  const titleInput = body.querySelector('.task-edit-input');
+  const estInput = body.querySelector('.task-edit-est');
+  titleInput.focus();
+  titleInput.select();
+  let settled = false;
+  async function save() {
+    if (settled) return;
+    settled = true;
+    const newTitle = titleInput.value.trim();
+    const newEst = Math.max(1, parseInt(estInput.value, 10) || 1);
+    if (newTitle && (newTitle !== origTitle || newEst !== origEst)) {
+      await window.api.updateTask(task.id, { title: newTitle, estimate: newEst });
+      toast('任务已更新');
+    } else {
+      loadState(); // 无变化或空标题，还原
+    }
+  }
+  function cancel() { if (settled) return; settled = true; loadState(); }
+  titleInput.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter') { ev.preventDefault(); save(); }
+    else if (ev.key === 'Escape') { ev.preventDefault(); cancel(); }
+  });
+  estInput.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter') { ev.preventDefault(); save(); }
+    else if (ev.key === 'Escape') { ev.preventDefault(); cancel(); }
+  });
+  titleInput.addEventListener('blur', () => { setTimeout(save, 150); });
+}
 
 // 设置
 el.settingsBtn.addEventListener('click', openSettings);
@@ -433,7 +517,8 @@ window.api.onPhase((data) => {
     if (data.event && data.event.completedWork) {
       // 刷新统计
       loadState();
-      toast(`🍅 完成第 ${data.event.workSessionsToday} 个番茄！`);
+      celebrate();
+      toast(`完成第 ${data.event.workSessionsToday} 个番茄`);
     } else {
       renderTimer(current);
     }

@@ -44,7 +44,9 @@ function seedDemoData() {
     { id: 'demo1', title: '完成产品需求文档', estimate: 3, pomodoros: 2, completed: false, createdAt: Date.now() },
     { id: 'demo2', title: '审阅代码 Pull Request', estimate: 2, pomodoros: 1, completed: false, createdAt: Date.now() + 1 },
     { id: 'demo3', title: '回复客户邮件', estimate: 1, pomodoros: 1, completed: true, createdAt: Date.now() + 2, completedAt: Date.now() + 3 },
-    { id: 'demo4', title: '准备明日会议演示', estimate: 4, pomodoros: 0, completed: false, createdAt: Date.now() + 4 }
+    { id: 'demo4', title: '准备明日会议演示', estimate: 4, pomodoros: 0, completed: false, createdAt: Date.now() + 4 },
+    { id: 'demo5', title: '整理本周工作周报', estimate: 2, pomodoros: 0, completed: false, createdAt: Date.now() + 5 },
+    { id: 'demo6', title: '设计评审会议纪要', estimate: 1, pomodoros: 0, completed: false, createdAt: Date.now() + 6 }
   ];
   core.currentTaskId = 'demo1';
   const today = core._todayKey();
@@ -322,6 +324,11 @@ function registerIpc() {
     saveData();
     broadcastState();
     return true;
+  });
+  ipcMain.handle('task:update', (e, id, updates) => {
+    const ok = core.updateTask(id, updates || {});
+    if (ok) { saveData(); broadcastState(); }
+    return ok;
   });
   ipcMain.handle('task:delete', (e, id) => {
     core.deleteTask(id);
