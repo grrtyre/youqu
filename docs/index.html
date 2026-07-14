@@ -11,8 +11,8 @@
 <meta property="og:type" content="website">
 <meta property="og:locale" content="zh_CN">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://grrtyre.github.io/youqu/assets/img/og-cover.png">
-<meta property="og:image" content="https://grrtyre.github.io/youqu/assets/img/og-cover.png">
+<meta name="twitter:image" content="https://grrtyre.github.io/youqu/assets/img/og-cover.jpg">
+<meta property="og:image" content="https://grrtyre.github.io/youqu/assets/img/og-cover.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="youqu 实用工具集合 — 41 个开源工具，苹果白高端风格">
@@ -66,6 +66,13 @@
       <a class="btn btn--primary" href="#projects">浏览全部工具</a>
       <a class="btn btn--ghost" href="https://www.ifdian.net/a/giquwei" target="_blank" rel="noopener">☕ 爱发电支持</a>
     </div>
+    <div class="hero__stats">
+      <div class="stat"><span class="stat__num" id="stat-count">41</span><span class="stat__label">开源工具</span></div>
+      <div class="stat__sep" aria-hidden="true"></div>
+      <div class="stat"><span class="stat__num">4</span><span class="stat__label">工具分类</span></div>
+      <div class="stat__sep" aria-hidden="true"></div>
+      <div class="stat"><span class="stat__num">¥0</span><span class="stat__label">永久免费</span></div>
+    </div>
   </div>
 </header>
 
@@ -80,6 +87,7 @@
       <div class="search">
         <svg class="search__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="m15 15-3-3"/></svg>
         <input class="search__input" id="search" type="search" placeholder="搜索工具名称、功能、关键词…" aria-label="搜索工具">
+        <kbd class="search__hint" aria-hidden="true">/</kbd>
         <button class="search__clear" id="search-clear" aria-label="清空搜索" hidden>×</button>
       </div>
       <div class="chips" id="chips" role="tablist">
@@ -110,6 +118,14 @@
     <h2 class="section__title">更新日志</h2>
     <p class="section__desc">按时间倒序，记录每次迭代</p>
     <div class="timeline">
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-14</div>
+        <div class="tl__card">
+          <h3>展示站点细节打磨（第四轮 · Hero 补全与卡片身份）</h3>
+          <p>补全 Hero 区缺失的统计数字条（工具数/分类数/免费）与精选工具预览胶囊条，让首屏更有分量；为每张卡片加入首字母 monogram 圆形徽标（按分类着色），赋予视觉身份；新增键盘快捷键 <code>/</code> 聚焦搜索、<code>Esc</code> 清空；生成社交分享 og-cover 图修复 og:image 断链；统计分隔点与预览胶囊动效衔接。</p>
+        </div>
+      </div>
       <div class="tl__item">
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-14</div>
