@@ -2,6 +2,13 @@
 
 > 基于 SM-2 间隔重复算法的本地闪卡学习工具，科学记忆、离线优先、苹果白风格。
 
+## ⬇️ 直接下载
+
+| 版本 | 下载 | 说明 |
+|------|------|------|
+| 便携版 | [flashcard-manager-1.0.0.exe](https://github.com/grrtyre/youqu/releases/download/flashcard-manager-v1.0.0/flashcard-manager-1.0.0.exe) | 双击即用，无需安装 |
+| 安装版 | [flashcard-manager-1.0.0-setup.exe](https://github.com/grrtyre/youqu/releases/download/flashcard-manager-v1.0.0/flashcard-manager-1.0.0-setup.exe) | 安装到本机，自动创建快捷方式 |
+
 ## 功能特色
 
 - **SM-2 间隔重复算法** — 与 Anki 同款的科学记忆算法，根据你的掌握程度自动安排复习时间
