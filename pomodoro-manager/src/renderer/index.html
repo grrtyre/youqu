@@ -69,9 +69,9 @@
     <!-- 中间：计时器 -->
     <section class="timer-area">
       <div class="phase-tabs" id="phaseTabs">
-        <button class="phase-tab active" data-phase="working">专注</button>
-        <button class="phase-tab" data-phase="short_break">短休息</button>
-        <button class="phase-tab" data-phase="long_break">长休息</button>
+        <button class="phase-tab active working" data-phase="working">专注</button>
+        <button class="phase-tab short_break" data-phase="short_break">短休息</button>
+        <button class="phase-tab long_break" data-phase="long_break">长休息</button>
       </div>
 
       <div class="timer-ring-wrap">
@@ -84,6 +84,7 @@
           <div class="timer-time" id="timerTime">25:00</div>
           <div class="timer-phase" id="timerPhase">准备开始</div>
           <div class="timer-cycle" id="timerCycle"></div>
+          <div class="cycle-label" id="cycleLabel">第 1 轮 · 共 4 轮</div>
         </div>
       </div>
 
@@ -180,6 +181,8 @@
         <button class="mini-btn" id="exportBtn">导出数据</button>
         <button class="mini-btn" id="importBtn">导入数据</button>
         <input type="file" id="importFile" accept="application/json" style="display:none">
+        <span class="modal-foot-spacer"></span>
+        <button class="mini-btn" id="settingsCancel">取消</button>
         <button class="mini-btn primary" id="settingsSave">保存</button>
       </div>
       <div class="modal-love">

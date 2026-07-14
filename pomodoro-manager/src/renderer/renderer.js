@@ -19,6 +19,7 @@ const el = {
   timerTime: document.getElementById('timerTime'),
   timerPhase: document.getElementById('timerPhase'),
   timerCycle: document.getElementById('timerCycle'),
+  cycleLabel: document.getElementById('cycleLabel'),
   ringProgress: document.getElementById('ringProgress'),
   ringWrap: document.querySelector('.timer-ring-wrap'),
   ringRipple: document.getElementById('ringRipple'),
@@ -62,6 +63,8 @@ let current = null; // 当前完整状态缓存
 let audioCtx = null;
 let noiseSource = null;
 let noiseGain = null;
+let wantWhiteNoise = false;   // 期望的白噪音状态（受自动播放策略影响可能延迟生效）
+let audioUnlocked = false;    // 首次用户手势后置 true
 
 function ensureAudio() {
   if (!audioCtx) {
@@ -96,6 +99,9 @@ function startWhiteNoise() {
   const ctx = ensureAudio();
   if (!ctx) return;
   if (noiseSource) return;
+  // 浏览器自动播放策略：ctx 仍 suspended（无用户手势）时暂不创建音源，
+  // 等首次交互解锁后再启动，避免「开关已开却无声」的静默失败。
+  if (ctx.state !== 'running') return;
   const bufferSize = 2 * ctx.sampleRate;
   const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
   const data = buffer.getChannelData(0);
@@ -121,6 +127,24 @@ function stopWhiteNoise() {
   }
 }
 
+// 统一应用白噪音期望状态
+function applyWhiteNoise(on) {
+  wantWhiteNoise = !!on;
+  if (wantWhiteNoise) startWhiteNoise(); else stopWhiteNoise();
+}
+
+// 自动播放策略：首次用户手势解锁 AudioContext，并按需补启白噪音
+['pointerdown', 'keydown'].forEach(function (evName) {
+  document.addEventListener(evName, function () {
+    if (audioUnlocked) return;
+    const ctx = ensureAudio();
+    if (ctx && ctx.state === 'running') {
+      audioUnlocked = true;
+      if (wantWhiteNoise && !noiseSource) startWhiteNoise();
+    }
+  });
+});
+
 // ---- 渲染 ----
 function render(state) {
   current = state;
@@ -136,7 +160,12 @@ function renderTimer(state) {
   const remaining = state.remainingMs;
   const phase = state.state === 'paused' ? state.pausedState : state.state;
   el.timerTime.textContent = formatTime(remaining);
-  el.timerPhase.textContent = PHASE_LABEL[state.state] || '准备开始';
+  // 暂停时保留阶段上下文，避免用户忘记正在暂停的是哪个阶段
+  if (state.state === 'paused' && state.pausedState) {
+    el.timerPhase.textContent = `已暂停 · ${PHASE_TAB_LABEL[state.pausedState] || ''}`;
+  } else {
+    el.timerPhase.textContent = PHASE_LABEL[state.state] || '准备开始';
+  }
 
   // 圆环
   const pct = state.progress || 0;
@@ -161,6 +190,8 @@ function renderTimer(state) {
     dots += `<span class="cycle-dot ${i < inCycle ? 'filled' : ''}"></span>`;
   }
   el.timerCycle.innerHTML = dots;
+  // 周期文字标签：让用户清楚当前在第几轮、共几轮
+  el.cycleLabel.textContent = `第 ${Math.min(inCycle + 1, interval)} 轮 · 共 ${interval} 轮`;
 
   // 阶段标签高亮
   const activePhase = phase || 'working';
@@ -168,8 +199,7 @@ function renderTimer(state) {
     t.classList.toggle('active', t.dataset.phase === activePhase);
   });
 
-  // 按钮状态
-  const running = state.state === 'working' || state.state === 'short_break' || state.state === 'long_break';
+  // 按钮状态（running 已在上方声明，复用）
   el.startBtn.classList.toggle('running', running);
   if (state.state === 'idle') {
     el.startIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
@@ -224,9 +254,9 @@ function renderTasks(state) {
     el.taskList.innerHTML = '<li class="task-empty">还没有任务，添加一个开始专注吧</li>';
     return;
   }
-  // 未完成在前
-  tasks.sort((a, b) => (a.completed - b.completed) || (a.createdAt - b.createdAt));
-  el.taskList.innerHTML = tasks.map(t => {
+  // 未完成在前（排序副本，避免就地修改 state.tasks 顺序）
+  const sorted = tasks.slice().sort((a, b) => (a.completed - b.completed) || (a.createdAt - b.createdAt));
+  el.taskList.innerHTML = sorted.map(t => {
     const isCurrent = state.currentTaskId === t.id && !t.completed;
     return `
       <li class="task-item ${t.completed ? 'done' : ''} ${isCurrent ? 'current' : ''}" data-id="${t.id}">
@@ -314,7 +344,10 @@ el.resetBtn.addEventListener('click', async () => {
 
 el.skipBtn.addEventListener('click', async () => {
   const ev = await window.api.skip();
-  if (!ev) toast('当前阶段不可跳过');
+  if (!ev) {
+    if (current && (current.state === 'idle' || current.state === 'paused')) toast('计时未开始');
+    else toast('严格模式下休息不可跳过');
+  }
 });
 
 el.phaseTabs.addEventListener('click', async (e) => {
@@ -332,8 +365,8 @@ el.taskInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addTask
 
 async function addTask() {
   const title = el.taskInput.value.trim();
-  if (!title) return;
-  const est = parseInt(el.taskEstimate.value, 10) || 1;
+  if (!title) { toast('请输入任务名称'); el.taskInput.focus(); return; }
+  const est = clamp(parseInt(el.taskEstimate.value, 10) || 1, 1, 20);
   await window.api.addTask(title, est);
   el.taskInput.value = '';
   el.taskInput.focus();
@@ -406,6 +439,7 @@ function enterTaskEdit(item, task) {
 // 设置
 el.settingsBtn.addEventListener('click', openSettings);
 el.settingsClose.addEventListener('click', () => el.settingsMask.classList.remove('show'));
+document.getElementById('settingsCancel').addEventListener('click', () => el.settingsMask.classList.remove('show'));
 el.settingsMask.addEventListener('click', (e) => { if (e.target === el.settingsMask) el.settingsMask.classList.remove('show'); });
 
 function openSettings() {
@@ -437,7 +471,7 @@ el.settingsSave.addEventListener('click', async () => {
     autoStartWork: document.getElementById('cfgAutoWork').checked
   };
   await window.api.saveConfig(cfg);
-  if (cfg.whiteNoise) startWhiteNoise(); else stopWhiteNoise();
+  applyWhiteNoise(cfg.whiteNoise);
   el.settingsMask.classList.remove('show');
   toast('设置已保存');
 });
@@ -473,9 +507,13 @@ function clamp(v, min, max) { return Math.max(min, Math.min(max, isNaN(v) ? min 
 // ---- 键盘快捷键 ----
 // Space 开始/暂停，R 重置，S 跳过；输入框中不触发
 document.addEventListener('keydown', async (e) => {
+  // 设置弹层打开时：Escape 关闭弹层，其余快捷键不触发
+  if (el.settingsMask.classList.contains('show')) {
+    if (e.key === 'Escape') el.settingsMask.classList.remove('show');
+    return;
+  }
   const tag = (e.target.tagName || '').toLowerCase();
   if (tag === 'input' || tag === 'textarea' || e.target.isContentEditable) return;
-  if (el.settingsMask.classList.contains('show')) return;
   const key = e.key.toLowerCase();
   if (key === ' ' || key === 'spacebar') {
     e.preventDefault();
@@ -492,7 +530,10 @@ document.addEventListener('keydown', async (e) => {
   } else if (key === 's') {
     e.preventDefault();
     const ev = await window.api.skip();
-    if (!ev) toast('当前阶段不可跳过');
+    if (!ev) {
+      if (current && (current.state === 'idle' || current.state === 'paused')) toast('计时未开始');
+      else toast('严格模式下休息不可跳过');
+    }
   }
 });
 
@@ -536,7 +577,7 @@ window.api.onNotify((data) => {
 async function loadState() {
   const state = await window.api.getState();
   render(state);
-  if (state.config && state.config.whiteNoise) startWhiteNoise(); else stopWhiteNoise();
+  applyWhiteNoise(state.config && state.config.whiteNoise);
 }
 
 // 初始化

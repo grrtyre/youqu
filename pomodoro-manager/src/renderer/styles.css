@@ -84,9 +84,9 @@ html, body {
 .main {
   flex: 1;
   display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: 20px;
-  padding: 20px 24px 24px;
+  grid-template-columns: 320px 1fr;
+  gap: 22px;
+  padding: 22px 26px 26px;
   overflow: hidden;
 }
 
@@ -129,7 +129,7 @@ html, body {
 .stat-progress-fill {
   height: 100%; background: linear-gradient(90deg, var(--accent), #5ac8fa);
   border-radius: 999px; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); width: 0%;
-  box-shadow: 0 0 12px rgba(0,122,255,0.45), 0 1px 3px rgba(0,122,255,0.35);
+  box-shadow: 0 0 8px rgba(0,122,255,0.25), 0 1px 2px rgba(0,122,255,0.2);
 }
 .stat-pct { display: block; font-size: 10px; font-weight: 600; color: var(--accent); text-align: right; line-height: 1; margin-top: 5px; letter-spacing: 0.3px; }
 .stat-mini {
@@ -182,15 +182,15 @@ html, body {
 .mini-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
 .mini-btn.primary:hover { background: #0066d6; }
 
-.task-list { list-style: none; overflow-y: auto; flex: 1; display: flex; flex-direction: column; justify-content: flex-start; gap: 4px; }
+.task-list { list-style: none; overflow-y: auto; flex: 1; display: flex; flex-direction: column; justify-content: flex-start; gap: 3px; }
 .task-item {
   display: flex; align-items: center; gap: 10px;
-  padding: 14px 10px;
+  padding: 12px 10px;
   border-radius: 10px;
   cursor: pointer;
   transition: background 0.12s;
   border: 1px solid transparent;
-  margin-bottom: 6px;
+  margin-bottom: 3px;
 }
 .task-item:hover { background: var(--surface-2); }
 .task-item.current { background: rgba(0,122,255,0.045); border-color: rgba(0,122,255,0.14); box-shadow: inset 3px 0 0 var(--accent); }
@@ -206,7 +206,7 @@ html, body {
 .task-item.done .task-radio::after { content: '✓'; color: #fff; font-size: 11px; font-weight: bold; }
 .task-body { flex: 1; min-width: 0; }
 .task-title { font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.task-meta { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+.task-meta { font-size: 11px; color: var(--text-2); margin-top: 2px; }
 .task-current-dot {
   width: 9px; height: 9px; border-radius: 50%; background: var(--accent);
   flex-shrink: 0; box-shadow: 0 0 0 3px var(--accent-soft);
@@ -247,24 +247,26 @@ html, body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  padding: 20px 28px 18px;
+  box-shadow: var(--shadow-lg);
+  padding: 26px 32px 22px;
   overflow-y: auto;
-  gap: 4px;
+  gap: 6px;
   position: relative;
 }
 
 .phase-tabs {
   display: flex; gap: 4px;
   background: var(--surface-2);
-  padding: 4px; border-radius: 12px;
-  margin-bottom: 14px;
+  padding: 5px; border-radius: 12px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
 }
 .phase-tab {
   border: none; background: transparent;
-  padding: 8px 22px; border-radius: 9px;
-  font-size: 13px; font-weight: 500; color: var(--text-2);
+  padding: 9px 26px; border-radius: 9px;
+  font-size: 13.5px; font-weight: 500; color: var(--text-2);
   cursor: pointer; transition: all 0.18s;
+  letter-spacing: 0.3px;
 }
 .phase-tab:hover { color: var(--text); background: rgba(0,0,0,0.04); }
 .phase-tab.active {
@@ -302,7 +304,7 @@ html, body {
 .timer-ring { width: 100%; height: 100%; transform: rotate(-90deg); position: relative; z-index: 1; }
 .ring-ripple { z-index: 1; }
 .ring-track {
-  fill: none; stroke: #dfe2e8; stroke-width: 10;
+  fill: none; stroke: #e6e8ec; stroke-width: 10;
 }
 .ring-progress {
   fill: none; stroke: var(--accent); stroke-width: 12;
@@ -310,7 +312,7 @@ html, body {
   stroke-dasharray: 879.6; /* 2*PI*140 */
   stroke-dashoffset: 879.6;
   transition: stroke-dashoffset 0.5s linear, stroke 0.3s;
-  filter: drop-shadow(0 0 12px rgba(0,122,255,0.22));
+  filter: drop-shadow(0 0 10px rgba(0,122,255,0.20));
 }
 .ring-progress.short_break { stroke: var(--accent-2); filter: drop-shadow(0 0 6px rgba(52,199,89,0.25)); }
 .ring-progress.long_break { stroke: var(--warn); filter: drop-shadow(0 0 6px rgba(255,149,0,0.25)); }
@@ -327,16 +329,26 @@ html, body {
   font-size: 15px; color: var(--text-2); margin-top: 10px; font-weight: 500;
 }
 .timer-cycle {
-  margin-top: 14px; display: flex; gap: 8px;
+  margin-top: 16px; display: flex; gap: 10px;
+  padding: 8px 14px;
+  background: var(--surface-2);
+  border-radius: 999px;
+  border: 1px solid var(--border);
 }
 .cycle-dot {
-  width: 11px; height: 11px; border-radius: 50%;
-  background: var(--border);
-  transition: background 0.2s, transform 0.2s;
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #d4d8de;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
 }
 .cycle-dot.filled {
   background: var(--accent);
-  box-shadow: 0 0 0 3px rgba(0,122,255,0.15);
+  box-shadow: 0 0 0 3px rgba(0,122,255,0.18);
+  transform: scale(1.15);
+}
+.cycle-label {
+  margin-top: 10px;
+  font-size: 11.5px; color: var(--text-3);
+  letter-spacing: 0.4px; font-weight: 500;
 }
 
 /* 控制按钮 */
@@ -395,10 +407,10 @@ html, body {
 /* 当前任务 */
 .current-task {
   display: flex; align-items: center; gap: 10px;
-  padding: 10px 16px;
-  background: linear-gradient(90deg, var(--accent-soft), var(--surface-2) 40%);
+  padding: 9px 14px;
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 10px;
   margin-bottom: 14px;
   max-width: 380px; width: 100%;
 }
@@ -438,11 +450,11 @@ html, body {
 }
 .week-bar {
   width: 100%; max-width: 44px;
-  background: linear-gradient(180deg, #8ab8f5, #b8d4f7);
+  background: linear-gradient(180deg, #d4d8de, #e4e7ec);
   border-radius: 6px 6px 2px 2px;
   min-height: 4px;
   transition: height 0.4s ease;
-  opacity: 0.85;
+  opacity: 0.95;
 }
 .week-bar.today {
   opacity: 1;
@@ -506,6 +518,7 @@ html, body {
 .setting-switch input[type="checkbox"]:checked { background: var(--accent); }
 .setting-switch input[type="checkbox"]:checked::after { transform: translateX(16px); }
 .modal-foot { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+.modal-foot-spacer { flex: 1; }
 .modal-love { margin-top: 14px; text-align: center; }
 .modal-love a { font-size: 12px; color: var(--accent); text-decoration: none; }
 
