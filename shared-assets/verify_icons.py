@@ -13,7 +13,8 @@ paths = [
               "image-converter", "pdf-toolbox"]
 ] + [
     os.path.join(ROOT, n + "-source.png")
-    for n in ["settings", "search", "close", "minimize", "add"]
+    for n in ["settings", "search", "close", "minimize", "add",
+              "maximize", "delete", "edit"]
 ]
 
 print(f"{'name':<32}{'size':>14}{'blue%':>9}{'white%':>9}")
