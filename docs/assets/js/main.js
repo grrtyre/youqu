@@ -218,8 +218,10 @@ function cardHTML(p, idx){
   return ''+
   '<article class="card" data-cat="'+p.cat+'" data-stack="'+p.stack+'" data-id="'+p.id+'" tabindex="0" role="button" aria-label="'+p.name+' 详情">'+
     '<div class="card__media" style="background:'+g.emoji_bg+'">'+
+      '<span class="card__monogram" aria-hidden="true">'+monogram(p.name)+'</span>'+
       '<span class="card__version">'+p.ver+'</span>'+
       scoreBadge+
+      '<span class="card__emoji" aria-hidden="true">'+p.icon+'</span>'+
       '<div class="card__media-text">'+
         '<span class="card__media-cat">'+CAT_NAME[p.cat]+'</span>'+
         '<span class="card__media-name">'+p.name+'</span>'+
@@ -236,7 +238,18 @@ function cardHTML(p, idx){
   '</article>';
 }
 
+var isFirstRender = true;
 function render(list){
+  /* 首次渲染直接出图（确保 headless 截图与首屏可见）；后续筛选才用淡出淡入 */
+  if(isFirstRender){
+    grid.innerHTML = list.map(function(p, i){ return cardHTML(p, i); }).join('');
+    countEl.textContent = '共 '+list.length+' 个工具';
+    empty.hidden = list.length > 0;
+    observeCards();
+    bindCardImgFade();
+    isFirstRender = false;
+    return;
+  }
   /* 筛选切换：先淡出旧卡片，再渲染新卡片并淡入，避免硬切闪烁 */
   grid.classList.add('is-fading');
   setTimeout(function(){
@@ -264,6 +277,10 @@ function observeCards(){
     });
   },{threshold:0.08,rootMargin:'0px 0px -40px 0px'});
   document.querySelectorAll('.card').forEach(function(c){ io.observe(c); });
+  /* 兜底：800ms 后仍未出现的卡片直接显示（确保 headless 截图与低性能环境可见） */
+  setTimeout(function(){
+    document.querySelectorAll('.card:not(.is-visible)').forEach(function(c){ c.classList.add('is-visible'); });
+  }, 800);
 }
 
 /* ---------- 截图渐显（加载完成后淡入，避免空白闪烁）+ 深色图检测 ---------- */
@@ -549,6 +566,28 @@ function loadScores(){
     .catch(function(){ /* silently fail - scores are optional */ });
 }
 
+/* ---------- 键盘快捷键：/ 聚焦搜索、Esc 清空 ---------- */
+document.addEventListener('keydown', function(e){
+  if(e.key === '/' && document.activeElement !== searchInput && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)){
+    e.preventDefault();
+    searchInput.focus();
+    var toolbar = document.querySelector('.toolbar');
+    if(toolbar){ toolbar.scrollIntoView({behavior:'smooth',block:'start'}); }
+  }
+  if(e.key === 'Escape' && document.activeElement === searchInput && searchInput.value){
+    searchInput.value = '';
+    currentQuery = '';
+    searchClear.hidden = true;
+    applyFilter();
+    searchInput.blur();
+  }
+});
+
 /* ---------- 初始化 ---------- */
 render(PROJECTS);
 loadScores();
+/* Hero 统计数字与计数同步实际项目数 */
+var statCount = document.getElementById('stat-count');
+var heroCount = document.getElementById('hero-count');
+if(statCount) statCount.textContent = PROJECTS.length;
+if(heroCount) heroCount.textContent = PROJECTS.length;
