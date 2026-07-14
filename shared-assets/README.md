@@ -59,10 +59,21 @@ shared-assets/
 后续规划：save / share / refresh / filter
 
 ### illustrations/（空状态插画）
-> 待生成。规划：empty-list / no-result / error / success / loading
+已生成（1024×1024 源 + 256 缩略图，纯线性描边，统一虚线地面装饰）：
+- `empty-list`（空列表：纸箱 + 加号提示）
+- `no-result`（无结果：文档 + 放大镜 ×）
+- `error`（错误：三角警告 + 感叹号）
+- `success`（成功：圆 + 勾）
+
+文件命名：`<name>.png`（1024 源）/ `<name>-thumb.png`（256 缩略图）
 
 ### patterns/（背景纹理）
-> 待生成。规划：apple-white-gradient / subtle-grid / dotted
+已生成（512×512 可平铺，极淡不抢眼）：
+- `apple-white-gradient`（白渐变：#FFFFFF → #F5F5F7）
+- `subtle-grid`（极淡网格：64px 间距 #F0F0F2）
+- `dotted`（点阵：32px 间距 #E8E8ED）
+
+文件命名：`<name>.png`（512×512 可平铺）
 
 ## 🔧 使用方法
 
