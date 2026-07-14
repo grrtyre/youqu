@@ -1,0 +1,554 @@
+/* ============ youqu 展示站点 · 交互逻辑 ============ */
+'use strict';
+
+/* ---------- 项目数据（41 个工具） ---------- */
+var G = 'https://github.com/grrtyre/youqu';
+var R = 'https://github.com/grrtyre/youqu/releases';
+var AF = 'https://www.ifdian.net/a/giquwei';
+
+var PROJECTS = [
+  {id:'cron-zh',icon:'⏰',name:'Cron 中文可视化',cat:'dev',stack:'web',ver:'v2.0',
+   desc:'中文原生的 Cron 表达式可视化生成器：5/6 字段自动识别（支持 Spring/Quartz 带秒表达式）、? 标记兼容、实时中文解读、字段可视化、下次执行预览、常用预设。',
+   tags:['纯 HTML/CSS/JS'],gh:G+'/tree/main/cron-zh',
+   features:['5/6 字段自动识别，支持 Quartz/Spring 带秒表达式','? 标记兼容，日/周字段任填其一','实时中文解读，输入即解析','下次 5 次执行预览，精确到秒','20 个高频预设一键填入','暗色/亮色主题，记忆偏好','URL 分享 ?cron= 直接打开配置']},
+  {id:'clipboard-manager',icon:'📋',name:'剪贴板管家',cat:'system',stack:'electron',ver:'v1.3.0',
+   desc:'Windows 桌面剪贴板历史管理器：苹果白风格、键盘导航、一键粘贴到前台、智能分类、图片剪贴板、纯本地隐私优先。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/clipboard-manager-v1.3.0',gh:G+'/tree/main/clipboard-manager',
+   features:['自动记录文本与图片，去重存储','全局快捷键 Ctrl+Shift+V 唤起','键盘导航，Enter 一键粘贴到前台窗口','智能分类代码/链接/邮箱/电话/图片','即时搜索 + 关键词高亮','内容预览面板，代码带行号','置顶收藏、系统托盘常驻','最多 500 文本 + 50 图片']},
+  {id:'markdown-preview',icon:'📝',name:'Markdown 预览器',cat:'dev',stack:'web',ver:'v2.2',
+   desc:'苹果白风格本地 Markdown 预览器：实时编辑、GFM 语法、中文排版优化、保存 .md、阅读时长估算、一键导出 HTML/PDF、PWA 离线可用。',
+   tags:['纯 HTML/CSS/JS','PWA'],gh:G+'/tree/main/markdown-preview',
+   features:['实时编辑实时预览','GFM 语法支持','中文排版优化','阅读时长估算','一键导出 HTML/PDF','PWA 离线可用']},
+  {id:'dev-toolbox',icon:'🧰',name:'开发者工具箱',cat:'dev',stack:'web',ver:'v2.1',
+   desc:'苹果白风格 8 合 1 开发者工具：颜色转换 / JSON 格式化 / 时间戳 / 正则测试 / 文本 Diff / Base64 / URL 编解码 / JWT 解码。',
+   tags:['纯 HTML/CSS/JS'],gh:G+'/tree/main/dev-toolbox',
+   features:['8 合 1 开发者常用工具','颜色转换','JSON 格式化','时间戳转换','正则测试','文本 Diff','Base64 / URL 编解码','JWT 解码']},
+  {id:'color-picker',icon:'🎨',name:'拾色管家',cat:'design',stack:'electron',ver:'v1.1.0',
+   desc:'苹果白风格屏幕取色器：全局快捷键、放大镜精准取色、多调色板管理、WCAG 对比度检查、调色板多格式导出（CSS/SCSS/JSON/GPL/ASE）、托盘常驻、纯本地隐私。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/color-picker-v1.1.0',gh:G+'/tree/main/color-picker',
+   features:['全局快捷键唤起','放大镜精准取色','多调色板管理','WCAG 对比度检查','多格式导出 CSS/SCSS/JSON/GPL/ASE','系统托盘常驻','纯本地隐私']},
+  {id:'screenshot-manager',icon:'📸',name:'截图管家',cat:'system',stack:'electron',ver:'v1.0',
+   desc:'苹果白风格截图标注工具：全局快捷键截图、6 种标注（矩形/箭头/画笔/文字/序号/马赛克）、屏幕贴图、历史回看、纯本地隐私。',
+   tags:['Electron','原生 JS'],dl:R,gh:G+'/tree/main/screenshot-manager',
+   features:['全局快捷键截图','6 种标注工具：矩形/箭头/画笔/文字/序号/马赛克','屏幕贴图功能','历史回看','纯本地隐私优先']},
+  {id:'world-clock',icon:'🌐',name:'世界时钟',cat:'efficiency',stack:'web',ver:'v1.1.0',
+   desc:'跨时区协作助手：多时区对比、工作时段重叠可视化、智能会议推荐（按黄金时段打分给出最佳会议时间）、时间戳转换、历史回溯（DST 自动处理）。',
+   tags:['纯 HTML/CSS/JS'],gh:G+'/tree/main/world-clock',
+   features:['多时区对比','工作时段重叠可视化','智能会议推荐，按黄金时段打分','时间戳转换','历史回溯，DST 自动处理']},
+  {id:'file-rename-manager',icon:'📁',name:'重命名管家',cat:'system',stack:'electron',ver:'v1.1.0',
+   desc:'Windows 批量重命名工具：拖拽添加、实时预览、7 种规则（替换/正则/序号/日期/EXIF/大小写/插入删除）、组合应用、交换安全、一键撤销、预设管理。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/file-rename-manager-v1.1.0',gh:G+'/tree/main/file-rename-manager',
+   features:['拖拽添加文件','实时预览改名结果','7 种规则：替换/正则/序号/日期/EXIF/大小写/插入删除','组合应用多规则','交换安全','一键撤销','预设管理','扩展名过滤']},
+  {id:'quick-look',icon:'👁',name:'速览管家',cat:'system',stack:'electron',ver:'v1.0',
+   desc:'仿 Mac QuickLook 的 Windows 文件极速预览：Alt+Q 一键唤起、资源管理器集成、图片/视频/音频/PDF/代码/Markdown 全格式支持。',
+   tags:['Electron','原生 JS'],dl:R,gh:G+'/tree/main/quick-look',
+   features:['仿 Mac QuickLook 体验','Alt+Q 一键唤起','资源管理器集成','图片/视频/音频/PDF/代码/Markdown 全格式','极速预览']},
+  {id:'text-manager',icon:'📝',name:'文本管家',cat:'efficiency',stack:'electron',ver:'v1.1.0',
+   desc:'Windows 批量文本处理工具：替换/分割/提取/大小写/去重/行处理/编码转换/统计、自然排序，苹果白风格、纯本地隐私优先。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/text-manager-v1.1.0',gh:G+'/tree/main/text-manager',
+   features:['替换/分割/提取','大小写转换','去重','行处理','编码转换','字符统计','自然排序','纯本地隐私优先']},
+  {id:'duplicate-finder',icon:'📦',name:'清重管家',cat:'system',stack:'electron',ver:'v1.0.0',
+   desc:'Windows 重复文件查找清理工具：三阶段内容哈希算法（按大小→部分哈希→完整 SHA-256）零误报、并排预览对比、智能建议保留、安全移到回收站。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/duplicate-finder-v1.0.0',gh:G+'/tree/main/duplicate-finder',
+   features:['三阶段内容哈希算法零误报','按大小→部分哈希→完整 SHA-256','并排预览对比','智能建议保留','安全移到回收站']},
+  {id:'screen-ruler',icon:'📏',name:'屏幕尺管家',cat:'system',stack:'electron',ver:'v1.1.1',
+   desc:'屏幕测量与标注工具：实时坐标与取色、矩形/直线测量、9×9 像素放大镜、历史记录、全局热键唤起、HiDPI 适配、多屏严格匹配，苹果白风格。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/screen-ruler-v1.1.1',gh:G+'/tree/main/screen-ruler',
+   features:['实时坐标与取色','矩形/直线测量','9×9 像素放大镜','历史记录','全局热键唤起','HiDPI 适配','多屏严格匹配']},
+  {id:'font-manager',icon:'🔤',name:'字体管家',cat:'design',stack:'electron',ver:'v1.1.0',
+   desc:'本地字体浏览、对比与特性标签管理工具：CJK 过滤修复、分类语义配色、实时计数、苹果白高端风格。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/font-manager-v1.1.0',gh:G+'/tree/main/font-manager',
+   features:['本地字体浏览','字体对比','特性标签管理','CJK 过滤修复','分类语义配色','实时计数']},
+  {id:'pdf-toolbox',icon:'📖',name:'PDF管家',cat:'efficiency',stack:'electron',ver:'v1.1.0',
+   desc:'本地PDF工具箱·合并/拆分/压缩/加密/解密/水印/图片转PDF，中文水印修复、全功能拖拽，纯本地隐私优先。',
+   tags:['Electron','@cantoo/pdf-lib'],dl:R+'/tag/pdf-toolbox-v1.1.0',gh:G+'/tree/main/pdf-toolbox',
+   features:['PDF 合并/拆分','压缩','加密/解密','水印','图片转 PDF','中文水印修复','全功能拖拽','纯本地隐私优先']},
+  {id:'diff-checker',icon:'⚖️',name:'文本对比管家',cat:'dev',stack:'web',ver:'v1.0.0',
+   desc:'苹果白风格文本对比工具：行级+字符级双 diff、并排/内联/统一格式三视图、忽略大小写/空白、文件拖放、PWA 离线可用。',
+   tags:['纯 HTML/CSS/JS','PWA'],gh:G+'/tree/main/diff-checker',
+   features:['行级+字符级双 diff','并排/内联/统一格式三视图','忽略大小写/空白','文件拖放','PWA 离线可用']},
+  {id:'countdown-manager',icon:'⏳',name:'倒计时管家',cat:'efficiency',stack:'electron',ver:'v1.0.0',
+   desc:'优雅的事件倒数日桌面工具：公历+农历双历法、年度重复、分类标签、置顶筛选、系统托盘、本地存储。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/countdown-manager-v1.0.0',gh:G+'/tree/main/countdown-manager',
+   features:['公历+农历双历法','年度重复','分类标签','置顶筛选','系统托盘','本地存储']},
+  {id:'qr-manager',icon:'📱',name:'二维码管家',cat:'efficiency',stack:'electron',ver:'v1.0.0',
+   desc:'本地二维码生成与识别工具：WiFi/名片/邮箱模板、截屏识别、历史收藏、PNG/SVG导出。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/qr-manager-v1.0.0',gh:G+'/tree/main/qr-manager',
+   features:['二维码生成','WiFi/名片/邮箱模板','截屏识别','历史收藏','PNG/SVG 导出']},
+  {id:'habit-keeper',icon:'📋',name:'习惯管家',cat:'efficiency',stack:'electron',ver:'v1.0.0',
+   desc:'本地优先的每日习惯打卡桌面应用：一键打卡、连续天数、月历补卡、完成率统计、多习惯管理、数据导入导出、完全离线。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/habit-keeper-v1.0.0',gh:G+'/tree/main/habit-keeper',
+   features:['一键打卡','连续天数','月历补卡','完成率统计','多习惯管理','数据导入导出','完全离线']},
+  {id:'accounting-manager',icon:'💰',name:'记账管家',cat:'efficiency',stack:'electron',ver:'v1.1.0',
+   desc:'本地优先的极简记账桌面应用：收支记录、仪表盘概览、6月趋势图、分类环形图、日历回看、预算管理、账户余额、资产负债分布、搜索、二次确认防误删、JSON/CSV导出。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/accounting-manager-v1.1.0',gh:G+'/tree/main/accounting-manager',
+   features:['收支记录','仪表盘概览','6 月趋势图','分类环形图','日历回看','预算管理','账户余额','资产负债分布','二次确认防误删','JSON/CSV 导出']},
+  {id:'snippet-manager',icon:'📋',name:'代码片段管家',cat:'dev',stack:'electron',ver:'v1.1.0',
+   desc:'本地优先的代码片段管理桌面应用：自研语法高亮引擎（20+语言）、全文搜索、标签分类、收藏置顶、导入导出、全局快捷键、托盘常驻。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/snippet-manager-v1.1.0',gh:G+'/tree/main/snippet-manager',
+   features:['自研语法高亮引擎（20+ 语言）','全文搜索','标签分类','收藏置顶','导入导出','全局快捷键','托盘常驻']},
+  {id:'time-tracker',icon:'⏱️',name:'时间管家',cat:'efficiency',stack:'electron',ver:'v1.1.0',
+   desc:'本地优先的时间追踪桌面应用：一键计时、多项目管理、今日记录、统计图表、CSV/JSON 导出导入、系统托盘、迷你进度条、纯本地隐私。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/time-tracker-v1.1.0',gh:G+'/tree/main/time-tracker',
+   features:['一键计时','多项目管理','今日记录','统计图表','CSV/JSON 导出导入','系统托盘','迷你进度条','纯本地隐私']},
+  {id:'port-manager',icon:'🔌',name:'端口管家',cat:'system',stack:'electron',ver:'v1.0.0',
+   desc:'本地网络端口监控与管理桌面应用：实时扫描连接、一键结束占用进程、端口收藏、状态筛选、进程详情、CSV/JSON 导出，纯本地隐私优先。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/port-manager-v1.0.0',gh:G+'/tree/main/port-manager',
+   features:['实时扫描连接','一键结束占用进程','端口收藏','状态筛选','进程详情','CSV/JSON 导出','纯本地隐私优先']},
+  {id:'checksum-manager',icon:'🛡️',name:'校验管家',cat:'system',stack:'electron',ver:'v1.0.0',
+   desc:'本地文件哈希校验工具：MD5/SHA1/SHA256/SHA512/CRC32 五合一、拖放即算、粘贴哈希自动识别算法实时比对、批量处理、流式计算大文件、历史记录。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/checksum-manager-v1.0.0',gh:G+'/tree/main/checksum-manager',
+   features:['MD5/SHA1/SHA256/SHA512/CRC32 五合一','拖放即算','粘贴哈希自动识别算法','实时比对','批量处理','流式计算大文件','历史记录']},
+  {id:'api-manager',icon:'🔌',name:'API管家',cat:'dev',stack:'electron',ver:'v1.0.0',
+   desc:'本地优先的 HTTP API 测试工具：集合管理、环境变量、JSON 语法高亮、历史记录，苹果白高端风格。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/api-manager-v1.0.0',gh:G+'/tree/main/api-manager',
+   features:['集合管理','环境变量','JSON 语法高亮','历史记录','苹果白高端风格']},
+  {id:'topmost-manager',icon:'📌',name:'置顶管家',cat:'system',stack:'electron',ver:'v1.0.0',
+   desc:'Windows 窗口置顶管理工具：可视化窗口列表、一键置顶、透明度调节、全局热键、自动置顶规则、托盘常驻，纯本地隐私优先。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/topmost-manager-v1.0.0',gh:G+'/tree/main/topmost-manager',
+   features:['可视化窗口列表','一键置顶','透明度调节','全局热键','自动置顶规则','托盘常驻','纯本地隐私优先']},
+  {id:'eye-rest-manager',icon:'👁',name:'护眼管家',cat:'efficiency',stack:'electron',ver:'v1.1.0',
+   desc:'护眼休息提醒桌面管家：20-20-20法则、三级休息周期、眼保健操引导、严格模式、免打扰时段、全屏抑制、本地统计，苹果白高端风格。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/eye-rest-manager-v1.1.0',gh:G+'/tree/main/eye-rest-manager',
+   features:['20-20-20 法则','三级休息周期','眼保健操引导','严格模式','免打扰时段','全屏抑制','本地统计']},
+  {id:'hosts-manager',icon:'🖥️',name:'Hosts管家',cat:'system',stack:'electron',ver:'v1.0.0',
+   desc:'hosts 文件编辑与方案管理桌面应用：可视化编辑、一键应用、模板库、方案保存、自动备份。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/hosts-manager-v1.0.0',gh:G+'/tree/main/hosts-manager',
+   features:['可视化编辑 hosts','一键应用','模板库','方案保存','自动备份']},
+  {id:'network-manager',icon:'🌐',name:'网络管家',cat:'system',stack:'electron',ver:'v1.1.0',
+   desc:'本地网络诊断一体化桌面应用：Ping/路由追踪/DNS/端口检测/HTTP头/Whois/IP归属 7合1、延迟柱状图、诊断历史、复制结果、系统托盘、单实例锁、历史导出。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/network-manager-v1.1.0',gh:G+'/tree/main/network-manager',
+   features:['7 合 1：Ping/路由追踪/DNS/端口检测/HTTP头/Whois/IP归属','延迟柱状图','诊断历史','复制结果','系统托盘','单实例锁','历史导出 CSV/JSON']},
+  {id:'subscription-manager',icon:'💰',name:'订阅管家',cat:'efficiency',stack:'electron',ver:'v1.1.0',
+   desc:'本地优先的订阅服务管理桌面应用：支出概览、续费提醒、分类统计、停用启用、JSON/CSV 导入导出、二次确认防误删、托盘常驻。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/subscription-manager-v1.1.0',gh:G+'/tree/main/subscription-manager',
+   features:['支出概览','续费提醒','分类统计','停用启用','JSON/CSV 导入导出','二次确认防误删','托盘常驻']},
+  {id:'sticky-notes-manager',icon:'📝',name:'便签管家',cat:'efficiency',stack:'electron',ver:'v1.1.0',
+   desc:'本地便签桌面应用：快速记录、分类管理、置顶标记、全文搜索、颜色标签、回收站（30天恢复）、导入导出、全局快捷键、托盘常驻，纯本地隐私优先。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/sticky-notes-manager-v1.1.0',gh:G+'/tree/main/sticky-notes-manager',
+   features:['快速记录','分类管理','置顶标记','全文搜索','颜色标签','回收站 30 天恢复','导入导出','全局快捷键','托盘常驻']},
+  {id:'watermark-manager',icon:'💧',name:'水印管家',cat:'system',stack:'electron',ver:'v1.1.0',
+   desc:'屏幕水印防泄密工具：透明置顶鼠标穿透、多屏支持、动态变量、6种快捷模板、定时水印（工作时段/星期/跨夜）、智能IP识别过滤虚拟网卡、实时预览、托盘常驻。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/watermark-manager-v1.1.0',gh:G+'/tree/main/watermark-manager',
+   features:['透明置顶鼠标穿透','多屏支持','动态变量','6 种快捷模板','定时水印：工作时段/星期/跨夜','智能 IP 识别过滤虚拟网卡','实时预览','托盘常驻']},
+  {id:'regex-manager',icon:'📐',name:'正则管家',cat:'dev',stack:'electron',ver:'v1.0.0',
+   desc:'本地正则表达式测试与调试工具：实时高亮、捕获组详情、替换预览（支持 $1 $2 $&）、30+ 模式库、历史收藏，苹果白高端风格。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/regex-manager-v1.0.0',gh:G+'/tree/main/regex-manager',
+   features:['实时高亮','捕获组详情','替换预览（支持 $1 $2 $&）','30+ 模式库','历史收藏','苹果白高端风格']},
+  {id:'csv-manager',icon:'📊',name:'表格管家',cat:'efficiency',stack:'electron',ver:'v1.1.0',
+   desc:'本地 CSV/TSV 数据查看与分析工具：自动识别分隔符、列类型推断、数值统计、排序过滤、图表可视化、虚拟滚动、多格式导出，纯本地隐私优先。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/csv-manager-v1.1.0',gh:G+'/tree/main/csv-manager',
+   features:['自动识别分隔符','列类型推断','数值统计','排序过滤','图表可视化','虚拟滚动','多格式导出','纯本地隐私优先']},
+  {id:'startup-manager',icon:'🚀',name:'启动项管家',cat:'system',stack:'electron',ver:'v1.0.0',
+   desc:'Windows 启动项可视化管理桌面应用：注册表+启动文件夹双来源、一键启用/禁用/删除、搜索筛选、统计概览，苹果白高端风格。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/startup-manager-v1.0.0',gh:G+'/tree/main/startup-manager',
+   features:['注册表+启动文件夹双来源','一键启用/禁用/删除','搜索筛选','统计概览','苹果白高端风格']},
+  {id:'pomodoro-manager',icon:'🍅',name:'番茄管家',cat:'efficiency',stack:'electron',ver:'v1.1.0',
+   desc:'本地优先的番茄工作法专注桌面应用：专注/短休息/长休息三阶段轮转、任务清单、统计分析、连续打卡、严格模式、键盘快捷键、合成白噪音、托盘常驻。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/pomodoro-manager-v1.1.0',gh:G+'/tree/main/pomodoro-manager',
+   features:['专注/短休息/长休息三阶段轮转','任务清单','统计分析','连续打卡','严格模式','键盘快捷键','合成白噪音','托盘常驻']},
+  {id:'ocr-manager',icon:'👁',name:'识字管家',cat:'efficiency',stack:'electron',ver:'v1.0.1',
+   desc:'本地离线 OCR 文字识别工具：中英文识别、全局快捷键截图识别、批量队列、置信度与字数统计、历史记录、自动复制、多语言切换，纯本地隐私优先。',
+   tags:['Electron','tesseract.js'],dl:R+'/tag/ocr-manager-v1.0.1',gh:G+'/tree/main/ocr-manager',
+   features:['中英文识别','全局快捷键截图识别','批量队列','置信度与字数统计','历史记录','自动复制','多语言切换','纯本地隐私优先']},
+  {id:'calculator-manager',icon:'🧮',name:'计算器管家',cat:'efficiency',stack:'electron',ver:'v1.1.0',
+   desc:'苹果白高端风格桌面计算器：基础/科学/程序员/转换四模式、自研表达式引擎、十大类单位互转、常见换算参考、变量定义、历史记录、纯本地隐私优先。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/calculator-manager-v1.1.0',gh:G+'/tree/main/calculator-manager',
+   features:['基础/科学/程序员/转换四模式','自研表达式引擎','十大类单位互转','常见换算参考','变量定义','历史记录','纯本地隐私优先']},
+  {id:'mind-map-manager',icon:'🧠',name:'思维导图管家',cat:'efficiency',stack:'electron',ver:'v1.0.0',
+   desc:'本地优先的思维导图桌面工具：多文档管理、键盘流操作、自动树形布局、彩色分支、折叠展开、多格式导出（PNG/JSON/Markdown），数据不出本机。',
+   tags:['Electron','原生 SVG'],dl:R+'/tag/mind-map-manager-v1.0.0',gh:G+'/tree/main/mind-map-manager',
+   features:['多文档管理','键盘流操作','自动树形布局','彩色分支','折叠展开','多格式导出 PNG/JSON/Markdown','数据不出本机']},
+  {id:'screen-recorder-manager',icon:'🎬',name:'录屏管家',cat:'system',stack:'electron',ver:'v1.0.0',
+   desc:'苹果白高端风格本地屏幕录制工具：屏幕/窗口录制、系统声音+麦克风混音、暂停继续、历史管理、全局快捷键、托盘常驻，纯本地隐私优先。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/screen-recorder-manager-v1.0.0',gh:G+'/tree/main/screen-recorder-manager',
+   features:['屏幕/窗口录制','系统声音+麦克风混音','暂停继续','历史管理','全局快捷键','托盘常驻','纯本地隐私优先']},
+  {id:'wheel-manager',icon:'🎡',name:'抽签转盘管家',cat:'efficiency',stack:'electron',ver:'v1.0.0',
+   desc:'苹果白风格桌面随机选择工具：加权随机、多名单管理、批量导入、不重复抽奖、历史记录、音效、自定义设置，纯本地隐私优先。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/wheel-manager-v1.0.0',gh:G+'/tree/main/wheel-manager',
+   features:['加权随机','多名单管理','批量导入','不重复抽奖','历史记录','音效','自定义设置','纯本地隐私优先']},
+  {id:'anniversary-manager',icon:'💌',name:'纪念日管家',cat:'efficiency',stack:'electron',ver:'v1.0.0',
+   desc:'本地优先的纪念日管理桌面应用：公历+农历双历法、生日/纪念日/忌日/自定义四类型、生肖星座、倒计时、即将到来侧栏、分类筛选、搜索排序、JSON导入导出。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/anniversary-manager-v1.0.0',gh:G+'/tree/main/anniversary-manager',
+   features:['公历+农历双历法','四类型：生日/纪念日/忌日/自定义','生肖星座','倒计时','即将到来侧栏','分类筛选','搜索排序','JSON 导入导出','纯本地隐私优先']}
+];
+
+/* Assign screenshot path + score placeholder to each project */
+/* shot  = 卡片尺寸小图 (480px wide, ~5KB) 用于卡片首屏 */
+/* full  = 大图尺寸 (1200px wide, ~22KB) 用于 lightbox */
+PROJECTS.forEach(function(p){
+  p.shot = 'assets/img/' + p.id + '.webp';
+  p.full = 'assets/img/' + p.id + '-full.webp';
+  p.score = 0;
+});
+
+/* 卡片背景：精致分类色渐变（低饱和度，统一中有差异） */
+var GRAD = {
+  dev:{emoji_bg:'linear-gradient(135deg,#f5f8ff 0%,#e8f0ff 100%)'},
+  system:{emoji_bg:'linear-gradient(135deg,#f5fbf7 0%,#e8f6ee 100%)'},
+  efficiency:{emoji_bg:'linear-gradient(135deg,#fffaf3 0%,#fff0e0 100%)'},
+  design:{emoji_bg:'linear-gradient(135deg,#faf8ff 0%,#f2ecff 100%)'}
+};
+var CAT_NAME = {dev:'开发工具',system:'系统工具',efficiency:'效率工具',design:'设计工具'};
+var CAT_COLOR = {dev:'#007aff',system:'#34c759',efficiency:'#ff9500',design:'#af52de'};
+
+/* 提取项目名首字符作为统一风格图标 */
+function monogram(name){
+  var s = name.trim();
+  /* 英文项目名取首字母大写 */
+  if(/^[A-Za-z]/.test(s)) return s.charAt(0).toUpperCase();
+  /* 中文项目名取首个汉字 */
+  return s.charAt(0);
+}
+
+/* ---------- 渲染卡片 ---------- */
+var grid = document.getElementById('grid');
+var empty = document.getElementById('empty');
+var countEl = document.getElementById('count');
+
+function cardHTML(p, idx){
+  var g = GRAD[p.cat];
+  var cc = CAT_COLOR[p.cat];
+  var dlBtn = p.dl
+    ? '<a class="btn btn--primary btn--sm" href="'+p.dl+'" target="_blank" rel="noopener">获取</a>'
+    : '<a class="btn btn--primary btn--sm" href="'+p.gh+'" target="_blank" rel="noopener">获取</a>';
+  var scoreBadge = p.score > 0
+    ? '<span class="card__score" title="mimo 审美评分">'+p.score+'</span>'
+    : '';
+  return ''+
+  '<article class="card" data-cat="'+p.cat+'" data-stack="'+p.stack+'" data-id="'+p.id+'" tabindex="0" role="button" aria-label="'+p.name+' 详情">'+
+    '<div class="card__media" style="background:'+g.emoji_bg+'">'+
+      '<span class="card__version">'+p.ver+'</span>'+
+      scoreBadge+
+      '<div class="card__media-text">'+
+        '<span class="card__media-cat">'+CAT_NAME[p.cat]+'</span>'+
+        '<span class="card__media-name">'+p.name+'</span>'+
+      '</div>'+
+      '<button class="card__lightbox-btn" aria-label="查看大图" data-shot="'+p.full+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg></button>'+
+    '</div>'+
+    '<div class="card__body">'+
+      '<p class="card__desc">'+p.desc+'</p>'+
+      '<div class="card__actions">'+
+        dlBtn+
+        '<a class="btn btn--ghost btn--sm" href="'+p.gh+'" target="_blank" rel="noopener">源码</a>'+
+      '</div>'+
+    '</div>'+
+  '</article>';
+}
+
+function render(list){
+  /* 筛选切换：先淡出旧卡片，再渲染新卡片并淡入，避免硬切闪烁 */
+  grid.classList.add('is-fading');
+  setTimeout(function(){
+    grid.innerHTML = list.map(function(p, i){ return cardHTML(p, i); }).join('');
+    countEl.textContent = '共 '+list.length+' 个工具';
+    countEl.classList.remove('count-tick'); void countEl.offsetWidth; countEl.classList.add('count-tick');
+    empty.hidden = list.length > 0;
+    observeCards();
+    bindCardImgFade();
+    grid.classList.remove('is-fading');
+  }, 160);
+}
+
+/* ---------- 卡片出现动画 ---------- */
+var io;
+function observeCards(){
+  if(!('IntersectionObserver' in window)){ document.querySelectorAll('.card').forEach(function(c){c.classList.add('is-visible')}); return; }
+  if(io) io.disconnect();
+  io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e,i){
+      if(e.isIntersecting){
+        setTimeout(function(){ e.target.classList.add('is-visible'); }, i*40);
+        io.unobserve(e.target);
+      }
+    });
+  },{threshold:0.08,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.card').forEach(function(c){ io.observe(c); });
+}
+
+/* ---------- 截图渐显（加载完成后淡入，避免空白闪烁）+ 深色图检测 ---------- */
+function bindCardImgFade(){
+  document.querySelectorAll('.card__shot').forEach(function(img){
+    if(img.dataset.loaded) return;
+    function done(){ img.dataset.loaded='1'; img.classList.add('is-loaded'); detectDark(img); }
+    if(img.complete && img.naturalWidth > 0){ done(); }
+    else { img.addEventListener('load', done, {once:true}); img.addEventListener('error', done, {once:true}); }
+  });
+}
+
+/* 检测图片平均亮度，深色截图加 is-dark 类以便 CSS 单独提亮统一调性 */
+function detectDark(img){
+  try{
+    var c = document.createElement('canvas'), w = 32, h = 32;
+    c.width = w; c.height = h;
+    var ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0, w, h);
+    var data = ctx.getImageData(0, 0, w, h).data;
+    var sum = 0, n = 0;
+    for(var i=0; i<data.length; i+=4){
+      sum += (data[i]*0.299 + data[i+1]*0.587 + data[i+2]*0.114);
+      n++;
+    }
+    if(sum / n < 110){ img.classList.add('is-dark'); }
+  }catch(e){ /* canvas tainted (file:// 跨域)，跳过，保留白叠加兜底 */ }
+}
+
+/* ---------- 卡片 hover 鼠标光晕 spotlight ---------- */
+/* 鼠标在卡片上移动时，更新 --mx/--my CSS 变量驱动 radial-gradient 光晕 */
+grid.addEventListener('mousemove', function(e){
+  var card = e.target.closest('.card');
+  if(!card) return;
+  var r = card.getBoundingClientRect();
+  card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+  card.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+});
+
+/* ---------- 筛选 + 搜索 ---------- */
+var currentFilter = 'all';
+var currentQuery = '';
+
+function applyFilter(){
+  var q = currentQuery.toLowerCase().trim();
+  var list = PROJECTS.filter(function(p){
+    if(currentFilter !== 'all' && p.cat !== currentFilter) return false;
+    if(q){
+      var hay = (p.name + ' ' + p.desc + ' ' + p.tags.join(' ') + ' ' + p.id).toLowerCase();
+      if(hay.indexOf(q) === -1) return false;
+    }
+    return true;
+  });
+  render(list);
+}
+
+/* 筛选 chips */
+document.getElementById('chips').addEventListener('click', function(e){
+  var btn = e.target.closest('.chip');
+  if(!btn) return;
+  document.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('is-active'); c.setAttribute('aria-selected','false'); });
+  btn.classList.add('is-active');
+  btn.setAttribute('aria-selected','true');
+  currentFilter = btn.dataset.filter;
+  applyFilter();
+});
+
+/* 搜索 */
+var searchInput = document.getElementById('search');
+var searchClear = document.getElementById('search-clear');
+var searchTimer;
+searchInput.addEventListener('input', function(e){
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(function(){
+    currentQuery = e.target.value;
+    searchClear.hidden = !currentQuery;
+    applyFilter();
+  }, 120);
+});
+searchClear.addEventListener('click', function(){
+  searchInput.value = '';
+  currentQuery = '';
+  searchClear.hidden = true;
+  applyFilter();
+  searchInput.focus();
+});
+
+/* 重置 */
+document.getElementById('reset').addEventListener('click', function(){
+  searchInput.value = '';
+  currentQuery = '';
+  searchClear.hidden = true;
+  document.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('is-active'); c.setAttribute('aria-selected','false'); });
+  var all = document.querySelector('.chip[data-filter="all"]');
+  all.classList.add('is-active');
+  all.setAttribute('aria-selected','true');
+  currentFilter = 'all';
+  applyFilter();
+});
+
+/* ---------- 详情弹窗 ---------- */
+var modal = document.getElementById('modal');
+var modalBody = document.getElementById('modal-body');
+
+function openModal(id){
+  var p = PROJECTS.filter(function(x){return x.id===id;})[0];
+  if(!p) return;
+  var g = GRAD[p.cat];
+  var tags = p.tags.map(function(t){
+    var cls = p.stack==='web' ? 'tag tag--web' : 'tag';
+    return '<span class="'+cls+'">'+t+'</span>';
+  }).join('');
+  var features = p.features.map(function(f){ return '<li>'+f+'</li>'; }).join('');
+  var dlBtn = p.dl
+    ? '<a class="btn btn--primary" href="'+p.dl+'" target="_blank" rel="noopener">⬇️ 下载 '+p.ver+'</a>'
+    : '';
+  modalBody.innerHTML = ''+
+    '<div class="modal__media" style="background:'+g.emoji_bg+'">'+
+      '<img class="modal__shot" src="'+p.shot+'" alt="'+p.name+' 截图" loading="lazy">'+
+      '<div class="modal__shot-bg"></div>'+
+      '<span class="card__icon-emoji">'+p.icon+'</span>'+
+      (p.score > 0 ? '<span class="card__score" title="mimo 审美评分">'+p.score+'</span>' : '')+
+    '</div>'+
+    '<div class="modal__body">'+
+      '<div class="modal__cat">'+CAT_NAME[p.cat]+'</div>'+
+      '<h2 class="modal__title" id="modal-title">'+p.name+'</h2>'+
+      '<p class="modal__desc">'+p.desc+'</p>'+
+      '<div class="modal__tags">'+tags+'</div>'+
+      '<div class="modal__actions">'+
+        dlBtn+
+        '<a class="btn btn--ghost" href="'+p.gh+'" target="_blank" rel="noopener">📜 查看源码</a>'+
+        '<a class="btn btn--ghost" href="'+AF+'" target="_blank" rel="noopener">☕ 支持</a>'+
+      '</div>'+
+      (features ? '<div class="modal__features"><h4>核心功能</h4><ul>'+features+'</ul></div>' : '')+
+    '</div>';
+  modal.classList.add('is-open');
+  modal.setAttribute('aria-hidden','false');
+  document.body.style.overflow = 'hidden';
+  modal.querySelector('.modal__close').focus();
+}
+function closeModal(){
+  modal.classList.remove('is-open');
+  modal.setAttribute('aria-hidden','true');
+  document.body.style.overflow = '';
+}
+
+/* 卡片点击 -> 弹窗（点击下载/源码按钮不触发） */
+grid.addEventListener('click', function(e){
+  var btn = e.target.closest('.card__zoom');
+  if(btn){ openModal(btn.dataset.id); return; }
+  if(e.target.closest('.card__actions a')) return;
+  var card = e.target.closest('.card');
+  if(card){ openModal(card.dataset.id); }
+});
+grid.addEventListener('keydown', function(e){
+  if(e.key === 'Enter' || e.key === ' '){
+    var card = e.target.closest('.card');
+    if(card){ e.preventDefault(); openModal(card.dataset.id); }
+  }
+});
+
+/* 关闭弹窗 */
+modal.addEventListener('click', function(e){
+  if(e.target.dataset.close !== undefined) closeModal();
+});
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+});
+
+/* ---------- 导航滚动效果 + 进度条 + 返回顶部（带圆形进度环） ---------- */
+var nav = document.getElementById('nav');
+var progress = document.getElementById('progress');
+var toTop = document.getElementById('to-top');
+var toTopRing = document.getElementById('to-top-ring');
+var toolbar = document.querySelector('.toolbar');
+/* 圆形进度环周长 2πr，r=18 → 周长约 113.1 */
+var RING_LEN = 2 * Math.PI * 18;
+
+function onScroll(){
+  var y = window.scrollY;
+  nav.classList.toggle('is-scrolled', y > 20);
+  toTop.hidden = y < 600;
+  if(toolbar) toolbar.classList.toggle('is-stuck', y > 520);
+  var h = document.documentElement.scrollHeight - window.innerHeight;
+  var pct = h > 0 ? (y/h) : 0;
+  progress.style.width = (pct*100) + '%';
+  /* 圆形进度环：随滚动填充 */
+  if(toTopRing){
+    toTopRing.style.strokeDashoffset = (RING_LEN * (1 - pct)).toFixed(2);
+  }
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+onScroll();
+
+toTop.addEventListener('click', function(){ window.scrollTo({top:0,behavior:'smooth'}); });
+
+/* ---------- 滚动出现动画（段落） ---------- */
+var revealIO;
+if('IntersectionObserver' in window){
+  revealIO = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('is-visible'); revealIO.unobserve(e.target); }
+    });
+  },{threshold:0.1,rootMargin:'0px 0px -60px 0px'});
+  document.querySelectorAll('.tl__item, .support__text, .support__thanks, .footer__inner').forEach(function(el){
+    el.classList.add('reveal');
+    revealIO.observe(el);
+  });
+}
+
+/* ---------- Hero 精选图标预览条（精简到 6 个，避免密集杂乱） ---------- */
+var heroPreview = document.getElementById('hero-preview');
+if(heroPreview){
+  heroPreview.innerHTML = PROJECTS.slice(0,6).map(function(p){
+    return '<span class="hero__chip"><span class="hero__chip-emoji">'+p.icon+'</span>'+p.name+'</span>';
+  }).join('');
+}
+
+/* ---------- 截图 Lightbox ---------- */
+var lightbox = document.getElementById('lightbox');
+var lightboxImg = document.getElementById('lightbox-img');
+
+function openLightbox(src){
+  if(!src) return;
+  lightboxImg.src = src;
+  lightbox.classList.add('is-open');
+  lightbox.setAttribute('aria-hidden','false');
+  document.body.style.overflow = 'hidden';
+  lightbox.querySelector('.lightbox__close').focus();
+}
+function closeLightbox(){
+  lightbox.classList.remove('is-open');
+  lightbox.setAttribute('aria-hidden','true');
+  document.body.style.overflow = '';
+  lightboxImg.src = '';
+}
+
+/* lightbox 触发：点击截图或放大按钮 */
+grid.addEventListener('click', function(e){
+  var lbBtn = e.target.closest('.card__lightbox-btn');
+  if(lbBtn){ e.stopPropagation(); openLightbox(lbBtn.dataset.shot); return; }
+  var shot = e.target.closest('.card__shot');
+  if(shot){ e.stopPropagation(); openLightbox(shot.dataset.full); return; }
+});
+
+/* 关闭 lightbox */
+lightbox.addEventListener('click', function(e){
+  if(e.target.dataset.lbClose !== undefined) closeLightbox();
+});
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape' && lightbox.classList.contains('is-open')) closeLightbox();
+});
+
+/* ---------- 加载 mimo 评分 ---------- */
+function loadScores(){
+  fetch('scores.json', {cache:'no-cache'})
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(data){
+      if(!data || !Array.isArray(data)) return;
+      var map = {};
+      data.forEach(function(d){ map[d.id] = d; });
+      var updated = false;
+      PROJECTS.forEach(function(p){
+        if(map[p.id] && map[p.id].score > 0){
+          p.score = map[p.id].score;
+          updated = true;
+        }
+      });
+      if(updated){
+        /* 只更新评分角标，避免整个卡片重渲染 */
+        document.querySelectorAll('.card').forEach(function(card){
+          var p = PROJECTS.filter(function(x){ return x.id === card.dataset.id; })[0];
+          if(!p) return;
+          var existing = card.querySelector('.card__score');
+          if(p.score > 0){
+            var html = '<span class="card__score" title="mimo 审美评分">'+p.score+'</span>';
+            if(existing){ existing.outerHTML = html; }
+            else { card.querySelector('.card__media').insertAdjacentHTML('afterbegin', html); }
+          }
+        });
+      }
+    })
+    .catch(function(){ /* silently fail - scores are optional */ });
+}
+
+/* ---------- 初始化 ---------- */
+render(PROJECTS);
+loadScores();
