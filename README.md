@@ -6,6 +6,7 @@
 
 | 工具 | 简介 | 技术栈 | 状态 |
 |---|---|---|---|
+| [alarm-manager](./alarm-manager) | 闹钟管家 | 支持农历闹钟、贪睡、系统托盘的桌面闹钟应用 | Electron |
 | [⏰ Cron 中文可视化](./cron-zh) | 中文原生的 Cron 表达式可视化生成器：5/6 字段自动识别（支持 Spring/Quartz 带秒表达式）、`?` 标记兼容、实时中文解读、字段可视化、下次执行预览、常用预设、🕐 最近使用历史、📖 语法速查 | 纯 HTML/CSS/JS | ✅ 可用 v2.1 |
 | [📋 剪贴板管家](./clipboard-manager) | Windows 桌面剪贴板历史管理器：苹果白风格、键盘导航、一键粘贴到前台、智能分类、纯本地隐私优先 | Electron + 原生 JS | ✅ 可用 |
 | [📋 剪贴板管家·便携版](./clipboard-manager/portable) | 输入法式体验的剪贴板历史管理器：原生 Python + PySide6、全局热键 Ctrl+Shift+V、失焦自动隐藏、托盘常驻、380x500 紧凑窗口、单 EXE 便携分发 | Python + PySide6 | ✅ 可用 v1.0.0 |

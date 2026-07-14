@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>闹钟管家</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- 顶部栏 -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 64 64" width="40" height="40" aria-hidden="true">
+          <circle cx="32" cy="34" r="22" fill="#007aff"/>
+          <circle cx="32" cy="34" r="18" fill="#ffffff"/>
+          <line x1="32" y1="34" x2="32" y2="22" stroke="#007aff" stroke-width="3" stroke-linecap="round"/>
+          <line x1="32" y1="34" x2="42" y2="38" stroke="#007aff" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="32" cy="34" r="2.5" fill="#007aff"/>
+          <rect x="14" y="12" width="8" height="4" rx="2" transform="rotate(-30 14 12)" fill="#007aff"/>
+          <rect x="42" y="12" width="8" height="4" rx="2" transform="rotate(30 50 12)" fill="#007aff"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>闹钟管家</h1>
+        <p class="subtitle">智能闹钟 · 农历支持</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="clock-display" id="bigClock">
+        <span class="clock-time">--:--</span>
+        <span class="clock-date">加载中…</span>
+      </div>
+      <button class="btn-icon" id="btnAdd" title="添加闹钟 (Ctrl+N)">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 5a1 1 0 0 1 1 1v5h5a1 1 0 1 1 0 2h-5v5a1 1 0 1 1-2 0v-5H6a1 1 0 1 1 0-2h5V6a1 1 0 0 1 1-1Z"/></svg>
+      </button>
+      <button class="btn-icon" id="btnSettings" title="设置">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm0 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm7.4 2.6.05-.6-.05-.6 1.7-1.32a.4.4 0 0 0 .1-.52l-1.6-2.78a.4.4 0 0 0-.5-.17l-2 .8a6 6 0 0 0-1.04-.6l-.3-2.13a.4.4 0 0 0-.4-.34h-3.2a.4.4 0 0 0-.4.34l-.3 2.13a6 6 0 0 0-1.04.6l-2-.8a.4.4 0 0 0-.5.17l-1.6 2.78a.4.4 0 0 0 .1.52l1.7 1.32-.05.6.05.6-1.7 1.32a.4.4 0 0 0-.1.52l1.6 2.78c.1.18.32.25.5.17l2-.8c.32.24.67.44 1.04.6l.3 2.13c.04.2.21.34.4.34h3.2c.2 0 .36-.14.4-.34l.3-2.13c.37-.16.72-.36 1.04-.6l2 .8c.18.08.4.01.5-.17l1.6-2.78a.4.4 0 0 0-.1-.52l-1.7-1.32Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- 主内容 -->
+  <main class="main">
+    <!-- 状态卡片：下一闹钟倒计时 -->
+    <section class="status-card" id="statusCard">
+      <div class="status-left">
+        <div class="status-label">下一闹钟</div>
+        <div class="status-name" id="nextAlarmName">无活动闹钟</div>
+      </div>
+      <div class="status-right">
+        <div class="status-time" id="nextAlarmTime">—</div>
+        <div class="status-countdown" id="nextAlarmCountdown">—</div>
+      </div>
+    </section>
+
+    <!-- 闹钟列表 -->
+    <section class="alarm-list" id="alarmList">
+      <div class="empty-state" id="emptyState">
+        <svg viewBox="0 0 96 96" width="64" height="64"><circle cx="48" cy="52" r="32" fill="none" stroke="#d1d1d6" stroke-width="3"/><line x1="48" y1="52" x2="48" y2="34" stroke="#d1d1d6" stroke-width="3" stroke-linecap="round"/><line x1="48" y1="52" x2="62" y2="58" stroke="#d1d1d6" stroke-width="3" stroke-linecap="round"/><circle cx="48" cy="52" r="3" fill="#d1d1d6"/></svg>
+        <h3>还没有闹钟</h3>
+        <p>点击右上角 <strong>＋</strong> 创建你的第一个闹钟</p>
+        <p class="hint">支持每天 / 工作日 / 周末 / 自定义 / 农历重复</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- 模态框：添加/编辑闹钟 -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true">
+      <header class="modal-header">
+        <h2 id="modalTitle">添加闹钟</h2>
+        <button class="btn-close" id="btnCloseModal" aria-label="关闭">×</button>
+      </header>
+      <div class="modal-body">
+        <div class="form-row">
+          <label>标签</label>
+          <input type="text" id="inpLabel" placeholder="如：起床、会议、吃药" maxlength="20">
+        </div>
+        <div class="form-row time-row">
+          <label>时间</label>
+          <div class="time-picker">
+            <select id="inpHour"></select>
+            <span class="colon">:</span>
+            <select id="inpMinute"></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>重复</label>
+          <select id="inpRepeat">
+            <option value="once">一次性</option>
+            <option value="daily">每天</option>
+            <option value="weekdays">工作日</option>
+            <option value="weekend">周末</option>
+            <option value="custom">自定义（按周几）</option>
+            <option value="lunar-annual">农历每年（如正月十五）</option>
+            <option value="lunar-once">农历一次性</option>
+          </select>
+        </div>
+        <div class="form-row" id="weekdaysRow" style="display:none">
+          <label>周几</label>
+          <div class="weekday-picker" id="weekdayPicker">
+            <button type="button" data-wd="1">一</button>
+            <button type="button" data-wd="2">二</button>
+            <button type="button" data-wd="3">三</button>
+            <button type="button" data-wd="4">四</button>
+            <button type="button" data-wd="5">五</button>
+            <button type="button" data-wd="6">六</button>
+            <button type="button" data-wd="0">日</button>
+          </div>
+        </div>
+        <div class="form-row" id="lunarRow" style="display:none">
+          <label>农历</label>
+          <div class="lunar-picker">
+            <select id="inpLunarYear"></select>
+            <span>年</span>
+            <select id="inpLunarMonth"></select>
+            <span>月</span>
+            <select id="inpLunarDay"></select>
+            <span>日</span>
+            <label class="checkbox-inline">
+              <input type="checkbox" id="inpLunarLeap"> 闰月
+            </label>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>铃声</label>
+          <div class="sound-picker">
+            <select id="inpSound">
+              <option value="chime">⏰ 风铃（清脆）</option>
+              <option value="bell">🔔 钟声（深沉）</option>
+              <option value="marimba">🎵 马林巴（柔和）</option>
+              <option value="beep">📢 蜂鸣（刺耳）</option>
+              <option value="birds">🐦 鸟鸣（自然）</option>
+            </select>
+            <button type="button" class="btn-test" id="btnTestSound">试听</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>贪睡</label>
+          <div class="snooze-row">
+            <select id="inpSnoozeMin">
+              <option value="3">3 分钟</option>
+              <option value="5" selected>5 分钟</option>
+              <option value="10">10 分钟</option>
+              <option value="15">15 分钟</option>
+            </select>
+            <span>最多贪睡</span>
+            <select id="inpMaxSnooze">
+              <option value="1">1 次</option>
+              <option value="3" selected>3 次</option>
+              <option value="5">5 次</option>
+              <option value="99">无限</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>音量</label>
+          <div class="volume-row">
+            <input type="range" id="inpVolume" min="0" max="100" value="90">
+            <span id="volumeValue">90%</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>启用</label>
+          <label class="switch">
+            <input type="checkbox" id="inpEnabled" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+      <footer class="modal-footer">
+        <button class="btn-secondary" id="btnCancel">取消</button>
+        <button class="btn-primary" id="btnSave">保存</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- 设置面板 -->
+  <div class="modal-backdrop" id="settingsBackdrop">
+    <div class="modal modal-settings" role="dialog" aria-modal="true">
+      <header class="modal-header">
+        <h2>设置</h2>
+        <button class="btn-close" id="btnCloseSettings" aria-label="关闭">×</button>
+      </header>
+      <div class="modal-body">
+        <div class="form-row">
+          <label>默认铃声</label>
+          <select id="setDefSound">
+            <option value="chime">⏰ 风铃</option>
+            <option value="bell">🔔 钟声</option>
+            <option value="marimba">🎵 马林巴</option>
+            <option value="beep">📢 蜂鸣</option>
+            <option value="birds">🐦 鸟鸣</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>默认贪睡时长</label>
+          <select id="setDefSnooze">
+            <option value="3">3 分钟</option>
+            <option value="5" selected>5 分钟</option>
+            <option value="10">10 分钟</option>
+            <option value="15">15 分钟</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>默认最大贪睡次数</label>
+          <select id="setDefMaxSnooze">
+            <option value="1">1 次</option>
+            <option value="3" selected>3 次</option>
+            <option value="5">5 次</option>
+            <option value="99">无限</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>渐强音量</label>
+          <label class="switch"><input type="checkbox" id="setFadeIn"><span class="slider"></span></label>
+        </div>
+        <div class="form-row">
+          <label>渐强时长（秒）</label>
+          <input type="number" id="setFadeInDur" min="0" max="60" step="1">
+        </div>
+        <div class="form-row">
+          <label>最大音量</label>
+          <input type="range" id="setMaxVol" min="0" max="100">
+          <span id="setMaxVolValue"></span>
+        </div>
+        <div class="form-row">
+          <label>系统通知</label>
+          <label class="switch"><input type="checkbox" id="setNotif"><span class="slider"></span></label>
+        </div>
+        <div class="form-row">
+          <label>触发时窗口置顶</label>
+          <label class="switch"><input type="checkbox" id="setFront"><span class="slider"></span></label>
+        </div>
+        <div class="form-row">
+          <label>数据</label>
+          <div class="data-actions">
+            <button class="btn-secondary" id="btnExport">导出 JSON</button>
+            <button class="btn-secondary" id="btnImport">导入 JSON</button>
+          </div>
+        </div>
+      </div>
+      <footer class="modal-footer">
+        <button class="btn-primary" id="btnSaveSettings">保存设置</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Toast 提示 -->
+  <div class="toast" id="toast"></div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
