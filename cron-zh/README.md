@@ -1,74 +1,76 @@
 <div align="center">
 
+<img src="./logo.png" alt="Cron 中文可视化 Logo" width="120">
+
 # ⏰ Cron 中文可视化
 
-**中文原生的 Cron 表达式可视化生成器** · 可视化编辑 · 中文解读 · 下次执行预览 · 预设一键填入
+**中文原生的 Cron 表达式可视化生成器**
 
+可视化编辑 · 中文解读 · 下次执行预览 · 预设一键填入
+
+<a href="https://cdn.jsdelivr.net/gh/grrtyre/youqu@main/cron-zh/index.html"><img alt="在线使用" src="https://img.shields.io/badge/%E5%9C%A8%E7%BA%BF%E4%BD%BF%E7%94%A8-%E7%82%B9%E6%AD%A4%E6%89%93%E5%BC%80-007aff?style=flat-square"></a>
 <img alt="version" src="https://img.shields.io/badge/%E7%89%88%E6%9C%AC-v2.1-007aff?style=flat-square">
-<img alt="license" src="https://img.shields.io/badge/License-MIT-34c759?style=flat-square">
-<img alt="frontend" src="https://img.shields.io/badge/%E7%BA%AF%E5%89%8D%E7%AB%AF-%E9%9B%B6%E4%BE%9D%E8%B5%96-34c759?style=flat-square">
-<img alt="tests" src="https://img.shields.io/badge/%E6%B5%8B%E8%AF%95-90%20%E7%94%A8%E4%BE%8B-007aff?style=flat-square">
-<img alt="fields" src="https://img.shields.io/badge/%E5%AD%97%E6%AE%B5-5%20%2F%206%20%E5%AD%97%E6%AE%B5-ff9500?style=flat-square">
-<img alt="stars" src="https://img.shields.io/github/stars/grrtyre/youqu?style=flat-square&color=ff9500">
+<img alt="license" src="https://img.shields.io/badge/License-MIT-007aff?style=flat-square">
+<img alt="stars" src="https://img.shields.io/github/stars/grrtyre/youqu?style=flat-square&color=007aff">
 
 </div>
 
 > 告别 crontab.guru 的英文翻译对照 · 专为中文开发者打造 · 纯前端零依赖双击即用
 
-## 🖼 效果展示
+---
+
+## 效果展示
 
 <p align="center">
   <img src="./preview.png" alt="Cron 中文可视化 主界面预览" width="880">
 </p>
 
 <details>
-<summary><b>📷 查看更多细节（点击展开）</b></summary>
+<summary><b>查看更多细节（点击展开）</b></summary>
 
-- **字段卡片**：分 / 时 / 日 / 月 / 周（6 字段含秒）独立卡片，受限字段高亮
-- **下次执行**：精确计算接下来 5 次触发时间，6 字段模式精确到秒
-- **预设标签页**：标准 5 字段 / Quartz 6 字段双标签页，20 个高频预设
-- **最近使用**：自动记录最近 8 条表达式，点击即复用
-- **语法速查**：可折叠参考面板，特殊字符 + 取值范围 + 示例
+<br>
+
+| 模块 | 说明 |
+|---|---|
+| 字段卡片 | 分 / 时 / 日 / 月 / 周（6 字段含秒）独立卡片，受限字段高亮 |
+| 下次执行 | 精确计算接下来 5 次触发时间，6 字段模式精确到秒 |
+| 预设标签页 | 标准 5 字段 / Quartz 6 字段双标签页，20 个高频预设 |
+| 最近使用 | 自动记录最近 8 条表达式，点击即复用 |
+| 语法速查 | 可折叠参考面板，特殊字符 + 取值范围 + 示例 |
 
 </details>
 
-## ✨ 功能特性
+## 功能特性
 
 | 分类 | 能力 | 说明 |
 |---|---|---|
-| 🌏 中文原生 | 实时中文解读 | 输入即解析，`0 9 * * 1-5` → 「周一至周五 09:00」 |
-| 🔢 双模式 | 5/6 字段自动识别 | 标准 5 字段 + Quartz/Spring 6 字段（秒 分 时 日 月 周），模式徽标实时显示 |
-| ❓ Quartz 兼容 | `?` 标记支持 | 日/周字段任填其一，完全兼容 Quartz 语法 |
-| 🧩 字段可视化 | 独立卡片展示 | 受限字段高亮，一眼看懂结构 |
-| ⏱ 下次执行 | 5 次触发预览 | 精确到秒，附带相对时间（「3 小时 20 分后」） |
-| 🏷 常用预设 | 双标签页切换 | 工作 9 点、每小时整点、每月 1 号等 20 个预设一键填入 |
-| 🎨 主题 | 苹果白 / 暗色 | 默认苹果白亮色，记忆偏好 |
-| 🔗 URL 分享 | `?cron=` 参数 | 直接打开对应配置，方便协作 |
-| 🕐 最近使用 | 历史记录 | 最近 8 条，点击复用，localStorage 持久化 |
-| 📖 语法速查 | 可折叠面板 | 特殊字符（`* , - / ?`）+ 取值范围 + 示例 |
-| ✅ 标准语义 | 严谨计算 | 正确处理 dom/dow 的 OR 关系、2 月 29 日闰年；不支持 L/# 时明确报错 |
+| 中文原生 | 实时中文解读 | 输入即解析，`0 9 * * 1-5` → 「周一至周五 09:00」 |
+| 双模式 | 5/6 字段自动识别 | 标准 5 字段 + Quartz 6 字段，徽标实时显示 |
+| Quartz 兼容 | `?` 标记支持 | 日/周字段任填其一，完全兼容 Quartz 语法 |
+| 字段可视化 | 独立卡片展示 | 受限字段高亮，一眼看懂结构 |
+| 下次执行 | 5 次触发预览 | 精确到秒，附带相对时间「3 小时 20 分后」 |
+| 常用预设 | 双标签页切换 | 20 个高频预设一键填入，工作日 / 整点等 |
+| 主题 | 苹果白 / 暗色 | 默认苹果白亮色，记忆偏好 |
+| URL 分享 | `?cron=` 参数 | 直接打开对应配置，方便协作 |
+| 最近使用 | 历史记录 | 最近 8 条，点击复用，localStorage 持久化 |
+| 语法速查 | 可折叠面板 | 特殊字符 `* , - / ?` + 取值范围 + 示例 |
+| 标准语义 | 严谨计算 | 正确处理 dom/dow OR 关系与闰年；L/# 明确报错 |
 
-## 🚀 快速开始
+## 下载与使用
 
-### 方式一 · 在线预览
+| 方式 | 说明 | 链接 |
+|---|---|---|
+| 在线预览 | 通过 jsDelivr CDN 打开，无需安装 | [在线打开](https://cdn.jsdelivr.net/gh/grrtyre/youqu@main/cron-zh/index.html) |
+| 本地使用 | 双击 `index.html` 用浏览器打开 | 下载本目录文件即可 |
+| URL 分享 | 地址栏追加 `?cron=` 参数直接打开配置 | 见下方示例 |
 
-直接通过 jsDelivr CDN 打开（无需安装、无需联网下载）：
-
-👉 **[在线打开 Cron 中文可视化](https://cdn.jsdelivr.net/gh/grrtyre/youqu@main/cron-zh/index.html)**
-
-### 方式二 · 本地使用
-
-直接双击 `index.html` 用浏览器打开即可——无需任何安装、无需服务器、无需联网。
-
-### 方式三 · URL 分享
-
-在地址栏追加 `?cron=` 参数直接打开对应配置，方便团队协作：
+**URL 分享示例：**
 
 ```
 https://cdn.jsdelivr.net/gh/grrtyre/youqu@main/cron-zh/index.html?cron=0%209%20*%20*%201-5
 ```
 
-## ⌨️ 操作说明
+## 操作说明
 
 | 操作 | 入口 | 说明 |
 |---|---|---|
@@ -80,7 +82,7 @@ https://cdn.jsdelivr.net/gh/grrtyre/youqu@main/cron-zh/index.html?cron=0%209%20*
 | 清空历史 | 历史区「清空」 | 一键清除全部历史 |
 | URL 分享 | 地址栏 `?cron=` | 复制链接即可分享当前配置 |
 
-## 📋 常用预设速览
+## 常用预设速览
 
 ### 标准 5 字段预设
 
@@ -103,7 +105,7 @@ https://cdn.jsdelivr.net/gh/grrtyre/youqu@main/cron-zh/index.html?cron=0%209%20*
 | Spring 定时任务 | `0 */5 * * * ?` | 兼容 `@Scheduled(cron=...)` |
 | 每天 0 点 | `0 0 0 * * ?` | 每天 00:00:00 |
 
-## 🧪 测试
+## 测试
 
 ```bash
 node test.js
@@ -111,32 +113,33 @@ node test.js
 
 **90 个用例**覆盖：5 字段解析（步长/范围/逗号/越界/非法字符）、6 字段（秒）解析、Quartz `?` 标记（dom/dow 合法、其他字段非法）、L/# 特殊字符明确报错、中文描述（含秒描述）、下次执行计算（含 dom/dow OR 逻辑、2 月 29 日闰年、跨月跨年、6 字段精确到秒）、5/6 字段兼容性、边界健壮性、最近使用历史逻辑（增删去重/上限截断/空值过滤/清空）。
 
-## 📁 项目结构
+## 项目结构
 
 ```
 cron-zh/
 ├── index.html        # 页面结构
-├── styles.css        # 主题与样式（暗色/亮色双主题）
+├── styles.css        # 主题与样式（苹果白/暗色双主题）
 ├── app.js            # 交互逻辑
 ├── cron-utils.js     # cron 解析与下次执行计算核心（纯 JS，零依赖）
 ├── test.js           # Node 测试脚本（90 用例）
+├── logo.png          # README Logo
 ├── preview.png       # README 效果展示图
 └── README.md
 ```
 
-## 🛠 技术栈
+## 技术栈
 
 - **纯 HTML / CSS / JavaScript**（ES5+，兼容性好）
 - **零运行时依赖、零构建步骤** —— 双击即用
 - **苹果白高端风格** —— 默认亮色主题，可切换深色，响应式布局，参考 macOS / iOS 原生设计
 
-## 🎯 为什么做这个
+## 为什么做这个
 
 > [crontab.guru](https://crontab.guru) 是事实标准，但只有英文，中文开发者每次都得对照翻译。
 >
 > 市面缺少一个**中文原生**的可视化 cron 工具——不是翻译版，而是从中文语义出发设计的交互体验。这个项目填补这个空白。
 
-## 📜 更新日志
+## 更新日志
 
 ### v2.1（2026-07-13）
 
@@ -169,11 +172,11 @@ cron-zh/
 ### v1.0（初始版本）
 - 5 字段 cron 解析、中文解读、字段可视化、下次 5 次执行、10 个预设、暗色/亮色主题、URL 分享
 
-## 🤝 协作
+## 协作
 
 本项目由 **Trae + MiMo Code** 人机协作打造：MiMo 负责核心解析逻辑与 UI 审美评估，Trae 负责架构、UI 实现与测试。
 
-## ☕ 支持我们
+## 支持我们
 
 如果这个工具帮到了你，欢迎在爱发电请我们喝杯咖啡：
 
@@ -181,7 +184,7 @@ cron-zh/
 
 你的支持是我们持续做下去的动力。
 
-## 🙏 鸣谢
+## 鸣谢
 
 感谢以下朋友的支持（按支持时间排序）：
 
@@ -189,6 +192,6 @@ cron-zh/
 
 _欢迎成为第一位支持者。_
 
-## 📄 License
+## License
 
 [MIT License](./LICENSE) —— 可自由使用、修改、分发。
