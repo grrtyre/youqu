@@ -1,0 +1,60 @@
+{
+  "name": "password-generator",
+  "version": "1.0.0",
+  "description": "苹果白风格的密码生成与管理工具 - 支持密码生成、口令生成、强度评估、批量生成与本地历史",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/test.js",
+    "build": "electron-builder --win --x64",
+    "build:portable": "electron-builder --win portable --x64"
+  },
+  "keywords": [
+    "password",
+    "generator",
+    "security",
+    "electron",
+    "passphrase",
+    "苹果白"
+  ],
+  "author": "youqu",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.youqu.passwordgenerator",
+    "productName": "PasswordGenerator",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "artifactName": "PasswordGenerator-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "PasswordGenerator"
+    }
+  }
+}

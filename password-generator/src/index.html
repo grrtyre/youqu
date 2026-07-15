@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>密码生成器 · Password Generator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 32 32" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="16" r="6"></circle>
+            <path d="M17 16 L26 16 M22 16 L22 20 M26 16 L26 21"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">密码生成器</span>
+          <span class="brand-sub">Password Generator</span>
+        </div>
+      </div>
+      <div class="topbar-meta">
+        <a class="topbar-link" id="openGithub" href="#">GitHub ↗</a>
+      </div>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="password">随机密码</button>
+      <button class="tab" data-tab="passphrase">记忆口令</button>
+      <button class="tab" data-tab="strength">强度检测</button>
+      <button class="tab" data-tab="batch">批量生成</button>
+      <button class="tab" data-tab="history">历史记录</button>
+    </nav>
+
+    <main class="content">
+
+      <section class="panel active" id="panel-password">
+        <div class="display-card">
+          <div class="display-row">
+            <div class="display-text" id="pwdDisplay">点击生成开始</div>
+            <div class="display-actions">
+              <button class="icon-btn" id="copyPwd" title="复制">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+                  <path d="M5 15V5a2 2 0 0 1 2-2h10"></path>
+                </svg>
+              </button>
+              <button class="icon-btn primary" id="regenPwd" title="重新生成">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                  <path d="M21 3v5h-5"></path>
+                  <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                  <path d="M3 21v-5h5"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="strength-meter">
+            <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+            <div class="strength-info">
+              <span id="strengthLabel">未生成</span>
+              <span id="entropyInfo"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="config-card">
+          <div class="config-row">
+            <label class="config-label">密码长度</label>
+            <div class="slider-group">
+              <input type="range" min="4" max="64" value="16" id="lengthSlider" class="slider">
+              <input type="number" min="4" max="64" value="16" id="lengthInput" class="number-input">
+            </div>
+          </div>
+
+          <div class="config-row">
+            <label class="config-label">字符类型</label>
+            <div class="toggle-group">
+              <label class="toggle"><input type="checkbox" id="chkUpper" checked><span class="toggle-pill">Aa 大写</span></label>
+              <label class="toggle"><input type="checkbox" id="chkLower" checked><span class="toggle-pill">a 小写</span></label>
+              <label class="toggle"><input type="checkbox" id="chkDigits" checked><span class="toggle-pill">0-9 数字</span></label>
+              <label class="toggle"><input type="checkbox" id="chkSymbols" checked><span class="toggle-pill">@ 符号</span></label>
+            </div>
+          </div>
+
+          <div class="config-row">
+            <label class="config-label">高级选项</label>
+            <div class="toggle-group">
+              <label class="toggle"><input type="checkbox" id="chkExcludeAmb"><span class="toggle-pill">排除易混字符 il1Lo0O</span></label>
+            </div>
+          </div>
+
+          <button class="primary-btn" id="genBtn">生成密码</button>
+        </div>
+
+        <div class="tips-card">
+          <div class="tips-title">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg>
+            <span>安全提示</span>
+          </div>
+          <div class="tips-grid">
+            <div class="tip-item"><span class="tip-num">01</span><span class="tip-text">每个账户使用独立密码，避免一处泄露全盘崩溃</span></div>
+            <div class="tip-item"><span class="tip-num">02</span><span class="tip-text">建议密码长度 ≥ 16 位，包含大小写、数字与符号</span></div>
+            <div class="tip-item"><span class="tip-num">03</span><span class="tip-text">优先使用记忆口令（4 词以上），便于记忆且强度足够</span></div>
+            <div class="tip-item"><span class="tip-num">04</span><span class="tip-text">所有密码均在本地生成，不会上传或留存云端</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-passphrase">
+        <div class="display-card">
+          <div class="display-row">
+            <div class="display-text passphrase" id="phraseDisplay">点击生成开始</div>
+            <div class="display-actions">
+              <button class="icon-btn" id="copyPhrase" title="复制">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+                  <path d="M5 15V5a2 2 0 0 1 2-2h10"></path>
+                </svg>
+              </button>
+              <button class="icon-btn primary" id="regenPhrase" title="重新生成">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                  <path d="M21 3v5h-5"></path>
+                  <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                  <path d="M3 21v-5h5"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="config-card">
+          <div class="config-row">
+            <label class="config-label">单词数量</label>
+            <div class="slider-group">
+              <input type="range" min="3" max="8" value="4" id="wordSlider" class="slider">
+              <input type="number" min="3" max="8" value="4" id="wordInput" class="number-input">
+            </div>
+          </div>
+
+          <div class="config-row">
+            <label class="config-label">分隔符</label>
+            <div class="seg-group">
+              <button class="seg active" data-sep="-">连字符 -</button>
+              <button class="seg" data-sep=".">点 .</button>
+              <button class="seg" data-sep="_">下划线 _</button>
+              <button class="seg" data-sep=" ">空格</button>
+            </div>
+          </div>
+
+          <div class="config-row">
+            <label class="config-label">选项</label>
+            <div class="toggle-group">
+              <label class="toggle"><input type="checkbox" id="chkCapitalize" checked><span class="toggle-pill">首字母大写</span></label>
+              <label class="toggle"><input type="checkbox" id="chkNumber" checked><span class="toggle-pill">附加数字</span></label>
+            </div>
+          </div>
+
+          <button class="primary-btn" id="phraseBtn">生成口令</button>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-strength">
+        <div class="config-card">
+          <div class="config-row column">
+            <label class="config-label">输入待检测密码</label>
+            <input type="text" id="strengthInput" class="text-input" placeholder="在此输入或粘贴密码…" autocomplete="off" spellcheck="false">
+          </div>
+        </div>
+
+        <div class="result-card">
+          <div class="strength-meter large">
+            <div class="strength-bar"><div class="strength-fill" id="chkStrengthFill"></div></div>
+            <div class="strength-info">
+              <span id="chkStrengthLabel">请输入密码</span>
+              <span id="chkEntropyInfo"></span>
+            </div>
+          </div>
+          <div class="meta-grid">
+            <div class="meta-item">
+              <span class="meta-label">长度</span>
+              <span class="meta-value" id="metaLength">0</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">字符池</span>
+              <span class="meta-value" id="metaPool">0</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">熵值</span>
+              <span class="meta-value" id="metaEntropy">0 bits</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">破解耗时(估)</span>
+              <span class="meta-value" id="metaCrack">—</span>
+            </div>
+          </div>
+          <div class="suggestions" id="suggestions"></div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-batch">
+        <div class="config-card">
+          <div class="config-row">
+            <label class="config-label">批量数量</label>
+            <div class="slider-group">
+              <input type="range" min="5" max="50" value="10" id="batchSlider" class="slider">
+              <input type="number" min="5" max="50" value="10" id="batchInput" class="number-input">
+            </div>
+          </div>
+          <div class="config-row">
+            <label class="config-label">密码长度</label>
+            <div class="slider-group">
+              <input type="range" min="4" max="64" value="16" id="batchLenSlider" class="slider">
+              <input type="number" min="4" max="64" value="16" id="batchLenInput" class="number-input">
+            </div>
+          </div>
+          <div class="batch-actions">
+            <button class="primary-btn" id="batchBtn">生成批量</button>
+            <button class="ghost-btn" id="batchCopyAll">复制全部</button>
+          </div>
+        </div>
+
+        <div class="batch-list" id="batchList">
+          <div class="empty-state">点击「生成批量」开始</div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-history">
+        <div class="history-header">
+          <span class="history-title">最近生成（仅本地保存，最多 50 条）</span>
+          <button class="ghost-btn danger" id="clearHistory">清空历史</button>
+        </div>
+        <div class="history-list" id="historyList">
+          <div class="empty-state">暂无历史记录</div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="statusbar">
+      <span id="statusText">就绪</span>
+      <span class="status-hint">所有数据均在本地处理，不会上传</span>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
