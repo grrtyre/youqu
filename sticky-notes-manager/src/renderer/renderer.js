@@ -122,6 +122,7 @@ function updateViewControls() {
     searchInput.disabled = true;
     searchInput.placeholder = '回收站中不支持搜索';
     searchInput.value = '';
+    currentSearch = ''; // 同步清空搜索状态，避免返回便签视图时输入框空但列表仍被过滤
   } else {
     trashList.style.display = 'none';
     notesGrid.style.display = 'grid';
@@ -234,6 +235,8 @@ function renderTrash() {
     trashList.innerHTML = sorted.map(n => {
       const color = COLORS[n.color] || COLORS.default;
       const daysLeft = getDaysLeft(n.deletedAt);
+      // 按剩余天数分级显示紧急程度：≤1 天红色、≤3 天橙色、其余灰色
+      const daysClass = daysLeft <= 1 ? 'trash-days-urgent' : (daysLeft <= 3 ? 'trash-days-warn' : 'trash-days');
       const titleHtml = n.title
         ? `<div class="trash-item-title">${escapeHtml(n.title)}</div>`
         : `<div class="trash-item-title" style="color:var(--text-tertiary);font-weight:400;">无标题</div>`;
@@ -248,7 +251,7 @@ function renderTrash() {
             <div class="trash-row-meta">
               <span class="trash-cat">${escapeHtml(n.category)}</span>
               <span class="trash-deleted">删除于 ${formatDate(n.deletedAt)}</span>
-              <span class="trash-days">${daysLeft} 天后自动清理</span>
+              <span class="${daysClass}">${daysLeft} 天后自动清理</span>
             </div>
           </div>
           <div class="trash-row-actions">
@@ -259,10 +262,11 @@ function renderTrash() {
               </svg>
               恢复
             </button>
-            <button class="trash-delete-btn" data-id="${n.id}" title="彻底删除">
+            <button class="trash-delete-btn" data-id="${n.id}" title="彻底删除" aria-label="彻底删除">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M3 4H13M6 4V3C6 2.45 6.45 2 7 2H9C9.55 2 10 2.45 10 3V4M5 4L5.5 13C5.55 13.83 6.17 14 7 14H9C9.83 14 10.45 13.83 10.5 13L11 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
+              删除
             </button>
           </div>
         </div>`;
@@ -335,7 +339,26 @@ function openEditModal(id) {
   setTimeout(() => editTitle.focus(), 100);
 }
 
-function closeModal() {
+// 检测编辑弹窗中是否有未保存的内容
+function hasUnsavedChanges() {
+  const title = editTitle.value.trim();
+  const content = editContent.value.trim();
+  if (!title && !content) return false; // 空内容无需提示
+  if (editingNoteId) {
+    const note = notes.find(n => n.id === editingNoteId);
+    if (note) {
+      return title !== (note.title || '') ||
+             content !== (note.content || '') ||
+             editingCategory !== (note.category || '其他') ||
+             editingColor !== (note.color || 'default');
+    }
+  }
+  return true; // 新建便签且已输入内容
+}
+function closeModal(force) {
+  if (!force && hasUnsavedChanges()) {
+    if (!confirm('有未保存的内容，确定要关闭吗？\n关闭后未保存的内容将丢失。')) return;
+  }
   modalOverlay.style.display = 'none';
   editingNoteId = null;
 }
@@ -397,9 +420,10 @@ async function saveNote() {
   }
 
   await window.notesAPI.save(notes, trash);
-  closeModal();
+  const wasUpdating = !!editingNoteId;
+  closeModal(true);
   render();
-  showToast(editingNoteId ? '已保存' : '已创建');
+  showToast(wasUpdating ? '已保存' : '已创建');
 }
 
 // === 删除便签（移入回收站） ===
@@ -412,7 +436,7 @@ async function deleteNote() {
   }
   notes = notes.filter(n => n.id !== editingNoteId);
   await window.notesAPI.save(notes, trash);
-  closeModal();
+  closeModal(true);
   render();
   showToast('已移入回收站');
 }
@@ -442,17 +466,21 @@ async function restoreNote(id) {
   }
 }
 
-// === 从回收站彻底删除 ===
+// === 从回收站彻底删除（二次确认，防误操作） ===
 async function deleteFromTrash(id) {
+  const note = trash.find(n => n.id === id);
+  const name = note && note.title ? '「' + note.title + '」' : '该便签';
+  if (!confirm('确定要彻底删除' + name + '吗？\n此操作不可恢复，删除后无法找回。')) return;
   const result = await window.notesAPI.deleteFromTrash(id);
   trash = result.trash;
   render();
   showToast('已彻底删除');
 }
 
-// === 清空回收站 ===
+// === 清空回收站（二次确认，防误操作） ===
 async function emptyTrash() {
   if (trash.length === 0) return;
+  if (!confirm('确定要清空回收站吗？\n共 ' + trash.length + ' 条便签将被永久删除，此操作不可恢复。')) return;
   const result = await window.notesAPI.emptyTrash();
   trash = result.trash;
   render();
@@ -517,13 +545,15 @@ deleteBtn.addEventListener('click', deleteNote);
 editTitle.addEventListener('input', updateCharCount);
 editContent.addEventListener('input', updateCharCount);
 
-// Ctrl+Enter 保存
-editContent.addEventListener('keydown', (e) => {
+// Ctrl+Enter 保存（标题与正文均支持）
+function ctrlEnterSave(e) {
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
     e.preventDefault();
     saveNote();
   }
-});
+}
+editContent.addEventListener('keydown', ctrlEnterSave);
+editTitle.addEventListener('keydown', ctrlEnterSave);
 
 // Esc 关闭弹窗
 document.addEventListener('keydown', (e) => {
