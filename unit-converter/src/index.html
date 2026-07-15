@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>单位转换器</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 顶部标题栏 -->
+    <header class="header">
+      <div class="header-icon">🔄</div>
+      <div class="header-text">
+        <h1>单位转换器</h1>
+        <p>14 大类 · 精准换算</p>
+      </div>
+    </header>
+
+    <!-- 类别选择器（预渲染：长度为默认激活） -->
+    <nav class="categories" id="categories">
+      <button class="cat-pill active">📏 长度</button>
+      <button class="cat-pill">⚖️ 重量</button>
+      <button class="cat-pill">🌡️ 温度</button>
+      <button class="cat-pill">📐 面积</button>
+      <button class="cat-pill">🧪 体积</button>
+      <button class="cat-pill">🚀 速度</button>
+      <button class="cat-pill">💾 数据存储</button>
+      <button class="cat-pill">⏱️ 时间</button>
+      <button class="cat-pill">🎈 压力</button>
+      <button class="cat-pill">⚡ 能量</button>
+      <button class="cat-pill">🔧 功率</button>
+      <button class="cat-pill">📐 角度</button>
+      <button class="cat-pill">📡 频率</button>
+      <button class="cat-pill">📶 数据传输</button>
+    </nav>
+
+    <!-- 转换主区域 -->
+    <main class="converter">
+      <!-- 输入区 -->
+      <section class="panel panel-from">
+        <label class="panel-label">输入值</label>
+        <div class="input-row">
+          <input type="number" id="inputValue" class="value-input" value="1" placeholder="输入数值" />
+          <div class="select-wrap">
+            <select id="fromUnit" class="unit-select">
+              <option value="nm">纳米 nm</option>
+              <option value="um">微米 μm</option>
+              <option value="mm">毫米 mm</option>
+              <option value="cm">厘米 cm</option>
+              <option value="dm">分米 dm</option>
+              <option value="m" selected>米 m</option>
+              <option value="km">千米 km</option>
+              <option value="in">英寸 in</option>
+              <option value="ft">英尺 ft</option>
+              <option value="yd">码 yd</option>
+              <option value="mi">英里 mi</option>
+              <option value="nmi">海里 nmi</option>
+              <option value="li">市里</option>
+              <option value="chi">市尺</option>
+              <option value="cun">市寸</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- 交换按钮 -->
+      <div class="swap-wrapper">
+        <button class="swap-btn" id="swapBtn" title="交换单位">⇅</button>
+      </div>
+
+      <!-- 结果区 -->
+      <section class="panel panel-to">
+        <label class="panel-label">转换结果</label>
+        <div class="result-row">
+          <span class="value-result" id="resultValue">100</span>
+          <div class="select-wrap">
+            <select id="toUnit" class="unit-select">
+              <option value="nm">纳米 nm</option>
+              <option value="um">微米 μm</option>
+              <option value="mm">毫米 mm</option>
+              <option value="cm" selected>厘米 cm</option>
+              <option value="dm">分米 dm</option>
+              <option value="m">米 m</option>
+              <option value="km">千米 km</option>
+              <option value="in">英寸 in</option>
+              <option value="ft">英尺 ft</option>
+              <option value="yd">码 yd</option>
+              <option value="mi">英里 mi</option>
+              <option value="nmi">海里 nmi</option>
+              <option value="li">市里</option>
+              <option value="chi">市尺</option>
+              <option value="cun">市寸</option>
+            </select>
+          </div>
+        </div>
+        <button class="copy-btn" id="copyBtn" title="复制结果">
+          <span class="copy-icon">📋</span>
+          <span class="copy-text">复制</span>
+        </button>
+      </section>
+    </main>
+
+    <!-- 全单位参考表（预渲染：1米换算结果） -->
+    <section class="reference">
+      <div class="reference-header">
+        <h2 class="reference-title">全部换算</h2>
+        <span class="reference-count" id="referenceCount">14 项</span>
+      </div>
+      <div class="reference-list" id="referenceList">
+        <div class="ref-item"><span class="ref-name">纳米 nm</span><span class="ref-value">1000000000</span></div>
+        <div class="ref-item"><span class="ref-name">微米 μm</span><span class="ref-value">1000000</span></div>
+        <div class="ref-item"><span class="ref-name">毫米 mm</span><span class="ref-value">1000</span></div>
+        <div class="ref-item"><span class="ref-name">厘米 cm</span><span class="ref-value">100</span></div>
+        <div class="ref-item"><span class="ref-name">分米 dm</span><span class="ref-value">10</span></div>
+        <div class="ref-item"><span class="ref-name">千米 km</span><span class="ref-value">0.001</span></div>
+        <div class="ref-item"><span class="ref-name">英寸 in</span><span class="ref-value">39.37007874</span></div>
+        <div class="ref-item"><span class="ref-name">英尺 ft</span><span class="ref-value">3.2808399</span></div>
+        <div class="ref-item"><span class="ref-name">码 yd</span><span class="ref-value">1.0936133</span></div>
+        <div class="ref-item"><span class="ref-name">英里 mi</span><span class="ref-value">0.00062137</span></div>
+        <div class="ref-item"><span class="ref-name">海里 nmi</span><span class="ref-value">0.00053996</span></div>
+        <div class="ref-item"><span class="ref-name">市里</span><span class="ref-value">0.002</span></div>
+        <div class="ref-item"><span class="ref-name">市尺</span><span class="ref-value">3</span></div>
+        <div class="ref-item"><span class="ref-name">市寸</span><span class="ref-value">30</span></div>
+      </div>
+    </section>
+
+    <!-- 底部 -->
+    <footer class="footer">
+      <span>单位转换器 v1.0</span>
+      <a href="https://www.ifdian.net/a/giquwei" class="support-link">支持我们 →</a>
+    </footer>
+  </div>
+
+  <script src="conversions.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>
