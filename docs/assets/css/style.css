@@ -684,3 +684,58 @@
   .stat__sep{display:none}
   .card__monogram{width:38px;height:38px;font-size:17px;border-radius:11px}
 }
+
+/* ============ 第五轮细节打磨（针对 mimo 审美反馈） ============ */
+
+/* 1. Hero 间距优化：统计区间距加大，避免视觉拥挤 */
+.hero__stats{gap:44px;margin-top:40px}
+.stat__num{font-variant-numeric:tabular-nums}
+
+/* 2. 工具栏间距收紧：搜索框与筛选按钮更紧凑 */
+.toolbar__row{gap:22px}
+
+/* 3. 卡片图标加大：增强视觉重量 */
+.card__emoji{font-size:46px;width:84px;height:84px}
+
+/* 4. 版本号徽章加大：提升可读性，降低撞色感 */
+.card__version{padding:6px 13px;font-size:13px;background:rgba(255,255,255,.96)}
+
+/* 5. 卡片内容区 padding 优化：按钮不贴边 */
+.card__body{padding:18px 20px 22px}
+
+/* 6. 统一卡片顶栏为蓝色渐变：降低多色噪点 */
+.card::before{background:linear-gradient(90deg,#007aff,#5ac8fa)}
+.card[data-cat="dev"]::before,
+.card[data-cat="system"]::before,
+.card[data-cat="efficiency"]::before,
+.card[data-cat="design"]::before{background:linear-gradient(90deg,#007aff,#5ac8fa)}
+
+/* 7. 技术栈徽章：三色区分（Web蓝/Electron默认/Python绿） */
+.card__meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:0}
+.card__stack{
+  display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;
+  color:var(--ink2);padding:3px 9px 3px 7px;border-radius:980px;
+  background:rgba(0,0,0,.045);border:1px solid var(--line-soft);
+  letter-spacing:.01em;line-height:1;white-space:nowrap;
+}
+.card[data-stack="web"] .card__stack{color:var(--accent);background:var(--accent-soft);border-color:transparent}
+.card[data-stack="python"] .card__stack{color:#0a7d4d;background:rgba(52,199,89,.12);border-color:transparent}
+.card__body{gap:7px}
+.card__desc{margin-top:1px}
+
+/* 8. 新项目脉冲标签：橙色视觉锚点 */
+.card__new{
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:#fff;padding:3px 8px;border-radius:980px;
+  line-height:1;background:linear-gradient(135deg,#ff9500,#ff6a00);
+  box-shadow:0 2px 6px rgba(255,149,0,.35);letter-spacing:.06em;
+  animation:newPulse 2.4s ease-in-out infinite;
+}
+@keyframes newPulse{0%,100%{box-shadow:0 2px 6px rgba(255,149,0,.35)}50%{box-shadow:0 2px 14px rgba(255,149,0,.6)}}
+.card:has(.card__new)::before{background:linear-gradient(90deg,#ff9500,#ffb340)}
+
+/* 9. 分类筛选增强：active 状态用分类色填充 */
+.chip[data-filter="dev"].is-active{background:#007aff;border-color:#007aff}
+.chip[data-filter="system"].is-active{background:#34c759;border-color:#34c759}
+.chip[data-filter="efficiency"].is-active{background:#ff9500;border-color:#ff9500}
+.chip[data-filter="design"].is-active{background:#af52de;border-color:#af52de}
