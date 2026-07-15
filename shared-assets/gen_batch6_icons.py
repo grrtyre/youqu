@@ -1,0 +1,260 @@
+# -*- coding: utf-8 -*-
+"""
+第五批资源：6 个缺失项目图标（疯狂扣细节模式）
+- 严格沿用既有 gen_resources.py 风格规范：
+  frame 外框(80,80,944,944) + 22% 圆角 + #007AFF 描边 + LINE_W=16 + 圆角端点
+- 新增项目：calculator-manager / color-picker / csv-manager
+            / json-manager / font-manager / screen-ruler
+- 输出 1024×1024 icon-source.png + 多尺寸 PNG + ICO
+- 风格：苹果白高端（极简线条、扁平、居中、留白充足）
+"""
+import os
+import math
+from PIL import Image, ImageDraw, ImageFont
+
+ROOT = r"d:\Ai\mimo\youqu"
+SHARED = os.path.join(ROOT, "shared-assets")
+SHARED_ICONS = os.path.join(SHARED, "icons")
+PROJECT_ICONS_DIR = os.path.join(SHARED_ICONS, "projects")
+
+SRC_SIZE = 1024
+SIZES = [16, 32, 64, 128, 256, 512]
+ICO_SIZES = [(16, 16), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)]
+
+BLUE = (0, 122, 255)        # #007AFF 苹果系统蓝
+WHITE = (255, 255, 255)
+LIGHT = (245, 245, 247)     # 浅灰底（预览用）
+GREY_TEXT = (60, 60, 67)    # 标签文字
+GREY_SUB = (120, 120, 128)  # 副文字
+LINE_W = 16                 # 主线宽 @1024 尺度，与既有图标完全统一
+
+# 统一视觉容器（iOS 应用图标规范：22% 圆角，四周留白 8%）
+FRAME_BOX = [80, 80, 944, 944]
+FRAME_RADIUS = 190
+
+
+def new_canvas():
+    im = Image.new("RGB", (SRC_SIZE, SRC_SIZE), WHITE)
+    d = ImageDraw.Draw(im)
+    d.line_width = LINE_W
+    return im, d
+
+
+def draw_frame(d):
+    """画统一圆角方形外框（所有图标共用）"""
+    d.rounded_rectangle(FRAME_BOX, radius=FRAME_RADIUS, outline=BLUE, width=LINE_W)
+
+
+def line_round(d, points, fill=BLUE, width=LINE_W, joint="curve"):
+    """画线 + 圆角端点（stroke-linecap:round 等价）"""
+    if len(points) < 2:
+        return
+    d.line(points, fill=fill, width=width, joint=joint)
+    r = width // 2
+    for pt in (points[0], points[-1]):
+        x, y = pt
+        d.ellipse([x - r, y - r, x + r, y + r], fill=fill)
+
+
+def rounded_rect(d, box, radius, outline=BLUE, width=LINE_W):
+    d.rounded_rectangle(box, radius=radius, outline=outline, width=width)
+
+
+def dot(d, cx, cy, r):
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=BLUE)
+
+
+def save_source(im, out_path):
+    im.save(out_path, "PNG", optimize=True)
+
+
+def make_icon_variants(source_png, out_dir, prefix="icon"):
+    os.makedirs(out_dir, exist_ok=True)
+    im = Image.open(source_png).convert("RGBA")
+    for s in SIZES:
+        im.resize((s, s), Image.LANCZOS).save(
+            os.path.join(out_dir, f"{prefix}-{s}.png"), "PNG", optimize=True
+        )
+    im.save(os.path.join(out_dir, f"{prefix}.ico"), format="ICO", sizes=ICO_SIZES)
+
+
+# ============ 6 个项目图标 ============
+
+def draw_calculator(im, d):
+    """计算器管家：frame + 计算器机身 + 顶部显示屏 + 2×2 按键（简化，线宽全归一）"""
+    draw_frame(d)
+    # 机身（圆角矩形，居中）
+    rounded_rect(d, [280, 260, 744, 780], radius=44)
+    # 顶部显示屏（圆角矩形，加宽加高，比例更协调）—— 仅外框，无内部线
+    rounded_rect(d, [320, 308, 704, 420], radius=20)
+    # 2×2 按键（圆形描边，线宽与外框完全统一；无中心点，保持简约）
+    for (cx, cy) in [(420, 540), (604, 540), (420, 700), (604, 700)]:
+        d.ellipse([cx - 44, cy - 44, cx + 44, cy + 44], outline=BLUE, width=LINE_W)
+
+
+def draw_color_picker(im, d):
+    """取色器：frame + 吸管（胶头+玻璃管+针尖）+ 轴上居中颜料滴（视觉重心居中）"""
+    draw_frame(d)
+    # 吸管沿 -45° 方向（左上到右下）；整体几何中心对齐 frame 中心
+    import math as m
+    cx, cy = 508, 508   # 补偿放大后的颜料滴，使整体视觉重心落在 frame 中心
+    ang = -m.pi / 4
+    cos_a, sin_a = m.cos(ang), m.sin(ang)
+    def rot(dx, dy):
+        return (cx + dx * cos_a - dy * sin_a, cy + dx * sin_a + dy * cos_a)
+    # 玻璃管主体（旋转长方形）：长 360，宽 72
+    L, W = 360, 72
+    p1 = rot(-L / 2, -W / 2)        # 左上（胶头肩）
+    p2 = rot(L / 2 - 60, -W / 2)    # 右上（针尖肩）
+    p3 = rot(L / 2 - 60, W / 2)     # 右下（针尖肩）
+    p4 = rot(-L / 2, W / 2)         # 左下（胶头肩）
+    d.line([p1, p2], fill=BLUE, width=LINE_W, joint="curve")
+    d.line([p2, p3], fill=BLUE, width=LINE_W, joint="curve")
+    d.line([p3, p4], fill=BLUE, width=LINE_W, joint="curve")
+    d.line([p4, p1], fill=BLUE, width=LINE_W, joint="curve")
+    # 胶头（左端，圆，表示橡胶吸球）
+    bulb_cx, bulb_cy = rot(-L / 2 - 30, 0)
+    d.ellipse([bulb_cx - 56, bulb_cy - 56, bulb_cx + 56, bulb_cy + 56],
+              outline=BLUE, width=LINE_W)
+    # 胶头/管身分隔箍
+    s1 = rot(-L / 2, -W / 2)
+    s2 = rot(-L / 2, W / 2)
+    d.line([s1, s2], fill=BLUE, width=LINE_W, joint="curve")
+    # 针尖（三角形，从管身右端汇聚到一点）
+    tip = rot(L / 2, 0)
+    d.line([p2, tip], fill=BLUE, width=LINE_W, joint="curve")
+    d.line([tip, p3], fill=BLUE, width=LINE_W, joint="curve")
+    # 针尖/管身分隔箍
+    t1 = rot(L / 2 - 60, -W / 2)
+    t2 = rot(L / 2 - 60, W / 2)
+    d.line([t1, t2], fill=BLUE, width=LINE_W, joint="curve")
+    # 颜料滴（水滴形：尖朝针尖、圆底朝外，轴上居中；放大至针管宽 2.5 倍，远观可辨）
+    drop_pts_local = [
+        (L / 2 + 18, 0),    # 尖端（朝向针尖）
+        (L / 2 + 64, -42),  # 右肩
+        (L / 2 + 108, 0),   # 圆底
+        (L / 2 + 64, 42),   # 左肩
+    ]
+    drop_pts = [rot(dx, dy) for (dx, dy) in drop_pts_local]
+    line_round(d, drop_pts + [drop_pts[0]], width=LINE_W)
+
+
+def draw_csv_manager(im, d):
+    """CSV 管家：frame + 表格（3×3 网格 + 表头点 + 数据点，视觉重量与 JSON 平衡）"""
+    draw_frame(d)
+    # 表格外框（圆角矩形）
+    rounded_rect(d, [240, 280, 784, 760], radius=24)
+    # 表头分隔线（区分表头与数据）
+    d.line([(240, 400), (784, 400)], fill=BLUE, width=LINE_W)
+    # 数据区中间横线
+    d.line([(240, 580), (784, 580)], fill=BLUE, width=LINE_W)
+    # 两条竖向分隔线（3 列）
+    d.line([(421, 280), (421, 760)], fill=BLUE, width=LINE_W)
+    d.line([(603, 280), (603, 760)], fill=BLUE, width=LINE_W)
+    # 表头三个单元格内的小点（列标题）
+    for cx in [330, 512, 694]:
+        dot(d, cx, 340, 10)
+    # 数据区圆点：1 个居中，底行中央（简约低噪点，视觉重心稳定）
+    dot(d, 512, 670, 10)
+
+
+def draw_json_manager(im, d):
+    """JSON 管家：frame + 左右大括号 { } + 中心冒号"""
+    draw_frame(d)
+    # 左大括号 { （由折线近似，中心 x=380）
+    lb = [
+        (450, 280), (390, 280), (350, 320), (350, 460),
+        (300, 512), (350, 564), (350, 704), (390, 744), (450, 744),
+    ]
+    line_round(d, lb, width=LINE_W)
+    # 右大括号 } （镜像，中心 x=644）
+    rb = [
+        (574, 280), (634, 280), (674, 320), (674, 460),
+        (724, 512), (674, 564), (674, 704), (634, 744), (574, 744),
+    ]
+    line_round(d, rb, width=LINE_W)
+    # 中心冒号（两圆点；收紧间距，对齐花括号几何中心）
+    dot(d, 512, 482, 13)
+    dot(d, 512, 546, 13)
+
+
+def draw_font_manager(im, d):
+    """字体管家：frame + 大写字母 A（放大，增强视觉重量）+ 横杠 + 基线"""
+    draw_frame(d)
+    # A 字放大：顶点上移、底脚加宽，填满更多 frame 空间，提升视觉重量
+    apex = (512, 250)
+    left_foot = (296, 764)
+    right_foot = (728, 764)
+    # 单条折线 left_foot→apex→right_foot，顶点尖锐不堆叠，底脚圆角
+    d.line([left_foot, apex, right_foot], fill=BLUE, width=LINE_W)
+    r = LINE_W // 2
+    d.ellipse([left_foot[0] - r, left_foot[1] - r, left_foot[0] + r, left_foot[1] + r], fill=BLUE)
+    d.ellipse([right_foot[0] - r, right_foot[1] - r, right_foot[0] + r, right_foot[1] + r], fill=BLUE)
+    # A 字横杠（约在 58% 高度，按新顶点动态插值）
+    y_cb = 560
+    apex_y, foot_y = apex[1], left_foot[1]
+    x_left_cb = 512 + (left_foot[0] - 512) * (y_cb - apex_y) / (foot_y - apex_y)
+    x_right_cb = 512 + (right_foot[0] - 512) * (y_cb - apex_y) / (foot_y - apex_y)
+    line_round(d, [(x_left_cb, y_cb), (x_right_cb, y_cb)], width=LINE_W)
+    # 基线下划线（字体基线语义；与 A 字底脚内侧对齐，形成完整字形）
+    line_round(d, [(320, 800), (704, 800)], width=LINE_W)
+
+
+def draw_screen_ruler(im, d):
+    """屏幕尺子：frame + 水平直尺（圆角矩形 + 刻度线 长短交替，线宽全归一）"""
+    draw_frame(d)
+    # 直尺主体（横向圆角矩形，收窄留呼吸空间）
+    rounded_rect(d, [240, 408, 784, 624], radius=28)
+    # 刻度线：从 x=288 到 x=736，每 56px 一条，长度交替但线宽统一为 LINE_W
+    start_x = 288
+    end_x = 736
+    step = 56
+    x = start_x
+    i = 0
+    while x <= end_x:
+        if i % 5 == 0:
+            # 主刻度（最长，从顶到底，强层级）
+            y1, y2 = 428, 604
+        elif i % 5 == 1 or i % 5 == 4:
+            # 次刻度（中，约主刻度 60%）
+            y1, y2 = 428, 532
+        else:
+            # 细刻度（最短，约主刻度 30%，拉开三级层次）
+            y1, y2 = 428, 478
+        # 线宽全部归一为 LINE_W，仅长度不同（满足"线宽归一"要求）
+        line_round(d, [(x, y1), (x, y2)], width=LINE_W)
+        x += step
+        i += 1
+    # 直尺内部基线（沿刻度零位，线宽归一）
+    d.line([(288, 604), (736, 604)], fill=BLUE, width=LINE_W)
+    # 左端原点锚点（实心圆，零刻度视觉收束，引导视线）
+    dot(d, 288, 516, 22)
+
+
+PROJECT_ICONS = [
+    ("calculator-manager", draw_calculator, "计算器管家"),
+    ("color-picker", draw_color_picker, "取色器"),
+    ("csv-manager", draw_csv_manager, "CSV 管家"),
+    ("json-manager", draw_json_manager, "JSON 管家"),
+    ("font-manager", draw_font_manager, "字体管家"),
+    ("screen-ruler", draw_screen_ruler, "屏幕尺子"),
+]
+
+
+def run():
+    print("=== 第五批：6 个项目图标源（苹果白风格）===")
+    for proj, fn, label in PROJECT_ICONS:
+        print(f"[{proj}] {label}")
+        im, d = new_canvas()
+        fn(im, d)
+        out_dir = os.path.join(PROJECT_ICONS_DIR, proj)
+        os.makedirs(out_dir, exist_ok=True)
+        src = os.path.join(out_dir, "icon-source.png")
+        save_source(im, src)
+        make_icon_variants(src, out_dir, "icon")
+        print(f"  -> {out_dir}")
+    print("\n[完成] 6 个项目图标源 + 多尺寸 PNG + ICO 已生成")
+
+
+if __name__ == "__main__":
+    run()
