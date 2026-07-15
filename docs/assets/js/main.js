@@ -1,7 +1,7 @@
 /* ============ youqu 展示站点 · 交互逻辑 ============ */
 'use strict';
 
-/* ---------- 项目数据（41 个工具） ---------- */
+/* ---------- 项目数据（52 个工具） ---------- */
 var G = 'https://github.com/grrtyre/youqu';
 var R = 'https://github.com/grrtyre/youqu/releases';
 var AF = 'https://www.ifdian.net/a/giquwei';
@@ -170,16 +170,62 @@ var PROJECTS = [
   {id:'anniversary-manager',icon:'💌',name:'纪念日管家',cat:'efficiency',stack:'electron',ver:'v1.0.0',
    desc:'本地优先的纪念日管理桌面应用：公历+农历双历法、生日/纪念日/忌日/自定义四类型、生肖星座、倒计时、即将到来侧栏、分类筛选、搜索排序、JSON导入导出。',
    tags:['Electron','原生 JS'],dl:R+'/tag/anniversary-manager-v1.0.0',gh:G+'/tree/main/anniversary-manager',
-   features:['公历+农历双历法','四类型：生日/纪念日/忌日/自定义','生肖星座','倒计时','即将到来侧栏','分类筛选','搜索排序','JSON 导入导出','纯本地隐私优先']}
+   features:['公历+农历双历法','四类型：生日/纪念日/忌日/自定义','生肖星座','倒计时','即将到来侧栏','分类筛选','搜索排序','JSON 导入导出','纯本地隐私优先']},
+  {id:'alarm-manager',icon:'🔔',name:'闹钟管家',cat:'efficiency',stack:'electron',ver:'v1.0.0',
+   desc:'本地优先的多闹钟桌面管家：农历每年/一次性重复、5 种 Web Audio 合成铃声、智能贪睡、渐强音量、托盘常驻、全局快捷键。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/alarm-manager-v1.0.0',gh:G+'/tree/main/alarm-manager',
+   features:['多闹钟管理，可视化卡片列表','7 种重复模式（含农历每年/一次性）','5 种 Web Audio 合成铃声，零音频文件','智能贪睡 + 渐强音量','全局快捷键 Ctrl+Alt+A','托盘常驻 + 单实例锁','JSON 导入导出 + 自动备份']},
+  {id:'disk-manager',icon:'💾',name:'磁盘管家',cat:'system',stack:'electron',ver:'v1.0.0',
+   desc:'苹果白风格磁盘空间可视化分析器：Squarified Treemap 占用可视化、分层钻取、大文件排行、类型分布统计，纯本地隐私优先。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/disk-manager-v1.0.0',gh:G+'/tree/main/disk-manager',
+   features:['Squarified Treemap 可视化磁盘占用','分层钻取 + 面包屑导航','大文件排行，一键定位/移到回收站','按视频/音频/图片/文档类型分布统计','扩展名排行与扫描概览','Treemap 渲染深度可调','纯本地扫描，不联网不上传']},
+  {id:'emoji-manager',icon:'😊',name:'表情管家便携版',cat:'efficiency',stack:'python',ver:'v1.0.0',
+   desc:'苹果白高端风格的输入法式 emoji 选择器：全局热键唤起、光标处弹出、点击复制、失焦自动隐藏、托盘常驻，原生 PySide6 重写。',
+   tags:['Python','PySide6'],dl:R+'/download/emoji-manager-portable-v1.0.0/emoji-portable.exe',gh:G+'/tree/main/emoji-manager',
+   features:['全局热键 Ctrl+Shift+E 唤起','失焦自动隐藏，像输入法候选框','跟随光标位置弹出','点击即复制到剪贴板','本地收藏 + 使用历史','关键词搜索（中文名/关键词/字符）','11 大分类，1287 个 emoji','单 exe 便携分发，内存 <60 MB']},
+  {id:'flashcard-manager',icon:'🃏',name:'闪卡记忆管家',cat:'efficiency',stack:'electron',ver:'v1.0.0',
+   desc:'基于 SM-2 间隔重复算法的本地闪卡学习工具：多卡组管理、四档评分精准调度、离线优先、导入导出，科学记忆。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/flashcard-manager-v1.0.0',gh:G+'/tree/main/flashcard-manager',
+   features:['SM-2 间隔重复算法（与 Anki 同款）','多卡组管理','四档评分：忘了/困难/良好/简单','本地 JSON 存储，离线可用','导入导出备份/恢复','苹果白风格 UI']},
+  {id:'image-converter',icon:'🖼️',name:'图片转换管家',cat:'design',stack:'electron',ver:'v1.0.0',
+   desc:'苹果白风格本地图片格式批量转换工具：支持 PNG/JPG/WebP/BMP/GIF 互转、质量调节、批量拖放、保留元数据，纯本地隐私优先。',
+   tags:['Electron','原生 JS'],gh:G+'/tree/main/image-converter',
+   features:['PNG/JPG/WebP/BMP/GIF 格式互转','批量拖放转换','质量调节与压缩','保留 EXIF 元数据','实时预览转换效果','纯本地处理，不联网']},
+  {id:'json-manager',icon:'🧩',name:'JSON管家',cat:'dev',stack:'electron',ver:'v1.0.0',
+   desc:'苹果白高端风格 JSON 深度处理桌面工具：格式化/树形浏览/jq 过滤/JSON 对比/格式转换/Schema 校验，6 合 1 一站搞定。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/json-manager-v1.0.0',gh:G+'/tree/main/json-manager',
+   features:['格式化（美化/压缩）+ 实时语法高亮','树形浏览，可折叠展开','jq 过滤（简化版 jq 语法）','JSON 对比（逐字段差异）','格式转换 CSV/YAML/XML/Properties','Schema 校验','文件读写 + 历史记录 + 实时统计']},
+  {id:'keyboard-tester',icon:'⌨️',name:'键鼠管家',cat:'dev',stack:'electron',ver:'v1.0.0',
+   desc:'Windows 上最优雅的键鼠测试工具，5 合 1：键盘测试/NKRO/按键统计热力图/鼠标测试/打字测速，苹果白高端风格。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/keyboard-tester-v1.0.0',gh:G+'/tree/main/keyboard-tester',
+   features:['键盘测试：虚拟键盘实时高亮','NKRO 测试：多键同按识别数','按键统计：热力图 + Top 8 排行榜','鼠标测试：三键计数/滚轮/移动距离','打字测速：中英文混合 WPM/准确率','按键流水 + 数据持久化与导出']},
+  {id:'log-manager',icon:'📜',name:'日志管家',cat:'dev',stack:'electron',ver:'v1.0.0',
+   desc:'本地优先的开发者日志查看工具：实时跟踪、级别过滤、全文搜索、大文件虚拟滚动、统计分析，苹果白高端风格。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/log-manager-v1.0.0',gh:G+'/tree/main/log-manager',
+   features:['实时跟踪日志变化（类似 tail -f）','六级日志级别识别与彩色徽章过滤','全文搜索（正则/大小写敏感）+ 高亮跳转','大文件虚拟滚动 + 多编码识别','统计分析（级别分布条形图）','最近打开 12 个文件 + 拖拽打开','导出筛选结果']},
+  {id:'password-generator',icon:'🔐',name:'密码生成器',cat:'dev',stack:'electron',ver:'v1.0.0',
+   desc:'苹果白高端风格本地密码生成与管理工具：基于 CSPRNG 密码学安全随机数、随机密码/记忆口令/强度检测/批量生成。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/password-generator-v1.0.0',gh:G+'/tree/main/password-generator',
+   features:['随机密码（4-64 位，可排除易混字符）','记忆口令（3-8 词英文组合）','强度检测（Shannon 熵 + 破解耗时估算）','批量生成（5-50 个）','历史记录（本地保存最近 50 条）','拒绝采样消除模偏置的 CSPRNG']},
+  {id:'unit-converter',icon:'🔄',name:'单位转换器',cat:'efficiency',stack:'electron',ver:'v1.0.0',
+   desc:'精致小巧的桌面单位转换工具：支持 14 大类、160+ 单位互转，实时转换、全单位参考、一键复制，苹果白设计。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/unit-converter-v1.0.0',gh:G+'/tree/main/unit-converter',
+   features:['14 大类单位（长度/重量/温度/面积等）','160+ 单位，涵盖国际/英制/中国市制','实时转换，输入即转换零延迟','全单位参考表','单位互换 + 一键复制','苹果白设计语言']},
+  {id:'watching-manager',icon:'🎬',name:'剧集管家',cat:'efficiency',stack:'electron',ver:'v1.0.0',
+   desc:'本地追剧进度管理桌面工具：剧集档案、一键推进下一集、评分标签、统计概览、追剧提醒，纯本地存储不联网。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/watching-manager-v1.0.0',gh:G+'/tree/main/watching-manager',
+   features:['剧集档案（剧名/类型/状态/季集进度）','一键推进下一集，跨季自动 +1','0-10 分评分 + 自定义标签','统计概览（状态分布/类型条形图/标签云）','追剧提醒（3 天未更新自动列表 + 通知）','搜索筛选 + 5 种排序','数据导入导出 + 海报管理']}
 ];
 
 /* Assign screenshot path + score placeholder to each project */
 /* shot  = 卡片尺寸小图 (480px wide, ~5KB) 用于卡片首屏 */
 /* full  = 大图尺寸 (1200px wide, ~22KB) 用于 lightbox */
+var NEW_IDS = ['alarm-manager','disk-manager','emoji-manager','flashcard-manager','image-converter','json-manager','keyboard-tester','log-manager','password-generator','unit-converter','watching-manager'];
 PROJECTS.forEach(function(p){
   p.shot = 'assets/img/' + p.id + '.webp';
   p.full = 'assets/img/' + p.id + '-full.webp';
   p.score = 0;
+  p.isNew = NEW_IDS.indexOf(p.id) !== -1;
 });
 
 /* 卡片背景：精致分类色渐变（低饱和度，统一中有差异） */
@@ -191,6 +237,7 @@ var GRAD = {
 };
 var CAT_NAME = {dev:'开发工具',system:'系统工具',efficiency:'效率工具',design:'设计工具'};
 var CAT_COLOR = {dev:'#007aff',system:'#34c759',efficiency:'#ff9500',design:'#af52de'};
+var STACK_INFO = {web:{icon:'🌐',label:'Web'},electron:{icon:'⚡',label:'Electron'},python:{icon:'🐍',label:'Python'}};
 
 /* 提取项目名首字符作为统一风格图标 */
 function monogram(name){
@@ -209,12 +256,14 @@ var countEl = document.getElementById('count');
 function cardHTML(p, idx){
   var g = GRAD[p.cat];
   var cc = CAT_COLOR[p.cat];
+  var si = STACK_INFO[p.stack] || {icon:'⚡',label:p.stack};
   var dlBtn = p.dl
     ? '<a class="btn btn--primary btn--sm" href="'+p.dl+'" target="_blank" rel="noopener">获取</a>'
     : '<a class="btn btn--primary btn--sm" href="'+p.gh+'" target="_blank" rel="noopener">获取</a>';
   var scoreBadge = p.score > 0
     ? '<span class="card__score" title="mimo 审美评分">'+p.score+'</span>'
     : '';
+  var newBadge = p.isNew ? '<span class="card__new">新</span>' : '';
   return ''+
   '<article class="card" data-cat="'+p.cat+'" data-stack="'+p.stack+'" data-id="'+p.id+'" tabindex="0" role="button" aria-label="'+p.name+' 详情">'+
     '<div class="card__media" style="background:'+g.emoji_bg+'">'+
@@ -229,6 +278,10 @@ function cardHTML(p, idx){
       '<button class="card__lightbox-btn" aria-label="查看大图" data-shot="'+p.full+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg></button>'+
     '</div>'+
     '<div class="card__body">'+
+      '<div class="card__meta">'+
+        '<span class="card__stack">'+si.icon+' '+si.label+'</span>'+
+        newBadge+
+      '</div>'+
       '<p class="card__desc">'+p.desc+'</p>'+
       '<div class="card__actions">'+
         dlBtn+
@@ -498,6 +551,27 @@ if(heroPreview){
     return '<span class="hero__chip"><span class="hero__chip-emoji">'+p.icon+'</span>'+p.name+'</span>';
   }).join('');
 }
+
+/* ---------- Hero 统计数字滚动动画 ---------- */
+function animateCount(el, to, dur){
+  if(!el) return;
+  if(!(window.requestAnimationFrame && window.matchMedia && !window.matchMedia('(prefers-reduced-motion: reduce)').matches)){
+    el.textContent = to; return;
+  }
+  var t0 = null;
+  function step(ts){
+    if(!t0) t0 = ts;
+    var p = Math.min((ts - t0) / dur, 1);
+    var eased = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(to * eased);
+    if(p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+var statCount = document.getElementById('stat-count');
+var heroCount = document.getElementById('hero-count');
+animateCount(statCount, PROJECTS.length, 1200);
+animateCount(heroCount, PROJECTS.length, 1200);
 
 /* ---------- 截图 Lightbox ---------- */
 var lightbox = document.getElementById('lightbox');
