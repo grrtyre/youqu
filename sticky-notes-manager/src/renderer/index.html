@@ -35,7 +35,7 @@
           <circle cx="7" cy="7" r="5" stroke="#8e8e93" stroke-width="1.5"/>
           <line x1="11" y1="11" x2="14" y2="14" stroke="#8e8e93" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
-        <input type="text" id="searchInput" placeholder="搜索便签...">
+        <input type="text" id="searchInput" placeholder="搜索便签..." aria-label="搜索便签">
       </div>
 
       <div class="category-list">
@@ -164,7 +164,7 @@
     <div class="modal">
       <div class="modal-header">
         <input type="text" id="editTitle" class="modal-title-input" placeholder="标题（可选）">
-        <button class="modal-close" id="modalCloseBtn">
+        <button class="modal-close" id="modalCloseBtn" aria-label="关闭">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
@@ -206,7 +206,7 @@
   </div>
 
   <!-- Toast 提示 -->
-  <div class="toast" id="toast" style="display:none;"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite" style="display:none;"></div>
 
   <script src="renderer.js"></script>
 </body>
