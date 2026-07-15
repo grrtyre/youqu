@@ -1,4 +1,4 @@
-// test/test.js
+﻿// test/test.js
 // 世界时钟核心逻辑测试 —— Node 运行：node test/test.js
 // 用断言验证时区偏移、格式化、工作时段重叠等关键函数
 
@@ -246,8 +246,8 @@ test('常用时区清单不少于 40 个城市', () => {
   assert.ok(core.COMMON_TIMEZONES.length >= 40, '时区数 ' + core.COMMON_TIMEZONES.length);
 });
 
-test('默认选中时区为 5 个', () => {
-  assert.strictEqual(core.DEFAULT_ZONES.length, 5);
+test('默认选中时区为 6 个', () => {
+  assert.strictEqual(core.DEFAULT_ZONES.length, 6);
 });
 
 test('默认工作时段为 9-18', () => {

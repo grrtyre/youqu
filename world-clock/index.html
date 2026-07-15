@@ -23,7 +23,7 @@
             <p class="subtitle">跨时区协作助手 · 一眼看清全球时间与工作时段重叠</p>
           </div>
         </div>
-        <div class="local-now" id="localNow" title="你的本地时间">--:--:--</div>
+        <div class="local-now" id="localNow" title="你的本地时间"><span class="live-dot"></span>--:--:--</div>
       </div>
 
       <!-- 标签导航 -->
@@ -43,6 +43,13 @@
           <button class="btn btn-ghost" id="btnSort" title="按时间排序">↕ 排序</button>
           <button class="btn btn-primary" id="btnAdd">＋ 添加时区</button>
         </div>
+      </div>
+      <!-- 时间预览滑块 -->
+      <div class="scrubber" id="scrubber">
+        <div class="scrubber-label">🔍 时间预览</div>
+        <input type="range" class="scrubber-slider" id="scrubberSlider" min="-12" max="12" step="0.5" value="0" />
+        <div class="scrubber-value" id="scrubberValue">实时</div>
+        <button class="scrubber-reset" id="scrubberReset" hidden>回到实时</button>
       </div>
       <div class="zone-grid" id="zoneGrid"></div>
 

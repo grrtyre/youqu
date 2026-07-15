@@ -59,6 +59,7 @@
     { city: '伦敦', tz: 'Europe/London' },
     { city: '纽约', tz: 'America/New_York' },
     { city: '旧金山', tz: 'America/Los_Angeles' },
+    { city: '悉尼', tz: 'Australia/Sydney' },
   ];
 
   // 默认工作时段（当地时钟 9:00-18:00）

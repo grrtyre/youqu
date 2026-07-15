@@ -1,4 +1,4 @@
-// app.js
+﻿// app.js
 // 世界时钟 UI 逻辑 —— 状态管理、渲染、交互
 // 依赖 timezone-core.js（提供 TimezoneCore 命名空间）
 
@@ -12,6 +12,9 @@
   const LOCAL_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Shanghai';
 
   let state = loadState();
+
+  // 时间预览偏移（小时），null 表示实时模式
+  let previewOffset = null;
 
   function defaultState() {
     return {
@@ -77,9 +80,9 @@
 
   // ===== 顶部本地时钟 =====
   function renderLocalNow() {
-    const now = new Date();
+    const now = previewOffset !== null ? new Date(Date.now() + previewOffset * 3600000) : new Date();
     const p = C.getZoneParts(LOCAL_TZ, now);
-    $('#localNow').textContent = `${pad(p.hour)}:${pad(p.minute)}:${pad(p.second)} · ${C.formatInZone(LOCAL_TZ, now, 'MM-DD W')}`;
+    $('#localNow').innerHTML = `<span class="live-dot"></span>${pad(p.hour)}:${pad(p.minute)}:${pad(p.second)} · ${C.formatInZone(LOCAL_TZ, now, 'MM-DD W')}`;
   }
 
   // ===== 世界时钟面板 =====
@@ -100,30 +103,40 @@
       return;
     }
 
-    const now = new Date();
+    const now = previewOffset !== null ? new Date(Date.now() + previewOffset * 3600000) : new Date();
     for (const z of zones) {
-      const card = el('div', 'zone-card');
       const p = C.getZoneParts(z.tz, now);
       const offset = C.getOffsetMinutes(z.tz, now);
       const day = C.isDaytime(z.tz, now);
       const localOffset = C.getOffsetMinutes(LOCAL_TZ, now);
+      const card = el('div', 'zone-card' + (day ? ' is-day' : ' is-night') + (previewOffset !== null ? ' preview-mode' : ''));
       const diffH = (offset - localOffset) / 60;
+
+      const inWorkHours = p.hour >= 9 && p.hour < 18;
+      const workStatus = inWorkHours ? '<span class="zc-status working">工作中</span>' : '<span class="zc-status off">下班</span>';
 
       card.innerHTML = `
         <button class="icon-btn zc-remove" data-remove="${z.tz}|${z.city}" title="移除">✕</button>
         <div class="zc-head">
           <div class="zc-city">
-            <span class="zc-dn">${day ? '☀️' : '🌙'}</span>
+            <span class="zc-dn">${day ? '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#ff9500" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>' : '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#5e5ce6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'}</span>
             ${z.city}
           </div>
+          ${workStatus}
+          <span class="zc-preview-badge">预览</span>
         </div>
-        <div class="zc-time">${pad(p.hour)}:${pad(p.minute)}<span class="sec">:${pad(p.second)}</span></div>
-        <div class="zc-date">${C.formatInZone(z.tz, now, 'YYYY-MM-DD W')}</div>
-        <div class="zc-offset">
-          ${C.formatOffset(offset)}
-          ${diffH === 0 ? '' : `<span class="zc-diff">${diffH > 0 ? '+' : ''}${diffH}h</span> 与本地`}
+        <div class="zc-body">
+          <div class="zc-time">${pad(p.hour)}:${pad(p.minute)}${previewOffset === null ? `<span class="sec">:${pad(p.second)}</span>` : ''}</div>
+          <div class="zc-meta">
+            <div class="zc-date">${C.formatInZone(z.tz, now, 'YYYY-MM-DD W')}</div>
+            <div class="zc-offset">
+              ${C.formatOffset(offset)}
+              ${diffH === 0 ? '' : `<span class="zc-diff">${diffH > 0 ? '+' : ''}${diffH}h</span> 与本地`}
+            </div>
+          </div>
         </div>
         <div class="zc-bar"><div class="zc-bar-now" style="left:${(C.getHoursInZone(z.tz, now) / 24 * 100).toFixed(2)}%"></div></div>
+        <div class="zc-bar-label"><span>0:00</span><span>12:00</span><span>24:00</span></div>
       `;
       grid.appendChild(card);
     }
@@ -537,6 +550,34 @@
       $('#btnSort').textContent = state.sortByTime ? '↕ 按时间' : '↕ 排序';
     });
 
+    // 时间预览滑块
+    const slider = $('#scrubberSlider');
+    const sValue = $('#scrubberValue');
+    const sReset = $('#scrubberReset');
+    slider.addEventListener('input', () => {
+      const v = parseFloat(slider.value);
+      if (v === 0) {
+        previewOffset = null;
+        sValue.textContent = '实时';
+        sReset.hidden = true;
+      } else {
+        previewOffset = v;
+        const sign = v > 0 ? '+' : '';
+        sValue.textContent = `${sign}${v}h`;
+        sReset.hidden = false;
+      }
+      renderLocalNow();
+      renderZones();
+    });
+    sReset.addEventListener('click', () => {
+      slider.value = 0;
+      previewOffset = null;
+      sValue.textContent = '实时';
+      sReset.hidden = true;
+      renderLocalNow();
+      renderZones();
+    });
+
     $('#workStart').addEventListener('input', renderOverlap);
     $('#workEnd').addEventListener('input', renderOverlap);
     $('#refTz').addEventListener('change', renderOverlap);
@@ -563,10 +604,10 @@
       if (e.key === 'Escape' && !$('#addModal').hidden) closeAddModal();
     });
 
-    // 每秒刷新世界时钟
+    // 每秒刷新世界时钟（预览模式下不刷新时钟面板）
     setInterval(() => {
-      renderLocalNow();
-      if ($('.panel.active').dataset.panel === 'clock') renderZones();
+      if (previewOffset === null) renderLocalNow();
+      if (previewOffset === null && $('.panel.active').dataset.panel === 'clock') renderZones();
       if ($('.panel.active').dataset.panel === 'overlap') renderOverlap();
     }, 1000);
   }
