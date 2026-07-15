@@ -176,15 +176,21 @@ function renderItemContent(item, isEditing) {
 // 渲染
 function render() {
   const items = getFilteredSorted();
-  countEl.textContent = allItems.length + ' 条记录';
+  // 修复：筛选/搜索时显示「已显示/总数」，避免计数误导
+  const total = allItems.length;
+  const shown = items.length;
+  const isFiltered = currentFilter !== 'all' || !!currentSearch;
+  countEl.textContent = isFiltered ? (shown + '/' + total + ' 条') : (total + ' 条记录');
 
   if (items.length === 0) {
     listEl.innerHTML = '';
     emptyEl.hidden = false;
     if (currentSearch || currentFilter !== 'all') {
+      emptyEl.querySelector('.empty-icon').textContent = '🔍';
       emptyEl.querySelector('.empty-text').textContent = '没有匹配的记录';
       emptyEl.querySelector('.empty-hint').textContent = '试试其他关键词或筛选';
     } else {
+      emptyEl.querySelector('.empty-icon').textContent = '📭';
       emptyEl.querySelector('.empty-text').textContent = '还没有剪贴板历史';
       emptyEl.querySelector('.empty-hint').textContent = '复制任何内容，就会出现在这里';
     }
@@ -317,12 +323,12 @@ listEl.addEventListener('click', async (e) => {
       const ta = document.querySelector(`.item[data-id="${id}"] .item-edit-area`);
       if (ta) { ta.focus(); ta.select(); }
     } else if (act === 'favorite') {
-      await window.api.toggleFavorite(id);
-      showToast('已收藏');
+      const updated = await window.api.toggleFavorite(id);
+      showToast(updated && updated.favorite ? '已收藏' : '已取消收藏');
       await load();
     } else if (act === 'pin') {
-      await window.api.togglePin(id);
-      showToast('已置顶');
+      const updated = await window.api.togglePin(id);
+      showToast(updated && updated.pinned ? '已置顶' : '已取消置顶');
       await load();
     } else if (act === 'delete') {
       await window.api.deleteItem(id);
@@ -340,9 +346,10 @@ listEl.addEventListener('click', async (e) => {
   // 点击图片缩略图或卡片 = 复制
   if (imageThumb) e.stopPropagation();
   focusedIndex = -1; // 鼠标点击时清除键盘高亮
+  const clickItem = allItems.find(i => i.id === id);
   const ok = await window.api.copyItem(id);
   if (ok) {
-    showToast('已复制');
+    showToast(clickItem && clickItem.type === 'image' ? '图片已复制' : '已复制');
     if (autoPaste && window.api.pasteToFront) {
       await window.api.pasteToFront();
     }
@@ -379,13 +386,18 @@ tabs.forEach(tab => {
   });
 });
 
-// 清空
-clearBtn.addEventListener('click', async () => {
-  if (confirm('清空所有非置顶、非收藏记录？此操作不可撤销。')) {
-    await window.api.clearAll();
-    await load();
-    showToast('已清空');
-  }
+// 清空（自定义确认弹窗，替代原生 confirm）
+const confirmModal = document.getElementById('confirmModal');
+const confirmCancel = document.getElementById('confirmCancel');
+const confirmOk = document.getElementById('confirmOk');
+clearBtn.addEventListener('click', () => { confirmModal.hidden = false; });
+confirmCancel.addEventListener('click', () => { confirmModal.hidden = true; });
+confirmModal.addEventListener('click', (e) => { if (e.target === confirmModal) confirmModal.hidden = true; });
+confirmOk.addEventListener('click', async () => {
+  confirmModal.hidden = true;
+  await window.api.clearAll();
+  await load();
+  showToast('已清空');
 });
 
 // 关闭/设置
@@ -434,6 +446,12 @@ async function loadDataPath() {
 
 // --- 键盘导航 ---
 document.addEventListener('keydown', async (e) => {
+  // 清空确认弹窗打开时只处理 Escape
+  if (confirmModal && !confirmModal.hidden) {
+    if (e.key === 'Escape') { confirmModal.hidden = true; e.preventDefault(); }
+    if (e.key === 'Enter') { confirmOk.click(); e.preventDefault(); }
+    return;
+  }
   // 设置面板打开时不拦截
   if (!settingsPanel.hidden) {
     if (e.key === 'Escape') { settingsPanel.hidden = true; e.preventDefault(); }
@@ -484,7 +502,7 @@ document.addEventListener('keydown', async (e) => {
     const item = items[focusedIndex];
     const ok = await window.api.copyItem(item.id);
     if (ok) {
-      showToast('已复制');
+      showToast(item.type === 'image' ? '图片已复制' : '已复制');
       // 粘贴到前台窗口
       if (autoPaste && window.api.pasteToFront) {
         await window.api.pasteToFront();
@@ -506,6 +524,17 @@ document.addEventListener('keydown', async (e) => {
       render();
     } else {
       window.close();
+    }
+  } else if (e.key === 'Delete') {
+    // Delete 键：删除当前高亮项
+    if (focusedIndex >= 0 && focusedIndex < items.length) {
+      e.preventDefault();
+      const item = items[focusedIndex];
+      await window.api.deleteItem(item.id);
+      if (expandedId === item.id) expandedId = null;
+      if (editingId === item.id) editingId = null;
+      showToast('已删除');
+      await load();
     }
   }
 });
