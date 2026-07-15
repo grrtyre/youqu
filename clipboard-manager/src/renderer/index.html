@@ -69,7 +69,7 @@
       </div>
       <div class="setting-row">
         <span>键盘导航</span>
-        <code>↑ ↓ 选择 · Enter 粘贴 · Esc 关闭</code>
+        <code>↑ ↓ 选择 · Enter 粘贴 · Del 删除 · Esc 关闭</code>
       </div>
       <div class="setting-row">
         <span>数据存储位置</span>
@@ -92,7 +92,20 @@
       <div class="setting-row">
         <a href="#" id="afdianLink">☕ 爱发电支持我们</a>
       </div>
-      <button class="icon-btn" id="closeSettings">关闭</button>
+      <button class="settings-close-btn" id="closeSettings">关闭</button>
+    </div>
+  </div>
+
+  <!-- 清空确认弹窗 -->
+  <div class="confirm-modal" id="confirmModal" hidden>
+    <div class="confirm-content">
+      <div class="confirm-icon">⚠️</div>
+      <h4 class="confirm-title">清空剪贴板历史？</h4>
+      <p class="confirm-desc">将删除所有非置顶、非收藏的记录。此操作不可撤销。</p>
+      <div class="confirm-actions">
+        <button class="confirm-cancel" id="confirmCancel">取消</button>
+        <button class="confirm-ok" id="confirmOk">清空</button>
+      </div>
     </div>
   </div>
 
