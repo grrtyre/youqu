@@ -88,9 +88,24 @@ document.querySelectorAll('.tab').forEach(tab => {
   });
 });
 
+function clampInt(v, dft, min, max) {
+  let n = parseInt(v);
+  if (Number.isNaN(n)) n = dft;
+  if (n < min) n = min;
+  if (n > max) n = max;
+  return n;
+}
+
+function syncNumberInput(inputEl, sliderEl, min, max, dft) {
+  const v = clampInt(inputEl.value, dft, min, max);
+  if (String(inputEl.value) !== '' && parseInt(inputEl.value) !== v) inputEl.value = v;
+  sliderEl.value = v;
+  updateSliderFill(sliderEl);
+}
+
 function getPwdOpts() {
   return {
-    length: parseInt($('lengthInput').value) || 16,
+    length: clampInt($('lengthInput').value, 16, 4, 64),
     lower: $('chkLower').checked,
     upper: $('chkUpper').checked,
     digits: $('chkDigits').checked,
@@ -99,21 +114,21 @@ function getPwdOpts() {
   };
 }
 
-async function genPassword() {
+async function genPassword(silent) {
   const opts = getPwdOpts();
   if (!opts.lower && !opts.upper && !opts.digits && !opts.symbols) {
-    showToast('至少选择一种字符类型');
+    if (!silent) showToast('至少选择一种字符类型');
     return;
   }
-  setStatus('生成中…');
+  if (!silent) setStatus('生成中…');
   const pwd = await window.pg.generate(opts);
   const display = $('pwdDisplay');
   display.textContent = pwd;
   display.classList.remove('empty');
-  addHistory(pwd, '密码');
+  if (!silent) addHistory(pwd, '密码');
   const result = await window.pg.evaluate(pwd);
   updateStrengthMeter('strengthFill', 'strengthLabel', 'entropyInfo', result);
-  setStatus('已生成');
+  if (!silent) setStatus('已生成');
 }
 
 function updateStrengthMeter(fillId, labelId, entropyId, result) {
@@ -135,12 +150,9 @@ $('copyPwd').addEventListener('click', async () => {
 });
 
 $('lengthSlider').addEventListener('input', (e) => { $('lengthInput').value = e.target.value; updateSliderFill(e.target); });
-$('lengthInput').addEventListener('input', (e) => {
-  let v = parseInt(e.target.value) || 16;
-  v = Math.max(4, Math.min(64, v));
-  $('lengthSlider').value = v;
-  updateSliderFill($('lengthSlider'));
-});
+$('lengthSlider').addEventListener('change', () => { genPassword(true); });
+$('lengthInput').addEventListener('input', (e) => { syncNumberInput(e.target, $('lengthSlider'), 4, 64, 16); });
+$('lengthInput').addEventListener('change', (e) => { syncNumberInput(e.target, $('lengthSlider'), 4, 64, 16); genPassword(true); });
 
 function updateSliderFill(slider) {
   const min = parseFloat(slider.min) || 0;
@@ -160,14 +172,14 @@ function getPhraseOpts() {
   };
 }
 
-async function genPassphrase() {
-  setStatus('生成中…');
+async function genPassphrase(silent) {
+  if (!silent) setStatus('生成中…');
   const phrase = await window.pg.passphrase(getPhraseOpts());
   const display = $('phraseDisplay');
   display.textContent = phrase;
   display.classList.remove('empty');
-  addHistory(phrase, '口令');
-  setStatus('已生成');
+  if (!silent) addHistory(phrase, '口令');
+  if (!silent) setStatus('已生成');
 }
 
 $('phraseBtn').addEventListener('click', genPassphrase);
@@ -180,12 +192,9 @@ $('copyPhrase').addEventListener('click', async () => {
 });
 
 $('wordSlider').addEventListener('input', (e) => { $('wordInput').value = e.target.value; updateSliderFill(e.target); });
-$('wordInput').addEventListener('input', (e) => {
-  let v = parseInt(e.target.value) || 4;
-  v = Math.max(3, Math.min(8, v));
-  $('wordSlider').value = v;
-  updateSliderFill($('wordSlider'));
-});
+$('wordSlider').addEventListener('change', () => { genPassphrase(true); });
+$('wordInput').addEventListener('input', (e) => { syncNumberInput(e.target, $('wordSlider'), 3, 8, 4); });
+$('wordInput').addEventListener('change', (e) => { syncNumberInput(e.target, $('wordSlider'), 3, 8, 4); genPassphrase(true); });
 
 document.querySelectorAll('.seg').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -230,7 +239,10 @@ $('strengthInput').addEventListener('input', async (e) => {
   const sug = $('suggestions');
   sug.innerHTML = '';
   if (result.suggestions.length === 0 && pwd.length > 0) {
-    sug.innerHTML = '<div class="suggestion-item" style="background:rgba(52,199,89,0.06);border-color:rgba(52,199,89,0.15)">密码强度良好，无明显弱点</div>';
+    const ok = document.createElement('div');
+    ok.className = 'suggestion-item ok';
+    ok.textContent = '密码强度良好，无明显弱点';
+    sug.appendChild(ok);
   } else {
     result.suggestions.forEach(s => {
       const item = document.createElement('div');
@@ -241,29 +253,38 @@ $('strengthInput').addEventListener('input', async (e) => {
   }
 });
 
-$('batchSlider').addEventListener('input', (e) => { $('batchInput').value = e.target.value; updateSliderFill(e.target); });
-$('batchInput').addEventListener('input', (e) => {
-  let v = parseInt(e.target.value) || 10;
-  v = Math.max(5, Math.min(50, v));
-  $('batchSlider').value = v;
-  updateSliderFill($('batchSlider'));
+// 显隐切换
+$('toggleStrengthView').addEventListener('click', () => {
+  const i = $('strengthInput');
+  i.type = i.type === 'password' ? 'text' : 'password';
+  i.focus();
 });
-$('batchLenSlider').addEventListener('input', (e) => { $('batchLenInput').value = e.target.value; updateSliderFill(e.target); });
-$('batchLenInput').addEventListener('input', (e) => {
-  let v = parseInt(e.target.value) || 16;
-  v = Math.max(4, Math.min(64, v));
-  $('batchLenSlider').value = v;
-  updateSliderFill($('batchLenSlider'));
+// 清空
+$('clearStrength').addEventListener('click', () => {
+  const i = $('strengthInput');
+  i.value = '';
+  i.dispatchEvent(new Event('input', { bubbles: true }));
+  i.focus();
 });
 
+$('batchSlider').addEventListener('input', (e) => { $('batchInput').value = e.target.value; updateSliderFill(e.target); });
+$('batchInput').addEventListener('input', (e) => { syncNumberInput(e.target, $('batchSlider'), 5, 50, 10); });
+$('batchInput').addEventListener('change', (e) => { syncNumberInput(e.target, $('batchSlider'), 5, 50, 10); });
+$('batchLenSlider').addEventListener('input', (e) => { $('batchLenInput').value = e.target.value; updateSliderFill(e.target); });
+$('batchLenInput').addEventListener('input', (e) => { syncNumberInput(e.target, $('batchLenSlider'), 4, 64, 16); });
+$('batchLenInput').addEventListener('change', (e) => { syncNumberInput(e.target, $('batchLenSlider'), 4, 64, 16); });
+
 $('batchBtn').addEventListener('click', async () => {
-  const count = parseInt($('batchInput').value) || 10;
-  const length = parseInt($('batchLenInput').value) || 16;
+  const count = clampInt($('batchInput').value, 10, 5, 50);
+  const length = clampInt($('batchLenInput').value, 16, 4, 64);
+  const lower = $('batchChkLower').checked;
+  const upper = $('batchChkUpper').checked;
+  const digits = $('batchChkDigits').checked;
+  const symbols = $('batchChkSymbols').checked;
+  const excludeAmbiguous = $('batchChkExcludeAmb').checked;
+  if (!lower && !upper && !digits && !symbols) { showToast('至少选择一种字符类型'); return; }
   setStatus('批量生成中…');
-  const list = await window.pg.batch({
-    count, length,
-    lower: true, upper: true, digits: true, symbols: true
-  });
+  const list = await window.pg.batch({ count, length, lower, upper, digits, symbols, excludeAmbiguous });
   state.lastBatch = list;
   renderBatch(list);
   setStatus(`已生成 ${list.length} 个密码`);
@@ -279,15 +300,22 @@ function renderBatch(list) {
   list.forEach((pwd, i) => {
     const item = document.createElement('div');
     item.className = 'batch-item';
-    item.innerHTML = `
-      <span class="batch-item-index">${i + 1}</span>
-      <span class="batch-item-text">${pwd}</span>
-      <button class="batch-item-copy">复制</button>
-    `;
-    item.querySelector('.batch-item-copy').addEventListener('click', async () => {
+    const idx = document.createElement('span');
+    idx.className = 'batch-item-index';
+    idx.textContent = String(i + 1);
+    const txt = document.createElement('span');
+    txt.className = 'batch-item-text';
+    txt.textContent = pwd; // textContent 杜绝 <> & 破坏 DOM
+    const btn = document.createElement('button');
+    btn.className = 'copy-mini';
+    btn.textContent = '复制';
+    btn.addEventListener('click', async () => {
       await window.pg.copy(pwd);
       showToast('已复制');
     });
+    item.appendChild(idx);
+    item.appendChild(txt);
+    item.appendChild(btn);
     container.appendChild(item);
   });
 }
@@ -297,6 +325,17 @@ $('batchCopyAll').addEventListener('click', async () => {
   await window.pg.copy(state.lastBatch.join('\n'));
   showToast('已复制全部');
 });
+
+function formatHistoryTime(ts) {
+  const t = new Date(ts);
+  const now = new Date();
+  const pad = (n) => n.toString().padStart(2, '0');
+  const sameDay = t.toDateString() === now.toDateString();
+  if (sameDay) {
+    return `${pad(t.getHours())}:${pad(t.getMinutes())}:${pad(t.getSeconds())}`;
+  }
+  return `${pad(t.getMonth() + 1)}-${pad(t.getDate())} ${pad(t.getHours())}:${pad(t.getMinutes())}`;
+}
 
 function renderHistory() {
   const container = $('historyList');
@@ -308,26 +347,54 @@ function renderHistory() {
   state.history.forEach(item => {
     const div = document.createElement('div');
     div.className = 'history-item';
-    const time = new Date(item.time);
-    const timeStr = `${time.getHours().toString().padStart(2,'0')}:${time.getMinutes().toString().padStart(2,'0')}:${time.getSeconds().toString().padStart(2,'0')}`;
-    div.innerHTML = `
-      <span class="history-item-text">${item.text}</span>
-      <div class="history-item-meta">
-        <span class="history-item-type">${item.type}</span>
-        <span class="history-item-time">${timeStr}</span>
-      </div>
-      <button class="batch-item-copy">复制</button>
-    `;
-    div.querySelector('.batch-item-copy').addEventListener('click', async () => {
+    const txt = document.createElement('span');
+    txt.className = 'history-item-text';
+    txt.textContent = item.text; // textContent 防止 <> 破坏 DOM
+    const meta = document.createElement('div');
+    meta.className = 'history-item-meta';
+    const typeEl = document.createElement('span');
+    typeEl.className = 'history-item-type';
+    typeEl.textContent = item.type;
+    const timeEl = document.createElement('span');
+    timeEl.className = 'history-item-time';
+    timeEl.textContent = formatHistoryTime(item.time);
+    meta.appendChild(typeEl);
+    meta.appendChild(timeEl);
+    const btn = document.createElement('button');
+    btn.className = 'copy-mini';
+    btn.textContent = '复制';
+    btn.addEventListener('click', async () => {
       await window.pg.copy(item.text);
       showToast('已复制');
     });
+    div.appendChild(txt);
+    div.appendChild(meta);
+    div.appendChild(btn);
     container.appendChild(div);
   });
 }
 
+let clearHistoryArmed = false;
+let clearHistoryTimer = null;
 $('clearHistory').addEventListener('click', () => {
   if (!state.history.length) { showToast('历史为空'); return; }
+  const btn = $('clearHistory');
+  if (!clearHistoryArmed) {
+    clearHistoryArmed = true;
+    btn.textContent = '再次点击确认清空';
+    btn.classList.add('armed');
+    clearTimeout(clearHistoryTimer);
+    clearHistoryTimer = setTimeout(() => {
+      clearHistoryArmed = false;
+      btn.textContent = '清空历史';
+      btn.classList.remove('armed');
+    }, 3000);
+    return;
+  }
+  clearTimeout(clearHistoryTimer);
+  clearHistoryArmed = false;
+  btn.textContent = '清空历史';
+  btn.classList.remove('armed');
   state.history = [];
   saveHistory();
   renderHistory();
@@ -339,5 +406,46 @@ $('openGithub').addEventListener('click', (e) => {
   window.pg.openExternal('https://github.com/grrtyre/youqu/tree/main/password-generator');
 });
 
+// ============ 键盘快捷键 ============
+const TAB_KEYS = ['password', 'passphrase', 'strength', 'batch', 'history'];
+document.addEventListener('keydown', (e) => {
+  const ctrl = e.ctrlKey || e.metaKey;
+  if (!ctrl) return;
+  // Ctrl+1..5 切换 Tab
+  if (e.key >= '1' && e.key <= '5' && !e.shiftKey && !e.altKey) {
+    const idx = parseInt(e.key) - 1;
+    if (idx < TAB_KEYS.length) {
+      const tab = document.querySelector('.tab[data-tab="' + TAB_KEYS[idx] + '"]');
+      if (tab) { tab.click(); e.preventDefault(); }
+    }
+    return;
+  }
+  // Ctrl+G 在当前 Tab 生成 / 重新生成
+  if (e.key.toLowerCase() === 'g' && !e.shiftKey && !e.altKey) {
+    const active = document.querySelector('.tab.active');
+    if (!active) return;
+    const t = active.dataset.tab;
+    if (t === 'password') { genPassword(); e.preventDefault(); }
+    else if (t === 'passphrase') { genPassphrase(); e.preventDefault(); }
+    else if (t === 'batch') { $('batchBtn').click(); e.preventDefault(); }
+    return;
+  }
+  // Ctrl+Shift+C 复制当前结果
+  if (e.key.toLowerCase() === 'c' && e.shiftKey && !e.altKey) {
+    const active = document.querySelector('.tab.active');
+    if (!active) return;
+    const t = active.dataset.tab;
+    if (t === 'password') { $('copyPwd').click(); e.preventDefault(); }
+    else if (t === 'passphrase') { $('copyPhrase').click(); e.preventDefault(); }
+    return;
+  }
+  // Ctrl+L 聚焦强度输入
+  if (e.key.toLowerCase() === 'l' && !e.shiftKey && !e.altKey) {
+    const tab = document.querySelector('.tab[data-tab="strength"]');
+    if (tab) { tab.click(); $('strengthInput').focus(); e.preventDefault(); }
+    return;
+  }
+});
+
 loadHistory();
-setTimeout(() => genPassword(), 200);
+setTimeout(() => genPassword(true), 200);
