@@ -1,0 +1,33 @@
+{
+  "name": "palette-manager",
+  "version": "1.0.0",
+  "description": "调色板管理器 - 优雅的桌面配色方案生成与管理工具",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/color-theory.test.js"
+  },
+  "keywords": [
+    "palette",
+    "color",
+    "design",
+    "electron",
+    "调色板",
+    "配色"
+  ],
+  "author": "youqu",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^31.0.0"
+  },
+  "build": {
+    "appId": "com.youqu.palette-manager",
+    "productName": "调色板管理器",
+    "mac": {
+      "category": "public.app-category.graphics-design"
+    },
+    "win": {
+      "target": "nsis"
+    }
+  }
+}
