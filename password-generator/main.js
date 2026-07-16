@@ -77,16 +77,25 @@ const CHARSETS = {
   ambiguous: 'il1Lo0O'
 };
 
+// 钳制整数到 [min, max]（兜底防御：渲染层数字输入框可能被绕过）
+function clampInt(v, dft, min, max) {
+  let n = parseInt(v);
+  if (Number.isNaN(n)) n = dft;
+  if (n < min) n = min;
+  if (n > max) n = max;
+  return n;
+}
+
 // 生成密码
 function generatePassword(opts) {
+  const length = clampInt(opts && opts.length, 16, 4, 64);
   const {
-    length = 16,
     lower = true,
     upper = true,
     digits = true,
     symbols = true,
     excludeAmbiguous = false
-  } = opts;
+  } = opts || {};
 
   let pool = '';
   const required = [];
@@ -140,12 +149,12 @@ const WORD_LIST = [
 ];
 
 function generatePassphrase(opts) {
+  const words = clampInt(opts && opts.words, 4, 3, 8);
+  const separator = (opts && typeof opts.separator === 'string') ? opts.separator.slice(0, 3) : '-';
   const {
-    words = 4,
-    separator = '-',
     capitalize = true,
     includeNumber = true
-  } = opts;
+  } = opts || {};
   const picked = [];
   for (let i = 0; i < words; i++) {
     let w = WORD_LIST[secureRandomInt(WORD_LIST.length)];
@@ -205,7 +214,9 @@ ipcMain.handle('pg:generate', (event, opts) => generatePassword(opts || {}));
 ipcMain.handle('pg:passphrase', (event, opts) => generatePassphrase(opts || {}));
 ipcMain.handle('pg:evaluate', (event, password) => evaluateStrength(password));
 ipcMain.handle('pg:batch', (event, opts) => {
-  const { count = 10, ...rest } = opts || {};
+  const count = clampInt(opts && opts.count, 10, 1, 200);
+  const rest = Object.assign({}, opts || {});
+  delete rest.count;
   const results = [];
   for (let i = 0; i < count; i++) results.push(generatePassword(rest));
   return results;
