@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/logo.png" alt="便签管家 Logo" width="120" height="120">
+<img src="assets/logo.png" alt="便签管家 Logo" width="160">
 
 # 📝 便签管家 · sticky-notes-manager
 
@@ -14,6 +14,10 @@
 
 一款轻量级桌面便签工具，灵感来自 macOS 便签 + Apple Notes 的设计语言。所有数据存储在本地，不联网、不上传、不登录，打开即用。
 
+| 📊 便签数 | 📌 置顶标记 | 🎨 颜色标签 | 🗑️ 回收站 | 🧪 测试用例 |
+|:---:|:---:|:---:|:---:|:---:|
+| 无限 | 重要置顶 | 7 种色彩 | 30 天恢复 | 129 个全通过 |
+
 </div>
 
 ---
@@ -25,16 +29,23 @@
 | 🪟 安装版（推荐） | [便签管家 Setup 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/sticky-notes-manager-v1.1.0/sticky-notes-manager-Setup-1.1.0.exe) | 双击安装，自动创建桌面快捷方式 |
 | 📦 免安装便携版 | [便签管家 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/sticky-notes-manager-v1.1.0/sticky-notes-manager-1.1.0.exe) | 双击即用，不写注册表 |
 
-> 系统要求：Windows 10/11 x64
+> 系统要求：Windows 10/11 x64 ｜ 🔒 所有数据本地存储，绝不联网上传
 
 ## 🖼️ 界面预览
 
-<table>
-  <tr>
-    <td width="50%" align="center"><img src="assets/notes-view.png" alt="便签主视图" style="border-radius:8px;"><br><sub><b>便签主视图</b> · 分类筛选 / 颜色标签 / 置顶标记</sub></td>
-    <td width="50%" align="center"><img src="assets/trash-view.png" alt="回收站视图" style="border-radius:8px;"><br><sub><b>回收站视图</b> · 一键恢复 / 过期分级警告</sub></td>
-  </tr>
-</table>
+<div align="center">
+
+<img src="assets/notes-view.png" width="90%" alt="便签主视图">
+
+**便签主视图** · 分类筛选 / 颜色标签 / 置顶标记 / 全文搜索
+
+<br>
+
+<img src="assets/trash-view.png" width="90%" alt="回收站视图">
+
+**回收站视图** · 一键恢复 / 过期分级警告 / 30 天自动清理
+
+</div>
 
 ## ✨ 功能特性
 
@@ -107,11 +118,13 @@ sticky-notes-manager/
 
 ## 🛠️ 技术栈
 
-- **Electron 33** —— 桌面应用框架
-- **原生 JavaScript** —— 零运行时依赖
-- **contextBridge + ipcRenderer.invoke/handle** —— 安全 IPC 通信
-- **electron-builder** —— NSIS 安装包打包
-- **苹果白高端风格** —— 参考 macOS / iOS 原生设计
+| 技术 | 说明 |
+|---|---|
+| Electron 33 | 桌面应用框架 |
+| 原生 JavaScript | 零运行时依赖 |
+| contextBridge + ipcRenderer | 安全 IPC 通信 |
+| electron-builder | NSIS 安装包打包 |
+| 苹果白高端风格 | 参考 macOS / iOS 原生设计 |
 
 ## 🧪 测试
 
