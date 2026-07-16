@@ -191,6 +191,10 @@ var PROJECTS = [
    desc:'苹果白风格本地图片格式批量转换工具：支持 PNG/JPG/WebP/BMP/GIF 互转、质量调节、批量拖放、保留元数据，纯本地隐私优先。',
    tags:['Electron','原生 JS'],gh:G+'/tree/main/image-converter',
    features:['PNG/JPG/WebP/BMP/GIF 格式互转','批量拖放转换','质量调节与压缩','保留 EXIF 元数据','实时预览转换效果','纯本地处理，不联网']},
+  {id:'palette-manager',icon:'🎨',name:'调色板管家',cat:'design',stack:'electron',ver:'v1.0.0',
+   desc:'基于色彩理论的桌面调色板生成管理工具：类比/互补/三元/分裂互补等六种理论自动生成、空格随机、锁定微调、图片取色（K-means）、WCAG 对比度检查、CSS/SCSS/JSON/Tailwind 多格式导出、本地收藏、托盘常驻。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/palette-manager-v1.0.0',gh:G+'/tree/main/palette-manager',
+   features:['六种色彩理论自动生成（类比/互补/三元/四元/分裂互补/同色系）','空格键一键随机生成','锁定满意颜色，其余重新生成','图片取色（K-means 聚类算法）','WCAG 对比度检查 AA/AAA 等级','多格式导出 CSS/SCSS/JSON/Tailwind','本地收藏 + 系统托盘常驻','苹果白高端风格']},
   {id:'json-manager',icon:'🧩',name:'JSON管家',cat:'dev',stack:'electron',ver:'v1.0.0',
    desc:'苹果白高端风格 JSON 深度处理桌面工具：格式化/树形浏览/jq 过滤/JSON 对比/格式转换/Schema 校验，6 合 1 一站搞定。',
    tags:['Electron','原生 JS'],dl:R+'/tag/json-manager-v1.0.0',gh:G+'/tree/main/json-manager',
@@ -220,7 +224,7 @@ var PROJECTS = [
 /* Assign screenshot path + score placeholder to each project */
 /* shot  = 卡片尺寸小图 (480px wide, ~5KB) 用于卡片首屏 */
 /* full  = 大图尺寸 (1200px wide, ~22KB) 用于 lightbox */
-var NEW_IDS = ['alarm-manager','disk-manager','emoji-manager','flashcard-manager','image-converter','json-manager','keyboard-tester','log-manager','password-generator','unit-converter','watching-manager'];
+var NEW_IDS = ['alarm-manager','disk-manager','emoji-manager','flashcard-manager','image-converter','json-manager','keyboard-tester','log-manager','palette-manager','password-generator','unit-converter','watching-manager'];
 PROJECTS.forEach(function(p){
   p.shot = 'assets/img/' + p.id + '.webp';
   p.full = 'assets/img/' + p.id + '-full.webp';
@@ -264,6 +268,7 @@ function cardHTML(p, idx){
     ? '<span class="card__score" title="mimo 审美评分">'+p.score+'</span>'
     : '';
   var newBadge = p.isNew ? '<span class="card__new">新</span>' : '';
+  var idxStr = String(idx+1).padStart(2,'0');
   return ''+
   '<article class="card" data-cat="'+p.cat+'" data-stack="'+p.stack+'" data-id="'+p.id+'" tabindex="0" role="button" aria-label="'+p.name+' 详情">'+
     '<div class="card__media" style="background:'+g.emoji_bg+'">'+
@@ -279,13 +284,14 @@ function cardHTML(p, idx){
     '</div>'+
     '<div class="card__body">'+
       '<div class="card__meta">'+
+        '<span class="card__index" aria-hidden="true">#'+idxStr+'</span>'+
         '<span class="card__stack">'+si.icon+' '+si.label+'</span>'+
         newBadge+
       '</div>'+
       '<p class="card__desc">'+p.desc+'</p>'+
       '<div class="card__actions">'+
         dlBtn+
-        '<a class="btn btn--ghost btn--sm" href="'+p.gh+'" target="_blank" rel="noopener">源码</a>'+
+        '<a class="card__src" href="'+p.gh+'" target="_blank" rel="noopener">源码 →</a>'+
       '</div>'+
     '</div>'+
   '</article>';
@@ -552,26 +558,12 @@ if(heroPreview){
   }).join('');
 }
 
-/* ---------- Hero 统计数字滚动动画 ---------- */
-function animateCount(el, to, dur){
-  if(!el) return;
-  if(!(window.requestAnimationFrame && window.matchMedia && !window.matchMedia('(prefers-reduced-motion: reduce)').matches)){
-    el.textContent = to; return;
-  }
-  var t0 = null;
-  function step(ts){
-    if(!t0) t0 = ts;
-    var p = Math.min((ts - t0) / dur, 1);
-    var eased = 1 - Math.pow(1 - p, 3);
-    el.textContent = Math.round(to * eased);
-    if(p < 1) requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
+/* ---------- Hero 统计数字 ---------- */
+/* 直接设置最终值，避免 count-up 动画在 headless 截图时捕获中间值 */
 var statCount = document.getElementById('stat-count');
 var heroCount = document.getElementById('hero-count');
-animateCount(statCount, PROJECTS.length, 1200);
-animateCount(heroCount, PROJECTS.length, 1200);
+if(statCount) statCount.textContent = PROJECTS.length;
+if(heroCount) heroCount.textContent = PROJECTS.length;
 
 /* ---------- 截图 Lightbox ---------- */
 var lightbox = document.getElementById('lightbox');
@@ -657,11 +649,20 @@ document.addEventListener('keydown', function(e){
   }
 });
 
+/* ---------- 分类筛选 chips 数量显示 ---------- */
+function updateChipCounts(){
+  var counts = {all:PROJECTS.length, dev:0, system:0, efficiency:0, design:0};
+  PROJECTS.forEach(function(p){ if(counts[p.cat] !== undefined) counts[p.cat]++; });
+  document.querySelectorAll('.chip').forEach(function(chip){
+    var f = chip.dataset.filter;
+    if(counts[f] !== undefined){
+      var label = chip.textContent.replace(/\s*\d+$/,'').trim();
+      chip.setAttribute('data-count', counts[f]);
+    }
+  });
+}
+
 /* ---------- 初始化 ---------- */
 render(PROJECTS);
+updateChipCounts();
 loadScores();
-/* Hero 统计数字与计数同步实际项目数 */
-var statCount = document.getElementById('stat-count');
-var heroCount = document.getElementById('hero-count');
-if(statCount) statCount.textContent = PROJECTS.length;
-if(heroCount) heroCount.textContent = PROJECTS.length;
