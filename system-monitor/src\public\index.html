@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>系统监控器</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-dot"></div>
+        <div class="brand-text"><h1>系统监控器</h1><p id="hostInfo">正在读取…</p></div>
+      </div>
+      <div class="topbar-right">
+        <div class="uptime"><span class="uptime-label">运行时长</span><span id="uptime" class="uptime-value">--</span></div>
+        <span id="liveDot" class="live-dot" title="实时数据"></span>
+      </div>
+    </header>
+    <section class="cards">
+      <article class="card gauge-card">
+        <div class="card-head"><span class="card-title">CPU</span><span class="card-tag" id="cpuModel">—</span></div>
+        <div class="gauge-wrap"><svg class="gauge" viewBox="0 0 120 120"><circle class="gauge-bg" cx="60" cy="60" r="50"></circle><circle class="gauge-fg" id="cpuArc" cx="60" cy="60" r="50"></circle></svg><div class="gauge-center"><span class="gauge-num" id="cpuNum">0</span><span class="gauge-unit">%</span></div></div>
+        <div class="gauge-foot"><span id="cpuCores">— 核</span><span id="cpuTemp">温度 —</span></div>
+      </article>
+      <article class="card gauge-card">
+        <div class="card-head"><span class="card-title">内存</span><span class="card-tag">RAM</span></div>
+        <div class="gauge-wrap"><svg class="gauge" viewBox="0 0 120 120"><circle class="gauge-bg" cx="60" cy="60" r="50"></circle><circle class="gauge-fg mem-arc" id="memArc" cx="60" cy="60" r="50"></circle></svg><div class="gauge-center"><span class="gauge-num" id="memNum">0</span><span class="gauge-unit">%</span></div></div>
+        <div class="gauge-foot"><span id="memUsed">— / —</span><span id="memSwap">交换 —</span></div>
+      </article>
+      <article class="card gauge-card">
+        <div class="card-head"><span class="card-title">磁盘</span><span class="card-tag">存储</span></div>
+        <div class="gauge-wrap"><svg class="gauge" viewBox="0 0 120 120"><circle class="gauge-bg" cx="60" cy="60" r="50"></circle><circle class="gauge-fg disk-arc" id="diskArc" cx="60" cy="60" r="50"></circle></svg><div class="gauge-center"><span class="gauge-num" id="diskNum">0</span><span class="gauge-unit">%</span></div></div>
+        <div class="gauge-foot"><span id="diskUsed">— / —</span><span id="diskIo">读写 —</span></div>
+      </article>
+      <article class="card gauge-card">
+        <div class="card-head"><span class="card-title">网络</span><span class="card-tag">实时流量</span></div>
+        <div class="net-block">
+          <div class="net-row"><span class="net-arrow down">↓</span><span class="net-val" id="netRx">0 B/s</span></div>
+          <div class="net-row"><span class="net-arrow up">↑</span><span class="net-val" id="netTx">0 B/s</span></div>
+        </div>
+        <div class="gauge-foot"><span id="netIfaces">接口 —</span></div>
+      </article>
+    </section>
+    <section class="charts">
+      <article class="card chart-card"><div class="card-head"><span class="card-title">CPU 历史</span><span class="card-tag">近 2 分钟</span></div><canvas id="cpuChart" class="chart" height="180"></canvas></article>
+      <article class="card chart-card"><div class="card-head"><span class="card-title">内存历史</span><span class="card-tag">近 2 分钟</span></div><canvas id="memChart" class="chart" height="180"></canvas></article>
+    </section>
+    <section class="charts single">
+      <article class="card chart-card wide">
+        <div class="card-head"><span class="card-title">网络流量</span><span class="card-tag"><span class="legend"><i class="dot down"></i>下载</span><span class="legend"><i class="dot up"></i>上传</span></span></div>
+        <canvas id="netChart" class="chart" height="150"></canvas>
+      </article>
+    </section>
+    <section class="lower">
+      <article class="card proc-card">
+        <div class="card-head"><span class="card-title">进程占用 Top 8</span><span class="card-tag">按 CPU 排序</span></div>
+        <div class="table-wrap"><table class="proc-table"><thead><tr><th class="col-name">进程</th><th class="col-pid">PID</th><th class="col-cpu">CPU</th><th class="col-mem">内存</th><th class="col-bar">占用</th></tr></thead><tbody id="procBody"><tr><td colspan="5" class="empty">读取中…</td></tr></tbody></table></div>
+      </article>
+      <article class="card sys-card">
+        <div class="card-head"><span class="card-title">系统信息</span></div>
+        <dl class="sys-list">
+          <div class="sys-row"><dt>CPU</dt><dd id="sysCpu">—</dd></div>
+          <div class="sys-row"><dt>GPU</dt><dd id="sysGpu">—</dd></div>
+          <div class="sys-row"><dt>系统</dt><dd id="sysOs">—</dd></div>
+          <div class="sys-row"><dt>内核</dt><dd id="sysKernel">—</dd></div>
+          <div class="sys-row"><dt>架构</dt><dd id="sysArch">—</dd></div>
+          <div class="sys-row"><dt>主机名</dt><dd id="sysHost">—</dd></div>
+          <div class="sys-row"><dt>磁盘分区</dt><dd id="sysDisks">—</dd></div>
+        </dl>
+      </article>
+    </section>
+    <footer class="footer">
+      <span>系统监控器 · 苹果白风格 · 本地运行，数据不外传</span>
+      <a class="afdian" href="https://www.ifdian.net/a/giquwei" target="_blank" rel="noopener">支持我们 →</a>
+    </footer>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
