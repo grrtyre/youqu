@@ -249,7 +249,7 @@ function renderTasks(state) {
   const totalPomo = tasks.reduce((s, t) => s + (t.pomodoros || 0), 0);
   el.taskFooter.innerHTML = tasks.length === 0
     ? `<span class="tf-label">暂无任务，开始添加吧</span>`
-    : `<span class="tf-label">已完成 <span class="tf-done">${doneCount}</span><span class="tf-sep">/</span><span class="tf-total">${tasks.length}</span></span><span class="tf-label">投入 <span class="tf-total">${totalPomo}</span><span class="tf-sep">/</span><span class="tf-total">${totalEst}</span></span>`;
+    : `<span class="tf-label">已完成 <span class="tf-done">${doneCount}</span><span class="tf-sep">/</span><span class="tf-total">${tasks.length}</span></span><span class="tf-label">番茄 <span class="tf-total">${totalPomo}</span><span class="tf-sep">/</span><span class="tf-total">${totalEst}</span></span>`;
   if (tasks.length === 0) {
     el.taskList.innerHTML = '<li class="task-empty">还没有任务，添加一个开始专注吧</li>';
     return;
@@ -280,14 +280,15 @@ function renderWeekChart(daily) {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   })();
-  const maxBarPx = 48; // 固定像素高度，避免百分比在 flex 中渲染不一致
+  const maxBarPx = 48; // 固定像素高度，保持柱状图比例平衡
   el.weekChart.innerHTML = daily.map(d => {
     const h = Math.round((d.workSessions / max) * maxBarPx);
     const isToday = d.date === todayKey;
+    const empty = !d.workSessions;
     return `
       <div class="week-bar-wrap ${isToday ? 'today' : ''}">
         <span class="week-bar-count">${d.workSessions || ''}</span>
-        <div class="week-bar ${d.workSessions ? '' : 'empty'} ${isToday ? 'today' : ''}" style="height:${Math.max(4, h)}px"></div>
+        <div class="week-bar ${empty ? 'empty' : ''} ${isToday ? 'today' : ''}" style="height:${Math.max(10, h)}px"></div>
         <span class="week-bar-label">${d.label}</span>
       </div>`;
   }).join('');
@@ -320,11 +321,27 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-function toast(msg) {
+function toast(msg, actionLabel, actionFn) {
   el.toast.textContent = msg;
+  // 清除旧的 action 按钮
+  const oldAction = el.toast.querySelector('.toast-action');
+  if (oldAction) oldAction.remove();
+  if (actionLabel && typeof actionFn === 'function') {
+    const btn = document.createElement('span');
+    btn.className = 'toast-action';
+    btn.textContent = actionLabel;
+    btn.addEventListener('click', () => {
+      el.toast.classList.remove('show');
+      try { actionFn(); } catch (e) {}
+    });
+    el.toast.appendChild(btn);
+    el.toast._undoTimer = setTimeout(() => el.toast.classList.remove('show'), 4500);
+  } else {
+    el.toast._undoTimer = setTimeout(() => el.toast.classList.remove('show'), 1800);
+  }
   el.toast.classList.add('show');
   clearTimeout(toast._t);
-  toast._t = setTimeout(() => el.toast.classList.remove('show'), 1800);
+  toast._t = el.toast._undoTimer;
 }
 
 // ---- 事件 ----
@@ -355,6 +372,16 @@ el.phaseTabs.addEventListener('click', async (e) => {
   if (!tab) return;
   const phase = tab.dataset.phase;
   if (!phase) return;
+  // 防误触：当前阶段进行中且已有进度时，首次点击给提示，再次点击同标签才确认切换
+  const curPhase = current && (current.state === 'paused' ? current.pausedState : current.state);
+  const running = current && (current.state === 'working' || current.state === 'short_break' || current.state === 'long_break');
+  if (running && curPhase !== phase && (current.progress || 0) > 0.1 && tab.dataset.confirm !== '1') {
+    tab.dataset.confirm = '1';
+    toast(`当前阶段进度 ${(Math.round((current.progress||0)*100))}%，再次点击确认切换`);
+    setTimeout(() => { tab.dataset.confirm = '0'; }, 3000);
+    return;
+  }
+  tab.dataset.confirm = '0';
   await window.api.switchPhase(phase);
   const label = PHASE_TAB_LABEL[phase] || '';
   toast(`已切换到「${label}」`);
@@ -362,6 +389,15 @@ el.phaseTabs.addEventListener('click', async (e) => {
 
 el.taskAddBtn.addEventListener('click', addTask);
 el.taskInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addTask(); });
+// 字符计数器：实时更新 X/80，临近上限时高亮
+const _taskCounter = document.getElementById('taskCounter');
+function updateTaskCounter() {
+  if (!_taskCounter) return;
+  const len = el.taskInput.value.length;
+  _taskCounter.textContent = `${len}/80`;
+  _taskCounter.classList.toggle('near', len >= 70);
+}
+el.taskInput.addEventListener('input', updateTaskCounter);
 
 async function addTask() {
   const title = el.taskInput.value.trim();
@@ -369,6 +405,7 @@ async function addTask() {
   const est = clamp(parseInt(el.taskEstimate.value, 10) || 1, 1, 20);
   await window.api.addTask(title, est);
   el.taskInput.value = '';
+  updateTaskCounter();
   el.taskInput.focus();
 }
 
@@ -380,7 +417,15 @@ el.taskList.addEventListener('click', async (e) => {
   if (action === 'complete') {
     await window.api.completeTask(id);
   } else if (action === 'delete') {
+    // 删除前缓存任务快照，提供撤销
+    const snapshot = (current && current.tasks || []).find(t => t.id === id) || null;
     await window.api.deleteTask(id);
+    if (snapshot) {
+      toast(`已删除「${snapshot.title.length > 12 ? snapshot.title.slice(0,12)+'…' : snapshot.title}」`, '撤销', async () => {
+        const restored = await window.api.addTaskRaw(snapshot);
+        if (restored) toast('已恢复');
+      });
+    }
   } else if (action === 'current') {
     await window.api.setCurrentTask(id);
   } else {
@@ -458,22 +503,39 @@ function openSettings() {
 }
 
 el.settingsSave.addEventListener('click', async () => {
+  const raw = {
+    workDuration: parseInt(document.getElementById('cfgWork').value,10),
+    shortBreak: parseInt(document.getElementById('cfgShort').value,10),
+    longBreak: parseInt(document.getElementById('cfgLong').value,10),
+    longBreakInterval: parseInt(document.getElementById('cfgInterval').value,10),
+    dailyGoal: parseInt(document.getElementById('cfgGoal').value,10)
+  };
   const cfg = {
-    workDuration: clamp(parseInt(document.getElementById('cfgWork').value,10), 1, 90),
-    shortBreak: clamp(parseInt(document.getElementById('cfgShort').value,10), 1, 30),
-    longBreak: clamp(parseInt(document.getElementById('cfgLong').value,10), 1, 60),
-    longBreakInterval: clamp(parseInt(document.getElementById('cfgInterval').value,10), 2, 12),
-    dailyGoal: clamp(parseInt(document.getElementById('cfgGoal').value,10), 1, 30),
+    workDuration: clamp(raw.workDuration, 1, 90),
+    shortBreak: clamp(raw.shortBreak, 1, 30),
+    longBreak: clamp(raw.longBreak, 1, 60),
+    longBreakInterval: clamp(raw.longBreakInterval, 2, 12),
+    dailyGoal: clamp(raw.dailyGoal, 1, 30),
     strictMode: document.getElementById('cfgStrict').checked,
     soundEnabled: document.getElementById('cfgSound').checked,
     whiteNoise: document.getElementById('cfgNoise').checked,
     autoStartBreak: document.getElementById('cfgAutoBreak').checked,
     autoStartWork: document.getElementById('cfgAutoWork').checked
   };
+  // 检测是否有数值被自动修正，提示用户
+  const limits = { workDuration:[1,90], shortBreak:[1,30], longBreak:[1,60], longBreakInterval:[2,12], dailyGoal:[1,30] };
+  const adjusted = [];
+  for (const k in limits) {
+    const v = raw[k], [lo, hi] = limits[k];
+    if (isNaN(v)) { adjusted.push(`${({workDuration:'专注',shortBreak:'短休息',longBreak:'长休息',longBreakInterval:'长休息间隔',dailyGoal:'每日目标'})[k]}已填默认值`); }
+    else if (v < lo) { adjusted.push(`${({workDuration:'专注',shortBreak:'短休息',longBreak:'长休息',longBreakInterval:'长休息间隔',dailyGoal:'每日目标'})[k]}已调整为最小 ${lo}`); }
+    else if (v > hi) { adjusted.push(`${({workDuration:'专注',shortBreak:'短休息',longBreak:'长休息',longBreakInterval:'长休息间隔',dailyGoal:'每日目标'})[k]}已调整为最大 ${hi}`); }
+  }
   await window.api.saveConfig(cfg);
   applyWhiteNoise(cfg.whiteNoise);
   el.settingsMask.classList.remove('show');
-  toast('设置已保存');
+  if (adjusted.length) toast(`已保存（${adjusted.join('、')}）`);
+  else toast('设置已保存');
 });
 
 el.exportBtn.addEventListener('click', async () => {
@@ -534,6 +596,15 @@ document.addEventListener('keydown', async (e) => {
       if (current && (current.state === 'idle' || current.state === 'paused')) toast('计时未开始');
       else toast('严格模式下休息不可跳过');
     }
+  } else if (key === '1' || key === '2' || key === '3') {
+    // 数字键 1/2/3 切换 专注/短休息/长休息
+    e.preventDefault();
+    const map = { '1': 'working', '2': 'short_break', '3': 'long_break' };
+    const ph = map[key];
+    const curPhase = current && (current.state === 'paused' ? current.pausedState : current.state);
+    if (curPhase === ph) return; // 已在该阶段，不操作
+    await window.api.switchPhase(ph);
+    toast(`已切换到「${PHASE_TAB_LABEL[ph] || ''}」`);
   }
 });
 

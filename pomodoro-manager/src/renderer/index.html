@@ -57,9 +57,10 @@
           <span class="task-count" id="taskCount">0</span>
         </div>
         <div class="task-add">
-          <input type="text" id="taskInput" placeholder="添加一个任务，回车确认…" maxlength="80">
-          <input type="number" id="taskEstimate" min="1" max="20" value="1" title="预计番茄数">
-          <button id="taskAddBtn" class="mini-btn primary" title="添加">＋</button>
+          <input type="text" id="taskInput" placeholder="添加一个任务，回车确认…" maxlength="80" aria-label="任务名称">
+          <span class="task-counter" id="taskCounter">0/80</span>
+          <input type="number" id="taskEstimate" min="1" max="20" value="1" title="预计番茄数" aria-label="预计番茄数">
+          <button id="taskAddBtn" class="mini-btn primary" title="添加" aria-label="添加任务">＋</button>
         </div>
         <ul class="task-list" id="taskList"></ul>
         <div class="task-footer" id="taskFooter"></div>
@@ -100,7 +101,7 @@
         </button>
       </div>
       <div class="ctrl-label" id="startText">开始专注</div>
-      <div class="kbd-hint"><kbd>空格</kbd>开始/暂停<span class="kbd-sep">·</span><kbd>R</kbd>重置<span class="kbd-sep">·</span><kbd>S</kbd>跳过</div>
+      <div class="kbd-hint"><kbd>空格</kbd>开始/暂停<span class="kbd-sep">·</span><kbd>R</kbd>重置<span class="kbd-sep">·</span><kbd>S</kbd>跳过<span class="kbd-sep">·</span><kbd>1/2/3</kbd>切换阶段</div>
 
       <!-- 当前任务 -->
       <div class="current-task" id="currentTask">
@@ -124,7 +125,7 @@
     <div class="modal">
       <div class="modal-head">
         <h3>设置</h3>
-        <button class="icon-btn" id="settingsClose">×</button>
+        <button class="icon-btn" id="settingsClose" aria-label="关闭设置">×</button>
       </div>
       <div class="modal-body">
         <div class="setting-group">

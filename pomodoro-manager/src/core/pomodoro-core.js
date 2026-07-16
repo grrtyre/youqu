@@ -161,6 +161,24 @@ class PomodoroCore {
     return task;
   }
 
+  // 以原始对象恢复任务（撤销删除用），保留 id/pomodoros/createdAt/estimate
+  addTaskRaw(task) {
+    if (!task || !task.id || !task.title) return null;
+    // 若 id 已存在则不重复添加
+    if (this.tasks.some(t => t.id === task.id)) return null;
+    const restored = {
+      id: task.id,
+      title: String(task.title),
+      estimate: Math.max(1, parseInt(task.estimate, 10) || 1),
+      pomodoros: Math.max(0, parseInt(task.pomodoros, 10) || 0),
+      completed: !!task.completed,
+      createdAt: task.createdAt || Date.now()
+    };
+    if (task.completedAt) restored.completedAt = task.completedAt;
+    this.tasks.push(restored);
+    return restored;
+  }
+
   setCurrentTask(id) {
     if (id === null || this.tasks.some(t => t.id === id)) {
       this.currentTaskId = id;

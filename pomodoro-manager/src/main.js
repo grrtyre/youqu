@@ -10,6 +10,7 @@ let tray = null;
 let core = null;
 let tickInterval = null;
 let storePath = path.join(app.getPath('userData'), 'pomodoro-data.json');
+let trayHintShown = false; // 是否已提示过"已最小化到托盘"
 
 // ---- 持久化 ----
 function loadData() {
@@ -165,6 +166,15 @@ function createWindow() {
     if (!app.isQuitting) {
       e.preventDefault();
       mainWindow.hide();
+      // 首次最小化到托盘时提示用户，避免误以为程序退出
+      if (!trayHintShown && tray) {
+        trayHintShown = true;
+        tray.displayBalloon({
+          iconType: 'info',
+          title: '番茄管家',
+          content: '已最小化到托盘，点击托盘图标可恢复窗口'
+        });
+      }
     }
   });
 }
@@ -309,9 +319,20 @@ function registerIpc() {
   });
   ipcMain.handle('task:add', (e, title, estimate) => {
     const t = core.addTask(title, estimate);
+    // 首次添加任务或当前无选中任务时，自动设为当前任务，减少操作步数
+    if (t && !core.currentTaskId && !t.completed) {
+      core.setCurrentTask(t.id);
+    }
     saveData();
     broadcastState();
     return t;
+  });
+  ipcMain.handle('task:addRaw', (e, task) => {
+    // 以原始对象恢复任务（撤销删除用），保留 id/pomodoros/createdAt
+    const restored = core.addTaskRaw(task);
+    saveData();
+    broadcastState();
+    return restored;
   });
   ipcMain.handle('task:current', (e, id) => {
     core.setCurrentTask(id);
