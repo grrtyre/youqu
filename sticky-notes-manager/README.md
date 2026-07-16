@@ -1,33 +1,56 @@
+<div align="center">
+
+<img src="assets/logo.png" alt="便签管家 Logo" width="120" height="120">
+
 # 📝 便签管家 · sticky-notes-manager
 
 > 苹果白高端风格的本地便签桌面应用：快速记录、分类管理、置顶标记、全文搜索、颜色标签、导入导出，纯本地隐私优先。
 
+![Version](https://img.shields.io/badge/版本-v1.1.0-007aff?style=flat-square)
+![Platform](https://img.shields.io/badge/平台-Windows%2010%2F11-007aff?style=flat-square&logo=windows&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-007aff?style=flat-square)
+![Electron](https://img.shields.io/badge/Electron-33-007aff?style=flat-square&logo=electron&logoColor=white)
+![隐私](https://img.shields.io/badge/隐私-纯本地存储-34c759?style=flat-square)
+
 一款轻量级桌面便签工具，灵感来自 macOS 便签 + Apple Notes 的设计语言。所有数据存储在本地，不联网、不上传、不登录，打开即用。
+
+</div>
+
+---
 
 ## ⬇️ 直接下载
 
 | 版本 | 下载链接 | 说明 |
-|---|---|---|
-| 安装版（推荐） | [便签管家 Setup 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/sticky-notes-manager-v1.1.0/sticky-notes-manager-Setup-1.1.0.exe) | 双击安装，自动创建桌面快捷方式 |
-| 免安装便携版 | [便签管家 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/sticky-notes-manager-v1.1.0/sticky-notes-manager-1.1.0.exe) | 双击即用，不写注册表 |
+|:---:|---|---|
+| 🪟 安装版（推荐） | [便签管家 Setup 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/sticky-notes-manager-v1.1.0/sticky-notes-manager-Setup-1.1.0.exe) | 双击安装，自动创建桌面快捷方式 |
+| 📦 免安装便携版 | [便签管家 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/sticky-notes-manager-v1.1.0/sticky-notes-manager-1.1.0.exe) | 双击即用，不写注册表 |
 
-系统要求：Windows 10/11 x64
+> 系统要求：Windows 10/11 x64
+
+## 🖼️ 界面预览
+
+<table>
+  <tr>
+    <td width="50%" align="center"><img src="assets/notes-view.png" alt="便签主视图" style="border-radius:8px;"><br><sub><b>便签主视图</b> · 分类筛选 / 颜色标签 / 置顶标记</sub></td>
+    <td width="50%" align="center"><img src="assets/trash-view.png" alt="回收站视图" style="border-radius:8px;"><br><sub><b>回收站视图</b> · 一键恢复 / 过期分级警告</sub></td>
+  </tr>
+</table>
 
 ## ✨ 功能特性
 
-- **快速记录** —— 全局快捷键 `Ctrl+Alt+N` 随时唤起新建便签，不打断思路
-- **分类管理** —— 工作 / 个人 / 灵感 / 待办 / 其他 五大分类，侧边栏一键筛选
-- **置顶标记** —— 右键卡片快速置顶，重要内容永远排在最前
-- **全文搜索** —— 标题 + 内容实时搜索，毫秒级响应
-- **颜色标签** —— 7 种颜色标记便签，左侧色条直观区分
-- **排序策略** —— 置顶优先 → 按更新时间倒序，自动排列
-- **🗑 回收站** —— 删除的便签移入回收站而非永久丢失，可一键恢复或彻底删除，30 天后自动清理，告别误删焦虑
-- **导入导出** —— JSON 格式导入导出，数据可迁移不锁定
-- **统计概览** —— 便签数 / 置顶数 / 总字数 一目了然
-- **托盘常驻** —— 关闭窗口后台常驻，快捷键随时唤起
-- **纯本地隐私** —— 所有数据存在本地 JSON 文件，绝不联网
+- **⚡ 快速记录** —— 全局快捷键 `Ctrl+Alt+N` 随时唤起新建便签，不打断思路
+- **🗂️ 分类管理** —— 工作 / 个人 / 灵感 / 待办 / 其他 五大分类，侧边栏一键筛选
+- **📌 置顶标记** —— 右键卡片快速置顶，重要内容永远排在最前
+- **🔍 全文搜索** —— 标题 + 内容实时搜索，毫秒级响应
+- **🎨 颜色标签** —— 7 种颜色标记便签，左侧色条直观区分
+- **↕️ 排序策略** —— 置顶优先 → 按更新时间倒序，自动排列
+- **🗑️ 回收站** —— 删除的便签移入回收站而非永久丢失，可一键恢复或彻底删除，30 天后自动清理，告别误删焦虑
+- **📤 导入导出** —— JSON 格式导入导出，数据可迁移不锁定
+- **📊 统计概览** —— 便签数 / 置顶数 / 总字数 一目了然
+- **💠 托盘常驻** —— 关闭窗口后台常驻，快捷键随时唤起
+- **🔒 纯本地隐私** —— 所有数据存在本地 JSON 文件，绝不联网
 
-## 🚀 使用
+## 🚀 快速开始
 
 ### 安装版
 下载上方的 `便签管家 Setup 1.1.0.exe`，双击安装即可。
@@ -48,13 +71,13 @@ npm run build
 
 ## ⌨️ 快捷键
 
-| 快捷键 | 功能 |
-|---|---|
-| `Ctrl + Alt + N` | 新建便签（全局） |
-| `Ctrl + Alt + S` | 唤起主窗口（全局） |
-| `Ctrl + Enter` | 保存便签（编辑弹窗内） |
-| `Esc` | 关闭编辑弹窗 |
-| `右键卡片` | 切换置顶状态 |
+| 快捷键 | 功能 | 作用域 |
+|:---:|---|---|
+| `Ctrl + Alt + N` | 新建便签 | 全局 |
+| `Ctrl + Alt + S` | 唤起主窗口 | 全局 |
+| `Ctrl + Enter` | 保存便签 | 编辑弹窗内 |
+| `Esc` | 关闭编辑弹窗 | 编辑弹窗内 |
+| `右键卡片` | 切换置顶状态 | 便签列表 |
 
 ## 📁 项目结构
 
@@ -76,18 +99,19 @@ sticky-notes-manager/
 │   ├── make_icon.py         # 图标生成脚本
 │   ├── gen-demo-data.js     # 演示数据生成
 │   └── screenshot.ps1       # 后台截图脚本
+├── assets/                  # README 展示资源（Logo + 截图）
 ├── .gitignore
 ├── LICENSE
 └── README.md
 ```
 
-## 🛠 技术栈
+## 🛠️ 技术栈
 
-- Electron 33（桌面应用框架）
-- 原生 JavaScript（零运行时依赖）
-- contextBridge + ipcRenderer.invoke/handle（安全 IPC 通信）
-- electron-builder（NSIS 安装包打包）
-- 苹果白高端风格（参考 macOS / iOS 原生设计）
+- **Electron 33** —— 桌面应用框架
+- **原生 JavaScript** —— 零运行时依赖
+- **contextBridge + ipcRenderer.invoke/handle** —— 安全 IPC 通信
+- **electron-builder** —— NSIS 安装包打包
+- **苹果白高端风格** —— 参考 macOS / iOS 原生设计
 
 ## 🧪 测试
 
@@ -97,7 +121,14 @@ node test/test.js
 
 129 个用例覆盖：ID 生成、创建便签、读写存储、新增 / 更新 / 删除便签、切换置顶、搜索便签、分类筛选、排序逻辑、统计计算、导入导出、常量定义、默认路径、回收站全流程。
 
-v1.1.0 新增 43 个回收站相关用例：回收站便签对象、移入回收站、恢复便签、彻底删除 / 清空、自动清理过期、剩余天数计算、v2 数据格式读写、v1 旧数据向后兼容、saveNotes 保留回收站。
+> v1.1.0 新增 43 个回收站相关用例：回收站便签对象、移入回收站、恢复便签、彻底删除 / 清空、自动清理过期、剩余天数计算、v2 数据格式读写、v1 旧数据向后兼容、saveNotes 保留回收站。
+
+## 🎨 设计理念
+
+- **苹果白风格** —— 白色 / 浅灰背景、细腻多层阴影、系统字体（-apple-system, PingFang SC）、蓝色 `#007aff` 强调
+- **隐私第一** —— 所有数据本地存储，绝不联网上传
+- **极简极速** —— 打开即用，毫秒级响应
+- **桌面原生感** —— 托盘常驻 + 全局快捷键，真正的桌面工具体验
 
 ## 📝 更新日志
 
@@ -120,13 +151,6 @@ v1.1.0 新增 43 个回收站相关用例：回收站便签对象、移入回收
 
 ### v1.0.0
 - 首次发布：快速记录、分类管理、置顶标记、全文搜索、颜色标签、导入导出、统计概览、托盘常驻
-
-## 🎨 设计理念
-
-- **苹果白风格** —— 白色 / 浅灰背景、细腻多层阴影、系统字体（-apple-system, PingFang SC）、蓝色 `#007aff` 强调
-- **隐私第一** —— 所有数据本地存储，绝不联网上传
-- **极简极速** —— 打开即用，毫秒级响应
-- **桌面原生感** —— 托盘常驻 + 全局快捷键，真正的桌面工具体验
 
 ## ☕ 支持我们
 
