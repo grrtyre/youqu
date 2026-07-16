@@ -1,16 +1,22 @@
 <div align="center">
 
-<img src="assets/logo.png" alt="便签管家 Logo" width="160">
+<img src="assets/logo.png" alt="便签管家 Logo" width="180">
+
+<br>
 
 # 📝 便签管家 · sticky-notes-manager
 
 > 苹果白高端风格的本地便签桌面应用：快速记录、分类管理、置顶标记、全文搜索、颜色标签、导入导出，纯本地隐私优先。
+
+<br>
 
 ![Version](https://img.shields.io/badge/版本-v1.1.0-007aff?style=flat-square)
 ![Platform](https://img.shields.io/badge/平台-Windows%2010%2F11-007aff?style=flat-square&logo=windows&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-007aff?style=flat-square)
 ![Electron](https://img.shields.io/badge/Electron-33-007aff?style=flat-square&logo=electron&logoColor=white)
 ![隐私](https://img.shields.io/badge/隐私-纯本地存储-34c759?style=flat-square)
+
+<br>
 
 一款轻量级桌面便签工具，灵感来自 macOS 便签 + Apple Notes 的设计语言。所有数据存储在本地，不联网、不上传、不登录，打开即用。
 
@@ -33,19 +39,20 @@
 
 ## 🖼️ 界面预览
 
-<div align="center">
-
-<img src="assets/notes-view.png" width="90%" alt="便签主视图">
-
-**便签主视图** · 分类筛选 / 颜色标签 / 置顶标记 / 全文搜索
-
-<br>
-
-<img src="assets/trash-view.png" width="90%" alt="回收站视图">
-
-**回收站视图** · 一键恢复 / 过期分级警告 / 30 天自动清理
-
-</div>
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <img src="assets/notes-view.png" width="100%" alt="便签主视图">
+      <br><sub><b>便签主视图</b></sub><br>
+      <sub>分类筛选 · 颜色标签 · 置顶标记 · 全文搜索</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="assets/trash-view.png" width="100%" alt="回收站视图">
+      <br><sub><b>回收站视图</b></sub><br>
+      <sub>一键恢复 · 过期警告 · 30 天自动清理</sub>
+    </td>
+  </tr>
+</table>
 
 ## ✨ 功能特性
 
