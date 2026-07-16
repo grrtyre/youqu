@@ -11,6 +11,7 @@ class PomodoroCore {
       longBreak: 15,           // 长休息（分钟）
       longBreakInterval: 4,    // 每完成 N 个番茄进入长休息
       dailyGoal: 8,            // 每日目标番茄数
+      weeklyGoal: 30,          // 每周目标番茄数
       strictMode: false,       // 严格模式：不可跳过休息
       autoStartBreak: true,    // 工作结束自动进入休息
       autoStartWork: false,    // 休息结束自动进入工作
@@ -279,6 +280,81 @@ class PomodoroCore {
       minutes += this.stats[k].totalMinutes;
     }
     return { workSessions: sessions, totalMinutes: minutes };
+  }
+
+  // 本自然周（周一到今天）统计，用于周目标进度
+  thisWeekStats() {
+    let sessions = 0, minutes = 0;
+    const now = new Date();
+    const day = now.getDay();
+    const offsetToMonday = day === 0 ? 6 : day - 1;
+    const monday = new Date(now);
+    monday.setHours(0, 0, 0, 0);
+    monday.setDate(monday.getDate() - offsetToMonday);
+    for (let i = 0; i <= offsetToMonday; i++) {
+      const d = new Date(monday);
+      d.setDate(d.getDate() + i);
+      const key = this._todayKey(d);
+      if (this.stats[key]) {
+        sessions += this.stats[key].workSessions;
+        minutes += this.stats[key].totalMinutes;
+      }
+    }
+    return { workSessions: sessions, totalMinutes: minutes };
+  }
+
+  // 最近 weeks 周的专注热力图数据，按自然周（周一起）对齐
+  heatmapData(weeks = 13) {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const day = now.getDay();
+    const sunday = new Date(now);
+    sunday.setDate(sunday.getDate() + (7 - day) % 7);
+    const firstMonday = new Date(sunday);
+    firstMonday.setDate(firstMonday.getDate() - (weeks * 7 - 1));
+
+    const weeksArr = [];
+    const monthLabels = [];
+    let totalSessions = 0;
+    let maxSessions = 0;
+
+    for (let w = 0; w < weeks; w++) {
+      const col = [];
+      const weekStart = new Date(firstMonday);
+      weekStart.setDate(weekStart.getDate() + w * 7);
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(weekStart);
+        d.setDate(d.getDate() + i);
+        const key = this._todayKey(d);
+        const s = this.stats[key] || { workSessions: 0 };
+        const ws = s.workSessions || 0;
+        totalSessions += ws;
+        if (ws > maxSessions) maxSessions = ws;
+        col.push({
+          date: key,
+          workSessions: ws,
+          level: this._heatLevel(ws),
+          isFuture: d.getTime() > now.getTime(),
+          isToday: key === this._todayKey(),
+          month: d.getMonth() + 1
+        });
+      }
+      weeksArr.push(col);
+      const m = weekStart.getMonth() + 1;
+      const prev = monthLabels.length ? monthLabels[monthLabels.length - 1].text : null;
+      if (prev !== m) monthLabels.push({ col: w, text: m + '月' });
+    }
+
+    return { weeks: weeksArr, monthLabels, maxSessions, totalSessions };
+  }
+
+  // 热力图色阶：0 空闲；1 1-2个；2 3-4个；3 5-6个；4 7个及以上
+  _heatLevel(ws) {
+    if (ws <= 0) return 0;
+    if (ws <= 2) return 1;
+    if (ws <= 4) return 2;
+    if (ws <= 6) return 3;
+    return 4;
   }
 
   _updateStreak() {

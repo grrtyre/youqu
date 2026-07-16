@@ -65,6 +65,27 @@ function seedDemoData() {
   core.state = 'working';
   core.remainingMs = 24 * 60 * 1000 + 54 * 1000;
   core.cycleCount = 2;
+  // 热力图演示数据：最近 12 周，工作日偏多、周末偏少，模拟真实专注规律
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  for (let i = 1; i <= 84; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    if (d.getTime() >= now.getTime() - 6 * 86400000) continue;
+    const dow = d.getDay();
+    const isWeekend = dow === 0 || dow === 6;
+    const recencyBoost = i < 35 ? 2 : (i < 63 ? 1 : 0);
+    let ws;
+    if (isWeekend) {
+      ws = Math.random() < 0.45 ? Math.floor(Math.random() * 3) : 0;
+    } else {
+      const base2 = 3 + recencyBoost;
+      ws = Math.max(0, base2 + Math.floor(Math.random() * 4) - 2);
+    }
+    if (ws > 0) {
+      const key = core._todayKey(d);
+      core.stats[key] = { workSessions: ws, totalMinutes: ws * 25 };
+    }
+  }
 }
 
 // ---- 计时循环 ----
@@ -270,6 +291,8 @@ function registerIpc() {
       week: core.weekStats(),
       weekDaily: core.weekDaily(),
       total: core.totalStats(),
+      thisWeek: core.thisWeekStats(),
+      heatmap: core.heatmapData(13),
       progress: core.progress()
     };
   });

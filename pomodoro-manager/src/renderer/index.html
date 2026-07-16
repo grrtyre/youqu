@@ -51,6 +51,33 @@
         </div>
       </section>
 
+      <section class="card heat-card">
+        <div class="heat-header">
+          <h3>专注热力</h3>
+          <span class="heat-total" id="heatTotal">近 13 周 · 0 \u{1F345}</span>
+        </div>
+        <div class="week-goal-row">
+          <div class="week-goal-info">
+            <span class="wg-label">本周目标</span>
+            <span class="wg-num"><span id="weekNowCount">0</span><span class="wg-sep">/</span><span id="weekGoalNum">30</span></span>
+          </div>
+          <div class="week-goal-bar"><div class="week-goal-fill" id="weekGoalFill"></div></div>
+        </div>
+        <div class="heatmap-scroll">
+          <div class="heat-month-labels" id="heatMonths"></div>
+          <div class="heatmap" id="heatmap"></div>
+        </div>
+        <div class="heat-legend">
+          <span class="heat-legend-label">少</span>
+          <span class="heat-cell level-0"></span>
+          <span class="heat-cell level-1"></span>
+          <span class="heat-cell level-2"></span>
+          <span class="heat-cell level-3"></span>
+          <span class="heat-cell level-4"></span>
+          <span class="heat-legend-label">多</span>
+        </div>
+      </section>
+
       <section class="card task-card">
         <div class="task-header">
           <h3>任务清单</h3>
@@ -149,6 +176,10 @@
           <div class="setting-row">
             <label>每日目标（番茄数）</label>
             <input type="number" id="cfgGoal" min="1" max="30" value="8">
+          </div>
+          <div class="setting-row">
+            <label>每周目标（番茄数）</label>
+            <input type="number" id="cfgWeekGoal" min="1" max="100" value="30">
           </div>
         </div>
         <div class="setting-group">

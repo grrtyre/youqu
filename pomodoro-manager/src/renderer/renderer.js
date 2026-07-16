@@ -41,6 +41,12 @@ const el = {
   weekChart: document.getElementById('weekChart'),
   weekTotal: document.getElementById('weekTotal'),
   currentTaskName: document.getElementById('currentTaskName'),
+  heatmap: document.getElementById('heatmap'),
+  heatMonths: document.getElementById('heatMonths'),
+  heatTotal: document.getElementById('heatTotal'),
+  weekNowCount: document.getElementById('weekNowCount'),
+  weekGoalNum: document.getElementById('weekGoalNum'),
+  weekGoalFill: document.getElementById('weekGoalFill'),
   taskList: document.getElementById('taskList'),
   taskInput: document.getElementById('taskInput'),
   taskEstimate: document.getElementById('taskEstimate'),
@@ -152,8 +158,50 @@ function render(state) {
   renderStats(state);
   renderTasks(state);
   renderWeekChart(state.weekDaily || []);
+  renderHeatmap(state.heatmap);
+  renderWeekGoal(state);
   el.streakNum.textContent = state.streak || 0;
   el.todayGoal.textContent = (state.config && state.config.dailyGoal) || 8;
+}
+
+// 专注热力图：13 周 × 7 天网格，颜色深浅表示当日番茄数
+function renderHeatmap(hm) {
+  if (!hm || !hm.weeks || hm.weeks.length === 0) {
+    el.heatmap.innerHTML = '';
+    if (el.heatMonths) el.heatMonths.innerHTML = '';
+    el.heatTotal.textContent = '近 13 周 · 0 \u{1F345}';
+    return;
+  }
+  el.heatTotal.textContent = '近 ' + hm.weeks.length + ' 周 · ' + (hm.totalSessions || 0) + ' \u{1F345}';
+  // 月份标签行：与周列对齐
+  if (el.heatMonths) {
+    el.heatMonths.innerHTML = hm.weeks.map((col, idx) => {
+      const m = col[0].month;
+      const prev = idx > 0 ? hm.weeks[idx - 1][0].month : -1;
+      return '<span class="heat-month' + (m !== prev ? ' has-text' : '') + '">' + (m !== prev ? (m + '月') : '') + '</span>';
+    }).join('');
+  }
+  el.heatmap.innerHTML = hm.weeks.map(col => {
+    const cells = col.map(c => {
+      const cls = ['heat-cell'];
+      if (c.isFuture) cls.push('future');
+      else cls.push('level-' + (c.level || 0));
+      if (c.isToday) cls.push('today');
+      const tip = c.date + ' · ' + c.workSessions + ' 个番茄';
+      return '<span class="' + cls.join(' ') + '" title="' + tip + '"></span>';
+    }).join('');
+    return '<div class="heat-col">' + cells + '</div>';
+  }).join('');
+}
+
+// 周目标进度条（本自然周已完成 / 每周目标）
+function renderWeekGoal(state) {
+  const tw = state.thisWeek || { workSessions: 0 };
+  const goal = (state.config && state.config.weeklyGoal) || 30;
+  el.weekNowCount.textContent = tw.workSessions || 0;
+  el.weekGoalNum.textContent = goal;
+  const pct = goal > 0 ? Math.min(100, Math.round((tw.workSessions / goal) * 100)) : 0;
+  el.weekGoalFill.style.width = pct + '%';
 }
 
 function renderTimer(state) {
@@ -494,6 +542,7 @@ function openSettings() {
   document.getElementById('cfgLong').value = current.config.longBreak;
   document.getElementById('cfgInterval').value = current.config.longBreakInterval;
   document.getElementById('cfgGoal').value = current.config.dailyGoal;
+  document.getElementById('cfgWeekGoal').value = current.config.weeklyGoal || 30;
   document.getElementById('cfgStrict').checked = !!current.config.strictMode;
   document.getElementById('cfgSound').checked = !!current.config.soundEnabled;
   document.getElementById('cfgNoise').checked = !!current.config.whiteNoise;
@@ -508,7 +557,8 @@ el.settingsSave.addEventListener('click', async () => {
     shortBreak: parseInt(document.getElementById('cfgShort').value,10),
     longBreak: parseInt(document.getElementById('cfgLong').value,10),
     longBreakInterval: parseInt(document.getElementById('cfgInterval').value,10),
-    dailyGoal: parseInt(document.getElementById('cfgGoal').value,10)
+    dailyGoal: parseInt(document.getElementById('cfgGoal').value,10),
+    weeklyGoal: parseInt(document.getElementById('cfgWeekGoal').value,10)
   };
   const cfg = {
     workDuration: clamp(raw.workDuration, 1, 90),
@@ -516,6 +566,7 @@ el.settingsSave.addEventListener('click', async () => {
     longBreak: clamp(raw.longBreak, 1, 60),
     longBreakInterval: clamp(raw.longBreakInterval, 2, 12),
     dailyGoal: clamp(raw.dailyGoal, 1, 30),
+    weeklyGoal: clamp(raw.weeklyGoal, 1, 100),
     strictMode: document.getElementById('cfgStrict').checked,
     soundEnabled: document.getElementById('cfgSound').checked,
     whiteNoise: document.getElementById('cfgNoise').checked,
@@ -523,13 +574,14 @@ el.settingsSave.addEventListener('click', async () => {
     autoStartWork: document.getElementById('cfgAutoWork').checked
   };
   // 检测是否有数值被自动修正，提示用户
-  const limits = { workDuration:[1,90], shortBreak:[1,30], longBreak:[1,60], longBreakInterval:[2,12], dailyGoal:[1,30] };
+  const limits = { workDuration:[1,90], shortBreak:[1,30], longBreak:[1,60], longBreakInterval:[2,12], dailyGoal:[1,30], weeklyGoal:[1,100] };
   const adjusted = [];
+  const nameMap = {workDuration:'专注',shortBreak:'短休息',longBreak:'长休息',longBreakInterval:'长休息间隔',dailyGoal:'每日目标',weeklyGoal:'每周目标'};
   for (const k in limits) {
     const v = raw[k], [lo, hi] = limits[k];
-    if (isNaN(v)) { adjusted.push(`${({workDuration:'专注',shortBreak:'短休息',longBreak:'长休息',longBreakInterval:'长休息间隔',dailyGoal:'每日目标'})[k]}已填默认值`); }
-    else if (v < lo) { adjusted.push(`${({workDuration:'专注',shortBreak:'短休息',longBreak:'长休息',longBreakInterval:'长休息间隔',dailyGoal:'每日目标'})[k]}已调整为最小 ${lo}`); }
-    else if (v > hi) { adjusted.push(`${({workDuration:'专注',shortBreak:'短休息',longBreak:'长休息',longBreakInterval:'长休息间隔',dailyGoal:'每日目标'})[k]}已调整为最大 ${hi}`); }
+    if (isNaN(v)) { adjusted.push(nameMap[k] + '已填默认值'); }
+    else if (v < lo) { adjusted.push(nameMap[k] + '已调整为最小 ' + lo); }
+    else if (v > hi) { adjusted.push(nameMap[k] + '已调整为最大 ' + hi); }
   }
   await window.api.saveConfig(cfg);
   applyWhiteNoise(cfg.whiteNoise);

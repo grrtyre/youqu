@@ -289,5 +289,59 @@ console.log('[测试] 自动开始配置');
   assertEq(core2.config.autoStartWork, true, '可开启自动开始工作');
 }
 
+// 测试 18：周目标配置默认值
+console.log('[测试] 周目标配置');
+{
+  const core = new PomodoroCore();
+  assertEq(core.config.weeklyGoal, 30, '默认每周目标 30');
+  const core2 = new PomodoroCore({ weeklyGoal: 40 });
+  assertEq(core2.config.weeklyGoal, 40, '可自定义每周目标 40');
+}
+
+// 测试 19：热力图色阶 _heatLevel
+console.log('[测试] 热力图色阶');
+{
+  const core = new PomodoroCore();
+  assertEq(core._heatLevel(0), 0, '0 个 -> 0 档');
+  assertEq(core._heatLevel(1), 1, '1 个 -> 1 档');
+  assertEq(core._heatLevel(2), 1, '2 个 -> 1 档');
+  assertEq(core._heatLevel(3), 2, '3 个 -> 2 档');
+  assertEq(core._heatLevel(4), 2, '4 个 -> 2 档');
+  assertEq(core._heatLevel(5), 3, '5 个 -> 3 档');
+  assertEq(core._heatLevel(6), 3, '6 个 -> 3 档');
+  assertEq(core._heatLevel(7), 4, '7 个 -> 4 档');
+  assertEq(core._heatLevel(20), 4, '20 个 -> 4 档');
+}
+
+// 测试 20：热力图数据结构
+console.log('[测试] 热力图数据');
+{
+  const core = new PomodoroCore({ workDuration: 1, dailyGoal: 1, weeklyGoal: 5 });
+  const today = core._todayKey();
+  core._ensureStat(today);
+  core.stats[today].workSessions = 5;
+  const hm = core.heatmapData(13);
+  assertEq(hm.weeks.length, 13, '返回 13 周');
+  assert(hm.weeks[0].length === 7, '每周 7 天');
+  assert(hm.totalSessions >= 5, '总番茄数 >= 5');
+  assert(hm.maxSessions >= 5, '最大单日番茄数 >= 5');
+  let todayCell = null;
+  hm.weeks.forEach(col => col.forEach(c => { if (c.isToday) todayCell = c; }));
+  assert(todayCell !== null, '今天格子存在');
+  assertEq(todayCell.workSessions, 5, '今天 5 个番茄');
+  assertEq(todayCell.level, 3, '今天色阶 3 档');
+}
+
+// 测试 21：本自然周统计 thisWeekStats
+console.log('[测试] 本自然周统计');
+{
+  const core = new PomodoroCore({ workDuration: 1 });
+  const today = core._todayKey();
+  core._ensureStat(today);
+  core.stats[today].workSessions = 3;
+  const tw = core.thisWeekStats();
+  assert(tw.workSessions >= 3, '本周统计 >= 今天的 3');
+}
+
 console.log(`\n结果：${passed} 通过, ${failed} 失败`);
 process.exit(failed > 0 ? 1 : 0);
