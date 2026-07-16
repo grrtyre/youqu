@@ -149,7 +149,8 @@
 
 /* Hero 精选图标预览条 */
 .hero__preview{
-  position:relative;z-index:2;margin:24px auto 0;max-width:880px;text-align:center;
+  position:relative;z-index:2;margin:28px auto 0;max-width:880px;text-align:center;
+  display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;
   opacity:0;animation:fadeUp 1s var(--ease-out) .9s forwards;
 }
 .hero__preview-label{
@@ -183,7 +184,7 @@
 .toolbar__inner{max-width:var(--maxw);margin:0 auto;padding:0 24px}
 .toolbar__head{margin-bottom:20px;text-align:center}
 .toolbar.is-stuck .toolbar__head{display:none}
-.toolbar__head .section__title{font-size:clamp(24px,3.5vw,32px)}
+.toolbar__head .section__title{font-size:clamp(22px,3vw,28px);font-weight:600}
 .toolbar__head .section__desc{font-size:15px}
 .toolbar__row{
   display:flex;gap:16px;align-items:center;flex-wrap:wrap;
@@ -241,7 +242,7 @@
 .grid{
   max-width:var(--maxw);margin:0 auto;padding:0 24px;
   display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-  gap:24px;
+  gap:28px;
 }
 .card{
   background:var(--card);border-radius:var(--radius);overflow:hidden;
@@ -739,3 +740,66 @@
 .chip[data-filter="system"].is-active{background:#34c759;border-color:#34c759}
 .chip[data-filter="efficiency"].is-active{background:#ff9500;border-color:#ff9500}
 .chip[data-filter="design"].is-active{background:#af52de;border-color:#af52de}
+
+/* ============ 第六轮细节打磨（新项目收录 + 视觉层次） ============ */
+
+/* 1. Hero 标题"集合"渐变流光动效：增强首屏视觉焦点 */
+.hero__title-accent{
+  background:linear-gradient(110deg,#007aff 0%,#3a9bff 35%,#007aff 70%,#3a9bff 100%);
+  background-size:200% 100%;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:titleShimmer 6s ease-in-out infinite;
+}
+@keyframes titleShimmer{
+  0%,100%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+}
+@media (prefers-reduced-motion:reduce){
+  .hero__title-accent{animation:none;background:#007aff;-webkit-text-fill-color:#007aff}
+}
+
+/* 2. 卡片索引序号：meta 区精致序号，丰富信息层次 */
+.card__index{
+  font-size:11px;font-weight:700;color:var(--ink3);
+  letter-spacing:.02em;font-variant-numeric:tabular-nums;
+  font-family:-apple-system,"SF Mono","Menlo",monospace;
+  padding:3px 7px;border-radius:6px;
+  background:rgba(0,0,0,.04);line-height:1;
+  transition:color .25s,background .25s;
+}
+.card:hover .card__index{color:var(--accent);background:var(--accent-soft)}
+
+/* 3. 分类筛选 chips 数量徽标：实时显示各分类工具数 */
+.chip[data-count]::after{
+  content:attr(data-count);
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:18px;height:17px;padding:0 5px;border-radius:980px;
+  font-size:10px;font-weight:700;line-height:1;
+  background:rgba(0,0,0,.06);color:var(--ink3);
+  margin-left:2px;transition:background .25s,color .25s;
+  font-variant-numeric:tabular-nums;
+}
+.chip[data-filter="all"][data-count]::after{background:rgba(0,122,255,.1);color:var(--accent)}
+.chip[data-filter="dev"][data-count]::after{background:rgba(0,122,255,.1);color:var(--accent)}
+.chip[data-filter="system"][data-count]::after{background:rgba(52,199,89,.12);color:#1a9e3e}
+.chip[data-filter="efficiency"][data-count]::after{background:rgba(255,149,0,.12);color:#cc6f00}
+.chip[data-filter="design"][data-count]::after{background:rgba(175,82,222,.12);color:#8b3eb5}
+.chip.is-active[data-count]::after{background:rgba(255,255,255,.22);color:#fff}
+.chip.is-active[data-filter="all"][data-count]::after,
+.chip.is-active[data-filter="dev"][data-count]::after{background:rgba(255,255,255,.22);color:#fff}
+
+/* 4. 卡片 meta 区间距微调：容纳索引号 */
+.card__meta{gap:7px}
+
+/* 5. 卡片源码链接：轻量 pill 样式，与主按钮拉开主次层级 */
+.card__src{
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:500;color:var(--ink2);
+  padding:8px 14px;border-radius:980px;white-space:nowrap;
+  background:rgba(0,0,0,.04);border:1px solid transparent;
+  transition:all .2s var(--ease);
+}
+.card__src:hover{color:var(--accent);background:var(--accent-soft);border-color:rgba(0,122,255,.15)}
+.card__actions{gap:8px}
