@@ -39,15 +39,15 @@
       <section class="panel active" id="panel-password">
         <div class="display-card">
           <div class="display-row">
-            <div class="display-text" id="pwdDisplay">点击生成开始</div>
+            <div class="display-text empty" id="pwdDisplay">点击生成开始</div>
             <div class="display-actions">
-              <button class="icon-btn" id="copyPwd" title="复制">
+              <button class="icon-btn" id="copyPwd" title="复制" aria-label="复制密码">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="9" y="9" width="11" height="11" rx="2"></rect>
                   <path d="M5 15V5a2 2 0 0 1 2-2h10"></path>
                 </svg>
               </button>
-              <button class="icon-btn primary" id="regenPwd" title="重新生成">
+              <button class="icon-btn primary" id="regenPwd" title="重新生成" aria-label="重新生成密码">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
                   <path d="M21 3v5h-5"></path>
@@ -112,15 +112,15 @@
       <section class="panel" id="panel-passphrase">
         <div class="display-card">
           <div class="display-row">
-            <div class="display-text passphrase" id="phraseDisplay">点击生成开始</div>
+            <div class="display-text passphrase empty" id="phraseDisplay">点击生成开始</div>
             <div class="display-actions">
-              <button class="icon-btn" id="copyPhrase" title="复制">
+              <button class="icon-btn" id="copyPhrase" title="复制" aria-label="复制口令">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="9" y="9" width="11" height="11" rx="2"></rect>
                   <path d="M5 15V5a2 2 0 0 1 2-2h10"></path>
                 </svg>
               </button>
-              <button class="icon-btn primary" id="regenPhrase" title="重新生成">
+              <button class="icon-btn primary" id="regenPhrase" title="重新生成" aria-label="重新生成口令">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
                   <path d="M21 3v5h-5"></path>
@@ -167,7 +167,15 @@
         <div class="config-card">
           <div class="config-row column">
             <label class="config-label">输入待检测密码</label>
-            <input type="text" id="strengthInput" class="text-input" placeholder="在此输入或粘贴密码…" autocomplete="off" spellcheck="false">
+            <div class="input-wrap">
+              <input type="password" id="strengthInput" class="text-input" placeholder="在此输入或粘贴密码…" autocomplete="off" spellcheck="false" aria-label="待检测密码">
+              <button class="input-aux" id="toggleStrengthView" title="显示/隐藏" aria-label="显示或隐藏密码">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+              <button class="input-aux" id="clearStrength" title="清空" aria-label="清空输入">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -217,6 +225,21 @@
               <input type="number" min="4" max="64" value="16" id="batchLenInput" class="number-input">
             </div>
           </div>
+          <div class="config-row">
+            <label class="config-label">字符类型</label>
+            <div class="toggle-group">
+              <label class="toggle"><input type="checkbox" id="batchChkUpper" checked><span class="toggle-pill">Aa 大写</span></label>
+              <label class="toggle"><input type="checkbox" id="batchChkLower" checked><span class="toggle-pill">a 小写</span></label>
+              <label class="toggle"><input type="checkbox" id="batchChkDigits" checked><span class="toggle-pill">0-9 数字</span></label>
+              <label class="toggle"><input type="checkbox" id="batchChkSymbols" checked><span class="toggle-pill">@ 符号</span></label>
+            </div>
+          </div>
+          <div class="config-row">
+            <label class="config-label">高级选项</label>
+            <div class="toggle-group">
+              <label class="toggle"><input type="checkbox" id="batchChkExcludeAmb"><span class="toggle-pill">排除易混字符 il1Lo0O</span></label>
+            </div>
+          </div>
           <div class="batch-actions">
             <button class="primary-btn" id="batchBtn">生成批量</button>
             <button class="ghost-btn" id="batchCopyAll">复制全部</button>
@@ -242,7 +265,7 @@
 
     <footer class="statusbar">
       <span id="statusText">就绪</span>
-      <span class="status-hint">所有数据均在本地处理，不会上传</span>
+      <span class="status-hint">本地处理 · 不上传 · Ctrl+G 生成 · Ctrl+1~5 切换</span>
     </footer>
   </div>
 
