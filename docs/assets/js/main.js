@@ -1,7 +1,7 @@
 /* ============ youqu 展示站点 · 交互逻辑 ============ */
 'use strict';
 
-/* ---------- 项目数据（56 个工具） ---------- */
+/* ---------- 项目数据（57 个工具） ---------- */
 var G = 'https://github.com/grrtyre/youqu';
 var R = 'https://github.com/grrtyre/youqu/releases';
 var AF = 'https://www.ifdian.net/a/giquwei';
@@ -230,14 +230,18 @@ var PROJECTS = [
   {id:'system-monitor',icon:'📊',name:'系统监控器',cat:'system',stack:'web',ver:'v1.0.0',
    desc:'苹果白风格实时系统资源监控仪表盘：CPU/内存/磁盘/网络/进程实时监控、圆环占比可视化、历史曲线图（含 Y 轴刻度）、Top 进程排行，完全本地运行零数据外传。',
    tags:['Node.js','原生 Canvas'],gh:G+'/tree/main/system-monitor',
-   features:['CPU/内存/磁盘/网络/进程实时监控','圆环占比仪表盘，平滑过渡动画','历史曲线图（原生 Canvas，含 Y 轴刻度）','Top 8 进程排行，斑马纹表格','系统信息：CPU/GPU/系统/内核/架构','1.5 秒自动刷新，响应式布局','完全本地运行，零数据外传']}
+   features:['CPU/内存/磁盘/网络/进程实时监控','圆环占比仪表盘，平滑过渡动画','历史曲线图（原生 Canvas，含 Y 轴刻度）','Top 8 进程排行，斑马纹表格','系统信息：CPU/GPU/系统/内核/架构','1.5 秒自动刷新，响应式布局','完全本地运行，零数据外传']},
+  {id:'prompt-manager',icon:'💡',name:'提示词管家',cat:'efficiency',stack:'electron',ver:'v1.0.0',
+   desc:'AI 用户的提示词管理利器：集中收纳、分类、复用你的 AI 提示词，支持 {{变量}} 占位符表单填写、一键复制到 AI 工具、收藏与最近使用、使用次数统计、全文搜索、JSON 导入导出，纯本地隐私优先。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/prompt-manager-v1.0.0',gh:G+'/tree/main/prompt-manager',
+   features:['集中管理所有提示词，告别「上次那个提示词去哪了」','分类 + 标签双维度组织','{{变量名}} 占位符，使用时弹表单逐个填写','一键复制到 AI 工具（无变量直接复制）','收藏置顶 + 自动记录最近使用','使用次数与最后使用时间统计','全文搜索：标题/内容/标签/分类','网格 / 列表两种视图随需切换','JSON 导入导出，跨设备同步','Ctrl/Cmd+N 新建、Ctrl/Cmd+F 搜索、Esc 关闭','本地存储，不上传任何服务器']}
 ];
 
 /* Assign screenshot path + score placeholder to each project */
 /* shot  = 卡片尺寸小图 (480px wide, ~5KB) 用于卡片首屏 */
 /* full  = 大图尺寸 (1200px wide, ~22KB) 用于 lightbox */
 /* 仅最近新增的项目标记「新」徽标，保持徽标稀缺性与视觉指引价值 */
-var NEW_IDS = ['ambient-sound','diary-manager','system-monitor'];
+var NEW_IDS = ['diary-manager','system-monitor','prompt-manager'];
 PROJECTS.forEach(function(p){
   p.shot = 'assets/img/' + p.id + '.webp';
   p.full = 'assets/img/' + p.id + '-full.webp';
@@ -247,10 +251,11 @@ PROJECTS.forEach(function(p){
 
 /* 卡片背景：精致分类色渐变（低饱和度，统一中有差异） */
 var GRAD = {
-  dev:{emoji_bg:'linear-gradient(135deg,#f5f8ff 0%,#e8f0ff 100%)'},
-  system:{emoji_bg:'linear-gradient(135deg,#f5fbf7 0%,#e8f6ee 100%)'},
-  efficiency:{emoji_bg:'linear-gradient(135deg,#fffaf3 0%,#fff0e0 100%)'},
-  design:{emoji_bg:'linear-gradient(135deg,#faf8ff 0%,#f2ecff 100%)'}
+  /* 统一为单一中性浅蓝渐变：mimo 反馈 4 色背景在网格中视觉杂乱 */
+  dev:{emoji_bg:'linear-gradient(135deg,#fafbfd 0%,#f0f4fa 100%)'},
+  system:{emoji_bg:'linear-gradient(135deg,#fafbfd 0%,#f0f4fa 100%)'},
+  efficiency:{emoji_bg:'linear-gradient(135deg,#fafbfd 0%,#f0f4fa 100%)'},
+  design:{emoji_bg:'linear-gradient(135deg,#fafbfd 0%,#f0f4fa 100%)'}
 };
 var CAT_NAME = {dev:'开发工具',system:'系统工具',efficiency:'效率工具',design:'设计工具'};
 var CAT_COLOR = {dev:'#007aff',system:'#34c759',efficiency:'#ff9500',design:'#af52de'};
@@ -275,38 +280,32 @@ function cardHTML(p, idx){
   var cc = CAT_COLOR[p.cat];
   var si = STACK_INFO[p.stack] || {icon:'⚡',label:p.stack};
   var dlBtn = p.dl
-    ? '<a class="btn btn--primary btn--sm" href="'+p.dl+'" target="_blank" rel="noopener">获取</a>'
-    : '<a class="btn btn--primary btn--sm" href="'+p.gh+'" target="_blank" rel="noopener">获取</a>';
+    ? '<a class="btn btn--primary btn--sm card__cta" href="'+p.dl+'" target="_blank" rel="noopener">获取</a>'
+    : '<a class="btn btn--primary btn--sm card__cta" href="'+p.gh+'" target="_blank" rel="noopener">获取</a>';
   var scoreBadge = p.score > 0
     ? '<span class="card__score" title="mimo 审美评分">'+p.score+'</span>'
     : '';
   var newBadge = p.isNew ? '<span class="card__new">新</span>' : '';
-  var idxStr = String(idx+1).padStart(2,'0');
   return ''+
   '<article class="card" data-cat="'+p.cat+'" data-stack="'+p.stack+'" data-id="'+p.id+'" tabindex="0" role="button" aria-label="'+p.name+' 详情">'+
     '<span class="card__hint" aria-hidden="true">查看详情</span>'+
     '<div class="card__media" style="background:'+g.emoji_bg+'">'+
-      '<span class="card__monogram" aria-hidden="true">'+monogram(p.name)+'</span>'+
       '<span class="card__version">'+p.ver+'</span>'+
       scoreBadge+
       '<span class="card__emoji-glow" aria-hidden="true"></span>'+
       '<span class="card__emoji" aria-hidden="true">'+p.icon+'</span>'+
-      '<div class="card__media-text">'+
-        '<span class="card__media-cat">'+CAT_NAME[p.cat]+'</span>'+
-        '<span class="card__media-name">'+p.name+'</span>'+
-      '</div>'+
       '<button class="card__lightbox-btn" aria-label="查看大图" data-lbid="'+p.id+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg></button>'+
     '</div>'+
     '<div class="card__body">'+
       '<div class="card__meta">'+
-        '<span class="card__index" aria-hidden="true">#'+idxStr+'</span>'+
         '<span class="card__stack">'+si.icon+' '+si.label+'</span>'+
         newBadge+
       '</div>'+
+      '<h3 class="card__title">'+p.name+'</h3>'+
       '<p class="card__desc">'+p.desc+'</p>'+
       '<div class="card__actions">'+
         dlBtn+
-        '<a class="card__src" href="'+p.gh+'" target="_blank" rel="noopener" aria-label="查看源码"><svg class="card__src-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg><span>源码</span></a>'+
+        '<a class="card__src" href="'+p.gh+'" target="_blank" rel="noopener" aria-label="查看源码" title="查看源码"><svg class="card__src-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg></a>'+
       '</div>'+
     '</div>'+
   '</article>';
@@ -521,6 +520,9 @@ function onScroll(){
   if(toTopRing){
     toTopRing.style.strokeDashoffset = (RING_LEN * (1 - pct)).toFixed(2);
   }
+  /* Hero 滚动暗示：滚动 80px 后淡出 */
+  var heroHint = document.getElementById('hero-hint');
+  if(heroHint) heroHint.classList.toggle('is-hidden', y > 80);
 }
 window.addEventListener('scroll', onScroll, {passive:true});
 onScroll();
@@ -541,13 +543,7 @@ if('IntersectionObserver' in window){
   });
 }
 
-/* ---------- Hero 精选图标预览条（精简到 5 个，留出呼吸感） ---------- */
-var heroPreview = document.getElementById('hero-preview');
-if(heroPreview){
-  heroPreview.innerHTML = '<span class="hero__preview-label">精选工具</span><div class="hero__preview-row">'+PROJECTS.slice(0,5).map(function(p){
-    return '<span class="hero__chip"><span class="hero__chip-emoji">'+p.icon+'</span>'+p.name+'</span>';
-  }).join('')+'</div>';
-}
+/* ---------- Hero 精选图标预览条（已全局隐藏，移除 JS 渲染降低首屏 DOM 噪声） ---------- */
 
 /* ---------- Hero 统计数字 ---------- */
 /* 直接设置最终值，避免 count-up 动画在 headless 截图时捕获中间值 */
@@ -610,12 +606,35 @@ function buildShowcaseSVG(p){
   return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
 }
 
-function openLightbox(src){
-  if(!src) return;
-  lightboxImg.src = src;
+/* 当前 lightbox 展示的项目索引（基于 PROJECTS 数组），-1 表示未打开 */
+var lbCurrentIdx = -1;
+var lbCaption = document.getElementById('lb-caption');
+var lbCounter = document.getElementById('lb-counter');
+var lbPrev = document.getElementById('lb-prev');
+var lbNext = document.getElementById('lb-next');
+
+function openLightboxByIdx(idx){
+  if(idx < 0 || idx >= PROJECTS.length) return;
+  lbCurrentIdx = idx;
+  var p = PROJECTS[idx];
+  lightboxImg.src = buildShowcaseSVG(p);
   lightbox.classList.add('is-open');
   lightbox.setAttribute('aria-hidden','false');
   document.body.style.overflow = 'hidden';
+  /* 更新 caption：项目名 + 分类色点 */
+  if(lbCaption){
+    var cc = CAT_COLOR[p.cat];
+    lbCaption.innerHTML = '<span class="lb-caption__dot" style="background:'+cc+'"></span>'+
+      '<span class="lb-caption__name">'+p.name+'</span>'+
+      '<span class="lb-caption__cat">'+CAT_NAME[p.cat]+'</span>';
+  }
+  /* 更新计数器：3 / 57 */
+  if(lbCounter){
+    lbCounter.textContent = (idx+1)+' / '+PROJECTS.length;
+  }
+  /* 边界态：首项禁用 prev，末项禁用 next */
+  if(lbPrev) lbPrev.disabled = (idx === 0);
+  if(lbNext) lbNext.disabled = (idx === PROJECTS.length - 1);
   lightbox.querySelector('.lightbox__close').focus();
 }
 function closeLightbox(){
@@ -623,18 +642,29 @@ function closeLightbox(){
   lightbox.setAttribute('aria-hidden','true');
   document.body.style.overflow = '';
   lightboxImg.src = '';
+  lbCurrentIdx = -1;
+}
+function lbStep(delta){
+  if(lbCurrentIdx < 0) return;
+  var next = lbCurrentIdx + delta;
+  if(next < 0 || next >= PROJECTS.length) return;
+  openLightboxByIdx(next);
 }
 
-/* lightbox 触发：点击放大按钮，生成该项目品牌展示 SVG */
+/* lightbox 触发：点击放大按钮，定位项目索引后打开（支持后续导航） */
 grid.addEventListener('click', function(e){
   var lbBtn = e.target.closest('.card__lightbox-btn');
   if(lbBtn){
     e.stopPropagation();
-    var p = PROJECTS.filter(function(x){ return x.id === lbBtn.dataset.lbid; })[0];
-    if(p) openLightbox(buildShowcaseSVG(p));
+    var idx = PROJECTS.findIndex(function(x){ return x.id === lbBtn.dataset.lbid; });
+    if(idx >= 0) openLightboxByIdx(idx);
     return;
   }
 });
+
+/* lightbox 上一张/下一张按钮 */
+if(lbPrev) lbPrev.addEventListener('click', function(e){ e.stopPropagation(); lbStep(-1); });
+if(lbNext) lbNext.addEventListener('click', function(e){ e.stopPropagation(); lbStep(1); });
 
 /* 关闭 lightbox */
 lightbox.addEventListener('click', function(e){
@@ -642,6 +672,11 @@ lightbox.addEventListener('click', function(e){
 });
 document.addEventListener('keydown', function(e){
   if(e.key === 'Escape' && lightbox.classList.contains('is-open')) closeLightbox();
+  /* lightbox 打开时支持 ←/→ 切换项目 */
+  if(lightbox.classList.contains('is-open')){
+    if(e.key === 'ArrowLeft'){ e.preventDefault(); lbStep(-1); }
+    else if(e.key === 'ArrowRight'){ e.preventDefault(); lbStep(1); }
+  }
 });
 
 /* ---------- 加载 mimo 评分 ---------- */
