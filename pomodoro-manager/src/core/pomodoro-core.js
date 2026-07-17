@@ -135,6 +135,14 @@ class PomodoroCore {
       return null;
     }
     if (this.state === 'idle' || this.state === 'paused') return null;
+    if (this.state === 'working') {
+      // 跳过专注 = 放弃当前番茄，不计入统计、不增加任务番茄数、不推进周期
+      // 直接进入短休息（未完成不应获得长休息）
+      this.state = 'short_break';
+      this.remainingMs = this.phaseDuration('short_break');
+      return { completedWork: false, skipped: true, nextPhase: 'short_break', remainingMs: this.remainingMs };
+    }
+    // 跳过休息 -> 进入工作（不涉及统计计数）
     this.remainingMs = 0;
     return this._advancePhase();
   }
@@ -209,6 +217,17 @@ class PomodoroCore {
       task.completed = true;
       task.completedAt = Date.now();
       if (this.currentTaskId === id) this.currentTaskId = null;
+      return true;
+    }
+    return false;
+  }
+
+  // 取消完成任务（恢复为未完成），允许用户纠正误操作
+  uncompleteTask(id) {
+    const task = this.tasks.find(t => t.id === id);
+    if (task && task.completed) {
+      task.completed = false;
+      delete task.completedAt;
       return true;
     }
     return false;
