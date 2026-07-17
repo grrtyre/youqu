@@ -141,6 +141,7 @@
 <td align="center"><a href="./whiteboard-manager"><img src="docs/assets/img/whiteboard-manager.webp" width="200" alt="白板管家"><br><sub>🎨 白板管家</sub></a></td>
 <td align="center"><a href="./screenshot-manager"><img src="docs/assets/img/screenshot-manager.webp" width="200" alt="截图管家"><br><sub>📸 截图管家</sub></a></td>
 </tr>
+| [launcher-manager](./launcher-manager) | macOS Spotlight 椋庢牸鐨?Windows 搴旂敤鍚姩鍣?- 鍏ㄥ眬鐑敭銆佹ā绯婃悳绱€佹渶杩戜娇鐢?| Electron | v1.0.0 |
 </table>
 
 <p><em>💡 截图由 mimo 审美评分，评分角标在 <a href="https://grrtyre.github.io/youqu/">在线展示站</a> 卡片上显示</em></p>
