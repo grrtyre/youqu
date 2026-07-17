@@ -261,6 +261,74 @@ ok('空值不添加', hLoad().length === HMAX);
 hSave([]);
 eq('清空后为空', hLoad(), []);
 
+console.log('\n=== 12. buildToken：值数组还原为 cron 字段 token ===');
+// 空数组 -> '*'
+eq('空数组 -> *', C.buildToken([], 0, 59), '*');
+// 全选 -> '*'
+var all60 = []; for (var b1 = 0; b1 < 60; b1++) all60.push(b1);
+eq('全选60 -> *', C.buildToken(all60, 0, 59), '*');
+// 单值
+eq('单值0 -> 0', C.buildToken([0], 0, 59), '0');
+eq('单值9 -> 9', C.buildToken([9], 0, 59), '9');
+// 连续范围
+eq('连续范围1-5 -> 1-5', C.buildToken([1,2,3,4,5], 0, 59), '1-5');
+// 注意：0-23 在 min=0/max=23 范围内为全选，应输出 '*'（更简洁）
+eq('全选0-23 -> *', C.buildToken([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23], 0, 23), '*');
+// 等差数列：从 min 开始 -> */step
+eq('等差从0步长5 -> */5', C.buildToken([0,5,10,15,20,25,30,35,40,45,50,55], 0, 59), '*/5');
+eq('等差从0步长10 -> */10', C.buildToken([0,10,20,30,40,50], 0, 59), '*/10');
+// 等差数列：不从 min 开始 -> first/step
+eq('等差从5步长10 -> 5/10', C.buildToken([5,15,25,35,45,55], 0, 59), '5/10');
+// 等差从 min 开始精确填满 -> */step（比列表更简洁）
+eq('等差从0步长15 -> */15', C.buildToken([0,15,30,45], 0, 59), '*/15');
+// 真正无规则的列表
+eq('无规则列表2 -> 1,3,5,7', C.buildToken([1,3,5,7], 0, 59), '1,3,5,7');
+// 去重 + 排序
+eq('去重排序 -> 0,5,10', C.buildToken([10,5,0,5,10], 0, 59), '0,5,10');
+// 单元素不视为等差
+eq('单元素 -> 3', C.buildToken([3], 0, 59), '3');
+// 两元素等差从 min 开始 -> */step
+eq('两元素等差从0 -> */30', C.buildToken([0,30], 0, 59), '*/30');
+// 两元素连续 -> 范围
+eq('两元素连续 -> 5-6', C.buildToken([5,6], 0, 59), '5-6');
+// dow 字段（0-6）全选 -> *
+var all7 = []; for (var b2 = 0; b2 < 7; b2++) all7.push(b2);
+eq('dow全选 -> *', C.buildToken(all7, 0, 6), '*');
+// dow 字段单值
+eq('dow单值1 -> 1', C.buildToken([1], 0, 6), '1');
+// dom 字段（1-31）连续范围
+eq('dom连续1-7 -> 1-7', C.buildToken([1,2,3,4,5,6,7], 1, 31), '1-7');
+// 等差不精确填满末尾 -> 列表（不是 step）
+// 例如 [0,5,10,15,20] 在 0-59 范围内，最后值+step=25 不大于 59，所以不是精确等差 -> 列表
+eq('不完整等差 -> 列表', C.buildToken([0,5,10,15,20], 0, 59), '0,5,10,15,20');
+
+console.log('\n=== 13. buildToken 与 parse 互逆验证 ===');
+// parse 一个表达式，再 buildToken 各字段，应该得到等价（或更简洁）的 token
+function roundtrip(expr) {
+  var p = C.parse(expr);
+  if (!p.ok) return null;
+  var tokens = expr.trim().split(/\s+/);
+  var idx = 0;
+  var result = [];
+  if (p.hasSeconds) {
+    result.push(C.buildToken(p.fields.second, 0, 59));
+    idx = 1;
+  }
+  result.push(C.buildToken(p.fields.minute, 0, 59));
+  result.push(C.buildToken(p.fields.hour, 0, 23));
+  result.push(C.buildToken(p.fields.dom, 1, 31));
+  result.push(C.buildToken(p.fields.month, 1, 12));
+  result.push(C.buildToken(p.fields.dow, 0, 6));
+  return result.join(' ');
+}
+// 这些表达式的字段都是"满"或"单值"或"连续范围"，buildToken 应得到等价
+eq('roundtrip */5 * * * *', roundtrip('*/5 * * * *'), '*/5 * * * *');
+eq('roundtrip 0 9 * * 1-5', roundtrip('0 9 * * 1-5'), '0 9 * * 1-5');
+eq('roundtrip 0 0 1 * *', roundtrip('0 0 1 * *'), '0 0 1 * *');
+eq('roundtrip 0 0 * * 0', roundtrip('0 0 * * 0'), '0 0 * * 0');
+// 6 字段
+eq('roundtrip 0 */5 * * * ?', roundtrip('0 */5 * * * ?'), '0 */5 * * * *');
+
 console.log('\n=========================');
 console.log('通过: ' + pass + ' / 失败: ' + fail);
 console.log('=========================');

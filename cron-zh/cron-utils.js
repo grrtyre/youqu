@@ -371,9 +371,52 @@ window.CronUtils = (function () {
     return results;
   }
 
+  // 将选中的值数组智能还原为 cron 字段 token
+  // 规则：空或全选 -> '*'；单值 -> 'n'；连续范围 -> 'a-b'；
+  //       从 min 开始的等差 -> '*/step'；其它等差 -> 'first/step'；否则 -> 逗号列表
+  function buildToken(values, min, max) {
+    if (!Array.isArray(values) || values.length === 0) return '*';
+    // 去重 + 升序排序
+    var v = values.slice().sort(function (a, b) { return a - b; });
+    var uniq = [];
+    for (var i = 0; i < v.length; i++) {
+      if (uniq.length === 0 || uniq[uniq.length - 1] !== v[i]) uniq.push(v[i]);
+    }
+    v = uniq;
+    var total = max - min + 1;
+    if (v.length === total) return '*';
+    if (v.length === 1) return String(v[0]);
+
+    // 连续范围
+    var isContiguous = true;
+    for (var j = 1; j < v.length; j++) {
+      if (v[j] - v[j - 1] !== 1) { isContiguous = false; break; }
+    }
+    if (isContiguous) return v[0] + '-' + v[v.length - 1];
+
+    // 等差数列：步长 > 1，且最后一个值 + 步长 > max（即精确填满到末尾）
+    if (v.length >= 2) {
+      var step = v[1] - v[0];
+      if (step > 1) {
+        var isStep = true;
+        for (var k = 2; k < v.length; k++) {
+          if (v[k] - v[k - 1] !== step) { isStep = false; break; }
+        }
+        if (isStep && v[0] >= min && v[v.length - 1] + step > max) {
+          if (v[0] === min) return '*/' + step;
+          return v[0] + '/' + step;
+        }
+      }
+    }
+
+    // 默认：逗号列表
+    return v.join(',');
+  }
+
   return {
     parse: parseCron,
     describe: describeCron,
-    nextRun: nextRun
+    nextRun: nextRun,
+    buildToken: buildToken
   };
 })();

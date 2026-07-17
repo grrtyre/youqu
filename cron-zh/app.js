@@ -189,7 +189,8 @@
 
       // 通配符(*)/不指定(?)卡片标记为 is-wildcard，视觉降权
       var isWildcard = (valDisplay === '*' || valDisplay === '?');
-      html += '<div class="field-box' + (isActive ? ' is-active' : '') + (isWildcard ? ' is-wildcard' : '') + '">' +
+      html += '<div class="field-box' + (isActive ? ' is-active' : '') + (isWildcard ? ' is-wildcard' : '') +
+                '" data-key="' + meta.key + '" role="button" tabindex="0" aria-label="编辑' + meta.name + '字段">' +
                 '<div class="field-name">' + meta.name + '</div>' +
                 '<div class="field-value">' + escapeHtml(valDisplay) + '</div>' +
                 '<div class="field-desc">' + escapeHtml(descDisplay) + '</div>' +
@@ -282,9 +283,12 @@
 
   // ===== 主更新 =====
   var historyTimer = null;
+  // 保存最近一次成功解析结果，供字段点击编辑使用
+  var parsedState = null;
   function update() {
     var expr = exprInput.value.trim();
     if (!expr) {
+      parsedState = null;
       exprStatus.className = 'expr-status';
       exprStatus.textContent = '请输入表达式';
       describeEl.textContent = '—';
@@ -296,6 +300,7 @@
     }
     var parsed = CronUtils.parse(expr);
     if (!parsed.ok) {
+      parsedState = null;
       exprStatus.className = 'expr-status status-err';
       exprStatus.textContent = '✗ ' + parsed.error;
       describeEl.textContent = '无效表达式';
@@ -305,6 +310,7 @@
       clearTimeout(historyTimer);
       return;
     }
+    parsedState = parsed;
     exprStatus.className = 'expr-status status-ok';
     exprStatus.textContent = '✓ 表达式有效';
     describeEl.textContent = CronUtils.describe(expr);
@@ -319,6 +325,265 @@
     clearTimeout(historyTimer);
     historyTimer = setTimeout(function () { addHistory(expr); }, 1200);
   }
+
+  // ===== 字段点击编辑器 =====
+  var fieldEditor = null;     // 当前打开的编辑器 DOM
+  var editingCtx = null;      // { meta, current, fieldBox, backdrop }
+
+  // 编辑器打开期间才生效的关闭回调（避免页面初始 load 时的 resize/scroll 误触发）
+  function onEditorScrollClose() { closeFieldEditor(); }
+  function onEditorResizeClose() { closeFieldEditor(); }
+
+  // 根据 key 找到字段元信息
+  function findMetaByKey(key) {
+    if (key === 'second') return SECOND_META;
+    for (var i = 0; i < FIELD_META.length; i++) {
+      if (FIELD_META[i].key === key) return FIELD_META[i];
+    }
+    return null;
+  }
+
+  // 格式化单元格显示文本
+  function formatCellLabel(meta, v) {
+    if (meta.key === 'dow') return DOW_LABEL[v];
+    if (meta.key === 'month') return v + '月';
+    return String(v);
+  }
+
+  function openFieldEditor(fieldBox, meta) {
+    closeFieldEditor();
+    if (!parsedState || !parsedState.ok) return;
+
+    var initial = Array.isArray(parsedState.fields[meta.key])
+      ? parsedState.fields[meta.key].slice()
+      : [];
+    editingCtx = {
+      meta: meta,
+      current: initial.slice(),
+      fieldBox: fieldBox,
+      backdrop: null
+    };
+
+    // 构建编辑器 DOM
+    var editor = document.createElement('div');
+    editor.className = 'field-editor';
+    editor.setAttribute('role', 'dialog');
+    editor.setAttribute('aria-label', '编辑' + meta.name + '字段');
+
+    // 标题栏
+    var header = document.createElement('div');
+    header.className = 'fe-header';
+    var title = document.createElement('span');
+    title.className = 'fe-title';
+    title.textContent = '编辑「' + meta.name + '」';
+    var closeBtn = document.createElement('button');
+    closeBtn.className = 'fe-close';
+    closeBtn.setAttribute('aria-label', '关闭');
+    closeBtn.innerHTML = '&times;';
+    header.appendChild(title);
+    header.appendChild(closeBtn);
+    editor.appendChild(header);
+
+    // 快捷操作
+    var quick = document.createElement('div');
+    quick.className = 'fe-quick';
+    var qaBtns = [
+      { action: 'all', label: '全选' },
+      { action: 'none', label: '清空' },
+      { action: 'invert', label: '反选' }
+    ];
+    for (var q = 0; q < qaBtns.length; q++) {
+      var qb = document.createElement('button');
+      qb.className = 'fe-qabtn';
+      qb.setAttribute('data-action', qaBtns[q].action);
+      qb.textContent = qaBtns[q].label;
+      quick.appendChild(qb);
+    }
+    editor.appendChild(quick);
+
+    // 数字网格
+    var grid = document.createElement('div');
+    grid.className = 'fe-grid';
+    // 根据字段总数选择列数，保证视觉平衡
+    var cols = 10;
+    if (meta.full <= 7) cols = 7;
+    else if (meta.full <= 12) cols = 6;
+    else if (meta.full <= 24) cols = 6;
+    else if (meta.full <= 31) cols = 7;
+    else cols = 10;
+    grid.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
+    for (var v = meta.min; v <= meta.max; v++) {
+      var cell = document.createElement('button');
+      cell.className = 'fe-cell' + (initial.indexOf(v) !== -1 ? ' selected' : '');
+      cell.setAttribute('data-val', v);
+      cell.setAttribute('type', 'button');
+      cell.textContent = formatCellLabel(meta, v);
+      grid.appendChild(cell);
+    }
+    editor.appendChild(grid);
+
+    // 底部按钮
+    var footer = document.createElement('div');
+    footer.className = 'fe-footer';
+    var cancelBtn = document.createElement('button');
+    cancelBtn.className = 'fe-btn fe-cancel';
+    cancelBtn.setAttribute('type', 'button');
+    cancelBtn.textContent = '取消';
+    var applyBtn = document.createElement('button');
+    applyBtn.className = 'fe-btn fe-apply';
+    applyBtn.setAttribute('type', 'button');
+    applyBtn.textContent = '应用';
+    footer.appendChild(cancelBtn);
+    footer.appendChild(applyBtn);
+    editor.appendChild(footer);
+
+    // 定位到字段卡片下方
+    var rect = fieldBox.getBoundingClientRect();
+    editor.style.position = 'fixed';
+    var editorWidth = 320;
+    var left = rect.left + (rect.width / 2) - (editorWidth / 2);
+    left = Math.max(8, Math.min(left, window.innerWidth - editorWidth - 8));
+    editor.style.left = left + 'px';
+    editor.style.top = (rect.bottom + 8) + 'px';
+    editor.style.width = editorWidth + 'px';
+
+    // 半透明遮罩
+    var backdrop = document.createElement('div');
+    backdrop.className = 'fe-backdrop';
+    document.body.appendChild(backdrop);
+    editingCtx.backdrop = backdrop;
+
+    document.body.appendChild(editor);
+    fieldEditor = editor;
+    fieldBox.classList.add('is-editing');
+
+    // 事件委托
+    editor.addEventListener('click', function (e) {
+      var t = e.target;
+      if (!t) return;
+      if (t === closeBtn || t.classList.contains('fe-cancel')) {
+        closeFieldEditor();
+      } else if (t.classList.contains('fe-apply')) {
+        applyFieldEdit();
+      } else if (t.classList.contains('fe-qabtn')) {
+        quickAction(t.getAttribute('data-action'));
+      } else if (t.classList.contains('fe-cell')) {
+        var val = parseInt(t.getAttribute('data-val'), 10);
+        var idx = editingCtx.current.indexOf(val);
+        if (idx !== -1) {
+          editingCtx.current.splice(idx, 1);
+          t.classList.remove('selected');
+        } else {
+          editingCtx.current.push(val);
+          t.classList.add('selected');
+        }
+      }
+    });
+
+    backdrop.addEventListener('click', closeFieldEditor);
+
+    // 阻止背景滚动
+    document.body.style.overflow = 'hidden';
+
+    // 编辑器打开期间才监听 scroll/resize（避免页面初始 load 误触发）
+    window.addEventListener('scroll', onEditorScrollClose, true);
+    window.addEventListener('resize', onEditorResizeClose);
+  }
+
+  function quickAction(action) {
+    if (!editingCtx) return;
+    var meta = editingCtx.meta;
+    var next = [];
+    if (action === 'all') {
+      for (var v = meta.min; v <= meta.max; v++) next.push(v);
+    } else if (action === 'none') {
+      next = [];
+    } else if (action === 'invert') {
+      for (var w = meta.min; w <= meta.max; w++) {
+        if (editingCtx.current.indexOf(w) === -1) next.push(w);
+      }
+    }
+    editingCtx.current = next;
+    // 同步 UI
+    var cells = fieldEditor.querySelectorAll('.fe-cell');
+    for (var i = 0; i < cells.length; i++) {
+      var cv = parseInt(cells[i].getAttribute('data-val'), 10);
+      if (next.indexOf(cv) !== -1) cells[i].classList.add('selected');
+      else cells[i].classList.remove('selected');
+    }
+  }
+
+  function applyFieldEdit() {
+    if (!editingCtx || !parsedState) { closeFieldEditor(); return; }
+    var meta = editingCtx.meta;
+    var newValues = editingCtx.current.slice();
+    var token = CronUtils.buildToken(newValues, meta.min, meta.max);
+    // 替换表达式中对应字段
+    var parts = exprInput.value.trim().split(/\s+/);
+    var hasSec = parts.length === 6;
+    var idx = -1;
+    if (meta.key === 'second')      idx = hasSec ? 0 : -1;
+    else if (meta.key === 'minute') idx = hasSec ? 1 : 0;
+    else if (meta.key === 'hour')   idx = hasSec ? 2 : 1;
+    else if (meta.key === 'dom')    idx = hasSec ? 3 : 2;
+    else if (meta.key === 'month')  idx = hasSec ? 4 : 3;
+    else if (meta.key === 'dow')    idx = hasSec ? 5 : 4;
+    if (idx >= 0 && idx < parts.length) {
+      parts[idx] = token;
+      exprInput.value = parts.join(' ');
+      update();
+      showToast(meta.name + '已更新为 ' + token);
+    }
+    closeFieldEditor();
+  }
+
+  function closeFieldEditor() {
+    // 先移除监听器，避免 close 过程中的 scroll/resize 递归
+    window.removeEventListener('scroll', onEditorScrollClose, true);
+    window.removeEventListener('resize', onEditorResizeClose);
+    if (fieldEditor) {
+      fieldEditor.remove();
+      fieldEditor = null;
+    }
+    if (editingCtx) {
+      if (editingCtx.backdrop) editingCtx.backdrop.remove();
+      if (editingCtx.fieldBox) editingCtx.fieldBox.classList.remove('is-editing');
+      editingCtx = null;
+    }
+    document.body.style.overflow = '';
+  }
+
+  // 字段卡片点击：打开编辑器
+  fieldsGrid.addEventListener('click', function (e) {
+    var box = e.target.closest('.field-box');
+    if (!box) return;
+    if (!parsedState || !parsedState.ok) return;
+    var key = box.getAttribute('data-key');
+    var meta = findMetaByKey(key);
+    if (!meta) return;
+    openFieldEditor(box, meta);
+  });
+
+  // 字段卡片键盘支持：Enter / Space 打开
+  fieldsGrid.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var box = e.target.closest('.field-box');
+    if (!box) return;
+    e.preventDefault();
+    if (!parsedState || !parsedState.ok) return;
+    var key = box.getAttribute('data-key');
+    var meta = findMetaByKey(key);
+    if (!meta) return;
+    openFieldEditor(box, meta);
+  });
+
+  // 全局 Escape 关闭编辑器
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && fieldEditor) {
+      e.preventDefault();
+      closeFieldEditor();
+    }
+  });
 
   // ===== 事件 =====
   exprInput.addEventListener('input', update);
@@ -406,4 +671,17 @@
 
   renderHistory();
   update();
+
+  // demo 模式：自动打开指定字段的编辑器（用于截图展示）
+  var editKey = params.get('edit');
+  if (editKey && parsedState && parsedState.ok) {
+    var meta = findMetaByKey(editKey);
+    if (meta) {
+      // 用 requestAnimationFrame 确保布局完成后再定位弹层
+      requestAnimationFrame(function () {
+        var box = fieldsGrid.querySelector('.field-box[data-key="' + editKey + '"]');
+        if (box) openFieldEditor(box, meta);
+      });
+    }
+  }
 })();
