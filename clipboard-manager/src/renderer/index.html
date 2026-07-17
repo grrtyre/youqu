@@ -25,7 +25,7 @@
   <div class="search-wrap">
     <div class="search-box">
       <span class="search-icon">🔍</span>
-      <input id="searchInput" type="text" placeholder="搜索剪贴板历史..." spellcheck="false" autocomplete="off" />
+      <input id="searchInput" type="text" placeholder="搜索..." spellcheck="false" autocomplete="off" />
       <button class="search-clear" id="searchClear" title="清除">✕</button>
     </div>
     <div class="filter-tabs">
@@ -62,37 +62,41 @@
   <!-- 设置面板 -->
   <div class="settings-panel" id="settingsPanel" hidden>
     <div class="settings-content">
+      <button class="settings-close-btn" id="closeSettings" title="关闭">✕</button>
       <h3>设置</h3>
       <div class="setting-row">
-        <span>快捷键</span>
+        <span>⌨️ 唤起快捷键</span>
         <code>Ctrl + Shift + V</code>
       </div>
       <div class="setting-row">
-        <span>键盘导航</span>
-        <code>↑ ↓ 选择 · Enter 粘贴 · Del 删除 · Esc 关闭</code>
+        <span>🧭 键盘导航</span>
+        <div class="kbd-group">
+          <code>↑ ↓ 选择 · Enter 粘贴</code>
+          <code>Del 删除 · Esc 关闭</code>
+        </div>
       </div>
       <div class="setting-row">
-        <span>数据存储位置</span>
-        <code id="dataPath" class="data-path-code">加载中…</code>
+        <span>📁 数据存储位置</span>
+        <code id="dataPath" class="data-path-code" title="">加载中…</code>
       </div>
       <div class="setting-row">
-        <span>最多保留</span>
-        <code>500 条文本 · 50 张图片</code>
+        <span>📦 最多保留</span>
+        <div class="kbd-group">
+          <code>500 条文本</code>
+          <code>50 张图片</code>
+        </div>
       </div>
       <div class="setting-row">
-        <span>选择后自动粘贴到前台窗口</span>
+        <span>⚡ 自动粘贴到前台窗口</span>
         <label class="switch">
           <input type="checkbox" id="autoPasteToggle" checked />
           <span class="slider"></span>
         </label>
       </div>
+      <button class="afdian-btn" id="afdianLink">☕ 爱发电支持我们</button>
       <div class="setting-row about">
         <span>由 Trae + MiMo Code 协作打造 · v1.3.0</span>
       </div>
-      <div class="setting-row">
-        <a href="#" id="afdianLink">☕ 爱发电支持我们</a>
-      </div>
-      <button class="settings-close-btn" id="closeSettings">关闭</button>
     </div>
   </div>
 
