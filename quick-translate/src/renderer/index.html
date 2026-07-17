@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>快速翻译器</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- 自定义标题栏（Electron 中拖拽区域） -->
+  <header class="titlebar" id="titlebar">
+    <div class="titlebar-left">
+      <span class="accent-dot" aria-hidden="true"></span>
+      <div class="logo" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2C6.5 2 2 6 2 11c0 2.4 1.1 4.6 2.9 6.2L4 22l4.6-1.5c1.1.4 2.2.5 3.4.5 5.5 0 10-4 10-9S17.5 2 12 2z" fill="#007aff" opacity="0.15"/>
+          <path d="M7 9h10M7 9l3-3M7 9l3 3M17 15H7M17 15l-3-3M17 15l-3 3" stroke="#007aff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="title-text">快速翻译器</span>
+      <span class="title-sub">Quick Translate</span>
+    </div>
+    <div class="titlebar-right">
+      <button class="win-btn" id="btnMinimize" title="最小化" aria-label="最小化">
+        <svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
+      <button class="win-btn win-btn-close" id="btnClose" title="关闭到托盘" aria-label="关闭">
+        <svg width="12" height="12" viewBox="0 0 12 12"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="app">
+    <!-- 工具栏：语言选择 + 交换 + 引擎 + 剪贴板监听 -->
+    <section class="toolbar">
+      <div class="lang-group">
+        <div class="select-wrap">
+          <select id="sourceLang" class="select" title="源语言">
+            <option value="auto">自动检测</option>
+            <option value="zh">中文</option>
+            <option value="en">英语</option>
+            <option value="ja">日语</option>
+            <option value="ko">韩语</option>
+            <option value="fr">法语</option>
+            <option value="de">德语</option>
+            <option value="es">西班牙语</option>
+            <option value="it">意大利语</option>
+            <option value="ru">俄语</option>
+            <option value="pt">葡萄牙语</option>
+            <option value="ar">阿拉伯语</option>
+            <option value="th">泰语</option>
+            <option value="vi">越南语</option>
+            <option value="id">印尼语</option>
+            <option value="ms">马来语</option>
+            <option value="tr">土耳其语</option>
+            <option value="nl">荷兰语</option>
+            <option value="pl">波兰语</option>
+            <option value="hi">印地语</option>
+          </select>
+          <svg class="select-caret" width="10" height="10" viewBox="0 0 10 10"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <button id="btnSwap" class="swap-btn" title="交换语言" aria-label="交换语言">
+          <svg width="16" height="16" viewBox="0 0 16 16"><path d="M4 5h8l-2.5-2.5M12 11H4l2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="select-wrap">
+          <select id="targetLang" class="select" title="目标语言">
+            <option value="zh">中文</option>
+            <option value="en">英语</option>
+            <option value="ja">日语</option>
+            <option value="ko">韩语</option>
+            <option value="fr">法语</option>
+            <option value="de">德语</option>
+            <option value="es">西班牙语</option>
+            <option value="it">意大利语</option>
+            <option value="ru">俄语</option>
+            <option value="pt">葡萄牙语</option>
+            <option value="ar">阿拉伯语</option>
+            <option value="th">泰语</option>
+            <option value="vi">越南语</option>
+            <option value="id">印尼语</option>
+            <option value="ms">马来语</option>
+            <option value="tr">土耳其语</option>
+            <option value="nl">荷兰语</option>
+            <option value="pl">波兰语</option>
+            <option value="hi">印地语</option>
+          </select>
+          <svg class="select-caret" width="10" height="10" viewBox="0 0 10 10"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+      <div class="opt-group">
+        <label class="switch" title="开启后复制文本自动翻译">
+          <input type="checkbox" id="watchToggle" />
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+          <span class="switch-label">剪贴板监听</span>
+        </label>
+        <div class="select-wrap">
+          <select id="engineSelect" class="select select-sm" title="翻译引擎">
+            <option value="auto">引擎 · 智能</option>
+            <option value="google">引擎 · Google</option>
+            <option value="mymemory">引擎 · MyMemory</option>
+          </select>
+          <svg class="select-caret" width="10" height="10" viewBox="0 0 10 10"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- 翻译区：源 / 目标 双栏（共享外框，中间细分隔线） -->
+    <section class="translate-area">
+      <div class="pane pane-source">
+        <div class="pane-tag">源文</div>
+        <textarea id="sourceText" class="textarea" placeholder="输入要翻译的文本，按 Ctrl+Enter 翻译…" spellcheck="false">Hello, this is Quick Translate — a fast, elegant translator that lives in your tray.
+
+Copy any text from anywhere, press Ctrl+Shift+T, and get the translation instantly without leaving your current workflow. Supports 20 languages with automatic source detection.
+
+Lightweight, beautiful, and always one shortcut away.</textarea>
+        <div class="pane-footer">
+          <span id="charCount" class="meta">286 字</span>
+          <button id="btnClear" class="ghost-btn">清空</button>
+        </div>
+      </div>
+      <div class="pane-divider" aria-hidden="true"></div>
+      <div class="pane pane-target">
+        <div class="pane-tag pane-tag-accent">译文</div>
+        <div id="targetText" class="output" placeholder="译文将显示在这里">你好，这是快速翻译器 —— 一款驻留托盘的快速、优雅的翻译工具。
+
+从任何地方复制文本，按下 Ctrl+Shift+T，无需离开当前工作流即可立即获得翻译。支持 20 种语言，自动检测源语言。
+
+轻量、精美，永远只需一个快捷键的距离。</div>
+        <div class="pane-footer">
+          <span id="targetMeta" class="meta">检测: 英语 · 引擎: Google</span>
+          <div class="footer-actions">
+            <button id="btnCopy" class="ghost-btn" title="复制译文">
+              <svg width="13" height="13" viewBox="0 0 13 13"><rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M3 9.2A1.5 1.5 0 0 1 1.8 7.8V3A1.5 1.5 0 0 1 3.3 1.5h4.5A1.5 1.5 0 0 1 9.3 3" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>
+              复制
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- 浮动加载指示（内嵌于翻译区，不破坏布局） -->
+      <div id="statusBar" class="status-pill" hidden><span class="spinner"></span><span id="statusText">翻译中</span></div>
+    </section>
+
+    <!-- 历史记录 -->
+    <section class="history" id="historySection">
+      <button class="history-head" id="historyToggle" aria-expanded="true">
+        <svg class="chevron" width="12" height="12" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>历史记录</span>
+        <span id="historyCount" class="count">5</span>
+      </button>
+      <div class="history-list" id="historyList">
+        <div class="history-item">
+          <span class="hi-src">Hello, this is Quick Translate — a fast, elegant translator that lives in your tray.</span>
+          <span class="hi-arrow">→</span>
+          <span class="hi-tgt">你好，这是快速翻译器 —— 一款驻留托盘的快速、优雅的翻译工具。</span>
+          <span class="hi-lang">EN → ZH</span>
+        </div>
+        <div class="history-item">
+          <span class="hi-src">Copy any text from anywhere, press Ctrl+Shift+T...</span>
+          <span class="hi-arrow">→</span>
+          <span class="hi-tgt">从任何地方复制文本，按下 Ctrl+Shift+T...</span>
+          <span class="hi-lang">EN → ZH</span>
+        </div>
+        <div class="history-item">
+          <span class="hi-src">Thank you</span>
+          <span class="hi-arrow">→</span>
+          <span class="hi-tgt">谢谢你</span>
+          <span class="hi-lang">EN → ZH</span>
+        </div>
+        <div class="history-item">
+          <span class="hi-src">今天天气真好</span>
+          <span class="hi-arrow">→</span>
+          <span class="hi-tgt">The weather is really nice today</span>
+          <span class="hi-lang">ZH → EN</span>
+        </div>
+        <div class="history-item">
+          <span class="hi-src">Good morning</span>
+          <span class="hi-arrow">→</span>
+          <span class="hi-tgt">早上好</span>
+          <span class="hi-lang">EN → ZH</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 底部快捷键提示（极简单行） -->
+    <footer class="footbar">
+      <span class="foot-label">快捷键</span>
+      <span class="kbd-hint"><kbd>Ctrl</kbd><kbd>Enter</kbd><span>翻译</span></span>
+      <span class="kbd-hint"><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>T</kbd><span>剪贴板翻译</span></span>
+      <span class="kbd-hint"><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>S</kbd><span>交换语言</span></span>
+      <span class="foot-brand">Quick Translate</span>
+    </footer>
+  </main>
+
+  <script src="../engines/translate.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>

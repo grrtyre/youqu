@@ -184,3 +184,4 @@ _暂无，期待第一个支持者的出现。_
 | [password-generator](./password-generator) | 瀵嗙爜鐢熸垚鍣?| 鍩轰簬 Electron + crypto CSPRNG 鐨勬湰鍦板瘑鐮佺敓鎴愬伐鍏凤紝鏀寔闅忔満瀵嗙爜銆佽蹇嗗彛浠ゃ€佸己搴︽娴嬨€佹壒閲忕敓鎴愪笌鏈湴鍘嗗彶 | Electron | 
 
 | [📔 日记本](./diary-manager) | 极简日记本桌面应用：日历视图、心情追踪、标签管理、全文搜索、Markdown 导出、本地存储隐私优先、苹果白风格 | Electron + 原生 JS | ✅ 可用 v1.0.0 |
+| [快速翻译器](./quick-translate) | 托盘驻留翻译工具，全局快捷键，双引擎，20 种语言 | Electron | v1.0.0 |

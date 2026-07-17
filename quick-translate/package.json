@@ -1,0 +1,23 @@
+{
+  "name": "quick-translate",
+  "version": "1.0.0",
+  "description": "快速翻译器 —— 托盘常驻、全局热键、剪贴板监听的多引擎桌面翻译工具，苹果白高端风格",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/translate.test.js"
+  },
+  "keywords": [
+    "translate",
+    "translator",
+    "electron",
+    "quick-translate",
+    "桌面翻译",
+    "苹果白"
+  ],
+  "author": "youqu",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^30.0.0"
+  }
+}
