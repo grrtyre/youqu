@@ -1,7 +1,7 @@
 /* ============ youqu 展示站点 · 交互逻辑 ============ */
 'use strict';
 
-/* ---------- 项目数据（53 个工具） ---------- */
+/* ---------- 项目数据（56 个工具） ---------- */
 var G = 'https://github.com/grrtyre/youqu';
 var R = 'https://github.com/grrtyre/youqu/releases';
 var AF = 'https://www.ifdian.net/a/giquwei';
@@ -218,13 +218,26 @@ var PROJECTS = [
   {id:'watching-manager',icon:'🎬',name:'剧集管家',cat:'efficiency',stack:'electron',ver:'v1.0.0',
    desc:'本地追剧进度管理桌面工具：剧集档案、一键推进下一集、评分标签、统计概览、追剧提醒，纯本地存储不联网。',
    tags:['Electron','原生 JS'],dl:R+'/tag/watching-manager-v1.0.0',gh:G+'/tree/main/watching-manager',
-   features:['剧集档案（剧名/类型/状态/季集进度）','一键推进下一集，跨季自动 +1','0-10 分评分 + 自定义标签','统计概览（状态分布/类型条形图/标签云）','追剧提醒（3 天未更新自动列表 + 通知）','搜索筛选 + 5 种排序','数据导入导出 + 海报管理']}
+   features:['剧集档案（剧名/类型/状态/季集进度）','一键推进下一集，跨季自动 +1','0-10 分评分 + 自定义标签','统计概览（状态分布/类型条形图/标签云）','追剧提醒（3 天未更新自动列表 + 通知）','搜索筛选 + 5 种排序','数据导入导出 + 海报管理']},
+  {id:'ambient-sound',icon:'🎵',name:'环境音播放器',cat:'efficiency',stack:'electron',ver:'v1.0.0',
+   desc:'专注·放松·助眠的纯程序合成环境音桌面应用：8 种声音（白/粉/棕噪音、雨声、海浪、风声、篝火、溪流）由 Web Audio API 实时数学合成，零音频文件、无版权风险、无缝循环；多通道混音、睡眠定时器、场景预设、实时频谱可视化。',
+   tags:['Electron','Web Audio API'],gh:G+'/tree/main/ambient-sound',
+   features:['8 种程序合成声音：白/粉/棕噪音、雨声、海浪、风声、篝火、溪流','Web Audio API 实时数学合成，零音频文件','多通道混音，各自独立音量','睡眠定时器 15/30/60/90 分钟平滑淡出','内置场景预设 + 自定义保存','实时频谱可视化，苹果蓝渐变','系统托盘常驻','首尾交叉淡化无缝循环']},
+  {id:'diary-manager',icon:'📔',name:'日记本',cat:'efficiency',stack:'electron',ver:'v1.0.0',
+   desc:'极简克制的桌面日记应用：日历视图一眼回看、沉浸式衬线字体写作、emoji 心情追踪、标签管理、全文搜索、Markdown 导出，本地存储隐私无忧。',
+   tags:['Electron','原生 JS'],dl:R+'/tag/diary-manager-v1.0.0',gh:G+'/tree/main/diary-manager',
+   features:['日历视图，点点点选即跳转','沉浸式衬线字体写作','emoji 心情追踪，回看情绪轨迹','标签管理与快速检索','全文搜索：关键词/标签/日期','Markdown 一键导出','Ctrl/⌘+S 快速保存','本地存储，绝不上传']},
+  {id:'system-monitor',icon:'📊',name:'系统监控器',cat:'system',stack:'web',ver:'v1.0.0',
+   desc:'苹果白风格实时系统资源监控仪表盘：CPU/内存/磁盘/网络/进程实时监控、圆环占比可视化、历史曲线图（含 Y 轴刻度）、Top 进程排行，完全本地运行零数据外传。',
+   tags:['Node.js','原生 Canvas'],gh:G+'/tree/main/system-monitor',
+   features:['CPU/内存/磁盘/网络/进程实时监控','圆环占比仪表盘，平滑过渡动画','历史曲线图（原生 Canvas，含 Y 轴刻度）','Top 8 进程排行，斑马纹表格','系统信息：CPU/GPU/系统/内核/架构','1.5 秒自动刷新，响应式布局','完全本地运行，零数据外传']}
 ];
 
 /* Assign screenshot path + score placeholder to each project */
 /* shot  = 卡片尺寸小图 (480px wide, ~5KB) 用于卡片首屏 */
 /* full  = 大图尺寸 (1200px wide, ~22KB) 用于 lightbox */
-var NEW_IDS = ['alarm-manager','disk-manager','emoji-manager','flashcard-manager','image-converter','json-manager','keyboard-tester','log-manager','palette-manager','password-generator','unit-converter','watching-manager'];
+/* 仅最近新增的项目标记「新」徽标，保持徽标稀缺性与视觉指引价值 */
+var NEW_IDS = ['ambient-sound','diary-manager','system-monitor'];
 PROJECTS.forEach(function(p){
   p.shot = 'assets/img/' + p.id + '.webp';
   p.full = 'assets/img/' + p.id + '-full.webp';
