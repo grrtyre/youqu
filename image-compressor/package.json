@@ -1,0 +1,45 @@
+{
+  "name": "image-compressor",
+  "version": "1.0.0",
+  "description": "图片压缩器 - 苹果白风格的高效图片批量压缩工具",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/test.js",
+    "build": "electron-builder --win --x64",
+    "build:portable": "electron-builder --win portable --x64"
+  },
+  "author": "youqu",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "dependencies": {
+    "sharp": "^0.33.0"
+  },
+  "build": {
+    "appId": "com.youqu.imagecompressor",
+    "productName": "图片压缩器",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon-source.png"
+    },
+    "portable": {
+      "artifactName": "图片压缩器-${version}-portable.exe"
+    }
+  }
+}

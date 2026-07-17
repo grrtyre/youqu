@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:;" />
+  <title>图片压缩器</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 顶部标题栏 -->
+    <header class="app-header">
+      <div class="brand">
+        <img class="brand-icon" src="../../build/icon-source.png" alt="logo" />
+        <div class="brand-text">
+          <h1>图片压缩器</h1>
+          <span class="version" id="versionText">v1.0.0</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="link-btn" id="clearBtn" title="清空列表">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          清空
+        </button>
+      </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="app-main">
+      <!-- 左侧设置面板 -->
+      <aside class="settings-panel">
+        <div class="panel-section">
+          <div class="panel-label">压缩质量</div>
+          <div class="quality-row">
+            <input type="range" id="qualitySlider" min="1" max="100" value="75" class="slider" />
+            <span class="quality-value" id="qualityValue">75</span>
+          </div>
+          <div class="quality-hint">
+            <span>低</span><span>高</span>
+          </div>
+          <div class="quality-presets">
+            <button class="preset-btn" data-q="40">极致</button>
+            <button class="preset-btn active" data-q="75">均衡</button>
+            <button class="preset-btn" data-q="92">高清</button>
+          </div>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <div class="panel-section">
+          <div class="panel-label">输出格式</div>
+          <div class="format-group" id="formatGroup">
+            <button class="format-btn active" data-format="keep">保留原格式</button>
+            <button class="format-btn" data-format="jpeg">JPEG</button>
+            <button class="format-btn" data-format="png">PNG</button>
+            <button class="format-btn" data-format="webp">WebP</button>
+          </div>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <div class="panel-section">
+          <div class="panel-label">输出位置</div>
+          <button class="dir-picker" id="dirPicker">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <span id="dirLabel">同源目录</span>
+          </button>
+          <p class="dir-hint">默认保存到原图所在文件夹</p>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <div class="panel-section">
+          <div class="panel-label">本次压缩</div>
+          <div class="stats">
+            <div class="stat-item">
+              <div class="stat-label">文件数</div>
+              <div class="stat-value" id="statCount">0</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">原始大小</div>
+              <div class="stat-value" id="statOriginal">0 KB</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">压缩后</div>
+              <div class="stat-value" id="statCompressed">—</div>
+            </div>
+            <div class="stat-item highlight">
+              <div class="stat-label">节省</div>
+              <div class="stat-value" id="statSaving">—</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- 右侧工作区 -->
+      <section class="workspace">
+        <!-- 拖拽区 -->
+        <div class="dropzone" id="dropzone">
+          <div class="dropzone-inner">
+            <div class="drop-icon">
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            </div>
+            <p class="drop-title">拖入图片到此处</p>
+            <p class="drop-sub">支持 JPG · PNG · WebP · BMP · TIFF</p>
+            <button class="add-btn" id="addBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+              选择图片
+            </button>
+          </div>
+        </div>
+
+        <!-- 文件列表 -->
+        <div class="file-list-wrap" id="fileListWrap" style="display:none;">
+          <div class="file-list-head">
+            <span class="col-name">文件名</span>
+            <span class="col-original">原始</span>
+            <span class="col-compressed">压缩后</span>
+            <span class="col-reduction">节省</span>
+            <span class="col-status">状态</span>
+          </div>
+          <ul class="file-list" id="fileList"></ul>
+        </div>
+
+        <!-- 底部操作栏 -->
+        <div class="action-bar" id="actionBar" style="display:none;">
+          <div class="action-info">
+            <span id="actionInfo">已选 0 张图片</span>
+          </div>
+          <button class="compress-btn" id="compressBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h10v6M20 10H10V4M14 4h6v6M4 14L14 4"/></svg>
+            开始压缩
+          </button>
+        </div>
+
+        <!-- 进度条 -->
+        <div class="progress-wrap" id="progressWrap" style="display:none;">
+          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+          <span class="progress-text" id="progressText">准备中...</span>
+        </div>
+      </section>
+    </main>
+
+    <!-- 空状态提示 -->
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
