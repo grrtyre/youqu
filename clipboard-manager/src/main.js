@@ -21,6 +21,9 @@ let pollTimer = null;
 const userDataPath = app.getPath('userData');
 const historyFile = path.join(userDataPath, 'clipboard-history.json');
 const imagesDir = path.join(userDataPath, 'clipboard-images');
+// 首次启动欢迎引导标记文件（独立于历史文件，保证只展示一次）
+const welcomeShownFile = path.join(userDataPath, '.welcome-shown');
+let firstRun = false;
 
 // 确保图片存储目录存在
 function ensureImagesDir() {
@@ -213,10 +216,9 @@ function startClipboardPolling() {
       // 优先处理文本变化
       if (current && current !== lastContent) {
         lastContent = current;
-        // 去重：与最新条目内容相同则跳过
-        if (clipboardHistory.length > 0 && clipboardHistory[0].content === current) {
-          return;
-        }
+        // 去重：移除历史中所有相同内容的旧条目。
+        // 这样复制旧内容会把它"置顶"到最新，而不是产生重复条目累积。
+        clipboardHistory = clipboardHistory.filter(i => i.content !== current);
         const item = {
           id: genId(),
           content: current,
@@ -400,9 +402,52 @@ function setupIPC() {
       deleteImageFileOfItem(item);
       clipboardHistory.splice(idx, 1);
       saveHistory();
-      return true;
+      // 返回被删除的完整条目，供渲染进程做"撤销删除"
+      return item;
     }
-    return false;
+    return null;
+  });
+
+  // 撤销删除：把之前删除的条目重新插回历史顶部
+  ipcMain.handle('restore-item', (event, item) => {
+    if (!item || !item.id) return false;
+    // 避免重复恢复（id 已存在则跳过）
+    if (clipboardHistory.some(i => i.id === item.id)) return false;
+    // 图片条目：若原图文件已删，恢复时清掉 imagePath/thumb，避免悬空引用
+    if (item.type === 'image') {
+      if (!item.imagePath || !fs.existsSync(item.imagePath)) {
+        return false;
+      }
+    }
+    clipboardHistory.unshift(item);
+    if (clipboardHistory.length > MAX_ITEMS) {
+      clipboardHistory = clipboardHistory.slice(0, MAX_ITEMS);
+    }
+    saveHistory();
+    return true;
+  });
+
+  // 打开数据所在文件夹（在资源管理器中选中历史文件）
+  ipcMain.handle('open-data-folder', () => {
+    try {
+      shell.showItemInFolder(historyFile);
+      return true;
+    } catch (e) {
+      console.error('open-data-folder error:', e.message);
+      return false;
+    }
+  });
+
+  // 首次启动标记
+  ipcMain.handle('get-first-run', () => firstRun);
+  ipcMain.handle('mark-welcome-shown', () => {
+    try {
+      fs.writeFileSync(welcomeShownFile, '1', 'utf-8');
+      firstRun = false;
+      return true;
+    } catch (e) {
+      return false;
+    }
   });
 
   // 清空：保留置顶和收藏（与按钮文案一致）
@@ -496,6 +541,8 @@ function createTray() {
 
 app.whenReady().then(() => {
   ensureImagesDir();
+  // 首次启动判定：欢迎标记文件不存在即为首次运行
+  firstRun = !fs.existsSync(welcomeShownFile);
   loadHistory();
   cleanupOrphanImages();
   createWindow();
@@ -503,21 +550,20 @@ app.whenReady().then(() => {
   setupIPC();
   startClipboardPolling();
 
-  // 开发模式或 --show 参数：启动时直接显示窗口
-  if (process.argv.includes('--dev') || process.argv.includes('--show')) {
-    if (mainWindow) {
-      const { screen } = require('electron');
-      const display = screen.getPrimaryDisplay();
-      const wa = display.workArea;
-      mainWindow.setBounds({
-        x: wa.x + wa.width - 480 - 16,
-        y: wa.y + wa.height - 600 - 16,
-        width: 480,
-        height: 600
-      });
-      mainWindow.show();
-      mainWindow.focus();
-    }
+  // 需要显示窗口的情形：开发/--show 参数，或首次启动（展示欢迎引导）
+  const shouldShow = process.argv.includes('--dev') || process.argv.includes('--show') || firstRun;
+  if (shouldShow && mainWindow) {
+    const { screen } = require('electron');
+    const display = screen.getPrimaryDisplay();
+    const wa = display.workArea;
+    mainWindow.setBounds({
+      x: wa.x + wa.width - 480 - 16,
+      y: wa.y + wa.height - 600 - 16,
+      width: 480,
+      height: 600
+    });
+    mainWindow.show();
+    mainWindow.focus();
   }
 
   // Global shortcut
