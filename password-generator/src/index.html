@@ -61,12 +61,28 @@
             <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
             <div class="strength-info">
               <span id="strengthLabel">未生成</span>
-              <span id="entropyInfo"></span>
+              <span class="strength-hint" id="strengthHint">实时评估</span>
             </div>
+          </div>
+          <div class="meta-inline" id="pwdMetaInline">
+            <span class="meta-inline-item"><span class="meta-inline-label">长度</span><span class="meta-inline-val" id="pwdLen">—</span></span>
+            <span class="meta-inline-item"><span class="meta-inline-label">字符池</span><span class="meta-inline-val" id="pwdPool">—</span></span>
+            <span class="meta-inline-item"><span class="meta-inline-label">熵值</span><span class="meta-inline-val" id="pwdEntropy">—</span></span>
+            <span class="meta-inline-item"><span class="meta-inline-label">破解耗时</span><span class="meta-inline-val" id="pwdCrack">—</span></span>
           </div>
         </div>
 
         <div class="config-card">
+          <div class="config-row">
+            <label class="config-label">快速预设</label>
+            <div class="preset-group">
+              <button class="preset" data-preset="pin" title="4 位纯数字">PIN · 4位</button>
+              <button class="preset" data-preset="wifi" title="12 位字母+数字,排除易混">WiFi · 12位</button>
+              <button class="preset" data-preset="standard" title="16 位全类型">标准 · 16位</button>
+              <button class="preset" data-preset="strong" title="24 位全类型,排除易混">高强 · 24位</button>
+              <button class="preset" data-preset="max" title="32 位全类型,排除易混">极强 · 32位</button>
+            </div>
+          </div>
           <div class="config-row">
             <label class="config-label">密码长度</label>
             <div class="slider-group">
@@ -82,13 +98,7 @@
               <label class="toggle"><input type="checkbox" id="chkLower" checked><span class="toggle-pill">a 小写</span></label>
               <label class="toggle"><input type="checkbox" id="chkDigits" checked><span class="toggle-pill">0-9 数字</span></label>
               <label class="toggle"><input type="checkbox" id="chkSymbols" checked><span class="toggle-pill">@ 符号</span></label>
-            </div>
-          </div>
-
-          <div class="config-row">
-            <label class="config-label">高级选项</label>
-            <div class="toggle-group">
-              <label class="toggle"><input type="checkbox" id="chkExcludeAmb"><span class="toggle-pill">排除易混字符 il1Lo0O</span></label>
+              <label class="toggle"><input type="checkbox" id="chkExcludeAmb"><span class="toggle-pill">排除易混 il1Lo0O</span></label>
             </div>
           </div>
 

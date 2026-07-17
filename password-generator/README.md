@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-007aff.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![Platform: Windows](https://img.shields.io/badge/Platform-Windows-007aff.svg?style=flat-square)]()
-[![Version](https://img.shields.io/badge/Version-1.0.0-007aff.svg?style=flat-square)]()
+[![Version](https://img.shields.io/badge/Version-1.1.0-007aff.svg?style=flat-square)]()
 [![Style: Apple White](https://img.shields.io/badge/Style-苹果白-007aff.svg?style=flat-square)]()
 
 </div>
@@ -20,6 +20,8 @@
 | 模块 | 说明 |
 | --- | --- |
 | 🎲 **随机密码** | 4-64 位自定义长度，支持大小写、数字、符号，可排除易混字符 `il1Lo0O` |
+| ⚡ **快速预设** | 内置 PIN / WiFi / 标准 / 高强 / 极强 五种场景预设，一键套用配置并生成 |
+| 🌈 **字符高亮** | 密码展示区按字符类型上色（数字蓝 / 符号橙 / 字母默认），提升可读性 |
 | 🧠 **记忆口令** | 3-8 词英文单词组合（80 词词库），可选分隔符、首字母大写、附加数字 |
 | 📊 **强度检测** | 基于 Shannon 熵的实时评估，估算离线破解耗时，给出改进建议 |
 | 📋 **批量生成** | 一次生成 5-50 个密码，一键复制全部 |
@@ -120,6 +122,14 @@ function secureRandomInt(max) {
 - **破解估算**：假设离线攻击速度 10¹⁰ 次/秒
 
 ## 📝 更新日志
+
+### v1.1.0 (2026-07-17)
+- ⚡ 新增「快速预设」：PIN / WiFi / 标准 / 高强 / 极强 五种场景一键套用
+- 🌈 新增密码字符高亮：数字蓝色、符号橙色，提升可读性与高级感
+- 📊 密码卡片新增元信息行（长度 / 字符池 / 熵值 / 破解耗时）
+- 🔤 等宽字体精修：扩展字体栈（JetBrains Mono / Cascadia Code），关闭连字，启用 tabular-nums
+- 🎚️ 滑块精修：thumb 居中修正、hover 环扩展、active 反馈、Firefox 兼容
+- 📈 强度条语义色精修：六阶平滑渐变 + 同色微光，语义更清晰
 
 ### v1.0.0 (2026-07-15)
 - 🎉 首次发布

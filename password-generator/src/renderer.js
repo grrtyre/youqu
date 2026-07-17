@@ -114,6 +114,83 @@ function getPwdOpts() {
   };
 }
 
+// 计算字符池大小(与主进程 evaluateStrength 口径一致)
+function computePoolSize(pwd) {
+  let pool = 0;
+  if (/[a-z]/.test(pwd)) pool += 26;
+  if (/[A-Z]/.test(pwd)) pool += 26;
+  if (/[0-9]/.test(pwd)) pool += 10;
+  if (/[^a-zA-Z0-9]/.test(pwd)) pool += 26;
+  return pool;
+}
+
+// 渲染密码到展示区:字符按类型高亮(数字蓝/符号橙/字母默认)
+function renderPasswordDisplay(pwd) {
+  const display = $('pwdDisplay');
+  display.textContent = '';
+  if (!pwd) {
+    display.classList.add('empty');
+    display.textContent = '点击生成开始';
+    return;
+  }
+  display.classList.remove('empty');
+  const frag = document.createDocumentFragment();
+  for (const ch of pwd) {
+    const span = document.createElement('span');
+    let cls = 'char ';
+    if (/[0-9]/.test(ch)) cls += 'char-digit';
+    else if (/[a-zA-Z]/.test(ch)) cls += 'char-letter';
+    else cls += 'char-symbol';
+    span.className = cls;
+    span.textContent = ch;
+    frag.appendChild(span);
+  }
+  display.appendChild(frag);
+}
+
+// 更新密码卡片元信息行(长度/字符池/熵/破解耗时)
+function updatePwdMeta(pwd, result) {
+  if (!pwd) {
+    $('pwdLen').textContent = '—';
+    $('pwdPool').textContent = '—';
+    $('pwdEntropy').textContent = '—';
+    $('pwdCrack').textContent = '—';
+    return;
+  }
+  $('pwdLen').textContent = pwd.length + ' 位';
+  $('pwdPool').textContent = computePoolSize(pwd);
+  $('pwdEntropy').textContent = result.entropy + ' bits';
+  $('pwdCrack').textContent = estimateCrackTime(result.entropy);
+}
+
+// 快速预设配置
+const PRESETS = {
+  pin:       { length: 4,  lower: false, upper: false, digits: true,  symbols: false, excludeAmbiguous: false },
+  wifi:      { length: 12, lower: true,  upper: true,  digits: true,  symbols: false, excludeAmbiguous: true  },
+  standard:  { length: 16, lower: true,  upper: true,  digits: true,  symbols: true,  excludeAmbiguous: false },
+  strong:    { length: 24, lower: true,  upper: true,  digits: true,  symbols: true,  excludeAmbiguous: true  },
+  max:       { length: 32, lower: true,  upper: true,  digits: true,  symbols: true,  excludeAmbiguous: true  }
+};
+
+function applyPreset(name) {
+  const p = PRESETS[name];
+  if (!p) return;
+  $('lengthInput').value = p.length;
+  $('lengthSlider').value = p.length;
+  updateSliderFill($('lengthSlider'));
+  $('chkLower').checked = p.lower;
+  $('chkUpper').checked = p.upper;
+  $('chkDigits').checked = p.digits;
+  $('chkSymbols').checked = p.symbols;
+  $('chkExcludeAmb').checked = p.excludeAmbiguous;
+  document.querySelectorAll('.preset').forEach(b => b.classList.toggle('active', b.dataset.preset === name));
+  genPassword();
+}
+
+document.querySelectorAll('.preset').forEach(btn => {
+  btn.addEventListener('click', () => applyPreset(btn.dataset.preset));
+});
+
 async function genPassword(silent) {
   const opts = getPwdOpts();
   if (!opts.lower && !opts.upper && !opts.digits && !opts.symbols) {
@@ -122,12 +199,13 @@ async function genPassword(silent) {
   }
   if (!silent) setStatus('生成中…');
   const pwd = await window.pg.generate(opts);
-  const display = $('pwdDisplay');
-  display.textContent = pwd;
-  display.classList.remove('empty');
+  renderPasswordDisplay(pwd);
   if (!silent) addHistory(pwd, '密码');
   const result = await window.pg.evaluate(pwd);
-  updateStrengthMeter('strengthFill', 'strengthLabel', 'entropyInfo', result);
+  updateStrengthMeter('strengthFill', 'strengthLabel', null, result);
+  const hint = $('strengthHint');
+  if (hint) hint.textContent = result.entropy > 0 ? `熵 ${result.entropy} bits · 破解 ${estimateCrackTime(result.entropy)}` : '实时评估';
+  updatePwdMeta(pwd, result);
   if (!silent) setStatus('已生成');
 }
 
@@ -137,7 +215,10 @@ function updateStrengthMeter(fillId, labelId, entropyId, result) {
   const label = $(labelId);
   label.textContent = result.label;
   label.className = 'c-s' + result.score;
-  $(entropyId).textContent = result.entropy > 0 ? `熵 ${result.entropy} bits` : '';
+  if (entropyId) {
+    const e = $(entropyId);
+    if (e) e.textContent = result.entropy > 0 ? `熵 ${result.entropy} bits` : '';
+  }
 }
 
 $('genBtn').addEventListener('click', genPassword);

@@ -1,6 +1,6 @@
 {
   "name": "password-generator",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "苹果白风格的密码生成与管理工具 - 支持密码生成、口令生成、强度评估、批量生成与本地历史",
   "main": "main.js",
   "scripts": {
