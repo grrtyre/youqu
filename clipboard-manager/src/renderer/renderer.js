@@ -22,6 +22,7 @@ let currentSearch = '';
 let focusedIndex = -1; // 键盘导航：当前高亮索引
 let expandedId = null; // 预览面板：当前展开的条目 id
 let editingId = null;  // 编辑模式：当前正在编辑的条目 id
+let lastDeleted = null; // 撤销删除：最近一次被删除的条目
 // 自动粘贴设置：默认开启，存在 localStorage
 let autoPaste = localStorage.getItem('cbm_autoPaste');
 autoPaste = autoPaste === null ? true : autoPaste === '1';
@@ -40,15 +41,40 @@ function timeAgo(ts) {
   return new Date(ts).toLocaleDateString('zh-CN');
 }
 
-const TYPE_LABEL = { code: 'CODE', link: 'LINK', email: 'MAIL', phone: 'TEL', text: 'TEXT', image: 'IMG' };
+const TYPE_LABEL = { code: '代码', link: '链接', email: '邮箱', phone: '电话', text: '文本', image: '图片' };
+
+// 操作按钮 SVG 图标（统一线性风格，颜色随 currentColor）
+const ICON = {
+  preview: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+  edit: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+  star: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+  starFilled: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+  pin: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v6.76a2 2 0 0 0 .59 1.41l2.41 2.41a1 1 0 0 1-.7 1.71H6.7a1 1 0 0 1-.7-1.71l2.41-2.41A2 2 0 0 0 9 10.76z"/></svg>',
+  trash: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>'
+};
 
 // 图片直接用主进程生成的缩略图 dataURL（item.thumb），无需 file:// 转换
 
 function showToast(msg) {
   toastEl.textContent = msg;
   toastEl.classList.add('show');
+  toastEl.classList.remove('undo');
+  toastEl.style.pointerEvents = 'none';
   clearTimeout(showToast._t);
   showToast._t = setTimeout(() => toastEl.classList.remove('show'), 1500);
+}
+
+// 撤销删除 toast：可点击 "撤销" 恢复最近被删条目，停留更久
+function showUndoToast(item) {
+  lastDeleted = item;
+  toastEl.classList.add('show', 'undo');
+  toastEl.style.pointerEvents = 'auto';
+  toastEl.innerHTML = '<span class="toast-msg">已删除</span><button class="toast-undo" id="toastUndoBtn" type="button">撤销</button>';
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => {
+    toastEl.classList.remove('show', 'undo');
+    toastEl.style.pointerEvents = 'none';
+  }, 4500);
 }
 
 function escapeHtml(s) {
@@ -188,12 +214,13 @@ function render() {
   if (items.length === 0) {
     listEl.innerHTML = '';
     emptyEl.hidden = false;
+    const emptyIcon = emptyEl.querySelector('.empty-icon');
     if (currentSearch || currentFilter !== 'all') {
-      emptyEl.querySelector('.empty-icon').textContent = '🔍';
+      emptyIcon.innerHTML = '<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>';
       emptyEl.querySelector('.empty-text').textContent = '没有匹配的记录';
       emptyEl.querySelector('.empty-hint').textContent = '试试其他关键词或筛选';
     } else {
-      emptyEl.querySelector('.empty-icon').textContent = '📭';
+      emptyIcon.innerHTML = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none"><rect x="5" y="4" width="14" height="17" rx="3" fill="url(#cbGrad)" opacity="0.12"/><rect x="5" y="4" width="14" height="17" rx="3" stroke="url(#cbGrad)" stroke-width="1.4" opacity="0.55"/><rect x="8.5" y="2.5" width="7" height="3.5" rx="1.5" fill="#fff" stroke="url(#cbGrad)" stroke-width="1.2" opacity="0.7"/><path d="M8.5 11.5h7M8.5 14.5h7M8.5 17.5h4" stroke="url(#cbGrad)" stroke-width="1.4" stroke-linecap="round" opacity="0.55"/></svg>';
       emptyEl.querySelector('.empty-text').textContent = '还没有剪贴板历史';
       emptyEl.querySelector('.empty-hint').textContent = '复制任何内容，就会出现在这里';
     }
@@ -223,21 +250,21 @@ function render() {
     ` : '';
     // 操作按钮：图片不可编辑
     const editBtn = item.type !== 'image'
-      ? `<button class="act-btn ${isEditing ? 'edit-active' : ''}" data-act="edit" title="编辑">✎</button>`
+      ? `<button class="act-btn ${isEditing ? 'edit-active' : ''}" data-act="edit" title="编辑" aria-label="编辑">${ICON.edit}</button>`
       : '';
     return `
       <div class="${cls.join(' ')}" data-id="${item.id}" style="animation-delay:${Math.min(idx*0.02, 0.3)}s">
         <div class="item-header">
           <div class="item-meta">
-            <span class="type-badge ${item.type}">${TYPE_LABEL[item.type] || 'TEXT'}</span>
+            <span class="type-badge ${item.type}">${TYPE_LABEL[item.type] || '文本'}</span>
             <span class="item-time">${timeAgo(item.timestamp)}</span>
           </div>
           <div class="item-actions">
-            <button class="act-btn ${expanded ? 'preview-active' : ''}" data-act="preview" title="预览/展开">👁</button>
+            <button class="act-btn ${expanded ? 'preview-active' : ''}" data-act="preview" title="预览/展开" aria-label="预览">${ICON.preview}</button>
             ${editBtn}
-            <button class="act-btn ${item.favorite ? 'fav-active' : ''}" data-act="favorite" title="收藏">★</button>
-            <button class="act-btn ${item.pinned ? 'pin-active' : ''}" data-act="pin" title="置顶">📌</button>
-            <button class="act-btn act-btn-del" data-act="delete" title="删除">🗑</button>
+            <button class="act-btn ${item.favorite ? 'fav-active' : ''}" data-act="favorite" title="收藏" aria-label="收藏">${item.favorite ? ICON.starFilled : ICON.star}</button>
+            <button class="act-btn ${item.pinned ? 'pin-active' : ''}" data-act="pin" title="置顶" aria-label="置顶">${ICON.pin}</button>
+            <button class="act-btn act-btn-del" data-act="delete" title="删除" aria-label="删除">${ICON.trash}</button>
           </div>
         </div>
         ${renderItemContent(item, isEditing)}
@@ -334,10 +361,14 @@ listEl.addEventListener('click', async (e) => {
       showToast(updated && updated.pinned ? '已置顶' : '已取消置顶');
       await load();
     } else if (act === 'delete') {
-      await window.api.deleteItem(id);
+      const deleted = await window.api.deleteItem(id);
       if (expandedId === id) expandedId = null;
       if (editingId === id) editingId = null;
-      showToast('已删除');
+      if (deleted) {
+        showUndoToast(deleted);
+      } else {
+        showToast('已删除');
+      }
       await load();
     }
     return;
@@ -347,16 +378,36 @@ listEl.addEventListener('click', async (e) => {
   if (editingId === id) return;
 
   // 点击图片缩略图或卡片 = 复制
+  // Shift + 点击：仅复制，不自动粘贴、不关窗（便于连续复制多条）
   if (imageThumb) e.stopPropagation();
   focusedIndex = -1; // 鼠标点击时清除键盘高亮
+  const keepOpen = e.shiftKey;
   const clickItem = allItems.find(i => i.id === id);
   const ok = await window.api.copyItem(id);
   if (ok) {
     showToast(clickItem && clickItem.type === 'image' ? '图片已复制' : '已复制');
-    if (autoPaste && window.api.pasteToFront) {
-      await window.api.pasteToFront();
+    if (!keepOpen) {
+      if (autoPaste && window.api.pasteToFront) {
+        await window.api.pasteToFront();
+      }
+      setTimeout(() => window.close(), 300);
     }
-    setTimeout(() => window.close(), 300);
+  }
+});
+
+// 撤销删除：点击 toast 内的"撤销"按钮恢复最近被删条目
+toastEl.addEventListener('click', async (e) => {
+  const undoBtn = e.target.closest('#toastUndoBtn');
+  if (!undoBtn || !lastDeleted) return;
+  const ok = await window.api.restoreItem(lastDeleted);
+  if (ok) {
+    lastDeleted = null;
+    toastEl.classList.remove('show', 'undo');
+    toastEl.style.pointerEvents = 'none';
+    showToast('已恢复');
+    await load();
+  } else {
+    showToast('恢复失败');
   }
 });
 
@@ -443,10 +494,40 @@ async function loadDataPath() {
     // 在路径分隔符后插入零宽空格，允许浏览器在分隔符处自然换行（不在单词中间断开）
     const breakable = p.replace(/([\\/])/g, '$1\u200B');
     dataPathEl.textContent = breakable;
-    dataPathEl.title = p;
+    dataPathEl.title = '点击在资源管理器中定位 ' + p;
   } catch (e) {
     dataPathEl.textContent = '本地 userData';
   }
+}
+
+// 点击数据路径 → 在资源管理器中定位历史文件
+if (dataPathEl) {
+  dataPathEl.style.cursor = 'pointer';
+  dataPathEl.addEventListener('click', async () => {
+    if (window.api.openDataFolder) {
+      const ok = await window.api.openDataFolder();
+      showToast(ok ? '已在资源管理器打开' : '打开失败');
+    }
+  });
+}
+
+// 首次启动欢迎引导：展示一次后由主进程写入标记文件
+async function maybeShowWelcome() {
+  if (!window.api.getFirstRun) return;
+  try {
+    const fr = await window.api.getFirstRun();
+    if (!fr) return;
+    const welcome = document.getElementById('welcomeCard');
+    if (!welcome) return;
+    welcome.hidden = false;
+    const okBtn = document.getElementById('welcomeOk');
+    if (okBtn) {
+      okBtn.addEventListener('click', async () => {
+        welcome.hidden = true;
+        if (window.api.markWelcomeShown) await window.api.markWelcomeShown();
+      });
+    }
+  } catch (e) { /* 忽略 */ }
 }
 
 // --- 键盘导航 ---
@@ -505,14 +586,17 @@ document.addEventListener('keydown', async (e) => {
     e.preventDefault();
     if (focusedIndex < 0 || focusedIndex >= items.length) return;
     const item = items[focusedIndex];
+    // Shift + Enter：仅复制，不自动粘贴、不关窗
+    const keepOpen = e.shiftKey;
     const ok = await window.api.copyItem(item.id);
     if (ok) {
       showToast(item.type === 'image' ? '图片已复制' : '已复制');
-      // 粘贴到前台窗口
-      if (autoPaste && window.api.pasteToFront) {
-        await window.api.pasteToFront();
+      if (!keepOpen) {
+        if (autoPaste && window.api.pasteToFront) {
+          await window.api.pasteToFront();
+        }
+        setTimeout(() => window.close(), 300);
       }
-      setTimeout(() => window.close(), 300);
     }
   } else if (e.key === ' ') {
     // 空格键：预览/展开当前高亮项
@@ -531,14 +615,18 @@ document.addEventListener('keydown', async (e) => {
       window.close();
     }
   } else if (e.key === 'Delete') {
-    // Delete 键：删除当前高亮项
+    // Delete 键：删除当前高亮项（带撤销）
     if (focusedIndex >= 0 && focusedIndex < items.length) {
       e.preventDefault();
       const item = items[focusedIndex];
-      await window.api.deleteItem(item.id);
+      const deleted = await window.api.deleteItem(item.id);
       if (expandedId === item.id) expandedId = null;
       if (editingId === item.id) editingId = null;
-      showToast('已删除');
+      if (deleted) {
+        showUndoToast(deleted);
+      } else {
+        showToast('已删除');
+      }
       await load();
     }
   }
@@ -556,5 +644,6 @@ window.api.onHistoryUpdated(() => load());
 // 初始加载
 load();
 loadDataPath();
+maybeShowWelcome();
 // 自动聚焦搜索
 setTimeout(() => searchInput.focus(), 100);
