@@ -1,218 +1,218 @@
 # -*- coding: utf-8 -*-
+"""第七批项目图标生成 - 6 个项目 (苹果白风格 / 纯 PIL 矢量手绘)
+设计规范: 1024 白底 + frame 圆角外框 + #007AFF 线性描边 + 16px 统一线宽 + 圆角端点
 """
-第六批资源：6 个缺失项目图标（疯狂扣细节模式）
-严格沿用既有 gen_resources.py / gen_batch6_icons.py 风格规范：
-  - frame 外框 [80,80,944,944] + 22% 圆角(190) + #007AFF 描边 + LINE_W=16 + 圆角端点
-  - 1024×1024 icon-source.png + 多尺寸 PNG(16/32/64/128/256/512) + ICO
-新增项目：alarm-manager / world-clock / pomodoro-manager
-          / emoji-manager / unit-converter / mind-map-manager
-风格：苹果白高端（极简线条、扁平、居中、留白充足、纯线性描边）
-"""
-import os
-import math
-from PIL import Image, ImageDraw
+import os, math
+from PIL import Image, ImageDraw, ImageFont
 
-ROOT = r"d:\Ai\mimo\youqu"
-SHARED = os.path.join(ROOT, "shared-assets")
-SHARED_ICONS = os.path.join(SHARED, "icons")
-PROJECT_ICONS_DIR = os.path.join(SHARED_ICONS, "projects")
-
-SRC_SIZE = 1024
-SIZES = [16, 32, 64, 128, 256, 512]
-ICO_SIZES = [(16, 16), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)]
-
-BLUE = (0, 122, 255)        # #007AFF
-WHITE = (255, 255, 255)
-LINE_W = 16                 # 主线宽 @1024，与既有图标完全统一
-
-FRAME_BOX = [80, 80, 944, 944]
-FRAME_RADIUS = 190
+# ============ 设计规范常量 ============
+SIZE = 1024
+BG = (255, 255, 255)
+BLUE = (0, 122, 255)            # #007AFF 主色
+LINE_W = 16                    # 统一线宽
+FRAME = [80, 80, 944, 944]     # 22% 圆角外框 [x0,y0,x1,y1]
+FRAME_R = int((944 - 80) * 0.22)  # 圆角半径 ~190
+OUT_DIR = r"D:\Ai\mimo\youqu\shared-assets\icons\projects"
 
 
-def new_canvas():
-    im = Image.new("RGB", (SRC_SIZE, SRC_SIZE), WHITE)
-    d = ImageDraw.Draw(im)
-    d.line_width = LINE_W
-    return im, d
+# ============ 通用工具 ============
+def line_round(d, p1, p2, w=LINE_W, fill=BLUE):
+    """线段 + 圆角端点 (等价 stroke-linecap:round)"""
+    d.line([p1, p2], fill=fill, width=w)
+    r = w // 2
+    d.ellipse([p1[0]-r, p1[1]-r, p1[0]+r, p1[1]+r], fill=fill)
+    d.ellipse([p2[0]-r, p2[1]-r, p2[0]+r, p2[1]+r], fill=fill)
 
 
-def draw_frame(d):
-    d.rounded_rectangle(FRAME_BOX, radius=FRAME_RADIUS, outline=BLUE, width=LINE_W)
+def poly_round(d, pts, w=LINE_W, fill=BLUE):
+    """折线 + 圆角端点/节点"""
+    for i in range(len(pts)-1):
+        line_round(d, pts[i], pts[i+1], w, fill)
 
 
-def line_round(d, points, fill=BLUE, width=LINE_W, joint="curve"):
-    """画线 + 圆角端点（stroke-linecap:round 等价）"""
-    if len(points) < 2:
-        return
-    d.line(points, fill=fill, width=width, joint=joint)
-    r = width // 2
-    for pt in (points[0], points[-1]):
-        x, y = pt
-        d.ellipse([x - r, y - r, x + r, y + r], fill=fill)
-
-
-def rounded_rect(d, box, radius, outline=BLUE, width=LINE_W):
-    d.rounded_rectangle(box, radius=radius, outline=outline, width=width)
-
-
-def circle(d, cx, cy, r, outline=BLUE, width=LINE_W):
-    d.ellipse([cx - r, cy - r, cx + r, cy + r], outline=outline, width=width)
-
-
-def dot(d, cx, cy, r):
-    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=BLUE)
-
-
-def arc_points(cx, cy, r, a0, a1, n=24):
-    """生成圆弧点列（角度制，0=右，逆时针为正；屏幕坐标 y 向下）"""
+def bezier_pts(p0, p1, p2, n=24):
+    """二次贝塞尔点序列 (用于平滑曲线, 替代字母)"""
     pts = []
-    for i in range(n + 1):
-        t = math.radians(a0 + (a1 - a0) * i / n)
-        pts.append((cx + r * math.cos(t), cy - r * math.sin(t)))
+    for i in range(n+1):
+        t = i / n
+        x = (1-t)**2*p0[0] + 2*(1-t)*t*p1[0] + t**2*p2[0]
+        y = (1-t)**2*p0[1] + 2*(1-t)*t*p1[1] + t**2*p2[1]
+        pts.append((x, y))
     return pts
 
 
-def save_source(im, out_path):
-    im.save(out_path, "PNG", optimize=True)
+def new_canvas():
+    img = Image.new("RGB", (SIZE, SIZE), BG)
+    d = ImageDraw.Draw(img)
+    d.rounded_rectangle(FRAME, radius=FRAME_R, outline=BLUE, width=LINE_W)
+    return img, d
 
 
-def make_icon_variants(source_png, out_dir, prefix="icon"):
-    os.makedirs(out_dir, exist_ok=True)
-    im = Image.open(source_png).convert("RGBA")
-    for s in SIZES:
-        im.resize((s, s), Image.LANCZOS).save(
-            os.path.join(out_dir, f"{prefix}-{s}.png"), "PNG", optimize=True
-        )
-    im.save(os.path.join(out_dir, f"{prefix}.ico"), format="ICO", sizes=ICO_SIZES)
+def blue_ratio(img):
+    px = img.load()
+    w, h = img.size
+    cnt = 0
+    for y in range(h):
+        for x in range(w):
+            r, g, b = px[x, y]
+            if b > 200 and 80 <= g <= 200 and r < 100:
+                cnt += 1
+    return cnt / (w * h) * 100
 
 
-# ============ 6 个项目图标 ============
-
-def draw_alarm_manager(im, d):
-    """闹钟管家：frame + 圆形表盘 + 左右小铃耳 + 10:10 指针 + 中心轴（去腿，提升精致感）"""
-    draw_frame(d)
-    cx, cy, r = 512, 520, 250
-    # 表盘
-    circle(d, cx, cy, r)
-    # 顶部铃铛耳（缩小、上移，弱化卡通感）
-    circle(d, 352, 300, 38)
-    circle(d, 672, 300, 38)
-    # 指针 10:10 —— 时针指向 10，分针指向 2
-    line_round(d, [(cx, cy), (430, 452)], width=LINE_W)   # 时针
-    line_round(d, [(cx, cy), (616, 436)], width=LINE_W)   # 分针
-    # 中心轴
-    dot(d, cx, cy, 16)
+def save_all(img, name):
+    """保存 1024 源 + 多尺寸 PNG + ICO"""
+    d = os.path.join(OUT_DIR, name)
+    os.makedirs(d, exist_ok=True)
+    img.save(os.path.join(d, "icon-source.png"))
+    for s in [16, 32, 48, 64, 128, 256, 512]:
+        r = img.resize((s, s), Image.LANCZOS)
+        r.save(os.path.join(d, f"icon-{s}.png"))
+    ico_sizes = [(16, 16), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)]
+    ico_imgs = [img.resize((s, s), Image.LANCZOS) for s, _ in ico_sizes]
+    ico_imgs[0].save(os.path.join(d, "icon.ico"), format="ICO", sizes=ico_sizes)
+    print(f"  [{name}] 蓝占比 {blue_ratio(img):.2f}%  -> saved")
 
 
-def draw_world_clock(im, d):
-    """世界时钟：frame + 地球仪（圆 + 赤道 + 收窄经线椭圆）+ 时针/分针"""
-    draw_frame(d)
-    cx, cy, r = 512, 512, 250
-    # 地球外圆
-    circle(d, cx, cy, r)
-    # 赤道（水平中线）
-    line_round(d, [(cx - r, cy), (cx + r, cy)], width=LINE_W)
-    # 中央经线（收窄竖向椭圆，避免十字准星感）
-    d.ellipse([cx - 82, cy - r, cx + 82, cy + r], outline=BLUE, width=LINE_W)
-    # 时针（指向 12）+ 分针（指向 3），强化“时钟”语义
-    line_round(d, [(cx, cy), (cx, cy - 140)], width=LINE_W)
-    line_round(d, [(cx, cy), (cx + 100, cy)], width=LINE_W)
-    dot(d, cx, cy, 16)
+# ============ 1. ocr-manager 文档 + 扫描线 ============
+def draw_ocr(d):
+    # 文档主体 (圆角矩形, 顶部右侧折角)
+    dx0, dy0, dx1, dy1 = 340, 250, 684, 760
+    fold = 70  # 折角大小
+    # 文档轮廓: 左上 -> 右上(折角起点) -> 折角内点 -> 折角下点 -> 右下 -> 左下 -> 回左上
+    pts = [
+        (dx0, dy0),                       # 左上
+        (dx1 - fold, dy0),                # 右上折角起点
+        (dx1, dy0 + fold),                # 折角内点
+        (dx1, dy1),                       # 右下
+        (dx0, dy1),                       # 左下
+        (dx0, dy0),                       # 回左上
+    ]
+    poly_round(d, pts)
+    # 折角内斜线 (折角的两条边)
+    line_round(d, (dx1 - fold, dy0), (dx1, dy0 + fold))
+    # 文档内 4 行文本 (水平短线, 递减宽度)
+    tx = dx0 + 50
+    for i, w in enumerate([250, 200, 230, 160]):
+        ty = dy0 + 110 + i * 70
+        line_round(d, (tx, ty), (tx + w, ty))
+    # 扫描线 (OCR 标志: 文档内的横向扫描线, 圆角端点, 保持封闭构图)
+    sy = 540
+    line_round(d, (dx0 + 30, sy), (dx1 - 30, sy))
 
 
-def draw_pomodoro_manager(im, d):
-    """番茄管家：frame + 番茄身 + 顶部单片宽叶 + 茎 + 番茄钟指针"""
-    draw_frame(d)
-    cx, cy = 512, 556
-    # 番茄身（扁椭圆）
-    d.ellipse([cx - 220, cy - 200, cx + 220, cy + 210], outline=BLUE, width=LINE_W)
-    # 茎（顶部短竖线）
-    line_round(d, [(cx, 356), (cx, 312)], width=LINE_W)
-    # 单片宽叶（三角形轮廓，小尺寸下更易辨识）
-    line_round(d, [(cx - 82, 356), (cx, 286), (cx + 82, 356), (cx - 82, 356)], width=LINE_W, joint="curve")
-    # 内部番茄钟指针：时针向上、分针向右
-    line_round(d, [(cx, cy), (cx, cy - 130)], width=LINE_W)
-    line_round(d, [(cx, cy), (cx + 120, cy)], width=LINE_W)
-    dot(d, cx, cy, 16)
+# ============ 2. disk-manager 盘片 + 磁头 ============
+def draw_disk(d):
+    # 外盘片 (大圆) + 中心轴孔, 去掉中圈减少小尺寸粘连
+    c = 512
+    r_out = 290
+    d.ellipse([c-r_out, c-r_out, c+r_out, c+r_out], outline=BLUE, width=LINE_W)
+    # 中心轴孔
+    r_hub = 64
+    d.ellipse([c-r_hub, c-r_hub, c+r_hub, c+r_hub], outline=BLUE, width=LINE_W)
+    # 读写磁头臂 (从右上伸入, 内收留呼吸感)
+    arm_outer = (736, 256)
+    arm_inner = (588, 404)   # 接近盘片上方, 远离外框
+    line_round(d, arm_outer, arm_inner)
+    # 磁头小方块 (臂末端)
+    hx0, hy0, hx1, hy1 = arm_inner[0]-24, arm_inner[1]-10, arm_inner[0]+24, arm_inner[1]+28
+    d.rounded_rectangle([hx0, hy0, hx1, hy1], radius=10, outline=BLUE, width=LINE_W)
+    # 臂枢轴 (顶端小圆)
+    pr = 24
+    d.ellipse([arm_outer[0]-pr, arm_outer[1]-pr, arm_outer[0]+pr, arm_outer[1]+pr], outline=BLUE, width=LINE_W)
 
 
-def draw_emoji_manager(im, d):
-    """表情管家：frame + 圆脸 + 两眼（实心点）+ 微笑弧"""
-    draw_frame(d)
-    cx, cy, r = 512, 512, 320
-    # 脸（放大，增强视觉重量）
-    circle(d, cx, cy, r)
-    # 双眼
-    dot(d, 404, 444, 26)
-    dot(d, 620, 444, 26)
-    # 微笑弧（下半弧，开口向上）
-    pts = arc_points(cx, cy + 6, 180, 205, 335, n=22)
-    line_round(d, pts, width=LINE_W)
+# ============ 3. keyboard-tester 按键网格 + 空格键 ============
+def draw_keyboard(d):
+    # 2 行 x 3 列 键 + 实心空格键 (空格键=键盘标志+焦点, 收窄控制重量)
+    cols, rows = 3, 2
+    kw, kh = 140, 140
+    gap = 34
+    total_w = cols*kw + (cols-1)*gap
+    total_h = rows*kh + (rows-1)*gap
+    x0 = (SIZE - total_w) // 2
+    y0 = 308
+    kr = 26
+    for r in range(rows):
+        for c in range(cols):
+            kx = x0 + c*(kw+gap)
+            ky = y0 + r*(kh+gap)
+            d.rounded_rectangle([kx, ky, kx+kw, ky+kh], radius=kr, outline=BLUE, width=LINE_W)
+    # 空格键 (描边横条, 键盘标志; 全图标回归纯线性统一风格)
+    sb_y = y0 + total_h + 28
+    sb_w = 280
+    sb_h = 56
+    d.rounded_rectangle([SIZE//2 - sb_w//2, sb_y, SIZE//2 + sb_w//2, sb_y + sb_h],
+                        radius=22, outline=BLUE, width=LINE_W)
 
 
-def draw_unit_converter(im, d):
-    """单位转换：frame + 上下两条半圆箭头（垂直错位，箭头统一）"""
-    draw_frame(d)
-    cx = 512
-    rt = 180  # 上弧半径
-    rb = 180  # 下弧半径
-    cyt = 488  # 上弧圆心（上移）
-    cyb = 552  # 下弧圆心（下移）
-    # 上弧：从左到右，过顶部
-    top = arc_points(cx, cyt, rt, 180, 0, n=28)
-    line_round(d, top, width=LINE_W)
-    # 上弧右端箭头（指向右下，统一尺寸）
-    ex, ey = top[-1]
-    line_round(d, [(ex - 52, ey - 30), (ex, ey), (ex - 12, ey + 54)], width=LINE_W, joint="curve")
-    # 下弧：从右到左，过底部
-    bot = arc_points(cx, cyb, rb, 0, 180, n=28)
-    line_round(d, bot, width=LINE_W)
-    # 下弧左端箭头（指向左上，统一尺寸）
-    sx, sy = bot[-1]
-    line_round(d, [(sx + 52, sy + 30), (sx, sy), (sx + 12, sy - 54)], width=LINE_W, joint="curve")
+# ============ 4. text-manager 文本气泡 (圆角气泡 + 尾巴 + 文本行, 纯几何直观) ============
+def draw_text(d):
+    # 气泡主体 (圆角矩形)
+    d.rounded_rectangle([260, 300, 764, 660], radius=44, outline=BLUE, width=LINE_W)
+    # 左下尾巴 (贝塞尔曲线, 柔化与圆角语言统一, 避免尖锐角)
+    tail_base_l = (372, 660)
+    tail_tip = (352, 744)
+    tail_base_r = (452, 660)
+    poly_round(d, bezier_pts(tail_base_l, (360, 710), tail_tip))
+    poly_round(d, bezier_pts(tail_tip, (430, 725), tail_base_r))
+    # 3 行文本
+    tx = 332
+    widths = [372, 332, 272]
+    y0 = 384
+    for i, w in enumerate(widths):
+        ty = y0 + i * 80
+        line_round(d, (tx, ty), (tx + w, ty))
 
 
-def draw_mind_map_manager(im, d):
-    """思维导图：frame + 中心大节点（主体）+ 三个小分支节点 + 连接线"""
-    draw_frame(d)
-    cx, cy = 512, 512
-    # 三个分支节点位置（外移，给中心留主体空间）
-    branches = [(288, 312), (736, 312), (512, 792)]
-    # 连接线（先画，被节点圆覆盖端点更干净）
-    for bx, by in branches:
-        line_round(d, [(cx, cy), (bx, by)], width=LINE_W)
-    # 分支节点（小，弱化）
-    for bx, by in branches:
-        circle(d, bx, by, 50)
-    # 中心节点（大 + 实心圆，确立视觉主体层级）
-    circle(d, cx, cy, 92)
-    dot(d, cx, cy, 28)
+# ============ 5. eye-rest-manager 开眼 (杏仁轮廓 + 瞳孔, 纯几何) ============
+def draw_eye_rest(d):
+    # 杏仁眼: 左右两端尖角, 上下两条贝塞尔弧
+    eye_cx, eye_cy = 512, 512
+    half_w = 280          # 左右半宽
+    peak = 130            # 上下弧峰高
+    left = (eye_cx - half_w, eye_cy)
+    right = (eye_cx + half_w, eye_cy)
+    # 上弧 (左 -> 上峰 -> 右)
+    upper = bezier_pts(left, (eye_cx, eye_cy - peak), right)
+    poly_round(d, upper)
+    # 下弧 (左 -> 下峰 -> 右)
+    lower = bezier_pts(left, (eye_cx, eye_cy + peak), right)
+    poly_round(d, lower)
+    # 虹膜 (描边圆) + 瞳孔 (小描边圆, 全纯线性无填充, 避免 low-res 糊点)
+    iris_r = 82
+    d.ellipse([eye_cx-iris_r, eye_cy-iris_r, eye_cx+iris_r, eye_cy+iris_r], outline=BLUE, width=LINE_W)
+    pupil_r = 38
+    d.ellipse([eye_cx-pupil_r, eye_cy-pupil_r, eye_cx+pupil_r, eye_cy+pupil_r], outline=BLUE, width=LINE_W)
 
 
-PROJECT_ICONS = [
-    ("alarm-manager", draw_alarm_manager, "闹钟管家"),
-    ("world-clock", draw_world_clock, "世界时钟"),
-    ("pomodoro-manager", draw_pomodoro_manager, "番茄管家"),
-    ("emoji-manager", draw_emoji_manager, "表情管家"),
-    ("unit-converter", draw_unit_converter, "单位转换"),
-    ("mind-map-manager", draw_mind_map_manager, "思维导图"),
-]
+# ============ 6. port-manager USB 端口插槽 (外壳 + 内插槽 + 触片) ============
+def draw_port(d):
+    # 外壳 (设备边缘的端口面)
+    d.rounded_rectangle([300, 360, 724, 664], radius=36, outline=BLUE, width=LINE_W)
+    # 内部端口开口 (插槽)
+    d.rounded_rectangle([366, 420, 658, 604], radius=22, outline=BLUE, width=LINE_W)
+    # 接口触片 (中间填充横条, 与 eye 瞳孔/keyboard 焦点键统一填充语言)
+    d.rounded_rectangle([412, 498, 612, 526], radius=10, fill=BLUE)
 
 
-def run():
-    print("=== 第六批：6 个项目图标源（苹果白风格）===")
-    for proj, fn, label in PROJECT_ICONS:
-        print(f"[{proj}] {label}")
-        im, d = new_canvas()
-        fn(im, d)
-        out_dir = os.path.join(PROJECT_ICONS_DIR, proj)
-        os.makedirs(out_dir, exist_ok=True)
-        src = os.path.join(out_dir, "icon-source.png")
-        save_source(im, src)
-        make_icon_variants(src, out_dir, "icon")
-        print(f"  -> {out_dir}")
-    print("\n[完成] 6 个项目图标源 + 多尺寸 PNG + ICO 已生成")
+# ============ 主流程 ============
+def main():
+    print("第七批图标生成开始 (6 个项目, 苹果白风格)")
+    items = [
+        ("ocr-manager", draw_ocr),
+        ("disk-manager", draw_disk),
+        ("keyboard-tester", draw_keyboard),
+        ("text-manager", draw_text),
+        ("eye-rest-manager", draw_eye_rest),
+        ("port-manager", draw_port),
+    ]
+    for name, fn in items:
+        img, d = new_canvas()
+        fn(d)
+        save_all(img, name)
+    print("全部完成")
 
 
 if __name__ == "__main__":
-    run()
+    main()
