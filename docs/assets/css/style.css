@@ -15,12 +15,12 @@
   --accent-soft:#e8f1ff;
   --green:#34c759;
   --orange:#ff9500;
-  --radius:18px;
-  --radius-sm:12px;
-  --radius-lg:28px;
-  --shadow:0 1px 3px rgba(0,0,0,.05),0 10px 28px rgba(0,0,0,.08);
-  --shadow-md:0 4px 12px rgba(0,0,0,.07),0 16px 40px rgba(0,0,0,.1);
-  --shadow-lg:0 8px 20px rgba(0,0,0,.08),0 32px 64px rgba(0,0,0,.14);
+  --radius:20px;
+  --radius-sm:14px;
+  --radius-lg:30px;
+  --shadow:0 1px 2px rgba(0,0,0,.03),0 4px 16px rgba(0,122,255,.04),0 8px 24px rgba(0,0,0,.04);
+  --shadow-md:0 2px 8px rgba(0,0,0,.04),0 12px 32px rgba(0,122,255,.06),0 16px 40px rgba(0,0,0,.06);
+  --shadow-lg:0 4px 16px rgba(0,0,0,.05),0 24px 56px rgba(0,122,255,.08),0 32px 72px rgba(0,0,0,.08);
   --ease:cubic-bezier(.4,0,.2,1);
   --ease-out:cubic-bezier(.16,1,.3,1);
   --maxw:1200px;
@@ -142,15 +142,18 @@
   opacity:0;animation:fadeUp 1s var(--ease-out) .75s forwards;
 }
 .stat{text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:80px}
-.stat__num{display:block;font-size:40px;font-weight:700;letter-spacing:-.03em;color:var(--ink);line-height:1;font-feature-settings:"tnum";background:linear-gradient(135deg,#1d1d1f,#007aff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.stat__num{display:block;font-size:46px;font-weight:700;letter-spacing:-.035em;color:var(--ink);line-height:1;font-feature-settings:"tnum";background:linear-gradient(135deg,#1d1d1f,#007aff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+/* 主统计数字（53）放大强调，其他次级数字缩小 */
+#stat-count{font-size:54px;letter-spacing:-.04em}
+.stat__num--free{font-size:32px;letter-spacing:-.02em;background:linear-gradient(135deg,#34c759,#30b14e);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .stat__label{display:block;font-size:12px;color:var(--ink3);margin-top:4px;letter-spacing:.04em;font-weight:500}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 
 /* Hero 精选图标预览条 */
 .hero__preview{
-  position:relative;z-index:2;margin:28px auto 0;max-width:880px;text-align:center;
-  display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;
+  position:relative;z-index:2;margin:36px auto 0;max-width:880px;text-align:center;
+  display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center;
   opacity:0;animation:fadeUp 1s var(--ease-out) .9s forwards;
 }
 .hero__preview-label{
@@ -242,7 +245,7 @@
 .grid{
   max-width:var(--maxw);margin:0 auto;padding:0 24px;
   display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-  gap:28px;
+  gap:24px;
 }
 .card{
   background:var(--card);border-radius:var(--radius);overflow:hidden;
@@ -337,7 +340,7 @@
 
 .card__body{padding:18px 20px 18px;display:flex;flex-direction:column;flex:1;gap:8px}
 .card__desc{
-  font-size:13px;color:var(--ink2);line-height:1.6;
+  font-size:13px;color:var(--ink2);line-height:1.55;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
   flex:1;letter-spacing:.005em;margin:0;
 }
@@ -456,20 +459,55 @@
 }
 .modal__close:hover{background:rgba(0,0,0,.1)}
 .modal__media{
-  height:220px;display:flex;align-items:center;justify-content:center;
+  height:200px;display:flex;align-items:center;justify-content:center;
   position:relative;overflow:hidden;
 }
-.modal__media .card__icon-emoji{
-  width:64px;height:64px;border-radius:16px;font-size:34px;
-  position:absolute;bottom:16px;left:16px;
+/* 媒体区装饰光晕（与 Hero 风格统一） */
+.modal__orb{
+  position:absolute;border-radius:50%;filter:blur(48px);pointer-events:none;
 }
-.modal__media .modal__shot{
-  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+.modal__orb--1{
+  width:200px;height:200px;top:-60px;left:-30px;
+  background:radial-gradient(circle,rgba(0,122,255,.30),transparent 70%);opacity:.55;
 }
-.modal__media .modal__shot-bg{
-  position:absolute;inset:0;
-  background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.3));
+.modal__orb--2{
+  width:180px;height:180px;bottom:-50px;right:-20px;
+  background:radial-gradient(circle,rgba(90,200,250,.28),transparent 70%);opacity:.5;
 }
+/* 大 emoji 视觉锚点（玻璃容器） */
+.modal__big-emoji{
+  position:relative;z-index:2;
+  width:96px;height:96px;border-radius:28px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:52px;line-height:1;
+  background:rgba(255,255,255,.78);backdrop-filter:blur(12px);
+  box-shadow:0 12px 36px rgba(0,0,0,.10),inset 0 1px 0 rgba(255,255,255,.9);
+  animation:modalEmojiIn .5s var(--ease-out);
+}
+@keyframes modalEmojiIn{from{opacity:0;transform:scale(.7) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+/* 媒体区分类标签（顶部居中） */
+.modal__media-cat{
+  position:absolute;top:18px;left:50%;transform:translateX(-50%);z-index:3;
+  font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  padding:5px 14px;border-radius:980px;
+  background:rgba(255,255,255,.9);backdrop-filter:blur(8px);
+  border:1px solid rgba(0,0,0,.05);color:var(--ink2);
+}
+/* 媒体区底部徽章组（版本 / 技术栈 / 评分） */
+.modal__media-badges{
+  position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:3;
+  display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
+}
+.modal__badge{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:12px;font-weight:700;letter-spacing:.01em;line-height:1;
+  padding:6px 12px;border-radius:980px;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
+  border:1px solid rgba(0,0,0,.06);color:var(--ink);
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+}
+.modal__badge--stack{color:var(--ink2);font-weight:600}
+.modal__badge--score{background:linear-gradient(135deg,#34c759,#30b14e);color:#fff;border-color:transparent;box-shadow:0 2px 8px rgba(52,199,89,.3)}
 .modal__body{padding:28px 32px 36px}
 .modal__cat{font-size:12px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
 .modal__title{font-size:28px;font-weight:700;letter-spacing:-.02em;margin-bottom:10px}
@@ -491,7 +529,7 @@
   .support__inner{grid-template-columns:1fr;gap:32px}
   .footer__inner{grid-template-columns:1fr;gap:24px}
   .footer__copy{text-align:left}
-  .nav__links{gap:18px}
+  .nav__links{gap:14px;font-size:13px}
   .nav__links a:not(.nav__gh){display:none}
   .hero__stats{gap:28px;margin-top:48px}
   .stat__num{font-size:26px}
@@ -619,7 +657,8 @@
 .card__monogram{
   position:absolute;top:14px;left:14px;z-index:3;
   width:42px;height:42px;border-radius:13px;
-  display:flex;align-items:center;justify-content:center;
+  display:none; /* 全局隐藏：减少卡片视觉密度，让 emoji 独占视觉焦点 */
+  align-items:center;justify-content:center;
   font-size:19px;font-weight:700;letter-spacing:-.02em;
   color:#fff;
   box-shadow:0 4px 12px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.25);
@@ -693,13 +732,15 @@
 .stat__num{font-variant-numeric:tabular-nums}
 
 /* 2. 工具栏间距收紧：搜索框与筛选按钮更紧凑 */
-.toolbar__row{gap:22px}
+.toolbar__row{gap:26px}
+.toolbar__count{margin-top:6px;letter-spacing:.01em}
 
 /* 3. 卡片图标加大：增强视觉重量 */
 .card__emoji{font-size:46px;width:84px;height:84px}
 
-/* 4. 版本号徽章加大：提升可读性，降低撞色感 */
-.card__version{padding:6px 13px;font-size:13px;background:rgba(255,255,255,.96)}
+/* 4. 版本号徽章降噪：弱化存在感，避免与精致图标/标题抢戏 */
+.card__version{padding:4px 11px;font-size:11px;font-weight:600;color:var(--ink2);background:rgba(255,255,255,.88);letter-spacing:.01em;opacity:.85;transition:opacity .25s}
+.card:hover .card__version{opacity:1}
 
 /* 5. 卡片内容区 padding 优化：按钮不贴边 */
 .card__body{padding:18px 20px 22px}
@@ -760,16 +801,18 @@
   .hero__title-accent{animation:none;background:#007aff;-webkit-text-fill-color:#007aff}
 }
 
-/* 2. 卡片索引序号：meta 区精致序号，丰富信息层次 */
+/* 2. 卡片索引序号：meta 区精致序号，丰富信息层次（弱化降噪） */
 .card__index{
-  font-size:11px;font-weight:700;color:var(--ink3);
+  font-size:10px;font-weight:600;color:var(--ink3);
   letter-spacing:.02em;font-variant-numeric:tabular-nums;
   font-family:-apple-system,"SF Mono","Menlo",monospace;
-  padding:3px 7px;border-radius:6px;
-  background:rgba(0,0,0,.04);line-height:1;
-  transition:color .25s,background .25s;
+  padding:2px 6px;border-radius:5px;
+  background:rgba(0,0,0,.025);line-height:1;
+  opacity:.7;transition:color .25s,background .25s,opacity .25s;
+  /* 全局隐藏：减少卡片信息密度 */
+  display:none;
 }
-.card:hover .card__index{color:var(--accent);background:var(--accent-soft)}
+.card:hover .card__index{color:var(--accent);background:var(--accent-soft);opacity:1}
 
 /* 3. 分类筛选 chips 数量徽标：实时显示各分类工具数 */
 .chip[data-count]::after{
@@ -793,13 +836,331 @@
 /* 4. 卡片 meta 区间距微调：容纳索引号 */
 .card__meta{gap:7px}
 
-/* 5. 卡片源码链接：轻量 pill 样式，与主按钮拉开主次层级 */
+/* 5. 卡片源码链接：浅蓝灰填充按钮，与主按钮主次平衡（提升源码入口可见性） */
 .card__src{
-  display:inline-flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:500;color:var(--ink2);
-  padding:8px 14px;border-radius:980px;white-space:nowrap;
-  background:rgba(0,0,0,.04);border:1px solid transparent;
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  font-size:13px;font-weight:600;color:var(--ink);
+  padding:0 14px;border-radius:980px;white-space:nowrap;height:36px;
+  background:rgba(0,122,255,.08);border:1px solid rgba(0,122,255,.18);
   transition:all .2s var(--ease);
 }
-.card__src:hover{color:var(--accent);background:var(--accent-soft);border-color:rgba(0,122,255,.15)}
+.card__src-icon{width:14px;height:14px;flex-shrink:0;opacity:.85;color:var(--ink2)}
+.card__src:hover{color:var(--accent);background:rgba(0,122,255,.14);border-color:rgba(0,122,255,.3)}
+.card__src:hover .card__src-icon{opacity:1;color:var(--accent)}
 .card__actions{gap:8px}
+.card__actions .btn--sm{height:36px}
+
+/* ============ 第七轮细节打磨（modal 修复 + 首屏质感 + 时间线增强） ============ */
+
+/* 1. Hero 信任支柱条：三列玻璃卡片，强化首屏信任感与质感 */
+.hero__pillars{
+  list-style:none;margin:48px auto 0;padding:14px;
+  max-width:780px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+  opacity:0;animation:fadeUp 1s var(--ease-out) 1.1s forwards;
+  background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(248,250,255,.4));
+  border:1px solid rgba(0,0,0,.04);border-radius:22px;
+  box-shadow:0 4px 24px rgba(0,0,0,.04),inset 0 1px 0 rgba(255,255,255,.6);
+}
+.hero__pillar{
+  display:flex;align-items:center;gap:11px;
+  padding:13px 15px;border-radius:16px;
+  background:rgba(255,255,255,.72);backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(0,0,0,.05);
+  box-shadow:0 2px 12px rgba(0,0,0,.04);
+  transition:transform .3s var(--ease-out),box-shadow .3s var(--ease-out),border-color .3s;
+}
+.hero__pillar:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.08);border-color:rgba(0,122,255,.14)}
+.hero__pillar-icon{
+  flex-shrink:0;width:34px;height:34px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#007aff,#5ac8fa);color:#fff;
+  box-shadow:0 4px 10px rgba(0,122,255,.25),inset 0 1px 0 rgba(255,255,255,.3);
+}
+.hero__pillar-icon svg{width:18px;height:18px}
+.hero__pillar-text{display:flex;flex-direction:column;gap:1px;line-height:1.25;min-width:0}
+.hero__pillar-text strong{font-size:14px;font-weight:600;color:var(--ink);letter-spacing:-.01em}
+.hero__pillar-text em{font-size:11.5px;color:var(--ink3);font-style:normal;letter-spacing:.005em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:600px){
+  .hero__pillars{grid-template-columns:repeat(3,1fr);gap:6px;max-width:360px;margin-top:22px}
+  .hero__pillar{flex-direction:column;gap:6px;padding:10px 6px;text-align:center;align-items:center}
+  .hero__pillar-icon{width:28px;height:28px;border-radius:8px}
+  .hero__pillar-icon svg{width:15px;height:15px}
+  .hero__pillar-text{align-items:center;gap:0}
+  .hero__pillar-text strong{font-size:11px}
+  .hero__pillar-text em{display:none}
+}
+
+/* 2. 段落 eyebrow 小标签：标题上方的小caps标签，增强层次与专业感 */
+.section__eyebrow{
+  display:inline-block;font-size:12px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--accent);margin-bottom:10px;
+  padding:4px 12px;border-radius:980px;background:var(--accent-soft);
+}
+.toolbar__head .section__eyebrow{margin-bottom:8px}
+
+/* 3. 页脚渐变顶边：替代硬切，柔和过渡 */
+.footer{position:relative;border-top:1px solid transparent}
+.footer::before{
+  content:"";position:absolute;top:-1px;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,122,255,.4),rgba(90,200,250,.4),transparent);
+}
+.footer::after{
+  content:"";position:absolute;top:0;left:0;right:0;height:120px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,122,255,.04),transparent);
+}
+
+/* 4. 时间线增强：最新条目高亮 + 日期胶囊化 + 入场动画 */
+.tl__item:first-child .tl__card{
+  border:1px solid rgba(0,122,255,.18);
+  box-shadow:0 2px 8px rgba(0,122,255,.06),0 12px 32px rgba(0,0,0,.07);
+}
+.tl__item:first-child .tl__card::before{
+  content:"最新";position:absolute;top:14px;right:16px;
+  font-size:10px;font-weight:700;color:#fff;letter-spacing:.06em;
+  padding:3px 9px;border-radius:980px;
+  background:linear-gradient(135deg,#007aff,#5ac8fa);
+  box-shadow:0 2px 6px rgba(0,122,255,.3);
+}
+.tl__card{position:relative}
+.tl__date{
+  display:inline-block;width:auto;
+  padding:4px 12px;border-radius:980px;
+  background:var(--accent-soft);color:var(--accent);
+  font-size:12px;font-weight:700;letter-spacing:.01em;
+}
+.tl__item:first-child .tl__dot{animation:dotPulse 2.2s ease-in-out infinite}
+.tl__item:not(:first-child) .tl__dot{animation:none;box-shadow:0 0 0 4px var(--accent-soft)}
+
+/* 5. 卡片媒体区精化：高度微增 + emoji 背后分类色光晕 */
+.card__media{height:164px}
+.card__emoji-glow{
+  position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);
+  width:120px;height:120px;border-radius:50%;z-index:0;
+  background:radial-gradient(circle,var(--glow,rgba(0,122,255,.16)),transparent 65%);
+  pointer-events:none;filter:blur(2px);
+  transition:opacity .35s var(--ease-out),transform .35s var(--ease-out);
+}
+.card:hover .card__emoji-glow{transform:translate(-50%,-50%) scale(1.15)}
+.card[data-cat="dev"] .card__emoji-glow{--glow:rgba(0,122,255,.16)}
+.card[data-cat="system"] .card__emoji-glow{--glow:rgba(52,199,89,.16)}
+.card[data-cat="efficiency"] .card__emoji-glow{--glow:rgba(255,149,0,.16)}
+.card[data-cat="design"] .card__emoji-glow{--glow:rgba(175,82,222,.16)}
+/* emoji 轻微呼吸 */
+.card__emoji{animation:emojiBreathe 5s ease-in-out infinite}
+@keyframes emojiBreathe{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.04)}}
+.card:hover .card__emoji{animation:none}
+@media (prefers-reduced-motion:reduce){.card__emoji{animation:none}}
+
+/* 6. 段落标题区居中容器（配合 eyebrow） */
+.changelog .section__head,.support .section__head{text-align:center;margin-bottom:8px}
+.support__text .section__head{text-align:left}
+
+/* 7. 卡片媒体区名称描边收敛（避免与 emoji 重叠时模糊） */
+.card__media-name{text-shadow:0 1px 1px rgba(255,255,255,.9),0 0 12px rgba(255,255,255,.6)}
+
+/* 8. 移动端卡片名称可读性：缩小字号 + 允许两行换行 + emoji 上移避让 */
+@media (max-width:600px){
+  .card__media{height:156px}
+  .card__media-name{font-size:17px;line-height:1.25;max-width:88%}
+  .card__emoji{width:70px;height:70px;font-size:38px;top:40%}
+  .card__emoji-glow{width:104px;height:104px;top:40%}
+  .card__media-text{bottom:12px;gap:3px}
+  .card__media-cat{font-size:10px;padding:3px 10px}
+  /* 筛选 chips 紧凑化，确保 5 个分类完整可见不截断 */
+  .chip{padding:8px 12px 8px 10px;font-size:13px;height:36px}
+  .chip::before{width:6px;height:6px}
+  .chip[data-count]::after{min-width:16px;height:15px;font-size:9px}
+  .chips{gap:6px}
+  /* 移动端 chips 横向滚动，避免换行挤压搜索栏 */
+  .toolbar__row{flex-direction:column;align-items:stretch;gap:10px}
+  .search{min-width:0;flex:1 1 100%;max-width:100%}
+  .chips{flex:1 1 100%;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px;width:100%;
+    /* 渐隐遮罩暗示可横向滚动 */
+    mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 24px),transparent 100%);
+    -webkit-mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 24px),transparent 100%);
+  }
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex-shrink:0}
+  /* 卡片描述在移动端限制 2 行，避免内容过长导致单卡过高 */
+  .card__desc{-webkit-line-clamp:2}
+  /* 描述与按钮间距收敛 */
+  .card__body{padding:16px 16px}
+}
+
+/* ============ 第八轮细节打磨（按钮权重 / 视觉焦点 / 微交互暗示） ============ */
+
+/* 1. 统计分隔点升级为竖线分隔，更优雅高级 */
+.stat__sep{
+  width:1px;height:32px;border-radius:1px;
+  background:linear-gradient(180deg,transparent,var(--line) 30%,var(--line) 70%,transparent);
+}
+@media (max-width:860px){.stat__sep{height:24px}}
+
+/* 2. Hero 主 CTA 按钮加箭头图标暗示 */
+.hero__actions .btn--primary::after{
+  content:"→";display:inline-block;margin-left:2px;
+  transition:transform .25s var(--ease-out);
+  font-weight:600;
+}
+.hero__actions .btn--primary:hover::after{transform:translateX(3px)}
+
+/* 3. 统计数字下方加柔光强调短线 */
+.stat{position:relative;padding-bottom:6px}
+.stat::after{
+  content:"";position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);
+  width:24px;height:2px;border-radius:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  opacity:.5;
+}
+
+/* 4. 卡片 hover 显示「查看详情」角标，暗示可点击 */
+.card__hint{
+  position:absolute;top:14px;left:14px;z-index:4;
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 10px;border-radius:980px;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(8px);
+  color:#fff;font-size:11px;font-weight:600;letter-spacing:.02em;
+  opacity:0;transform:translateY(-4px);
+  transition:opacity .25s var(--ease),transform .25s var(--ease);
+  pointer-events:none;
+}
+.card:hover .card__hint,.card:focus-visible .card__hint{opacity:1;transform:translateY(0)}
+
+/* 5. Hero badge 加状态点动效（脉冲呼吸） */
+.hero__badge{position:relative}
+.hero__badge::before{
+  content:"";display:inline-block;width:6px;height:6px;border-radius:50%;
+  background:#34c759;margin-right:4px;flex-shrink:0;
+  box-shadow:0 0 0 0 rgba(52,199,89,.5);
+  animation:badgePulse 2.4s ease-out infinite;
+}
+@keyframes badgePulse{
+  0%{box-shadow:0 0 0 0 rgba(52,199,89,.5)}
+  70%{box-shadow:0 0 0 8px rgba(52,199,89,0)}
+  100%{box-shadow:0 0 0 0 rgba(52,199,89,0)}
+}
+
+/* 6. 卡片标题区与正文间增加细分隔线，强化层次 */
+.card__meta{
+  padding-bottom:8px;margin-bottom:2px;
+  border-bottom:1px solid var(--line-soft);
+}
+
+/* 7. 主按钮微光扫过动效（hover 时） */
+.btn--primary{position:relative;overflow:hidden}
+.btn--primary::before{
+  content:"";position:absolute;top:0;left:-100%;width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);
+  transition:left .6s var(--ease-out);
+}
+.btn--primary:hover::before{left:120%}
+
+/* 8. 移动端导航 GitHub 链接改为图标按钮，避免文字截断 */
+@media (max-width:600px){
+  .nav__gh{width:32px;height:32px;padding:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(0,0,0,.05);font-size:0}
+  .nav__gh::before{
+    content:"";display:block;width:16px;height:16px;
+    background-color:var(--ink);
+    -webkit-mask:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z'/%3E%3C/svg%3E") center/contain no-repeat;
+    mask:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z'/%3E%3C/svg%3E") center/contain no-repeat;
+  }
+  .nav__brand{font-size:16px;gap:8px}
+  .nav__logo{width:26px;height:26px;font-size:14px}
+}
+
+/* 9. 主 CTA 按钮加图标到 hero secondary 按钮，增强可识别性 */
+/* 已删除红心装饰：与 HTML 内 ☕ emoji 重复，避免视觉杂乱 */
+
+/* ============ 第九轮细节打磨（呼吸感 / 滚动提示 / 空状态 / 版本号间距） ============ */
+
+/* 1. 移动端 Hero 压缩高度，让工具卡片更早出现 */
+@media (max-width:600px){
+  .hero{padding:72px 16px 36px}
+  .hero__title{margin:10px 0 6px;font-size:30px;letter-spacing:-.025em}
+  .hero__sub{margin-bottom:16px;font-size:14px}
+  .hero__actions{gap:10px;justify-content:center;margin-bottom:8px}
+  .hero__actions .btn{flex:0 1 auto;min-width:0;padding-left:18px;padding-right:18px;font-size:14px}
+  .hero__stats{gap:20px;margin-top:14px}
+  .stat__num{font-size:30px}
+  .stat__num--free{font-size:22px}
+  .hero__preview{margin-top:22px}
+  .hero__pillars{margin-top:22px;padding:10px;gap:8px}
+  .hero__pillar{padding:9px 10px;gap:8px}
+  .hero__pillar-icon{width:26px;height:26px;border-radius:8px}
+  .hero__pillar-icon svg{width:14px;height:14px}
+  .hero__pillar-text strong{font-size:11px}
+  .hero__pillar-text em{display:none}
+}
+
+/* 2. 极窄屏（≤400px）pillars 隐藏，避免文字截断（信息已在 hero__stats 表达） */
+@media (max-width:400px){
+  .hero__pillars{display:none}
+}
+
+/* 2b. Hero preview 横向滚动渐隐遮罩，暗示可滑动（移动端可见） */
+.hero__preview-row{
+  position:relative;max-width:100%;
+  overflow-x:auto;overflow-y:hidden;
+  flex-wrap:nowrap;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;
+  padding:4px 24px;margin:0 -24px;
+  justify-content:flex-start;
+  mask-image:linear-gradient(90deg,transparent 0,#000 24px,#000 calc(100% - 24px),transparent 100%);
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 24px,#000 calc(100% - 24px),transparent 100%);
+}
+.hero__preview-row::-webkit-scrollbar{display:none}
+.hero__preview-row .hero__chip{flex-shrink:0}
+@media (min-width:861px){
+  .hero__preview-row{overflow:visible;mask-image:none;-webkit-mask-image:none;padding:0;margin:0;flex-wrap:wrap;justify-content:center}
+  .hero__preview-row .hero__chip{flex-shrink:0}
+}
+
+/* 3. 卡片版本号内移 + 边距优化 */
+.card__version{top:14px;right:14px;padding:5px 13px}
+
+/* 4. 移动端卡片间距收紧：16px → 12px，避免单列堆叠疏离 */
+@media (max-width:600px){
+  .grid{gap:12px}
+  /* 隐藏卡片索引号，减少信息密度 */
+  .card__index{display:none}
+  /* 隐藏 mimo 评分徽标，避免视觉杂乱 */
+  .card__score{display:none}
+  /* 卡片 monogram 在移动端隐藏，让 emoji 独占视觉焦点 */
+  .card__monogram{display:none}
+}
+
+/* 5. 空状态视觉升级：图标背景柔光圈 + 主色按钮 */
+.empty{
+  padding:96px 24px;
+}
+.empty__icon{
+  font-size:56px;display:inline-block;width:96px;height:96px;line-height:96px;
+  margin:0 auto 20px;border-radius:50%;
+  background:radial-gradient(circle,var(--accent-soft),transparent 70%);
+  filter:drop-shadow(0 4px 12px rgba(0,122,255,.08));
+}
+.empty p{font-size:15px;color:var(--ink2);margin-bottom:24px}
+
+/* 6. 卡片底部按钮区与描述间距统一 */
+.card__body{gap:10px}
+.card__actions{margin-top:6px}
+
+/* 7. chip 选中态柔化：深色保留但稍降饱和度，与描边态差异更和谐 */
+.chip.is-active{
+  background:var(--ink);color:#fff;border-color:var(--ink);
+  box-shadow:0 4px 14px rgba(29,29,31,.22);transform:translateY(-1px);font-weight:600;
+}
+
+/* 8. 搜索框与 chips 高度统一为 40px（原 chips 已是 40，搜索框 padding 调整对齐） */
+.search__input{height:40px;padding:0 40px 0 42px;box-sizing:border-box}
+.search__clear{top:9px}
+
+/* 9. 卡片描述行高微调，让 3 行更舒展 */
+.card__desc{line-height:1.55}
+
+/* 10. Hero 副标题字号在 860px 以下略降，避免与标题比例失衡 */
+@media (max-width:860px){
+  .hero__sub{font-size:15px;line-height:1.6}
+  .hero__title{letter-spacing:-.025em}
+}
