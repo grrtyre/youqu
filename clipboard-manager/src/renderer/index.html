@@ -12,39 +12,74 @@
   <!-- 顶栏：可拖动 -->
   <header class="titlebar">
     <div class="brand">
-      <span class="brand-icon">📋</span>
+      <span class="brand-logo" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="cbGrad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#007aff"/>
+              <stop offset="1" stop-color="#42a1ec"/>
+            </linearGradient>
+          </defs>
+          <rect x="5" y="4" width="14" height="17" rx="3" fill="url(#cbGrad)"/>
+          <rect x="8.5" y="2.5" width="7" height="3.5" rx="1.5" fill="#fff" stroke="url(#cbGrad)" stroke-width="1.2"/>
+          <path d="M8.5 11.5h7M8.5 14.5h7M8.5 17.5h4" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity="0.95"/>
+        </svg>
+      </span>
       <span class="brand-name">剪贴板管家</span>
     </div>
     <div class="titlebar-actions">
-      <button class="icon-btn" id="settingsBtn" title="设置">⚙</button>
-      <button class="icon-btn icon-btn-danger" id="closeBtn" title="隐藏">✕</button>
+      <button class="icon-btn" id="settingsBtn" title="设置" aria-label="设置">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <button class="icon-btn icon-btn-danger" id="closeBtn" title="隐藏" aria-label="隐藏">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
     </div>
   </header>
 
   <!-- 搜索栏 -->
   <div class="search-wrap">
     <div class="search-box">
-      <span class="search-icon">🔍</span>
-      <input id="searchInput" type="text" placeholder="搜索..." spellcheck="false" autocomplete="off" />
-      <button class="search-clear" id="searchClear" title="清除">✕</button>
+      <span class="search-icon" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      </span>
+      <input id="searchInput" type="text" placeholder="搜索剪贴板内容..." spellcheck="false" autocomplete="off" />
+      <button class="search-clear" id="searchClear" title="清除" aria-label="清除搜索">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
     </div>
     <div class="filter-tabs">
       <button class="tab active" data-filter="all">全部</button>
-      <button class="tab" data-filter="favorite">⭐ 收藏</button>
-      <button class="tab" data-filter="image">🖼 图片</button>
-      <button class="tab" data-filter="code">&lt;/&gt; 代码</button>
-      <button class="tab" data-filter="link">🔗 链接</button>
-      <button class="tab" data-filter="text">📝 文本</button>
+      <button class="tab" data-filter="favorite">收藏</button>
+      <button class="tab" data-filter="image">图片</button>
+      <button class="tab" data-filter="code">代码</button>
+      <button class="tab" data-filter="link">链接</button>
+      <button class="tab" data-filter="text">文本</button>
     </div>
   </div>
 
   <!-- 列表 -->
   <main class="list-wrap" id="listWrap">
+    <!-- 首次启动欢迎卡片（默认隐藏，由 JS 控制显示一次） -->
+    <div class="welcome-card" id="welcomeCard" hidden>
+      <div class="welcome-icon" aria-hidden="true">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+          <rect x="5" y="4" width="14" height="17" rx="3" fill="url(#cbGrad)"/>
+          <rect x="8.5" y="2.5" width="7" height="3.5" rx="1.5" fill="#fff" stroke="url(#cbGrad)" stroke-width="1.2"/>
+          <path d="M8.5 11.5h7M8.5 14.5h7M8.5 17.5h4" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="welcome-body">
+        <div class="welcome-title">欢迎使用剪贴板管家</div>
+        <div class="welcome-hint">随时按 <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd> 唤起本面板。复制任何内容都会自动记录，点击条目即可粘贴。</div>
+      </div>
+      <button class="welcome-ok" id="welcomeOk" type="button">知道了</button>
+    </div>
     <div class="list" id="list">
       <!-- 由 JS 渲染 -->
     </div>
     <div class="empty" id="empty" hidden>
-      <div class="empty-icon">📭</div>
+      <div class="empty-icon"></div>
       <div class="empty-text">还没有剪贴板历史</div>
       <div class="empty-hint">复制任何内容，就会出现在这里</div>
     </div>
@@ -53,16 +88,21 @@
   <!-- 底栏 -->
   <footer class="footer">
     <span class="count" id="count">0 条记录</span>
-    <span class="footer-hint">Ctrl + Shift + V 唤起</span>
+    <span class="footer-hint"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd> 唤起</span>
     <div class="footer-btn-wrap">
-      <button class="footer-btn" id="clearBtn">🗑 清空（保留收藏）</button>
+      <button class="footer-btn" id="clearBtn" title="清空所有非置顶非收藏记录">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+        清空（保留收藏）
+      </button>
     </div>
   </footer>
 
   <!-- 设置面板 -->
   <div class="settings-panel" id="settingsPanel" hidden>
     <div class="settings-content">
-      <button class="settings-close-btn" id="closeSettings" title="关闭">✕</button>
+      <button class="settings-close-btn" id="closeSettings" title="关闭" aria-label="关闭">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
       <h3>设置</h3>
       <div class="setting-row">
         <span>⌨️ 唤起快捷键</span>
@@ -103,7 +143,9 @@
   <!-- 清空确认弹窗 -->
   <div class="confirm-modal" id="confirmModal" hidden>
     <div class="confirm-content">
-      <div class="confirm-icon">⚠️</div>
+      <div class="confirm-icon" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
       <h4 class="confirm-title">清空剪贴板历史？</h4>
       <p class="confirm-desc">将删除所有非置顶、非收藏的记录。此操作不可撤销。</p>
       <div class="confirm-actions">
