@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -148,7 +148,15 @@
       <h2 class="section__title">更新日志</h2>
       <p class="section__desc">按时间倒序，记录每次迭代</p>
     </div>
-    <div class="timeline">
+    <div class="timeline is-collapsed" id="timeline">
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-17</div>
+        <div class="tl__card">
+          <h3>展示站点细节打磨（第十一轮 · 网格密度 / 日志折叠 / 鸣谢升级 / 搜索高亮 / 页脚年份）</h3>
+          <p>桌面端卡片网格从 3 列升级为 4 列（minmax 260px + 超宽屏 1320px 容器），单屏可容纳更多工具，减少滚动次数；更新日志由 12 条长记录折叠为「最新 4 条 + 展开更多」交互，默认收起历史条目，页面节奏更紧凑，配合带旋转箭头的胶囊按钮与剩余条数提示；鸣谢空状态从冷冰冰的虚线空盒升级为温暖邀请卡——橙色心形图标呼吸动效 + 双行文案 + 「成为首位支持者 →」暗示，提升情感化设计；搜索时在卡片标题与描述中柔和高亮匹配关键词（标题用品牌蓝、描述用下划线式荧光笔），让搜索结果反馈即时可读；页脚版权年份由 JS 动态填充并加蓝色圆点胶囊化，避免硬编码过期；同步平板端 2 列稳定布局与移动端间距收敛。</p>
+        </div>
+      </div>
       <div class="tl__item">
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-17</div>
@@ -246,6 +254,15 @@
         </div>
       </div>
     </div>
+    <div class="tl__toggle-wrap">
+      <button class="tl__toggle" id="tl-toggle" aria-expanded="false" aria-controls="timeline">
+        <span class="tl__toggle-label">展开全部更新</span>
+        <span class="tl__toggle-count" id="tl-toggle-count"></span>
+        <span class="tl__toggle-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </span>
+      </button>
+    </div>
   </div>
 </section>
 
@@ -264,7 +281,11 @@
       <h3>🙏 鸣谢</h3>
       <p>感谢以下朋友的支持（按支持时间排序）：</p>
       <div class="thanks__list">
-        <span class="thanks__empty">_暂无，期待第一个支持者的出现。_</span>
+        <div class="thanks__empty">
+          <span class="thanks__empty-icon" aria-hidden="true">❤</span>
+          <span class="thanks__empty-text">期待第一个支持者的出现，<strong>你的名字将出现在这里</strong>。</span>
+          <span class="thanks__empty-hint">成为首位支持者 →</span>
+        </div>
       </div>
     </div>
   </div>
@@ -286,7 +307,7 @@
       <a href="https://www.ifdian.net/a/giquwei" target="_blank" rel="noopener">爱发电</a>
     </div>
     <div class="footer__copy">
-      <p>© 2026 youqu · MIT License</p>
+      <p>© <span class="footer__year" id="footer-year">2026</span> youqu · MIT License</p>
       <p class="footer__made">用 ❤️ 与 Trae IDE 打造</p>
     </div>
   </div>
