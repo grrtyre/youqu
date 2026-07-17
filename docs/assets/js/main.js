@@ -1,7 +1,7 @@
 /* ============ youqu 展示站点 · 交互逻辑 ============ */
 'use strict';
 
-/* ---------- 项目数据（52 个工具） ---------- */
+/* ---------- 项目数据（53 个工具） ---------- */
 var G = 'https://github.com/grrtyre/youqu';
 var R = 'https://github.com/grrtyre/youqu/releases';
 var AF = 'https://www.ifdian.net/a/giquwei';
@@ -271,16 +271,18 @@ function cardHTML(p, idx){
   var idxStr = String(idx+1).padStart(2,'0');
   return ''+
   '<article class="card" data-cat="'+p.cat+'" data-stack="'+p.stack+'" data-id="'+p.id+'" tabindex="0" role="button" aria-label="'+p.name+' 详情">'+
+    '<span class="card__hint" aria-hidden="true">查看详情</span>'+
     '<div class="card__media" style="background:'+g.emoji_bg+'">'+
       '<span class="card__monogram" aria-hidden="true">'+monogram(p.name)+'</span>'+
       '<span class="card__version">'+p.ver+'</span>'+
       scoreBadge+
+      '<span class="card__emoji-glow" aria-hidden="true"></span>'+
       '<span class="card__emoji" aria-hidden="true">'+p.icon+'</span>'+
       '<div class="card__media-text">'+
         '<span class="card__media-cat">'+CAT_NAME[p.cat]+'</span>'+
         '<span class="card__media-name">'+p.name+'</span>'+
       '</div>'+
-      '<button class="card__lightbox-btn" aria-label="查看大图" data-shot="'+p.full+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg></button>'+
+      '<button class="card__lightbox-btn" aria-label="查看大图" data-lbid="'+p.id+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg></button>'+
     '</div>'+
     '<div class="card__body">'+
       '<div class="card__meta">'+
@@ -291,7 +293,7 @@ function cardHTML(p, idx){
       '<p class="card__desc">'+p.desc+'</p>'+
       '<div class="card__actions">'+
         dlBtn+
-        '<a class="card__src" href="'+p.gh+'" target="_blank" rel="noopener">源码 →</a>'+
+        '<a class="card__src" href="'+p.gh+'" target="_blank" rel="noopener" aria-label="查看源码"><svg class="card__src-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg><span>源码</span></a>'+
       '</div>'+
     '</div>'+
   '</article>';
@@ -305,7 +307,6 @@ function render(list){
     countEl.textContent = '共 '+list.length+' 个工具';
     empty.hidden = list.length > 0;
     observeCards();
-    bindCardImgFade();
     isFirstRender = false;
     return;
   }
@@ -317,7 +318,6 @@ function render(list){
     countEl.classList.remove('count-tick'); void countEl.offsetWidth; countEl.classList.add('count-tick');
     empty.hidden = list.length > 0;
     observeCards();
-    bindCardImgFade();
     grid.classList.remove('is-fading');
   }, 160);
 }
@@ -340,33 +340,6 @@ function observeCards(){
   setTimeout(function(){
     document.querySelectorAll('.card:not(.is-visible)').forEach(function(c){ c.classList.add('is-visible'); });
   }, 800);
-}
-
-/* ---------- 截图渐显（加载完成后淡入，避免空白闪烁）+ 深色图检测 ---------- */
-function bindCardImgFade(){
-  document.querySelectorAll('.card__shot').forEach(function(img){
-    if(img.dataset.loaded) return;
-    function done(){ img.dataset.loaded='1'; img.classList.add('is-loaded'); detectDark(img); }
-    if(img.complete && img.naturalWidth > 0){ done(); }
-    else { img.addEventListener('load', done, {once:true}); img.addEventListener('error', done, {once:true}); }
-  });
-}
-
-/* 检测图片平均亮度，深色截图加 is-dark 类以便 CSS 单独提亮统一调性 */
-function detectDark(img){
-  try{
-    var c = document.createElement('canvas'), w = 32, h = 32;
-    c.width = w; c.height = h;
-    var ctx = c.getContext('2d');
-    ctx.drawImage(img, 0, 0, w, h);
-    var data = ctx.getImageData(0, 0, w, h).data;
-    var sum = 0, n = 0;
-    for(var i=0; i<data.length; i+=4){
-      sum += (data[i]*0.299 + data[i+1]*0.587 + data[i+2]*0.114);
-      n++;
-    }
-    if(sum / n < 110){ img.classList.add('is-dark'); }
-  }catch(e){ /* canvas tainted (file:// 跨域)，跳过，保留白叠加兜底 */ }
 }
 
 /* ---------- 卡片 hover 鼠标光晕 spotlight ---------- */
@@ -452,16 +425,23 @@ function openModal(id){
     var cls = p.stack==='web' ? 'tag tag--web' : 'tag';
     return '<span class="'+cls+'">'+t+'</span>';
   }).join('');
+  var si = STACK_INFO[p.stack] || {icon:'⚡',label:p.stack};
   var features = p.features.map(function(f){ return '<li>'+f+'</li>'; }).join('');
   var dlBtn = p.dl
     ? '<a class="btn btn--primary" href="'+p.dl+'" target="_blank" rel="noopener">⬇️ 下载 '+p.ver+'</a>'
     : '';
+  /* 媒体区改为渐变 + 大 emoji + 装饰光晕（原引用不存在的 webp 截图已移除） */
   modalBody.innerHTML = ''+
     '<div class="modal__media" style="background:'+g.emoji_bg+'">'+
-      '<img class="modal__shot" src="'+p.shot+'" alt="'+p.name+' 截图" loading="lazy">'+
-      '<div class="modal__shot-bg"></div>'+
-      '<span class="card__icon-emoji">'+p.icon+'</span>'+
-      (p.score > 0 ? '<span class="card__score" title="mimo 审美评分">'+p.score+'</span>' : '')+
+      '<span class="modal__orb modal__orb--1" aria-hidden="true"></span>'+
+      '<span class="modal__orb modal__orb--2" aria-hidden="true"></span>'+
+      '<span class="modal__big-emoji" aria-hidden="true">'+p.icon+'</span>'+
+      '<span class="modal__media-cat">'+CAT_NAME[p.cat]+'</span>'+
+      '<div class="modal__media-badges">'+
+        '<span class="modal__badge modal__badge--ver">'+p.ver+'</span>'+
+        '<span class="modal__badge modal__badge--stack">'+si.icon+' '+si.label+'</span>'+
+        (p.score > 0 ? '<span class="modal__badge modal__badge--score">★ '+p.score+'</span>' : '')+
+      '</div>'+
     '</div>'+
     '<div class="modal__body">'+
       '<div class="modal__cat">'+CAT_NAME[p.cat]+'</div>'+
@@ -488,8 +468,6 @@ function closeModal(){
 
 /* 卡片点击 -> 弹窗（点击下载/源码按钮不触发） */
 grid.addEventListener('click', function(e){
-  var btn = e.target.closest('.card__zoom');
-  if(btn){ openModal(btn.dataset.id); return; }
   if(e.target.closest('.card__actions a')) return;
   var card = e.target.closest('.card');
   if(card){ openModal(card.dataset.id); }
@@ -550,12 +528,12 @@ if('IntersectionObserver' in window){
   });
 }
 
-/* ---------- Hero 精选图标预览条（精简到 6 个，避免密集杂乱） ---------- */
+/* ---------- Hero 精选图标预览条（精简到 5 个，留出呼吸感） ---------- */
 var heroPreview = document.getElementById('hero-preview');
 if(heroPreview){
-  heroPreview.innerHTML = PROJECTS.slice(0,6).map(function(p){
+  heroPreview.innerHTML = '<span class="hero__preview-label">精选工具</span><div class="hero__preview-row">'+PROJECTS.slice(0,5).map(function(p){
     return '<span class="hero__chip"><span class="hero__chip-emoji">'+p.icon+'</span>'+p.name+'</span>';
-  }).join('');
+  }).join('')+'</div>';
 }
 
 /* ---------- Hero 统计数字 ---------- */
@@ -568,6 +546,56 @@ if(heroCount) heroCount.textContent = PROJECTS.length;
 /* ---------- 截图 Lightbox ---------- */
 var lightbox = document.getElementById('lightbox');
 var lightboxImg = document.getElementById('lightbox-img');
+
+/* 生成项目品牌展示 SVG（数据 URI），替代不存在的 webp 截图，苹果白风格 */
+function escapeXML(s){ return String(s).replace(/[<>&"']/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c];}); }
+function buildShowcaseSVG(p){
+  var cc = CAT_COLOR[p.cat];
+  var catName = CAT_NAME[p.cat];
+  var si = STACK_INFO[p.stack] || {label:p.stack};
+  /* 分类色柔和背景渐变 */
+  var bg = {
+    dev:['#f5f8ff','#e8f0ff'],
+    system:['#f5fbf7','#e8f6ee'],
+    efficiency:['#fffaf3','#fff0e0'],
+    design:['#faf8ff','#f2ecff']
+  }[p.cat] || ['#f5f8ff','#e8f0ff'];
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750" viewBox="0 0 1200 750">'+
+    '<defs>'+
+      '<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">'+
+        '<stop offset="0" stop-color="'+bg[0]+'"/>'+
+        '<stop offset="1" stop-color="'+bg[1]+'"/>'+
+      '</linearGradient>'+
+      '<radialGradient id="glow" cx="50%" cy="42%" r="42%">'+
+        '<stop offset="0" stop-color="'+cc+'" stop-opacity="0.16"/>'+
+        '<stop offset="1" stop-color="'+cc+'" stop-opacity="0"/>'+
+      '</radialGradient>'+
+      '<filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="12" stdDeviation="24" flood-color="#000" flood-opacity="0.10"/></filter>'+
+    '</defs>'+
+    '<rect width="1200" height="750" fill="url(#bg)"/>'+
+    '<rect width="1200" height="750" fill="url(#glow)"/>'+
+    /* 顶部彩条 */
+    '<rect x="0" y="0" width="1200" height="6" fill="'+cc+'"/>'+
+    /* 顶部小标 */
+    '<text x="600" y="92" text-anchor="middle" font-family="-apple-system,PingFang SC,Segoe UI,sans-serif" font-size="20" font-weight="700" letter-spacing="6" fill="'+cc+'">'+escapeXML(catName.toUpperCase())+'</text>'+
+    /* emoji 玻璃容器 */
+    '<rect x="540" y="150" width="120" height="120" rx="34" fill="#ffffff" fill-opacity="0.78" filter="url(#sh)"/>'+
+    '<text x="600" y="240" text-anchor="middle" font-size="66">'+escapeXML(p.icon)+'</text>'+
+    /* 项目名 */
+    '<text x="600" y="360" text-anchor="middle" font-family="-apple-system,PingFang SC,Segoe UI,sans-serif" font-size="58" font-weight="700" letter-spacing="-1.5" fill="#1d1d1f">'+escapeXML(p.name)+'</text>'+
+    /* 描述（自动截断两行） */
+    '<text x="600" y="418" text-anchor="middle" font-family="-apple-system,PingFang SC,Segoe UI,sans-serif" font-size="24" fill="#6e6e73">'+escapeXML((p.desc||'').slice(0,46))+'</text>'+
+    /* 徽章组 */
+    '<g font-family="-apple-system,PingFang SC,Segoe UI,sans-serif" font-size="22" font-weight="700">'+
+      '<rect x="430" y="470" width="120" height="44" rx="22" fill="#ffffff" stroke="#e8e8ed"/><text x="490" y="499" text-anchor="middle" fill="#1d1d1f">'+escapeXML(p.ver)+'</text>'+
+      '<rect x="562" y="470" width="146" height="44" rx="22" fill="#ffffff" stroke="#e8e8ed"/><text x="635" y="499" text-anchor="middle" fill="#6e6e73">'+escapeXML(si.label)+'</text>'+
+      '<rect x="720" y="470" width="50" height="44" rx="22" fill="'+cc+'"/><text x="745" y="499" text-anchor="middle" fill="#ffffff" font-size="20">'+escapeXML(p.icon)+'</text>'+
+    '</g>'+
+    /* 底部品牌 */
+    '<text x="600" y="690" text-anchor="middle" font-family="-apple-system,PingFang SC,Segoe UI,sans-serif" font-size="18" fill="#86868b">youqu · 实用工具集合</text>'+
+  '</svg>';
+  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+}
 
 function openLightbox(src){
   if(!src) return;
@@ -584,12 +612,15 @@ function closeLightbox(){
   lightboxImg.src = '';
 }
 
-/* lightbox 触发：点击截图或放大按钮 */
+/* lightbox 触发：点击放大按钮，生成该项目品牌展示 SVG */
 grid.addEventListener('click', function(e){
   var lbBtn = e.target.closest('.card__lightbox-btn');
-  if(lbBtn){ e.stopPropagation(); openLightbox(lbBtn.dataset.shot); return; }
-  var shot = e.target.closest('.card__shot');
-  if(shot){ e.stopPropagation(); openLightbox(shot.dataset.full); return; }
+  if(lbBtn){
+    e.stopPropagation();
+    var p = PROJECTS.filter(function(x){ return x.id === lbBtn.dataset.lbid; })[0];
+    if(p) openLightbox(buildShowcaseSVG(p));
+    return;
+  }
 });
 
 /* 关闭 lightbox */
