@@ -13,6 +13,7 @@ contextBridge.exposeInMainWorld('api', {
   addTask: (title, estimate) => ipcRenderer.invoke('task:add', title, estimate),
   setCurrentTask: (id) => ipcRenderer.invoke('task:current', id),
   completeTask: (id) => ipcRenderer.invoke('task:complete', id),
+  uncompleteTask: (id) => ipcRenderer.invoke('task:uncomplete', id),
   deleteTask: (id) => ipcRenderer.invoke('task:delete', id),
   addTaskRaw: (task) => ipcRenderer.invoke('task:addRaw', task),
   updateTask: (id, updates) => ipcRenderer.invoke('task:update', id, updates),
