@@ -124,9 +124,14 @@
   opacity:0;animation:fadeUp .9s var(--ease-out) .25s forwards;
 }
 .hero__title-accent{
-  color:var(--accent);
+  background:linear-gradient(110deg,#007aff 0%,#5ac8fa 38%,#a8d8ff 50%,#5ac8fa 62%,#007aff 100%);
+  background-size:220% auto;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
   font-weight:700;
+  animation:titleShimmer 4.5s linear infinite;
 }
+@keyframes titleShimmer{0%{background-position:0% center}100%{background-position:220% center}}
 .hero__sub{
   font-size:clamp(16px,2.2vw,20px);color:var(--ink2);line-height:1.65;
   letter-spacing:.005em;max-width:600px;margin:0 auto 20px;font-weight:400;
@@ -143,8 +148,8 @@
 }
 .stat{text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:80px}
 .stat__num{display:block;font-size:46px;font-weight:700;letter-spacing:-.035em;color:var(--ink);line-height:1;font-feature-settings:"tnum";background:linear-gradient(135deg,#1d1d1f,#007aff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-/* 主统计数字（53）放大强调，其他次级数字缩小 */
-#stat-count{font-size:54px;letter-spacing:-.04em}
+/* 主统计数字收敛：与次级数字尺寸接近，避免与主标题争夺视觉焦点 */
+#stat-count{font-size:46px;letter-spacing:-.035em}
 .stat__num--free{font-size:32px;letter-spacing:-.02em;background:linear-gradient(135deg,#34c759,#30b14e);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .stat__label{display:block;font-size:12px;color:var(--ink3);margin-top:4px;letter-spacing:.04em;font-weight:500}
 
@@ -155,6 +160,8 @@
   position:relative;z-index:2;margin:36px auto 0;max-width:880px;text-align:center;
   display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center;
   opacity:0;animation:fadeUp 1s var(--ease-out) .9s forwards;
+  /* 全局隐藏：项目卡片墙紧接其后已完整展示工具，预览条徒增首屏密度且风格割裂 */
+  display:none;
 }
 .hero__preview-label{
   display:block;font-size:12px;font-weight:600;color:var(--ink3);
@@ -206,7 +213,8 @@
   font-family:inherit;
   box-shadow:0 1px 3px rgba(0,0,0,.04);
 }
-.search__input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft),0 1px 3px rgba(0,0,0,.04)}
+.search__input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft),0 1px 3px rgba(0,0,0,.04);animation:searchGlow 2.6s ease-in-out infinite}
+@keyframes searchGlow{0%,100%{box-shadow:0 0 0 4px var(--accent-soft),0 1px 3px rgba(0,0,0,.04)}50%{box-shadow:0 0 0 7px rgba(0,122,255,.13),0 1px 3px rgba(0,0,0,.04)}}
 .search__input::placeholder{color:var(--ink3)}
 .search__clear{
   position:absolute;right:10px;width:22px;height:22px;border-radius:50%;
@@ -253,7 +261,7 @@
   transition:transform .35s var(--ease-out),box-shadow .35s var(--ease-out);
   display:flex;flex-direction:column;cursor:pointer;
   border:1px solid rgba(0,0,0,.04);
-  opacity:1;position:relative;
+  opacity:1;position:relative;height:100%;
 }
 .card.is-visible{opacity:1;transform:translateY(0)}
 /* 入场动效：仅对 JS 标记的待动画卡片生效，确保 headless 截图与无 JS 时卡片始终可见 */
@@ -383,6 +391,9 @@
   background:var(--accent);border:2px solid #fff;
   box-shadow:0 0 0 4px var(--accent-soft);
 }
+/* 最新一条更新日志的圆点呼吸光环，暗示「新鲜」 */
+.tl__item:first-child .tl__dot{animation:dotPulse 2.6s ease-in-out infinite}
+@keyframes dotPulse{0%,100%{box-shadow:0 0 0 4px var(--accent-soft)}50%{box-shadow:0 0 0 9px rgba(0,122,255,.10)}}
 .tl__date{font-size:13px;color:var(--accent);font-weight:600;margin-bottom:6px}
 .tl__card{
   background:var(--card);border-radius:var(--radius-sm);padding:18px 22px;
@@ -551,8 +562,10 @@
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
   .hero__orb{animation:none}
-  .hero__title-accent{animation:none}
+  .hero__title-accent{animation:none;background:none;-webkit-text-fill-color:var(--accent);color:var(--accent)}
   .card__shot{opacity:1 !important}
+  .search__input:focus{animation:none}
+  .tl__item:first-child .tl__dot{animation:none}
 }
 
 /* ---------- 截图 Lightbox ---------- */
@@ -776,7 +789,8 @@
 @keyframes newPulse{0%,100%{box-shadow:0 2px 6px rgba(255,149,0,.35)}50%{box-shadow:0 2px 14px rgba(255,149,0,.6)}}
 .card:has(.card__new)::before{background:linear-gradient(90deg,#ff9500,#ffb340)}
 
-/* 9. 分类筛选增强：active 状态用分类色填充 */
+/* 9. 分类筛选增强：active 状态用分类色填充，"全部"用品牌蓝统一基调 */
+.chip[data-filter="all"].is-active{background:#007aff;border-color:#007aff}
 .chip[data-filter="dev"].is-active{background:#007aff;border-color:#007aff}
 .chip[data-filter="system"].is-active{background:#34c759;border-color:#34c759}
 .chip[data-filter="efficiency"].is-active{background:#ff9500;border-color:#ff9500}
@@ -855,7 +869,7 @@
 /* 1. Hero 信任支柱条：三列玻璃卡片，强化首屏信任感与质感 */
 .hero__pillars{
   list-style:none;margin:48px auto 0;padding:14px;
-  max-width:780px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+  max-width:780px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
   opacity:0;animation:fadeUp 1s var(--ease-out) 1.1s forwards;
   background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(248,250,255,.4));
   border:1px solid rgba(0,0,0,.04);border-radius:22px;
@@ -889,6 +903,8 @@
   .hero__pillar-text{align-items:center;gap:0}
   .hero__pillar-text strong{font-size:11px}
   .hero__pillar-text em{display:none}
+  /* 移动端隐藏精选工具预览条：项目卡片墙已完整展示，预览条在窄屏徒增首屏高度 */
+  .hero__preview{display:none}
 }
 
 /* 2. 段落 eyebrow 小标签：标题上方的小caps标签，增强层次与专业感 */
@@ -976,9 +992,9 @@
   .toolbar__row{flex-direction:column;align-items:stretch;gap:10px}
   .search{min-width:0;flex:1 1 100%;max-width:100%}
   .chips{flex:1 1 100%;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px;width:100%;
-    /* 渐隐遮罩暗示可横向滚动 */
-    mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 24px),transparent 100%);
-    -webkit-mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 24px),transparent 100%);
+    /* 双侧渐隐遮罩（收窄避免切断末尾标签），暗示可横向滑动 */
+    mask-image:linear-gradient(90deg,transparent 0,#000 10px,#000 calc(100% - 14px),transparent 100%);
+    -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 10px,#000 calc(100% - 14px),transparent 100%);
   }
   .chips::-webkit-scrollbar{display:none}
   .chip{flex-shrink:0}
@@ -1077,11 +1093,11 @@
 /* 1. 移动端 Hero 压缩高度，让工具卡片更早出现 */
 @media (max-width:600px){
   .hero{padding:72px 16px 36px}
-  .hero__title{margin:10px 0 6px;font-size:30px;letter-spacing:-.025em}
-  .hero__sub{margin-bottom:16px;font-size:14px}
-  .hero__actions{gap:10px;justify-content:center;margin-bottom:8px}
+  .hero__title{margin:14px 0 10px;font-size:30px;letter-spacing:-.025em}
+  .hero__sub{margin-bottom:22px;font-size:14px}
+  .hero__actions{gap:10px;justify-content:center;margin-bottom:14px}
   .hero__actions .btn{flex:0 1 auto;min-width:0;padding-left:18px;padding-right:18px;font-size:14px}
-  .hero__stats{gap:20px;margin-top:14px}
+  .hero__stats{gap:20px;margin-top:18px}
   .stat__num{font-size:30px}
   .stat__num--free{font-size:22px}
   .hero__preview{margin-top:22px}
