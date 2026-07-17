@@ -1,6 +1,48 @@
-# 🎨 拾色管家
+<div align="center">
 
-> 苹果白高端风格的 Windows 屏幕取色器与调色板管理工具。系统托盘常驻，全局快捷键唤起，放大镜精准取色，多格式一键复制，调色板本地管理，内置 WCAG 对比度检查器与多格式导出。
+<img src="build/icon-256.png" alt="拾色管家 Logo" width="80">
+
+<h1>🎨 拾色管家 · Color Picker</h1>
+
+<p><b>苹果白高端风格的 Windows 屏幕取色器与调色板管理工具</b></p>
+
+<p>像素级放大取色 · 多格式一键复制 · 多调色板管理 · WCAG 对比度检查 · 多格式导出</p>
+
+<p>
+<img alt="version" src="https://img.shields.io/badge/%E7%89%88%E6%9C%AC-v1.1.0-007aff?style=flat-square">
+<img alt="platform" src="https://img.shields.io/badge/%E5%B9%B3%E5%8F%B0-Windows%2010%2F11-007aff?style=flat-square">
+<img alt="license" src="https://img.shields.io/badge/License-MIT-007aff?style=flat-square">
+<img alt="tests" src="https://img.shields.io/badge/%E6%B5%8B%E8%AF%95-67%20passing-007aff?style=flat-square">
+</p>
+
+</div>
+
+<br>
+
+> 系统托盘常驻，全局快捷键唤起，放大镜精准取色，多格式一键复制，调色板本地管理，内置 WCAG 对比度检查器与多格式导出。所有数据存本地，无网络、无上传、无追踪。
+
+---
+
+## ⬇️ 直接下载
+
+> 不想自己打包？直接下载下方 exe 即可使用，无需安装 Node.js 或任何依赖。
+
+| 版本 | 下载链接 | 说明 |
+|---|---|---|
+| 安装版（推荐） | [拾色管家 Setup 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/color-picker-v1.1.0/拾色管家.Setup.1.1.0.exe) | v1.1.0 安装版，含开始菜单快捷方式 |
+| 免安装便携版 | [拾色管家 Portable 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/color-picker-v1.1.0/拾色管家.Portable.1.1.0.exe) | v1.1.0 免安装便携版，双击即用 |
+
+系统要求：Windows 10/11 x64 · 前往 [Releases 页面](../../releases) 查看所有版本
+
+## 🖼 效果展示
+
+<div align="center">
+
+<img src="assets/preview.png" width="820" alt="拾色管家主界面示意图">
+
+</div>
+
+放大镜 13× 像素级放大、中心十字定位；HEX / RGB / HSL 一键复制；多调色板管理与多格式导出；实时 WCAG 对比度检查。
 
 ## ✨ 功能特性
 
@@ -16,16 +58,7 @@
 - **🔒 纯本地隐私** —— 所有数据存本地，无网络、无上传、无追踪
 - **⌨️ 键盘友好** —— `Esc` 取消、点击确认、右键也可取消
 
-## ⬇️ 直接下载
-
-| 平台 | 下载 | 说明 |
-|---|---|---|
-| Windows x64 | [拾色管家 Setup 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/color-picker-v1.1.0/拾色管家.Setup.1.1.0.exe) | v1.1.0 安装版，含开始菜单快捷方式 |
-| Windows x64 | [拾色管家 Portable 1.1.0.exe](https://github.com/grrtyre/youqu/releases/download/color-picker-v1.1.0/拾色管家.Portable.1.1.0.exe) | v1.1.0 免安装便携版 |
-
-> 前往 [Releases 页面](../../releases) 查看所有版本。
-
-## 🚀 使用方式
+## 🚀 快速开始
 
 ### 方式一：直接下载安装
 
@@ -45,11 +78,23 @@ npm test               # 运行核心逻辑测试
 npm run build          # 打包 Windows exe（需 electron-builder）
 ```
 
+## ⌨️ 快捷键
+
+| 快捷键 | 功能 |
+|---|---|
+| `Ctrl + Shift + C` | 全局唤起取色模式（v1.1 起支持自定义） |
+| 鼠标移动 | 实时预览放大镜中的像素颜色 |
+| 鼠标左键 | 确认取色并复制到剪贴板 |
+| `Esc` / 鼠标右键 | 取消取色 |
+| 点击托盘图标 | 唤起主界面（历史 / 调色板 / 对比度 / 设置） |
+| 点击颜色卡片 | 复制对应格式（HEX / RGB / HSL） |
+
 ## 🎯 使用场景
 
 - **设计师取色** —— 从任意网页、图片、软件界面拾取颜色，建立自己的色卡
 - **前端开发** —— 还原设计稿配色，复制 HEX 直接用
-- **PPT/文档配色** —— 抓取品牌色，保持视觉一致
+- **PPT / 文档配色** —— 抓取品牌色，保持视觉一致
+- **可访问性审查** —— 用 WCAG 对比度检查器验证文字与背景对比是否达标
 - **配色灵感收集** —— 看到好看的配色随手保存到调色板
 
 ## 🛠 技术栈
