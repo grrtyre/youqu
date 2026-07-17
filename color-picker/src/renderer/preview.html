@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>拾色管家 - 预览</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Hero -->
+    <header class="hero">
+      <div class="hero-left">
+        <div class="swatch-large" id="currentSwatch" style="background:#007AFF;">
+          <span class="swatch-hex" id="currentHex">#007AFF</span>
+        </div>
+        <div class="hero-info">
+          <div class="title-row">
+            <h1>拾色管家</h1>
+            <span class="color-name">苹果蓝</span>
+          </div>
+          <p class="subtitle">屏幕取色 · 调色板管理 · 对比度检查 · 苹果白设计</p>
+          <div class="format-row">
+            <button class="fmt-btn active">#007AFF</button>
+            <button class="fmt-btn">rgb(0, 122, 255)</button>
+            <button class="fmt-btn">hsl(211, 100%, 50%)</button>
+            <button class="copy-btn">复制</button>
+          </div>
+        </div>
+      </div>
+      <div class="hero-right">
+        <button class="icon-btn" title="设置">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+        <button class="pick-btn">
+          <svg class="pick-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4l4 4"/><path d="M17 2l5 5-9 9-5 1 1-5z"/><path d="M2 22l4-4"/></svg>
+          开始取色
+          <span class="pick-shortcut">Ctrl+Shift+C</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 最近拾取 -->
+    <section class="block">
+      <div class="block-head">
+        <h2>最近拾取</h2>
+        <span class="hint">点击色块复制 HEX · 右键加入调色板</span>
+      </div>
+      <div class="grid">
+        <div class="swatch-wrap"><div class="swatch" style="background:#ff3b30;"></div><div class="swatch-label">#FF3B30</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#34c759;"></div><div class="swatch-label">#34C759</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#ff9500;"></div><div class="swatch-label">#FF9500</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#af52de;"></div><div class="swatch-label">#AF52DE</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#1d1d1f;"></div><div class="swatch-label">#1D1D1F</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#ffe4b5;"></div><div class="swatch-label">#FFE4B5</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#00897b;"></div><div class="swatch-label">#00897B</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#f8bbd0;"></div><div class="swatch-label">#F8BBD0</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#5856d6;"></div><div class="swatch-label">#5856D6</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#5ac8fa;"></div><div class="swatch-label">#5AC8FA</div></div>
+      </div>
+    </section>
+
+    <!-- 对比度检查器 -->
+    <section class="block">
+      <div class="block-head">
+        <h2>对比度检查器</h2>
+        <span class="hint">WCAG 2.1 可访问性评估 · 前景/背景</span>
+      </div>
+      <div class="contrast-grid">
+        <div class="contrast-input">
+          <label class="ci-label">前景色</label>
+          <div class="ci-row">
+            <input type="color" value="#007aff" class="color-native">
+            <input type="text" value="#007aff" class="hex-input" maxlength="7">
+          </div>
+        </div>
+        <div class="contrast-input">
+          <label class="ci-label">背景色</label>
+          <div class="ci-row">
+            <input type="color" value="#ffffff" class="color-native">
+            <input type="text" value="#ffffff" class="hex-input" maxlength="7">
+          </div>
+        </div>
+        <div class="contrast-actions">
+          <button class="ghost-btn" title="交换前景与背景">⇄ 交换</button>
+          <button class="ghost-btn" title="用当前色做前景">用当前色</button>
+        </div>
+      </div>
+      <div class="contrast-result">
+        <div class="ratio-box">
+          <span class="ratio-label">对比度</span>
+          <span class="ratio-value">4.00</span>
+          <span class="ratio-hint">:1</span>
+        </div>
+        <div class="grade-box">
+          <div class="grade-row">
+            <span class="grade-name">AA 普通文本</span>
+            <span class="grade-tag fail">不通过</span>
+          </div>
+          <div class="grade-row">
+            <span class="grade-name">AA 大字</span>
+            <span class="grade-tag pass">通过</span>
+          </div>
+          <div class="grade-row">
+            <span class="grade-name">AAA 普通文本</span>
+            <span class="grade-tag fail">不通过</span>
+          </div>
+          <div class="grade-row">
+            <span class="grade-name">AAA 大字</span>
+            <span class="grade-tag fail">不通过</span>
+          </div>
+        </div>
+        <div class="preview-box">
+          <div class="preview-text preview-large" style="color:#007aff;background:#ffffff;">拾色管家 Aa</div>
+          <div class="preview-text preview-body" style="color:#007aff;background:#ffffff;">正文示例：屏幕取色 · 调色板管理 · 对比度检查 1234</div>
+          <div class="preview-text preview-small" style="color:#007aff;background:#ffffff;">小字辅助说明 · The quick brown fox</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 配色推荐 -->
+    <section class="block">
+      <div class="block-head">
+        <h2>配色推荐</h2>
+        <span class="hint">基于当前色 · 点击色块加入调色板</span>
+      </div>
+      <div class="harmony-list">
+        <div class="harmony-row">
+          <div class="harmony-label">互补色<span class="harmony-sub">180°</span></div>
+          <div class="harmony-swatches">
+            <div class="harm-swatch" style="background:#ff7a00;" title="#FF7A00"><span class="harm-hex">#FF7A00</span></div>
+          </div>
+        </div>
+        <div class="harmony-row">
+          <div class="harmony-label">类似色<span class="harmony-sub">±30°</span></div>
+          <div class="harmony-swatches">
+            <div class="harm-swatch" style="background:#0048ff;" title="#0048FF"><span class="harm-hex">#0048FF</span></div>
+            <div class="harm-swatch" style="background:#00afff;" title="#00AFFF"><span class="harm-hex">#00AFFF</span></div>
+          </div>
+        </div>
+        <div class="harmony-row">
+          <div class="harmony-label">三元色<span class="harmony-sub">±120°</span></div>
+          <div class="harmony-swatches">
+            <div class="harm-swatch" style="background:#7aff00;" title="#7AFF00"><span class="harm-hex">#7AFF00</span></div>
+            <div class="harm-swatch" style="background:#ff007a;" title="#FF007A"><span class="harm-hex">#FF007A</span></div>
+          </div>
+        </div>
+        <div class="harmony-row">
+          <div class="harmony-label">四元色<span class="harmony-sub">90/180/270°</span></div>
+          <div class="harmony-swatches">
+            <div class="harm-swatch" style="background:#00ff7a;" title="#00FF7A"><span class="harm-hex">#00FF7A</span></div>
+            <div class="harm-swatch" style="background:#ff7a00;" title="#FF7A00"><span class="harm-hex">#FF7A00</span></div>
+            <div class="harm-swatch" style="background:#7a00ff;" title="#7A00FF"><span class="harm-hex">#7A00FF</span></div>
+          </div>
+        </div>
+        <div class="harmony-row">
+          <div class="harmony-label">分裂互补<span class="harmony-sub">150/210°</span></div>
+          <div class="harmony-swatches">
+            <div class="harm-swatch" style="background:#7aff00;" title="#7AFF00"><span class="harm-hex">#7AFF00</span></div>
+            <div class="harm-swatch" style="background:#ff007a;" title="#FF007A"><span class="harm-hex">#FF007A</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 调色板 -->
+    <section class="block">
+      <div class="block-head">
+        <h2>调色板</h2>
+        <div class="palette-controls">
+          <select class="select">
+            <option>苹果系统色 (8)</option>
+            <option>莫兰迪 (5)</option>
+          </select>
+          <button class="ghost-btn">+ 新建</button>
+          <button class="ghost-btn danger">删除</button>
+          <button class="ghost-btn">重命名</button>
+        </div>
+      </div>
+      <div class="palette-current">
+        <span class="palette-label">当前色：</span>
+        <span class="palette-current-hex">#007AFF</span>
+        <button class="ghost-btn accent" style="margin-left:auto;">加入当前调色板</button>
+      </div>
+      <div class="palette-export-row">
+        <span class="export-label">导出此调色板：</span>
+        <button class="ghost-btn" data-export="css">CSS</button>
+        <button class="ghost-btn" data-export="scss">SCSS</button>
+        <button class="ghost-btn" data-export="json">JSON</button>
+        <button class="ghost-btn" data-export="gpl">GPL</button>
+        <button class="ghost-btn" data-export="ase">ASE</button>
+      </div>
+      <div class="grid">
+        <div class="swatch-wrap"><div class="swatch" style="background:#007aff;"><button class="remove" title="移除">×</button></div><div class="swatch-label">#007AFF</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#34c759;"><button class="remove" title="移除">×</button></div><div class="swatch-label">#34C759</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#ff3b30;"><button class="remove" title="移除">×</button></div><div class="swatch-label">#FF3B30</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#ff9500;"><button class="remove" title="移除">×</button></div><div class="swatch-label">#FF9500</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#af52de;"><button class="remove" title="移除">×</button></div><div class="swatch-label">#AF52DE</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#5ac8fa;"><button class="remove" title="移除">×</button></div><div class="swatch-label">#5AC8FA</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#ffcc00;"><button class="remove" title="移除">×</button></div><div class="swatch-label">#FFCC00</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#5856d6;"><button class="remove" title="移除">×</button></div><div class="swatch-label">#5856D6</div></div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

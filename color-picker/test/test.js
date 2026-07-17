@@ -492,5 +492,164 @@ test('varName: 不带 # 的小写 hex', () => {
   assert.strictEqual(paletteExport.varName('#34C759', 1), 'color-2-34c759');
 });
 
+console.log('\n=== 颜色名称识别 ===');
+
+test('nameColor: 苹果蓝 #007aff', () => {
+  const r = colorUtils.nameColor({ r: 0, g: 122, b: 255 });
+  assert.strictEqual(r.name, '苹果蓝');
+  assert.strictEqual(r.hex, '#007aff');
+});
+
+test('nameColor: 纯白 #ffffff', () => {
+  const r = colorUtils.nameColor({ r: 255, g: 255, b: 255 });
+  assert.strictEqual(r.name, '纯白');
+  assert.strictEqual(r.hex, '#ffffff');
+});
+
+test('nameColor: 纯黑 #000000', () => {
+  const r = colorUtils.nameColor({ r: 0, g: 0, b: 0 });
+  assert.strictEqual(r.name, '纯黑');
+  assert.strictEqual(r.hex, '#000000');
+});
+
+test('nameColor: 苹果绿 #34c759', () => {
+  const r = colorUtils.nameColor({ r: 52, g: 199, b: 89 });
+  assert.strictEqual(r.name, '苹果绿');
+  assert.strictEqual(r.hex, '#34c759');
+});
+
+test('nameColor: 系统红 #ff3b30', () => {
+  const r = colorUtils.nameColor({ r: 255, g: 59, b: 48 });
+  assert.strictEqual(r.name, '系统红');
+  assert.strictEqual(r.hex, '#ff3b30');
+});
+
+test('nameColor: 接近苹果蓝的近似色', () => {
+  // 稍微偏移的苹果蓝应仍识别为苹果蓝
+  const r = colorUtils.nameColor({ r: 5, g: 120, b: 250 });
+  assert.strictEqual(r.name, '苹果蓝');
+  assert.ok(r.distance > 0, '近似色距离应大于 0');
+  assert.ok(r.distance < 5, `近似色距离应较小（<5），实际 ${r.distance}`);
+});
+
+test('nameColor: 完全匹配时 distance 为 0', () => {
+  const r = colorUtils.nameColor({ r: 0, g: 122, b: 255 });
+  assert.strictEqual(r.distance, 0);
+});
+
+test('nameColor: 非法输入返回未知', () => {
+  assert.strictEqual(colorUtils.nameColor(null).name, '未知颜色');
+  assert.strictEqual(colorUtils.nameColor(undefined).name, '未知颜色');
+  assert.strictEqual(colorUtils.nameColor({}).name, '未知颜色');
+});
+
+test('nameColor: 接近的字典色识别为该字典色', () => {
+  // #34C759 苹果绿轻微偏移
+  const r = colorUtils.nameColor({ r: 56, g: 200, b: 95 });
+  assert.strictEqual(r.name, '苹果绿');
+});
+
+test('rgbToLab: 白色 L 接近 100', () => {
+  const lab = colorUtils.rgbToLab(255, 255, 255);
+  assert.ok(Math.abs(lab.L - 100) < 0.5, `L 应接近 100，实际 ${lab.L}`);
+  assert.ok(Math.abs(lab.a) < 0.5);
+  assert.ok(Math.abs(lab.b) < 0.5);
+});
+
+test('labDistance: 相同颜色为 0', () => {
+  const a = colorUtils.rgbToLab(0, 122, 255);
+  assert.strictEqual(colorUtils.labDistance(a, a), 0);
+});
+
+test('COLOR_DICTIONARY: 至少 100 条', () => {
+  assert.ok(colorUtils.COLOR_DICTIONARY.length >= 100, `字典应有 100+ 条，实际 ${colorUtils.COLOR_DICTIONARY.length}`);
+});
+
+test('COLOR_DICTIONARY: 每条是 [hex, name] 结构', () => {
+  const first = colorUtils.COLOR_DICTIONARY[0];
+  assert.ok(Array.isArray(first));
+  assert.strictEqual(first.length, 2);
+  assert.strictEqual(typeof first[0], 'string');
+  assert.strictEqual(typeof first[1], 'string');
+  assert.ok(first[0].startsWith('#'));
+});
+
+console.log('\n=== 配色推荐 ===');
+
+test('harmonies: 苹果蓝返回完整方案', () => {
+  const h = colorUtils.harmonies({ r: 0, g: 122, b: 255 });
+  assert.ok(h.complementary, '应有互补色');
+  assert.strictEqual(h.analogous.length, 2);
+  assert.strictEqual(h.triadic.length, 2);
+  assert.strictEqual(h.tetradic.length, 3);
+  assert.strictEqual(h.splitComplementary.length, 2);
+});
+
+test('harmonies: 每个返回项含 hex 与 rgb', () => {
+  const h = colorUtils.harmonies({ r: 0, g: 122, b: 255 });
+  assert.ok(h.complementary.hex.startsWith('#'));
+  assert.strictEqual(typeof h.complementary.r, 'number');
+  assert.strictEqual(typeof h.complementary.g, 'number');
+  assert.strictEqual(typeof h.complementary.b, 'number');
+  h.analogous.forEach((c) => {
+    assert.ok(c.hex.startsWith('#'));
+    assert.strictEqual(typeof c.r, 'number');
+  });
+});
+
+test('harmonies: 互补色色相相差 180°', () => {
+  const h = colorUtils.harmonies({ r: 0, g: 122, b: 255 });
+  const origHsl = colorUtils.rgbToHsl(0, 122, 255);
+  const compHsl = colorUtils.rgbToHsl(h.complementary.r, h.complementary.g, h.complementary.b);
+  const diff = Math.abs(origHsl.h - compHsl.h);
+  // 应接近 180（允许 ±1 度因四舍五入）
+  assert.ok(Math.abs(diff - 180) <= 2 || Math.abs(diff - 180) >= 178, `色相差应接近 180°，实际 ${diff}`);
+});
+
+test('harmonies: 类似色色相相差 ±30°', () => {
+  const h = colorUtils.harmonies({ r: 0, g: 122, b: 255 });
+  const orig = colorUtils.rgbToHsl(0, 122, 255);
+  h.analogous.forEach((c) => {
+    const cHsl = colorUtils.rgbToHsl(c.r, c.g, c.b);
+    let diff = Math.abs(orig.h - cHsl.h);
+    if (diff > 180) diff = 360 - diff;
+    assert.ok(diff >= 28 && diff <= 32, `类似色色相差应接近 30°，实际 ${diff}`);
+  });
+});
+
+test('harmonies: 三元色色相相差 120°', () => {
+  const h = colorUtils.harmonies({ r: 0, g: 122, b: 255 });
+  const orig = colorUtils.rgbToHsl(0, 122, 255);
+  h.triadic.forEach((c) => {
+    const cHsl = colorUtils.rgbToHsl(c.r, c.g, c.b);
+    let diff = Math.abs(orig.h - cHsl.h);
+    if (diff > 180) diff = 360 - diff;
+    assert.ok(diff >= 118 && diff <= 122, `三元色色相差应接近 120°，实际 ${diff}`);
+  });
+});
+
+test('harmonies: 非法输入返回空结构', () => {
+  const h = colorUtils.harmonies(null);
+  assert.strictEqual(h.complementary, null);
+  assert.strictEqual(h.analogous.length, 0);
+  assert.strictEqual(h.triadic.length, 0);
+});
+
+test('harmonies: 保持原饱和度与亮度', () => {
+  const h = colorUtils.harmonies({ r: 0, g: 122, b: 255 });
+  const orig = colorUtils.rgbToHsl(0, 122, 255);
+  const comp = colorUtils.rgbToHsl(h.complementary.r, h.complementary.g, h.complementary.b);
+  assert.strictEqual(comp.s, orig.s);
+  assert.strictEqual(comp.l, orig.l);
+});
+
+test('harmonies: 灰色（无饱和度）的推荐仍可生成', () => {
+  // 灰色饱和度为 0，色相旋转后仍应是灰色
+  const h = colorUtils.harmonies({ r: 128, g: 128, b: 128 });
+  assert.ok(h.complementary);
+  const comp = colorUtils.rgbToHsl(h.complementary.r, h.complementary.g, h.complementary.b);
+  assert.strictEqual(comp.s, 0);
+});
+
 console.log(`\n总计：${passed} 通过 / ${failed} 失败\n`);
 process.exit(failed === 0 ? 0 : 1);
