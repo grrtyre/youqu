@@ -343,5 +343,50 @@ console.log('[测试] 本自然周统计');
   assert(tw.workSessions >= 3, '本周统计 >= 今天的 3');
 }
 
+// 测试 22：跳过专注不计入番茄统计（统计完整性）
+console.log('[测试] 跳过专注不计番茄');
+{
+  const core = new PomodoroCore({ workDuration: 10, shortBreak: 5, longBreakInterval: 4 });
+  core.start();
+  const before = core.todayStats().workSessions;
+  const ev = core.skip();
+  assert(ev !== null, '跳过专注返回事件');
+  assert(ev.skipped === true, '事件标记 skipped');
+  assert(ev.completedWork === false, '事件未标记 completedWork');
+  assertEq(core.state, 'short_break', '跳过后进入短休息');
+  const after = core.todayStats().workSessions;
+  assertEq(after, before, '跳过专注不增加今日番茄数');
+  assertEq(core.cycleCount, 0, '跳过专注不推进周期计数');
+}
+
+// 测试 23：跳过专注后任务番茄数不增加
+console.log('[测试] 跳过专注后任务番茄不变');
+{
+  const core = new PomodoroCore({ workDuration: 10 });
+  core.start();
+  const t = core.addTask('写文档', 2);
+  core.setCurrentTask(t.id);
+  const before = t.pomodoros;
+  core.skip();
+  assertEq(t.pomodoros, before, '跳过专注后任务番茄数不变');
+}
+
+// 测试 24：取消完成任务 uncompleteTask
+console.log('[测试] 取消完成任务');
+{
+  const core = new PomodoroCore();
+  const t = core.addTask('测试任务', 1);
+  core.completeTask(t.id);
+  assertEq(core.tasks[0].completed, true, '完成后 completed=true');
+  assert(core.tasks[0].completedAt !== undefined, '完成后有 completedAt');
+  const ok = core.uncompleteTask(t.id);
+  assert(ok, 'uncompleteTask 返回 true');
+  assertEq(core.tasks[0].completed, false, '取消后 completed=false');
+  assert(core.tasks[0].completedAt === undefined, '取消后 completedAt 被删除');
+  // 重复取消返回 false
+  const ok2 = core.uncompleteTask(t.id);
+  assert(ok2 === false, '对未完成任务取消返回 false');
+}
+
 console.log(`\n结果：${passed} 通过, ${failed} 失败`);
 process.exit(failed > 0 ? 1 : 0);
