@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>环境音播放器</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="errBanner" style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#ff3b30;color:#fff;padding:8px 12px;font:12px monospace;display:none;white-space:pre-wrap;max-height:50%;overflow:auto"></div>
+  <script>
+    // 错误横幅仅在 dev 模式（URL 含 ?dev 或参数 --dev）下显示，避免污染最终用户体验
+    var __isDev = new URLSearchParams(location.search).get('dev') === '1';
+    if (__isDev) {
+      window.addEventListener('error', function(e) {
+        var b = document.getElementById('errBanner');
+        if (b) {
+          b.style.display = 'block';
+          b.textContent = 'JS Error: ' + (e.message || '?') + ' @ ' + (e.filename || '') + ':' + (e.lineno || '');
+        }
+      });
+      window.addEventListener('unhandledrejection', function(e) {
+        var b = document.getElementById('errBanner');
+        if (b) {
+          b.style.display = 'block';
+          b.textContent = 'Promise: ' + (e.reason && e.reason.message ? e.reason.message : e.reason);
+        }
+      });
+    }
+  </script>
+  <div class="app">
+    <header class="header">
+      <div class="title-row">
+        <div class="logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+            <path d="M2 9c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>
+            <path d="M2 15c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>
+          </svg>
+        </div>
+        <div class="title-text">
+          <h1>环境音</h1>
+          <p class="subtitle">专注 · 放松 · 助眠</p>
+        </div>
+        <div class="master-volume">
+          <svg class="vol-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 9v6h4l5 4V5L8 9H4z"/>
+            <path d="M16 9a3 3 0 0 1 0 6"/>
+          </svg>
+          <input type="range" id="masterVol" min="0" max="100" value="80" aria-label="主音量">
+        </div>
+      </div>
+      <canvas id="spectrum" class="spectrum"></canvas>
+    </header>
+
+    <main class="sounds" id="soundGrid"></main>
+
+    <section class="panel timer-section">
+      <div class="panel-title">睡眠定时器</div>
+      <div class="timer-controls">
+        <button class="timer-btn active" data-min="0">关闭</button>
+        <button class="timer-btn" data-min="15">15 分</button>
+        <button class="timer-btn" data-min="30">30 分</button>
+        <button class="timer-btn" data-min="60">60 分</button>
+        <button class="timer-btn" data-min="90">90 分</button>
+      </div>
+      <div class="timer-display" id="timerDisplay">未启用</div>
+    </section>
+
+    <section class="panel preset-section">
+      <div class="panel-title-row">
+        <div class="panel-title">场景预设</div>
+        <button class="link-btn" id="savePreset" type="button">＋ 保存当前</button>
+      </div>
+      <div class="presets" id="presetList"></div>
+    </section>
+
+    <footer class="footer">
+      <span class="status" id="status">空闲</span>
+      <button class="btn-stop" id="stopAll" type="button">全部停止</button>
+    </footer>
+  </div>
+
+  <script src="synth.js"></script>
+  <script src="audio-engine.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>
