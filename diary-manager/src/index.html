@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;" />
+  <title>日记本</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 左侧：日历 + 列表 -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16v16H4z"/>
+            <path d="M4 9h16M9 4v16"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-name">日记本</div>
+          <div class="brand-sub">Daily Journal</div>
+        </div>
+      </div>
+
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
+        </svg>
+        <input id="search" type="text" placeholder="搜索日记内容或标签…" />
+      </div>
+
+      <div class="calendar-card">
+        <div class="cal-head">
+          <button id="prevMonth" class="cal-nav" aria-label="上月">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <div id="calTitle" class="cal-title">2026 年 7 月</div>
+          <button id="nextMonth" class="cal-nav" aria-label="下月">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </div>
+        <div class="cal-weekdays">
+          <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+        </div>
+        <div id="calGrid" class="cal-grid"></div>
+      </div>
+
+      <div class="list-head">
+        <span>历史日记</span>
+        <span id="listCount" class="list-count">0</span>
+      </div>
+      <div id="entryList" class="entry-list"></div>
+    </aside>
+
+    <!-- 右侧：编辑区 -->
+    <main class="editor-area">
+      <header class="editor-head">
+        <div class="date-block">
+          <div id="entryDate" class="entry-date">2026 年 7 月 17 日</div>
+          <div id="entryMeta" class="entry-meta">尚未保存</div>
+        </div>
+        <div class="head-actions">
+          <button id="todayBtn" class="btn btn-ghost">今天</button>
+          <button id="exportBtn" class="btn btn-ghost">导出 Markdown</button>
+          <button id="deleteBtn" class="btn btn-danger-ghost">删除</button>
+          <button id="saveBtn" class="btn btn-primary">保存</button>
+        </div>
+      </header>
+
+      <div class="meta-row">
+        <div class="mood-picker">
+          <span class="meta-label">心情</span>
+          <div class="mood-list" id="moodList">
+            <button class="mood" data-mood="😀" title="开心">😀</button>
+            <button class="mood" data-mood="😊" title="满足">😊</button>
+            <button class="mood" data-mood="😌" title="平静">😌</button>
+            <button class="mood" data-mood="🤔" title="思考">🤔</button>
+            <button class="mood" data-mood="😴" title="困倦">😴</button>
+            <button class="mood" data-mood="😫" title="疲惫">😫</button>
+            <button class="mood" data-mood="😢" title="难过">😢</button>
+            <button class="mood" data-mood="🥰" title="感动">🥰</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="meta-row">
+        <div class="tag-picker">
+          <span class="meta-label">标签</span>
+          <div id="tagBox" class="tag-box">
+            <div id="tagChips" class="tag-chips"></div>
+            <input id="tagInput" type="text" placeholder="加标签后回车…" />
+          </div>
+        </div>
+      </div>
+
+      <div class="editor-wrap">
+        <div id="emptyState" class="empty-state">
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 6h18M3 12h18M3 18h12"/>
+            </svg>
+          </div>
+          <div class="empty-title">今天还是空白页</div>
+          <div class="empty-quote">「记录，是给未来的自己写信。」</div>
+          <div class="empty-hint">从上方标题栏开始，写下今天值得记住的事</div>
+        </div>
+        <div id="titleLine" class="title-line" contenteditable="true" data-placeholder="标题（可选）"></div>
+        <div id="editor" class="editor" contenteditable="true" data-placeholder="今天发生了什么值得记住的事…"></div>
+      </div>
+
+      <footer class="editor-foot">
+        <span id="wordCount" class="word-count">0 字</span>
+        <span class="autosave-tip">⌘/Ctrl + S 保存</span>
+      </footer>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
