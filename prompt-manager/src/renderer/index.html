@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;" />
+  <title>提示词库管理器</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M5 4.5C5 3.67 5.67 3 6.5 3h11c.83 0 1.5.67 1.5 1.5v15a.5.5 0 0 1-.85.36L12 15.5l-6.15 4.36A.5.5 0 0 1 5 19.5v-15Z" stroke="#007aff" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M9 8.5h6M9 11.5h4" stroke="#007aff" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">提示词库</div>
+          <div class="brand-sub">Prompt Library</div>
+        </div>
+      </div>
+
+      <nav class="nav" id="nav">
+        <div class="nav-group">
+          <button class="nav-item active" data-filter="all">
+            <span class="nav-ico">◧</span>
+            <span class="nav-label">全部</span>
+            <span class="nav-count" data-count="all">0</span>
+          </button>
+          <button class="nav-item" data-filter="favorite">
+            <span class="nav-ico">★</span>
+            <span class="nav-label">收藏</span>
+            <span class="nav-count" data-count="favorite">0</span>
+          </button>
+          <button class="nav-item" data-filter="recent">
+            <span class="nav-ico">◷</span>
+            <span class="nav-label">最近使用</span>
+            <span class="nav-count" data-count="recent">0</span>
+          </button>
+        </div>
+        <div class="nav-section-title">
+          <span>分类</span>
+          <button class="link-btn" id="addCategoryBtn" title="新建分类">＋</button>
+        </div>
+        <div class="nav-group" id="categoryList"></div>
+        <div class="nav-section-title"><span>标签</span></div>
+        <div class="tag-cloud" id="tagCloud"></div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="ghost-btn" id="importBtn">导入</button>
+        <button class="ghost-btn" id="exportBtn">导出</button>
+      </div>
+    </aside>
+
+    <!-- 主区 -->
+    <main class="main">
+      <header class="topbar">
+        <div class="search-wrap">
+          <svg class="search-ico" width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="7" stroke="#8e8e93" stroke-width="1.8"/>
+            <path d="m20 20-3.5-3.5" stroke="#8e8e93" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <input type="text" id="searchInput" class="search-input" placeholder="搜索标题、内容或标签…" autocomplete="off" />
+          <button class="clear-btn" id="clearSearch" title="清空" hidden>×</button>
+        </div>
+        <div class="topbar-actions">
+          <div class="view-toggle" role="group" aria-label="视图">
+            <button class="seg-btn active" data-view="grid" title="网格视图">▦</button>
+            <button class="seg-btn" data-view="list" title="列表视图">☰</button>
+          </div>
+          <button class="primary-btn" id="newPromptBtn">
+            <span class="plus">＋</span> 新建提示词
+          </button>
+        </div>
+      </header>
+
+      <section class="content" id="content">
+        <!-- 卡片由 JS 渲染 -->
+      </section>
+
+      <div class="empty-state" id="emptyState" hidden>
+        <div class="empty-ico">✦</div>
+        <div class="empty-title">还没有提示词</div>
+        <div class="empty-sub">点击右上角「新建提示词」开始管理你的灵感</div>
+      </div>
+
+      <footer class="statusbar">
+        <span id="statusText">就绪</span>
+        <span class="status-right" id="countText">共 0 条</span>
+      </footer>
+    </main>
+  </div>
+
+  <!-- 编辑/新建 弹窗 -->
+  <div class="modal-mask" id="modalMask" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-head">
+        <h2 id="modalTitle">新建提示词</h2>
+        <button class="icon-btn" id="modalClose" title="关闭">×</button>
+      </div>
+      <div class="modal-body">
+        <label class="field">
+          <span class="field-label">标题</span>
+          <input type="text" id="fTitle" class="input" placeholder="给这条提示词起个名字" />
+        </label>
+        <div class="field-row">
+          <label class="field">
+            <span class="field-label">分类</span>
+            <input type="text" id="fCategory" class="input" list="categoryOptions" placeholder="如：翻译、写作、编程" />
+            <datalist id="categoryOptions"></datalist>
+          </label>
+          <label class="field">
+            <span class="field-label">标签</span>
+            <input type="text" id="fTags" class="input" placeholder="用逗号分隔，如：工作, 周报" />
+          </label>
+        </div>
+        <label class="field">
+          <span class="field-label">内容 <em class="hint">用 {{变量名}} 标记变量</em></span>
+          <textarea id="fContent" class="textarea" rows="8" placeholder="请将以下内容翻译为{{目标语言}}：&#10;{{待翻译内容}}"></textarea>
+        </label>
+        <label class="check-row">
+          <input type="checkbox" id="fFavorite" />
+          <span>加入收藏</span>
+        </label>
+      </div>
+      <div class="modal-foot">
+        <button class="danger-link" id="deleteBtn" hidden>删除</button>
+        <div class="foot-spacer"></div>
+        <button class="ghost-btn" id="cancelBtn">取消</button>
+        <button class="primary-btn" id="saveBtn">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 变量填写弹窗 -->
+  <div class="modal-mask" id="varMask" hidden>
+    <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="varTitle">
+      <div class="modal-head">
+        <h2 id="varTitle">填写变量</h2>
+        <button class="icon-btn" id="varClose" title="关闭">×</button>
+      </div>
+      <div class="modal-body" id="varBody"></div>
+      <div class="modal-foot">
+        <div class="foot-spacer"></div>
+        <button class="ghost-btn" id="varCancel">取消</button>
+        <button class="primary-btn" id="varCopy">复制结果</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
