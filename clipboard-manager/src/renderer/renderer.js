@@ -87,6 +87,9 @@ function getFilteredItems() {
   let items = allItems;
   if (currentFilter === 'favorite') {
     items = items.filter(i => i.favorite);
+  } else if (currentFilter === 'text') {
+    // “文本”标签同时包含 text / email / phone，避免邮箱、电话成为无法筛选的孤立类型
+    items = items.filter(i => i.type === 'text' || i.type === 'email' || i.type === 'phone');
   } else if (currentFilter !== 'all') {
     items = items.filter(i => i.type === currentFilter);
   }
@@ -437,7 +440,9 @@ async function loadDataPath() {
   if (!dataPathEl || !window.api.getDataPath) return;
   try {
     const p = await window.api.getDataPath();
-    dataPathEl.textContent = p;
+    // 在路径分隔符后插入零宽空格，允许浏览器在分隔符处自然换行（不在单词中间断开）
+    const breakable = p.replace(/([\\/])/g, '$1\u200B');
+    dataPathEl.textContent = breakable;
     dataPathEl.title = p;
   } catch (e) {
     dataPathEl.textContent = '本地 userData';
