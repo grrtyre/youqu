@@ -196,8 +196,9 @@ function renderHeatmap(hm) {
   }).join('');
 }
 
-// 周目标进度条（本自然周已完成 / 每周目标）
+// 周目标进度条（本自然周已完成 / 每周目标）—— 周目标行已移除，此函数保留为空操作避免报错
 function renderWeekGoal(state) {
+  if (!el.weekNowCount || !el.weekGoalFill) return;
   const tw = state.thisWeek || { workSessions: 0 };
   const goal = (state.config && state.config.weeklyGoal) || 30;
   el.weekNowCount.textContent = tw.workSessions || 0;
@@ -349,15 +350,16 @@ function renderWeekChart(daily) {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   })();
-  const maxBarPx = 48; // 固定像素高度，保持柱状图比例平衡
+  const maxBarPx = 44; // 固定像素高度，保持柱状图比例平衡且不溢出
   el.weekChart.innerHTML = daily.map(d => {
     const h = Math.round((d.workSessions / max) * maxBarPx);
     const isToday = d.date === todayKey;
     const empty = !d.workSessions;
+    const dot = isToday ? '<span class="week-bar-dot"></span>' : '';
     return `
       <div class="week-bar-wrap ${isToday ? 'today' : ''}">
         <span class="week-bar-count">${d.workSessions || ''}</span>
-        <div class="week-bar ${empty ? 'empty' : ''} ${isToday ? 'today' : ''}" style="height:${Math.max(10, h)}px"></div>
+        <div class="week-bar ${empty ? 'empty' : ''} ${isToday ? 'today' : ''}" style="height:${Math.max(10, h)}px">${dot}</div>
         <span class="week-bar-label">${d.label}</span>
       </div>`;
   }).join('');

@@ -45,9 +45,9 @@
           </div>
         </div>
         <div class="stat-mini">
-          <div><span id="todayMinutes">0</span> 分钟专注</div>
-          <div>本周 <span id="weekCount">0</span> 🍅</div>
-          <div>累计 <span id="totalMinutes">0</span> 小时</div>
+          <div><span id="todayMinutes">0</span>分</div>
+          <div>本周<span id="weekCount">0</span>🍅</div>
+          <div>累计<span id="totalMinutes">0</span>h</div>
         </div>
       </section>
 
@@ -55,13 +55,6 @@
         <div class="heat-header">
           <h3>专注热力</h3>
           <span class="heat-total" id="heatTotal">近 13 周 · 0 \u{1F345}</span>
-        </div>
-        <div class="week-goal-row">
-          <div class="week-goal-info">
-            <span class="wg-label">本周目标</span>
-            <span class="wg-num"><span id="weekNowCount">0</span><span class="wg-sep">/</span><span id="weekGoalNum">30</span></span>
-          </div>
-          <div class="week-goal-bar"><div class="week-goal-fill" id="weekGoalFill"></div></div>
         </div>
         <div class="heatmap-scroll">
           <div class="heat-month-labels" id="heatMonths"></div>
@@ -105,6 +98,25 @@
       <div class="timer-ring-wrap">
         <div class="ring-ripple" id="ringRipple"></div>
         <svg class="timer-ring" viewBox="0 0 320 320" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <linearGradient id="ringGradWork" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#0a84ff"/>
+              <stop offset="55%" stop-color="#007aff"/>
+              <stop offset="100%" stop-color="#3d9bff"/>
+            </linearGradient>
+            <linearGradient id="ringGradShort" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#34c759"/>
+              <stop offset="100%" stop-color="#30d158"/>
+            </linearGradient>
+            <linearGradient id="ringGradLong" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ff9500"/>
+              <stop offset="100%" stop-color="#ffb340"/>
+            </linearGradient>
+            <radialGradient id="ringInnerGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="60%" stop-color="rgba(0,122,255,0)"/>
+              <stop offset="100%" stop-color="rgba(0,122,255,0.06)"/>
+            </radialGradient>
+          </defs>
           <circle class="ring-track" cx="160" cy="160" r="140"/>
           <circle class="ring-progress" id="ringProgress" cx="160" cy="160" r="140"/>
         </svg>
@@ -128,7 +140,7 @@
         </button>
       </div>
       <div class="ctrl-label" id="startText">开始专注</div>
-      <div class="kbd-hint"><kbd>空格</kbd>开始/暂停<span class="kbd-sep">·</span><kbd>R</kbd>重置<span class="kbd-sep">·</span><kbd>S</kbd>跳过<span class="kbd-sep">·</span><kbd>1/2/3</kbd>切换阶段<span class="kbd-sep">·</span><kbd>N</kbd>新建任务</div>
+      <div class="kbd-hint"><kbd>Space</kbd> 开始/暂停<span class="kbd-sep">·</span><kbd>R</kbd> 重置<span class="kbd-sep">·</span><kbd>S</kbd> 跳过</div>
 
       <!-- 当前任务 -->
       <div class="current-task" id="currentTask">
