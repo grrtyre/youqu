@@ -132,7 +132,11 @@ function handlePhaseChange(event) {
   }
   // 通知
   let title = '', body = '';
-  if (event.completedWork) {
+  if (event.skipped) {
+    // 跳过：不播放提示音，仅轻量通知
+    title = '已跳过';
+    body = event.nextPhase === 'working' ? '休息已跳过，开始专注吧' : '专注已跳过，进入休息';
+  } else if (event.completedWork) {
     title = '番茄完成 🍅';
     body = `已完成 ${event.workSessionsToday} 个番茄，进入${event.nextPhase === 'long_break' ? '长休息' : '短休息'}`;
     playChime();
@@ -365,6 +369,12 @@ function registerIpc() {
   });
   ipcMain.handle('task:complete', (e, id) => {
     core.completeTask(id);
+    saveData();
+    broadcastState();
+    return true;
+  });
+  ipcMain.handle('task:uncomplete', (e, id) => {
+    core.uncompleteTask(id);
     saveData();
     broadcastState();
     return true;
