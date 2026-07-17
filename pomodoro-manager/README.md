@@ -6,7 +6,7 @@
 
 专注 · 休息 · 心流 · 打卡 · 统计
 
-<img alt="version" src="https://img.shields.io/badge/%E7%89%88%E6%9C%AC-v1.1.0-007aff?style=flat-square">
+<img alt="version" src="https://img.shields.io/badge/%E7%89%88%E6%9C%AC-v1.3.0-007aff?style=flat-square">
 <img alt="platform" src="https://img.shields.io/badge/Windows-x64-007aff?style=flat-square">
 <img alt="license" src="https://img.shields.io/badge/License-MIT-34c759?style=flat-square">
 <img alt="tests" src="https://img.shields.io/badge/%E6%B5%8B%E8%AF%95-87%20%E7%94%A8%E4%BE%8B-ff9500?style=flat-square">
@@ -40,8 +40,9 @@
 ### 📋 任务管理
 
 - **任务清单**：添加任务并预估番茄数，设为当前任务后自动累计进度
+- **番茄进度条**：每个任务实时显示 pomodoros/estimate 可视化进度，一眼掌握完成度
 - **inline 编辑**：双击任务标题原地修改，回车保存、Esc 取消
-- **完成 / 删除**：一键标记完成，悬停显示删除
+- **完成 / 删除**：一键标记完成，悬停显示删除，误删可撤销
 
 ### 📊 统计与激励
 
@@ -84,7 +85,8 @@ npm start
 | 开始 / 暂停 | `空格` |
 | 重置 | `R` |
 | 跳过 | `S` |
-| 切换阶段 | 点击顶部标签 |
+| 切换阶段 | `1` / `2` / `3` 或点击顶部标签 |
+| 新建任务 | `N` 聚焦输入框 |
 | 添加任务 | 输入 + `回车` |
 | 编辑任务 | 双击任务 |
 | 设置 | 齿轮图标 |
@@ -113,6 +115,8 @@ pomodoro-manager/
 ```
 
 ## 📜 更新日志
+
+**v1.3.0** —— 任务番茄进度条（可视化 pomodoros/estimate）、`N` 键快速新建任务、连续打卡火焰动效增强、当前任务条与计时圆环视觉整合、任务间距统一；修复截图演示模式启动崩溃
 
 **v1.2.0** —— 专注热力图（13 周贡献图）、周目标进度条、每周目标自定义
 

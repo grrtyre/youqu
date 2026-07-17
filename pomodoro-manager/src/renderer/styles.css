@@ -59,14 +59,24 @@ html, body {
 
 .streak-badge {
   display: flex; align-items: center; gap: 6px;
-  padding: 6px 12px;
-  background: linear-gradient(135deg, rgba(255,149,0,0.08), rgba(255,149,0,0.04));
-  border: 1px solid rgba(255,149,0,0.18);
+  padding: 6px 13px;
+  background: linear-gradient(135deg, rgba(255,149,0,0.12), rgba(255,149,0,0.05));
+  border: 1px solid rgba(255,149,0,0.22);
   border-radius: 999px;
   font-size: 13px; font-weight: 700;
   color: var(--warn);
+  box-shadow: 0 1px 2px rgba(255,149,0,0.06);
 }
-.streak-flame { font-size: 15px; filter: drop-shadow(0 0 3px rgba(255,149,0,0.3)); }
+.streak-badge #streakNum { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
+.streak-flame {
+  font-size: 15px; filter: drop-shadow(0 0 4px rgba(255,149,0,0.45));
+  animation: flameFlicker 2.4s ease-in-out infinite;
+  display: inline-flex;
+}
+@keyframes flameFlicker {
+  0%, 100% { transform: scale(1) rotate(-1deg); filter: drop-shadow(0 0 4px rgba(255,149,0,0.45)); }
+  50%      { transform: scale(1.12) rotate(2deg); filter: drop-shadow(0 0 7px rgba(255,149,0,0.7)); }
+}
 .streak-label { color: var(--text-2); font-weight: 500; }
 
 .icon-btn {
@@ -193,7 +203,7 @@ html, body {
 .mini-btn.primary:hover { background: #0066d6; }
 
 .task-list {
-  list-style: none; overflow-y: auto; flex: 1; display: flex; flex-direction: column; justify-content: flex-start; gap: 2px;
+  list-style: none; overflow-y: auto; flex: 1; display: flex; flex-direction: column; justify-content: flex-start; gap: 4px;
   /* 滚动指示：底部渐变遮罩，提示下方有更多内容 */
   mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 14px), transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 14px), transparent 100%);
@@ -201,12 +211,11 @@ html, body {
 }
 .task-item {
   display: flex; align-items: center; gap: 11px;
-  padding: 12px 12px;
+  padding: 11px 12px;
   border-radius: 10px;
   cursor: pointer;
   transition: background 0.12s;
   border: 1px solid transparent;
-  margin-bottom: 3px;
 }
 .task-item:hover { background: var(--surface-2); }
 .task-item.current { background: rgba(0,122,255,0.05); border-color: rgba(0,122,255,0.12); box-shadow: inset 2px 0 0 var(--accent); }
@@ -223,7 +232,25 @@ html, body {
 .task-item.done .task-radio::after { content: '✓'; color: #fff; font-size: 11px; font-weight: bold; }
 .task-body { flex: 1; min-width: 0; }
 .task-title { font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.task-meta { font-size: 11px; color: var(--text-2); margin-top: 2px; }
+/* 任务番茄进度条：可视化 pomodoros/estimate */
+.task-progress {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 5px;
+}
+.task-progress-bar {
+  flex: 1; height: 4px; min-width: 24px;
+  background: #ececf0; border-radius: 999px; overflow: hidden;
+  box-shadow: inset 0 1px 1px rgba(0,0,0,0.03);
+}
+.task-progress-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--accent), #3d9bff);
+  border-radius: 999px;
+  transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.task-item.current .task-progress-fill { box-shadow: 0 0 0 2px rgba(0,122,255,0.10); }
+.task-item.done .task-progress-fill { background: var(--accent-2); }
+.task-meta { font-size: 11px; color: var(--text-2); flex-shrink: 0; font-variant-numeric: tabular-nums; }
 .task-current-dot {
   width: 9px; height: 9px; border-radius: 50%; background: var(--accent);
   flex-shrink: 0; box-shadow: 0 0 0 3px var(--accent-soft);
@@ -432,11 +459,35 @@ html, body {
   border-radius: 10px;
   margin-bottom: 14px;
   max-width: 380px; width: 100%;
+  transition: border-color 0.2s, background 0.2s;
+}
+/* 有当前任务时：左侧蓝色细条 + 浅蓝背景，与计时圆环建立视觉连接 */
+.current-task.has-task {
+  background: linear-gradient(90deg, rgba(0,122,255,0.06), var(--surface-2) 70%);
+  border-color: rgba(0,122,255,0.18);
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 .current-task-label {
   font-size: 10px; color: var(--accent); font-weight: 600;
   flex-shrink: 0; letter-spacing: 0.3px;
-  padding: 3px 8px; background: var(--accent-soft); border-radius: 999px;
+  padding: 3px 8px 3px 18px; background: var(--accent-soft); border-radius: 999px;
+  position: relative;
+}
+/* 脉动指示点：与运行中圆环呼吸动效呼应 */
+.current-task-label::before {
+  content: '';
+  position: absolute;
+  left: 7px; top: 50%;
+  width: 6px; height: 6px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 0 rgba(0,122,255,0.4);
+  animation: taskPulse 1.8s ease-in-out infinite;
+}
+@keyframes taskPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,122,255,0.35); transform: scale(1); }
+  50%      { box-shadow: 0 0 0 4px rgba(0,122,255,0); transform: scale(1.15); }
 }
 .current-task-name {
   font-size: 13px; color: var(--text); font-weight: 500;

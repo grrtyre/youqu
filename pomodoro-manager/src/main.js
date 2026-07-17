@@ -66,9 +66,9 @@ function seedDemoData() {
   core.remainingMs = 24 * 60 * 1000 + 54 * 1000;
   core.cycleCount = 2;
   // 热力图演示数据：最近 12 周，工作日偏多、周末偏少，模拟真实专注规律
-  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const todayBase = new Date(); todayBase.setHours(0, 0, 0, 0);
   for (let i = 1; i <= 84; i++) {
-    const d = new Date(today);
+    const d = new Date(todayBase);
     d.setDate(d.getDate() - i);
     if (d.getTime() >= now.getTime() - 6 * 86400000) continue;
     const dow = d.getDay();

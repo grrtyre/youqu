@@ -41,6 +41,7 @@ const el = {
   weekChart: document.getElementById('weekChart'),
   weekTotal: document.getElementById('weekTotal'),
   currentTaskName: document.getElementById('currentTaskName'),
+  currentTask: document.getElementById('currentTask'),
   heatmap: document.getElementById('heatmap'),
   heatMonths: document.getElementById('heatMonths'),
   heatTotal: document.getElementById('heatTotal'),
@@ -292,6 +293,8 @@ function renderTasks(state) {
   const cur = tasks.find(t => t.id === state.currentTaskId && !t.completed);
   el.currentTaskName.textContent = cur ? cur.title : '未选择任务';
   el.currentTaskName.style.color = cur ? 'var(--text)' : 'var(--text-3)';
+  // 有当前任务时给容器加 has-task 类，触发左侧蓝色细条 + 浅蓝背景
+  if (el.currentTask) el.currentTask.classList.toggle('has-task', !!cur);
   // 底部统计条带：已完成数 + 投入/预估番茄
   const totalEst = tasks.reduce((s, t) => s + (t.estimate || 1), 0);
   const totalPomo = tasks.reduce((s, t) => s + (t.pomodoros || 0), 0);
@@ -306,12 +309,19 @@ function renderTasks(state) {
   const sorted = tasks.slice().sort((a, b) => (a.completed - b.completed) || (a.createdAt - b.createdAt));
   el.taskList.innerHTML = sorted.map(t => {
     const isCurrent = state.currentTaskId === t.id && !t.completed;
+    const pomo = t.pomodoros || 0;
+    const est = t.estimate || 1;
+    // 进度条百分比：已完成任务满格，未完成按 pomodoros/estimate
+    const pct = t.completed ? 100 : Math.min(100, Math.round((pomo / est) * 100));
     return `
       <li class="task-item ${t.completed ? 'done' : ''} ${isCurrent ? 'current' : ''}" data-id="${t.id}">
         <div class="task-radio" data-action="complete"></div>
         <div class="task-body">
           <div class="task-title">${escapeHtml(t.title)}</div>
-          <div class="task-meta">${t.pomodoros || 0} / ${t.estimate || 1}</div>
+          <div class="task-progress">
+            <div class="task-progress-bar"><div class="task-progress-fill" style="width:${pct}%"></div></div>
+            <span class="task-meta">${pomo} / ${est}</span>
+          </div>
         </div>
         <span class="task-current-dot ${isCurrent ? '' : 'empty'}" data-action="current" title="设为当前任务"></span>
         <button class="task-del" data-action="delete" title="删除">×</button>
@@ -657,6 +667,10 @@ document.addEventListener('keydown', async (e) => {
     if (curPhase === ph) return; // 已在该阶段，不操作
     await window.api.switchPhase(ph);
     toast(`已切换到「${PHASE_TAB_LABEL[ph] || ''}」`);
+  } else if (key === 'n') {
+    // N 键快速聚焦任务输入框，便于键盘党快速添加任务
+    e.preventDefault();
+    el.taskInput.focus();
   }
 });
 
