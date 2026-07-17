@@ -23,6 +23,7 @@ const el = {
   ringProgress: document.getElementById('ringProgress'),
   ringWrap: document.querySelector('.timer-ring-wrap'),
   ringRipple: document.getElementById('ringRipple'),
+  timerArea: document.querySelector('.timer-area'),
   startBtn: document.getElementById('startBtn'),
   startIcon: document.getElementById('startIcon'),
   startText: document.getElementById('startText'),
@@ -229,6 +230,12 @@ function renderTimer(state) {
   el.ringWrap.classList.remove('short_break', 'long_break');
   if (running && phase === 'short_break') el.ringWrap.classList.add('short_break');
   else if (running && phase === 'long_break') el.ringWrap.classList.add('long_break');
+  // 同步阶段色到计时区顶部渐变
+  if (el.timerArea) {
+    el.timerArea.classList.remove('phase-short_break', 'phase-long_break');
+    if (phase === 'short_break') el.timerArea.classList.add('phase-short_break');
+    else if (phase === 'long_break') el.timerArea.classList.add('phase-long_break');
+  }
 
   // 周期点
   const interval = (state.config && state.config.longBreakInterval) || 4;
@@ -327,6 +334,10 @@ function renderTasks(state) {
         <button class="task-del" data-action="delete" title="删除">×</button>
       </li>`;
   }).join('');
+  // 仅当列表内容溢出时添加 scrollable 类，触发底部渐变遮罩
+  requestAnimationFrame(() => {
+    el.taskList.classList.toggle('scrollable', el.taskList.scrollHeight > el.taskList.clientHeight + 4);
+  });
 }
 
 function renderWeekChart(daily) {
@@ -385,9 +396,10 @@ function toast(msg, actionLabel, actionFn) {
   const oldAction = el.toast.querySelector('.toast-action');
   if (oldAction) oldAction.remove();
   if (actionLabel && typeof actionFn === 'function') {
-    const btn = document.createElement('span');
+    const btn = document.createElement('button');
     btn.className = 'toast-action';
     btn.textContent = actionLabel;
+    btn.type = 'button';
     btn.addEventListener('click', () => {
       el.toast.classList.remove('show');
       try { actionFn(); } catch (e) {}
@@ -413,15 +425,33 @@ el.startBtn.addEventListener('click', async () => {
 });
 
 el.resetBtn.addEventListener('click', async () => {
+  await confirmReset();
+});
+
+// 重置确认：运行中且有进度时需二次确认，避免误触丢失专注进度
+let _resetConfirming = false;
+// 数字键切换阶段确认标志
+let _numConfirm = false;
+async function confirmReset() {
+  const running = current && (current.state === 'working' || current.state === 'short_break' || current.state === 'long_break');
+  if (running && (current.progress || 0) > 0.05 && !_resetConfirming) {
+    _resetConfirming = true;
+    toast('再次点击确认重置（将丢失当前进度）');
+    setTimeout(() => { _resetConfirming = false; }, 3000);
+    return;
+  }
+  _resetConfirming = false;
   await window.api.reset();
   toast('已重置');
-});
+}
 
 el.skipBtn.addEventListener('click', async () => {
   const ev = await window.api.skip();
   if (!ev) {
     if (current && (current.state === 'idle' || current.state === 'paused')) toast('计时未开始');
     else toast('严格模式下休息不可跳过');
+  } else if (ev.skipped) {
+    toast(ev.nextPhase === 'working' ? '已跳过休息' : '已跳过专注（不计入番茄）');
   }
 });
 
@@ -430,10 +460,10 @@ el.phaseTabs.addEventListener('click', async (e) => {
   if (!tab) return;
   const phase = tab.dataset.phase;
   if (!phase) return;
-  // 防误触：当前阶段进行中且已有进度时，首次点击给提示，再次点击同标签才确认切换
+  // 防误触：当前阶段进行中或暂停且有进度时，首次点击给提示，再次点击同标签才确认切换
   const curPhase = current && (current.state === 'paused' ? current.pausedState : current.state);
-  const running = current && (current.state === 'working' || current.state === 'short_break' || current.state === 'long_break');
-  if (running && curPhase !== phase && (current.progress || 0) > 0.1 && tab.dataset.confirm !== '1') {
+  const active = current && (current.state === 'working' || current.state === 'short_break' || current.state === 'long_break' || current.state === 'paused');
+  if (active && curPhase !== phase && (current.progress || 0) > 0.1 && tab.dataset.confirm !== '1') {
     tab.dataset.confirm = '1';
     toast(`当前阶段进度 ${(Math.round((current.progress||0)*100))}%，再次点击确认切换`);
     setTimeout(() => { tab.dataset.confirm = '0'; }, 3000);
@@ -473,7 +503,13 @@ el.taskList.addEventListener('click', async (e) => {
   const id = item.dataset.id;
   const action = e.target.dataset.action;
   if (action === 'complete') {
-    await window.api.completeTask(id);
+    // 已完成任务点击 radio 取消完成（恢复为未完成），未完成则标记完成
+    if (item.classList.contains('done')) {
+      await window.api.uncompleteTask(id);
+      toast('已恢复为未完成');
+    } else {
+      await window.api.completeTask(id);
+    }
   } else if (action === 'delete') {
     // 删除前缓存任务快照，提供撤销
     const snapshot = (current && current.tasks || []).find(t => t.id === id) || null;
@@ -598,6 +634,10 @@ el.settingsSave.addEventListener('click', async () => {
   el.settingsMask.classList.remove('show');
   if (adjusted.length) toast(`已保存（${adjusted.join('、')}）`);
   else toast('设置已保存');
+  // 白噪音已开启但被自动播放策略拦截时提示用户
+  if (cfg.whiteNoise && audioCtx && audioCtx.state !== 'running') {
+    setTimeout(() => toast('点击窗口任意位置即可开始播放白噪音'), 1600);
+  }
 });
 
 el.exportBtn.addEventListener('click', async () => {
@@ -613,17 +653,33 @@ el.exportBtn.addEventListener('click', async () => {
 });
 
 el.importBtn.addEventListener('click', () => el.importFile.click());
+// 导入确认标志：导入会覆盖全部数据，需二次确认
+let _importConfirming = false;
+let _pendingImportText = null;
 el.importFile.addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
   const text = await file.text();
-  try {
-    await window.api.importData(text);
-    toast('导入成功');
-  } catch (err) {
-    toast('导入失败：' + err.message);
-  }
   el.importFile.value = '';
+  // 首次选择文件后提示确认，二次点击「确认导入」才真正覆盖
+  if (!_importConfirming) {
+    _importConfirming = true;
+    _pendingImportText = text;
+    toast('导入将覆盖当前全部数据', '确认导入', async () => {
+      _importConfirming = false;
+      const toImport = _pendingImportText;
+      _pendingImportText = null;
+      try {
+        await window.api.importData(toImport);
+        toast('导入成功');
+      } catch (err) {
+        toast('导入失败：' + err.message);
+      }
+    });
+    // 10 秒后自动取消待确认导入
+    setTimeout(() => { _importConfirming = false; _pendingImportText = null; }, 10000);
+    return;
+  }
 });
 
 function clamp(v, min, max) { return Math.max(min, Math.min(max, isNaN(v) ? min : v)); }
@@ -649,14 +705,15 @@ document.addEventListener('keydown', async (e) => {
     }
   } else if (key === 'r') {
     e.preventDefault();
-    await window.api.reset();
-    toast('已重置');
+    await confirmReset();
   } else if (key === 's') {
     e.preventDefault();
     const ev = await window.api.skip();
     if (!ev) {
       if (current && (current.state === 'idle' || current.state === 'paused')) toast('计时未开始');
       else toast('严格模式下休息不可跳过');
+    } else if (ev.skipped) {
+      toast(ev.nextPhase === 'working' ? '已跳过休息' : '已跳过专注（不计入番茄）');
     }
   } else if (key === '1' || key === '2' || key === '3') {
     // 数字键 1/2/3 切换 专注/短休息/长休息
@@ -665,6 +722,15 @@ document.addEventListener('keydown', async (e) => {
     const ph = map[key];
     const curPhase = current && (current.state === 'paused' ? current.pausedState : current.state);
     if (curPhase === ph) return; // 已在该阶段，不操作
+    // 与标签点击一致：进行中或暂停且有进度时需二次确认
+    const active = current && (current.state === 'working' || current.state === 'short_break' || current.state === 'long_break' || current.state === 'paused');
+    if (active && (current.progress || 0) > 0.1 && !_numConfirm) {
+      _numConfirm = true;
+      toast(`当前阶段进度 ${Math.round((current.progress||0)*100)}%，再按 ${key} 确认切换`);
+      setTimeout(() => { _numConfirm = false; }, 3000);
+      return;
+    }
+    _numConfirm = false;
     await window.api.switchPhase(ph);
     toast(`已切换到「${PHASE_TAB_LABEL[ph] || ''}」`);
   } else if (key === 'n') {
