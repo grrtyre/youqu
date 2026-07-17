@@ -61,7 +61,7 @@
   <div class="hero__content">
     <span class="hero__badge">开源 · MIT 协议 · <span id="hero-count">53</span> 个工具</span>
     <h1 class="hero__title">实用工具<span class="hero__title-accent">集合</span></h1>
-    <p class="hero__sub">每个工具都解决一个真实痛点，不是只能看的玩具。</p>
+    <p class="hero__sub">每个工具都解决一个真实痛点。</p>
     <div class="hero__actions">
       <a class="btn btn--primary" href="#projects">浏览全部工具</a>
       <a class="btn btn--ghost" href="https://www.ifdian.net/a/giquwei" target="_blank" rel="noopener">☕ 爱发电支持</a>
@@ -71,9 +71,29 @@
       <div class="stat__sep" aria-hidden="true"></div>
       <div class="stat"><span class="stat__num">4</span><span class="stat__label">工具分类</span></div>
       <div class="stat__sep" aria-hidden="true"></div>
-      <div class="stat"><span class="stat__num">¥0</span><span class="stat__label">永久免费</span></div>
+      <div class="stat"><span class="stat__num stat__num--free">免费</span><span class="stat__label">永久开放</span></div>
     </div>
     <div class="hero__preview" id="hero-preview"></div>
+    <ul class="hero__pillars" aria-label="核心承诺">
+      <li class="hero__pillar">
+        <span class="hero__pillar-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+        </span>
+        <span class="hero__pillar-text"><strong>开源 MIT</strong><em>代码透明可审计</em></span>
+      </li>
+      <li class="hero__pillar">
+        <span class="hero__pillar-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        </span>
+        <span class="hero__pillar-text"><strong>纯本地隐私</strong><em>数据不出本机</em></span>
+      </li>
+      <li class="hero__pillar">
+        <span class="hero__pillar-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>
+        </span>
+        <span class="hero__pillar-text"><strong>永久免费</strong><em>无广告无内购</em></span>
+      </li>
+    </ul>
   </div>
 </header>
 
@@ -81,6 +101,7 @@
 <section class="toolbar" id="projects">
   <div class="toolbar__inner">
     <div class="toolbar__head">
+      <span class="section__eyebrow">Projects</span>
       <h2 class="section__title">全部工具</h2>
       <p class="section__desc">点击卡片查看详情，支持搜索与分类筛选</p>
     </div>
@@ -116,9 +137,28 @@
 <!-- 更新日志 -->
 <section class="changelog" id="changelog">
   <div class="container">
-    <h2 class="section__title">更新日志</h2>
-    <p class="section__desc">按时间倒序，记录每次迭代</p>
+    <div class="section__head">
+      <span class="section__eyebrow">Changelog</span>
+      <h2 class="section__title">更新日志</h2>
+      <p class="section__desc">按时间倒序，记录每次迭代</p>
+    </div>
     <div class="timeline">
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-17</div>
+        <div class="tl__card">
+          <h3>展示站点细节打磨（第八轮 · 按钮权重 / 视觉焦点 / 微交互暗示）</h3>
+          <p>卡片源码链接升级为带 GitHub 图标的描边按钮，与主按钮主次平衡；卡片描述从 2 行扩展为 3 行，移动端保持 2 行，缓解信息截断；Hero 统计分隔点升级为竖线柔光分隔，统计数字下方新增柔光强调短线；主 CTA 按钮新增箭头图标 + 微光扫过动效，副按钮加心形图标；Hero badge 新增绿色状态点脉冲呼吸动效暗示活跃；卡片 hover 显示「查看详情」角标暗示可点击；卡片 meta 与正文间增加细分隔线强化层次；移动端 GitHub 链接改为圆形图标按钮避免文字截断，chips 改为横向滚动避免拥挤换行。</p>
+        </div>
+      </div>
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-17</div>
+        <div class="tl__card">
+          <h3>展示站点细节打磨（第七轮 · 弹窗修复与首屏质感）</h3>
+          <p>修复项目详情弹窗顶部引用不存在截图导致破损图片的 Bug，重构为渐变光晕 + 大 emoji 玻璃容器 + 版本/技术栈/评分徽章组；Hero 区新增「开源 MIT / 纯本地隐私 / 永久免费」三列信任支柱条强化首屏信任感；卡片媒体区高度微增并加入分类色径向光晕与 emoji 呼吸动效；更新日志最新条目高亮 + 「最新」徽标 + 日期胶囊化；段落标题新增 eyebrow 小标签增强层次；页脚渐变顶边柔和过渡。</p>
+        </div>
+      </div>
       <div class="tl__item">
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-16</div>
@@ -191,7 +231,10 @@
 <section class="support" id="support">
   <div class="container support__inner">
     <div class="support__text">
-      <h2 class="section__title">支持我们</h2>
+      <div class="section__head">
+        <span class="section__eyebrow">Support</span>
+        <h2 class="section__title">支持我们</h2>
+      </div>
       <p class="section__desc">如果这些工具帮到了你，欢迎在爱发电请我们喝杯咖啡。你的支持是我们持续做下去的动力。</p>
       <a class="btn btn--primary btn--lg" href="https://www.ifdian.net/a/giquwei" target="_blank" rel="noopener">☕ 爱发电支持</a>
     </div>
