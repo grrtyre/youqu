@@ -134,7 +134,7 @@ html, body {
 .stat-unit { font-size: 13px; color: var(--text-3); font-weight: 500; }
 .stat-progress { flex: 1; }
 .stat-progress-bar {
-  height: 8px; background: #ececf0; border-radius: 999px; overflow: hidden;
+  height: 8px; background: #e3e3e8; border-radius: 999px; overflow: hidden;
   box-shadow: inset 0 1px 2px rgba(0,0,0,0.04);
 }
 .stat-progress-fill {
@@ -204,10 +204,12 @@ html, body {
 
 .task-list {
   list-style: none; overflow-y: auto; flex: 1; display: flex; flex-direction: column; justify-content: flex-start; gap: 4px;
-  /* 滚动指示：底部渐变遮罩，提示下方有更多内容 */
+  padding-bottom: 6px;
+}
+/* 滚动指示：仅当列表可滚动（内容溢出）时显示底部渐变遮罩，避免短列表末项被淡化 */
+.task-list.scrollable {
   mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 14px), transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 14px), transparent 100%);
-  padding-bottom: 6px;
 }
 .task-item {
   display: flex; align-items: center; gap: 11px;
@@ -239,7 +241,7 @@ html, body {
 }
 .task-progress-bar {
   flex: 1; height: 4px; min-width: 24px;
-  background: #ececf0; border-radius: 999px; overflow: hidden;
+  background: #e3e3e8; border-radius: 999px; overflow: hidden;
   box-shadow: inset 0 1px 1px rgba(0,0,0,0.03);
 }
 .task-progress-fill {
@@ -297,36 +299,52 @@ html, body {
   gap: 8px;
   position: relative;
 }
+/* 顶部柔和渐变：营造视觉焦点，颜色随阶段变化 */
+.timer-area::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 120px;
+  background: linear-gradient(180deg, rgba(0,122,255,0.05) 0%, transparent 100%);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  pointer-events: none;
+  z-index: 0;
+  transition: background 0.4s;
+}
+.timer-area.phase-short_break::before { background: linear-gradient(180deg, rgba(52,199,89,0.05) 0%, transparent 100%); }
+.timer-area.phase-long_break::before { background: linear-gradient(180deg, rgba(255,149,0,0.05) 0%, transparent 100%); }
+.timer-area > * { position: relative; z-index: 1; }
 
+/* 阶段标签：与品牌区/设置齿轮圆角统一（9px），减少视觉跳变 */
 .phase-tabs {
-  display: flex; gap: 4px;
+  display: flex; gap: 3px;
   background: var(--surface-2);
-  padding: 5px; border-radius: 12px;
-  margin-bottom: 16px;
+  padding: 4px; border-radius: 11px;
+  margin-bottom: 22px;
   border: 1px solid var(--border);
 }
 .phase-tab {
   border: none; background: transparent;
-  padding: 9px 26px; border-radius: 9px;
-  font-size: 13.5px; font-weight: 500; color: var(--text-2);
+  padding: 8px 22px; border-radius: 8px;
+  font-size: 13px; font-weight: 500; color: var(--text-2);
   cursor: pointer; transition: all 0.18s;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
 }
 .phase-tab:hover { color: var(--text); background: rgba(0,0,0,0.04); }
 .phase-tab.active {
   background: var(--surface); color: var(--text);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 2px 6px rgba(0,0,0,0.03);
   font-weight: 600;
 }
 .phase-tab.active.working { color: var(--accent); }
 .phase-tab.active.short_break { color: var(--accent-2); }
 .phase-tab.active.long_break { color: var(--warn); }
 
-/* 圆环 */
+/* 圆环：增加上下留白，让计时器成为绝对视觉焦点 */
 .timer-ring-wrap {
   position: relative;
   width: 240px; height: 240px;
-  margin-bottom: 16px;
+  margin: 12px 0 22px;
   filter: drop-shadow(0 4px 12px rgba(0,122,255,0.08));
 }
 .timer-ring-wrap::before {
@@ -348,7 +366,7 @@ html, body {
 .timer-ring { width: 100%; height: 100%; transform: rotate(-90deg); position: relative; z-index: 1; }
 .ring-ripple { z-index: 1; }
 .ring-track {
-  fill: none; stroke: #ececf0; stroke-width: 10;
+  fill: none; stroke: #ededf0; stroke-width: 9;
 }
 .ring-progress {
   fill: none; stroke: var(--accent); stroke-width: 12;
@@ -356,7 +374,7 @@ html, body {
   stroke-dasharray: 879.6; /* 2*PI*140 */
   stroke-dashoffset: 879.6;
   transition: stroke-dashoffset 0.5s linear, stroke 0.3s;
-  filter: drop-shadow(0 0 10px rgba(0,122,255,0.20));
+  filter: drop-shadow(0 0 12px rgba(0,122,255,0.28));
 }
 .ring-progress.short_break { stroke: var(--accent-2); filter: drop-shadow(0 0 6px rgba(52,199,89,0.25)); }
 .ring-progress.long_break { stroke: var(--warn); filter: drop-shadow(0 0 6px rgba(255,149,0,0.25)); }
@@ -430,25 +448,26 @@ html, body {
   font-size: 13px; color: var(--text-2); font-weight: 500;
   margin-bottom: 6px;
 }
+/* 快捷键提示：降级为更柔和的辅助信息，避免抢夺计时器焦点 */
 .kbd-hint {
-  font-size: 11.5px; color: var(--text-2); margin-bottom: 4px;
-  display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 10.5px; color: var(--text-3); margin: 10px 0 14px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
   flex-wrap: wrap; letter-spacing: 0.1px;
-  opacity: 1;
-  font-weight: 500;
+  opacity: 0.85;
+  font-weight: 400;
 }
 .kbd-hint kbd {
   font-family: -apple-system, "SF Pro Text", "PingFang SC", sans-serif;
-  font-size: 11px; font-weight: 600;
-  color: var(--accent);
-  background: var(--accent-soft);
-  border: none;
+  font-size: 10px; font-weight: 500;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   padding: 2px 6px; margin: 0 1px;
-  line-height: 1.4;
+  line-height: 1.3;
   min-width: 16px; text-align: center;
-  border-radius: 5px;
+  border-radius: 4px;
 }
-.kbd-hint .kbd-sep { color: var(--border); margin: 0 1px; }
+.kbd-hint .kbd-sep { color: var(--border); margin: 0 2px; }
 
 /* 当前任务 */
 .current-task {
@@ -458,7 +477,7 @@ html, body {
   border: 1px solid var(--border);
   border-radius: 10px;
   margin-bottom: 14px;
-  max-width: 380px; width: 100%;
+  max-width: 440px; width: 100%;
   transition: border-color 0.2s, background 0.2s;
 }
 /* 有当前任务时：左侧蓝色细条 + 浅蓝背景，与计时圆环建立视觉连接 */
@@ -496,7 +515,7 @@ html, body {
 
 /* 本周柱状图 */
 .week-section {
-  width: 100%; max-width: 380px;
+  width: 100%; max-width: 440px;
   flex-shrink: 0;
   margin-top: 4px;
   padding-top: 6px;
@@ -510,9 +529,9 @@ html, body {
 }
 .week-total { color: var(--accent); font-weight: 600; }
 .week-chart {
-  display: flex; align-items: flex-end; gap: 10px;
+  display: flex; align-items: flex-end; gap: 14px;
   height: 76px; width: 100%;
-  padding: 8px 4px 2px;
+  padding: 10px 6px 2px;
   border-top: 1px solid var(--border);
 }
 .week-bar-wrap {
@@ -544,7 +563,7 @@ html, body {
   background: rgba(0,122,255,0.06);
 }
 .week-bar-label { font-size: 10px; color: var(--text-3); }
-.week-bar-count { font-size: 11px; color: var(--text-2); font-weight: 600; min-height: 14px; }
+.week-bar-count { font-size: 11.5px; color: var(--text-2); font-weight: 700; min-height: 15px; font-variant-numeric: tabular-nums; }
 .week-bar-wrap.today .week-bar-label { color: var(--accent); font-weight: 600; }
 .week-bar-wrap.today .week-bar-count { color: var(--accent); }
 
@@ -618,7 +637,9 @@ html, body {
 .toast .toast-action {
   color: var(--accent); font-weight: 600;
   cursor: pointer; pointer-events: auto;
-  padding: 2px 4px; margin: -2px -4px;
+  padding: 2px 6px; margin: -2px -2px;
+  border: none; background: transparent;
+  font-family: inherit; font-size: 13px;
   border-radius: 4px;
   transition: background 0.15s;
 }
@@ -745,7 +766,7 @@ input, button { font-family: inherit; }
 .wg-num { font-size: 14px; color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
 .wg-num .wg-sep { color: var(--text-3); font-weight: 400; margin: 0 2px; }
 .week-goal-bar {
-  flex: 1; height: 7px; background: #ececf0; border-radius: 999px; overflow: hidden;
+  flex: 1; height: 7px; background: #e3e3e8; border-radius: 999px; overflow: hidden;
   box-shadow: inset 0 1px 2px rgba(0,0,0,0.04);
 }
 .week-goal-fill {
@@ -798,14 +819,20 @@ input, button { font-family: inherit; }
   transition: transform 0.12s;
   cursor: default;
 }
+/* 热力图色阶：蓝→靛→紫多色渐变，避免单一蓝色调，仍与苹果白主色协调 */
 .heat-cell.level-0 { background: #ececf0; }
-.heat-cell.level-1 { background: #c5d8f5; }
-.heat-cell.level-2 { background: #79b2ff; }
-.heat-cell.level-3 { background: #3d9bff; }
-.heat-cell.level-4 { background: var(--accent); }
+.heat-cell.level-1 { background: #bae6fd; }   /* 天空蓝 */
+.heat-cell.level-2 { background: #60a5fa; }   /* 中蓝 */
+.heat-cell.level-3 { background: #818cf8; }   /* 靛蓝 */
+.heat-cell.level-4 { background: #a855f7; }   /* 紫罗兰 */
 .heat-cell.future { background: #f4f4f6; opacity: 0.55; }
 .heat-cell.today {
   box-shadow: 0 0 0 1.5px var(--accent);
+  animation: heatPulse 2.4s ease-in-out infinite;
+}
+@keyframes heatPulse {
+  0%, 100% { box-shadow: 0 0 0 1.5px var(--accent); }
+  50%      { box-shadow: 0 0 0 2.5px var(--accent), 0 0 8px rgba(0,122,255,0.4); }
 }
 .heat-cell:hover { transform: scale(1.3); z-index: 2; position: relative; }
 
@@ -813,10 +840,40 @@ input, button { font-family: inherit; }
 .heat-legend {
   display: flex; align-items: center; gap: 5px;
   justify-content: flex-end;
-  margin-top: 10px;
-  padding-top: 9px;
+  margin-top: 6px;
+  padding-top: 6px;
   border-top: 1px solid var(--border);
 }
 .heat-legend .heat-cell { width: 13px; height: 13px; cursor: default; border-radius: 3.5px; }
 .heat-legend .heat-cell:hover { transform: none; }
 .heat-legend-label { font-size: 11px; color: var(--text-2); margin: 0 3px; font-weight: 500; }
+
+/* ===== 键盘焦点可见性（可访问性） ===== */
+/* 仅键盘 Tab 导航时显示聚焦环，鼠标点击不显示 */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+button:focus-visible,
+.mini-btn:focus-visible,
+.ctrl-btn:focus-visible,
+.icon-btn:focus-visible,
+.phase-tab:focus-visible,
+.toast-action:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+input[type="text"]:focus-visible,
+input[type="number"]:focus-visible,
+.task-edit-input:focus-visible,
+.task-edit-est:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+/* 复选框开关的聚焦环 */
+.setting-switch input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
