@@ -383,6 +383,33 @@ grid.addEventListener('mousemove', function(e){
   card.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
 });
 
+/* 第十五轮：卡片 3D 倾斜跟随鼠标 —— macOS dock 风格微交互（CSS 已预留 preserve-3d/is-tilting） */
+var TILT_MAX = 5; /* 最大倾斜角度（度） */
+var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+if(!prefersReducedMotion){
+  grid.addEventListener('mousemove', function(e){
+    var card = e.target.closest('.card');
+    if(!card) return;
+    var r = card.getBoundingClientRect();
+    /* 鼠标相对卡片中心的归一化坐标 (-0.5 ~ 0.5) */
+    var px = (e.clientX - r.left) / r.width - 0.5;
+    var py = (e.clientY - r.top) / r.height - 0.5;
+    card.classList.add('is-tilting');
+    /* 鼠标在右上角时卡片向右上倾斜：rotateY 跟随 px，rotateX 反向跟随 py */
+    card.style.setProperty('--ry', (px * TILT_MAX * 2).toFixed(2) + 'deg');
+    card.style.setProperty('--rx', (-py * TILT_MAX * 2).toFixed(2) + 'deg');
+  });
+  /* 鼠标离开卡片时复位 */
+  grid.addEventListener('mouseout', function(e){
+    var card = e.target.closest('.card');
+    if(!card) return;
+    if(e.relatedTarget && card.contains(e.relatedTarget)) return;
+    card.classList.remove('is-tilting');
+    card.style.setProperty('--rx','0deg');
+    card.style.setProperty('--ry','0deg');
+  });
+}
+
 /* ---------- 筛选 + 搜索 ---------- */
 var currentFilter = 'all';
 var currentQuery = '';
@@ -480,10 +507,22 @@ if(emptyChipsEl){
 /* ---------- 详情弹窗 ---------- */
 var modal = document.getElementById('modal');
 var modalBody = document.getElementById('modal-body');
+/* 第十五轮：弹窗项目导航 —— 与 lightbox 体验一致，支持 ←/→ 切换项目 */
+var modalCurrentIdx = -1;
+var modalPrev = document.getElementById('modal-prev');
+var modalNext = document.getElementById('modal-next');
+var modalCounter = document.getElementById('modal-counter');
 
 function openModal(id){
-  var p = PROJECTS.filter(function(x){return x.id===id;})[0];
-  if(!p) return;
+  var idx = PROJECTS.findIndex(function(x){return x.id===id;});
+  if(idx < 0) return;
+  openModalByIdx(idx);
+}
+
+function openModalByIdx(idx){
+  if(idx < 0 || idx >= PROJECTS.length) return;
+  modalCurrentIdx = idx;
+  var p = PROJECTS[idx];
   var g = GRAD[p.cat];
   var tags = p.tags.map(function(t){
     var cls = p.stack==='web' ? 'tag tag--web' : 'tag';
@@ -522,8 +561,29 @@ function openModal(id){
   modal.classList.add('is-open');
   modal.setAttribute('aria-hidden','false');
   document.body.style.overflow = 'hidden';
+  /* 第十五轮：更新弹窗导航按钮与计数器状态 */
+  if(modalPrev) modalPrev.disabled = (modalCurrentIdx === 0);
+  if(modalNext) modalNext.disabled = (modalCurrentIdx === PROJECTS.length - 1);
+  if(modalCounter) modalCounter.textContent = (modalCurrentIdx+1)+' / '+PROJECTS.length;
   modal.querySelector('.modal__close').focus();
 }
+
+/* 第十五轮：弹窗项目导航 —— 上一个/下一个 */
+function modalStep(delta){
+  if(modalCurrentIdx < 0) return;
+  var next = modalCurrentIdx + delta;
+  if(next < 0 || next >= PROJECTS.length) return;
+  openModalByIdx(next);
+  /* 切换时面板轻微横向位移反馈 */
+  var panel = modal.querySelector('.modal__panel');
+  if(panel){
+    panel.classList.remove('is-nav-left','is-nav-right');
+    void panel.offsetWidth;
+    panel.classList.add(delta > 0 ? 'is-nav-right' : 'is-nav-left');
+  }
+}
+if(modalPrev) modalPrev.addEventListener('click', function(e){ e.stopPropagation(); modalStep(-1); });
+if(modalNext) modalNext.addEventListener('click', function(e){ e.stopPropagation(); modalStep(1); });
 function closeModal(){
   modal.classList.remove('is-open');
   modal.setAttribute('aria-hidden','true');
@@ -549,6 +609,11 @@ modal.addEventListener('click', function(e){
 });
 document.addEventListener('keydown', function(e){
   if(e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+  /* 第十五轮：弹窗打开时支持 ←/→ 切换项目（与 lightbox 一致） */
+  if(modal.classList.contains('is-open')){
+    if(e.key === 'ArrowLeft'){ e.preventDefault(); modalStep(-1); }
+    else if(e.key === 'ArrowRight'){ e.preventDefault(); modalStep(1); }
+  }
 });
 
 /* ---------- 导航滚动效果 + 进度条 + 返回顶部（带圆形进度环） ---------- */
@@ -778,6 +843,42 @@ document.addEventListener('keydown', function(e){
     applyFilter();
     searchInput.blur();
   }
+});
+
+/* 第十五轮：键盘快捷键帮助浮层 —— 按 ? 唤起，列出全部快捷键，提升发现性 */
+var kbdHelp = document.getElementById('kbd-help');
+var kbdHelpBackdrop = document.getElementById('kbd-help-backdrop');
+function openKbdHelp(){
+  if(!kbdHelp) return;
+  kbdHelp.classList.add('is-open');
+  kbdHelp.setAttribute('aria-hidden','false');
+  document.body.style.overflow = 'hidden';
+  var closeBtn = kbdHelp.querySelector('.kbd-help__close');
+  if(closeBtn) closeBtn.focus();
+}
+function closeKbdHelp(){
+  if(!kbdHelp) return;
+  kbdHelp.classList.remove('is-open');
+  kbdHelp.setAttribute('aria-hidden','true');
+  document.body.style.overflow = '';
+}
+if(kbdHelp){
+  kbdHelp.addEventListener('click', function(e){
+    if(e.target.classList.contains('kbd-help__close') || e.target === kbdHelp) closeKbdHelp();
+  });
+}
+/* 第十五轮：左下角帮助入口按钮点击打开面板 */
+var kbdTrigger = document.getElementById('kbd-trigger');
+if(kbdTrigger){
+  kbdTrigger.addEventListener('click', function(){ openKbdHelp(); });
+}
+document.addEventListener('keydown', function(e){
+  /* 输入框中按 ? 不触发（避免与搜索冲突） */
+  if(e.key === '?' && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)){
+    e.preventDefault();
+    if(kbdHelp && kbdHelp.classList.contains('is-open')) closeKbdHelp(); else openKbdHelp();
+  }
+  if(e.key === 'Escape' && kbdHelp && kbdHelp.classList.contains('is-open')) closeKbdHelp();
 });
 
 /* ---------- 分类筛选 chips 数量显示 ---------- */
