@@ -2093,3 +2093,315 @@
   .hero__actions{margin-top:10px !important}
 }
 
+/* ============ 第十五轮 · 交互与细节打磨 ============ */
+
+/* 1. 卡片 3D 倾斜跟随鼠标：网格容器加透视，hover 变换叠加 rotateX/rotateY
+      CSS 已预留 preserve-3d / is-tilting，此处补 perspective 与变量叠加 */
+.grid-wrap{perspective:1200px}
+.card{--rx:0deg;--ry:0deg}
+.card:hover{
+  transform:translateY(-6px) rotateX(var(--rx)) rotateY(var(--ry));
+}
+.card.is-tilting{transition:none}
+/* 倾斜时 emoji 与 body 轻微浮起，增强景深（translateZ 需 preserve-3d，已就绪） */
+.card.is-tilting .card__media{transform:translateZ(18px)}
+.card.is-tilting .card__body{transform:translateZ(10px)}
+
+/* 2. 详情弹窗项目导航（与 lightbox 体验一致） */
+.modal__nav{
+  position:absolute;top:18px;left:18px;z-index:3;
+  display:flex;align-items:center;gap:4px;
+  background:rgba(255,255,255,.85);backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(0,0,0,.06);border-radius:980px;
+  padding:4px 6px;box-shadow:0 2px 10px rgba(0,0,0,.06);
+}
+.modal__nav-btn{
+  width:30px;height:30px;border-radius:50%;border:none;
+  background:transparent;color:var(--ink2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s,color .2s,transform .2s;
+}
+.modal__nav-btn:hover:not(:disabled){background:var(--accent-soft);color:var(--accent);transform:scale(1.06)}
+.modal__nav-btn:active:not(:disabled){transform:scale(.94)}
+.modal__nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.modal__nav-btn svg{width:16px;height:16px}
+.modal__counter{
+  font-size:12px;font-weight:600;color:var(--ink2);
+  min-width:50px;text-align:center;letter-spacing:.01em;
+  font-variant-numeric:tabular-nums;
+}
+/* 切换项目时面板横向位移反馈 */
+@keyframes modalNavLeft{0%{transform:scale(1) translateX(14px);opacity:.55}100%{transform:scale(1) translateX(0);opacity:1}}
+@keyframes modalNavRight{0%{transform:scale(1) translateX(-14px);opacity:.55}100%{transform:scale(1) translateX(0);opacity:1}}
+.modal__panel.is-nav-left{animation:modalNavLeft .32s var(--ease-out)}
+.modal__panel.is-nav-right{animation:modalNavRight .32s var(--ease-out)}
+/* 弹窗打开状态的 scale(1) 需保留，导航动画期间覆盖 */
+.modal.is-open .modal__panel.is-nav-left,
+.modal.is-open .modal__panel.is-nav-right{transform:scale(1) translateY(0)}
+@media (max-width:600px){
+  .modal__nav{top:12px;left:12px}
+  .modal__counter{min-width:44px;font-size:11px}
+}
+
+/* 3. 键盘快捷键帮助浮层 */
+.kbd-help{
+  position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;
+  padding:24px;background:rgba(0,0,0,.32);backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  opacity:0;pointer-events:none;transition:opacity .3s var(--ease);
+}
+.kbd-help.is-open{opacity:1;pointer-events:auto}
+.kbd-help__card{
+  position:relative;width:100%;max-width:380px;
+  background:var(--card);border-radius:24px;padding:32px 28px 28px;
+  box-shadow:var(--shadow-lg);
+  transform:scale(.94) translateY(12px);transition:transform .35s var(--ease-out);
+}
+.kbd-help.is-open .kbd-help__card{transform:scale(1) translateY(0)}
+.kbd-help__close{
+  position:absolute;top:14px;right:14px;
+  width:30px;height:30px;border-radius:50%;border:none;
+  background:rgba(0,0,0,.05);color:var(--ink);font-size:18px;line-height:1;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:background .2s,transform .35s var(--ease-out),color .2s;
+}
+.kbd-help__close:hover{background:rgba(0,122,255,.12);color:var(--accent);transform:rotate(90deg) scale(1.05)}
+.kbd-help__title{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:4px}
+.kbd-help__sub{font-size:13px;color:var(--ink3);margin-bottom:22px}
+.kbd-help__list{list-style:none;display:flex;flex-direction:column;gap:14px;margin:0}
+.kbd-help__list li{
+  display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink2);
+}
+.kbd-help__list span{flex:1}
+.kbd-help__list kbd{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:30px;height:30px;padding:0 8px;border-radius:8px;
+  background:linear-gradient(180deg,#fff,#f5f5f7);
+  border:1px solid var(--line);box-shadow:0 1px 0 rgba(0,0,0,.04),inset 0 -1px 0 rgba(0,0,0,.03);
+  font-family:-apple-system,"SF Mono",ui-monospace,monospace;
+  font-size:13px;font-weight:600;color:var(--ink);letter-spacing:0;
+}
+
+/* 4. 左下角快捷键帮助入口按钮 */
+.kbd-trigger{
+  position:fixed;bottom:28px;left:28px;z-index:90;
+  width:42px;height:42px;border-radius:50%;
+  background:var(--card);color:var(--ink2);box-shadow:var(--shadow);
+  border:1px solid var(--line-soft);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  opacity:0;transform:scale(.6);
+  animation:kbdTriggerIn .5s var(--ease-out) 1.2s forwards;
+  transition:transform .25s var(--ease),box-shadow .25s var(--ease),color .2s,border-color .2s;
+}
+.kbd-trigger svg{width:20px;height:20px}
+.kbd-trigger:hover{transform:translateY(-3px) scale(1);box-shadow:var(--shadow-md);color:var(--accent);border-color:rgba(0,122,255,.2)}
+.kbd-trigger:active{transform:translateY(-1px) scale(1)}
+@keyframes kbdTriggerIn{to{opacity:1;transform:scale(1)}}
+@media (max-width:600px){
+  .kbd-trigger{bottom:20px;left:20px;width:38px;height:38px}
+  .kbd-trigger svg{width:18px;height:18px}
+}
+
+/* 5. Hero 信任支柱条图标呼吸光晕 + 三色分类（蓝/绿/橙，克制丰富） */
+.hero__pillar{position:relative;overflow:visible}
+.hero__pillar-icon{
+  position:relative;
+  animation:pillarBreathe 3.4s ease-in-out infinite;
+}
+.hero__pillar-icon::before{
+  content:"";position:absolute;inset:-7px;border-radius:14px;z-index:-1;
+  background:radial-gradient(circle,rgba(0,122,255,.30),transparent 70%);
+  filter:blur(7px);opacity:.5;
+  animation:pillarGlow 3.4s ease-in-out infinite;
+  transition:opacity .3s var(--ease),background .3s var(--ease);
+}
+@keyframes pillarBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes pillarGlow{0%,100%{opacity:.32}50%{opacity:.62}}
+.hero__pillar:hover .hero__pillar-icon{animation:none;transform:scale(1.08) rotate(-3deg)}
+.hero__pillar:hover .hero__pillar-icon::before{opacity:.85}
+.hero__pillar:nth-child(1) .hero__pillar-icon::before{background:radial-gradient(circle,rgba(0,122,255,.30),transparent 70%)}
+.hero__pillar:nth-child(2) .hero__pillar-icon::before{background:radial-gradient(circle,rgba(52,199,89,.28),transparent 70%)}
+.hero__pillar:nth-child(3) .hero__pillar-icon::before{background:radial-gradient(circle,rgba(255,149,0,.26),transparent 70%)}
+@media (prefers-reduced-motion:reduce){
+  .hero__pillar-icon,.hero__pillar-icon::before{animation:none}
+}
+
+/* 6. 卡片标题 hover 分类色下划线滑入（精致的可点击暗示） */
+.card__title{
+  background-image:linear-gradient(var(--cat,#007aff),var(--cat,#007aff));
+  background-repeat:no-repeat;background-size:0% 2px;background-position:left calc(100% + 1px);
+  transition:background-size .3s var(--ease-out);
+}
+.card:hover .card__title{background-size:100% 2px}
+.card[data-cat="dev"] .card__title{--cat:#007aff}
+.card[data-cat="system"] .card__title{--cat:#34c759}
+.card[data-cat="efficiency"] .card__title{--cat:#ff9500}
+.card[data-cat="design"] .card__title{--cat:#af52de}
+
+/* 7. 移动端：弹窗导航与帮助浮层适配 */
+@media (max-width:600px){
+  .kbd-help__card{padding:28px 22px 22px;max-width:320px}
+  .kbd-help__title{font-size:20px}
+  .kbd-help__list{gap:12px}
+  .kbd-help__list li{font-size:13px}
+  .kbd-help__list kbd{min-width:28px;height:28px;font-size:12px}
+}
+
+/* ============ 第十五轮·二修（mimo 反馈：信息层次 / 呼吸感 / 主次分离） ============ */
+
+/* 8. 卡片信息层次强化：描述作为正文加深可读，功能数徽标更含蓄退后，
+      让 stack 标签（彩色）→ 标题（最深）→ 描述（中）→ 功能数（最浅）形成清晰四级 */
+.card__desc{color:#4d4d55 !important;line-height:1.6 !important}
+.card__feat-count{font-size:11px !important;color:var(--ink3) !important;opacity:.78 !important;font-weight:500 !important}
+.card:hover .card__feat-count{opacity:1 !important;color:var(--ink2) !important}
+/* 标题加重为视觉重心，与描述拉开层级 */
+.card__title{font-weight:700 !important;letter-spacing:-.022em !important}
+
+/* 9. 卡片呼吸感：body 间距与网格行距微增，缓解 4 列密度（mimo 反馈偏紧） */
+.card__body{padding:18px 20px 20px !important;gap:9px !important}
+.grid{row-gap:34px !important}
+@media (min-width:1440px){.grid{row-gap:38px !important}}
+
+/* 10. 搜索与筛选主次分离：搜索为主（保持权重），chips 降为辅助（更轻、更小、去阴影），
+      让搜索框成为工具栏视觉焦点，chips 退居次位不再争夺注意力 */
+.chip{
+  height:36px !important;padding:0 14px !important;font-size:13px !important;
+  background:transparent !important;border:1px solid transparent !important;
+  box-shadow:none !important;font-weight:500 !important;
+}
+.chip:hover{
+  background:rgba(0,0,0,.04) !important;border-color:transparent !important;
+  box-shadow:none !important;transform:none !important;
+}
+/* 激活态保留分类色填充，明确选中状态（需 !important 覆盖上面的 transparent 默认态） */
+.chip.is-active{
+  transform:none !important;box-shadow:0 2px 8px rgba(0,0,0,.10) !important;
+  font-weight:600 !important;color:#fff !important;border-color:transparent !important;
+}
+.chip[data-filter="all"].is-active,
+.chip[data-filter="dev"].is-active{background:#007aff !important}
+.chip[data-filter="system"].is-active{background:#34c759 !important}
+.chip[data-filter="efficiency"].is-active{background:#ff9500 !important}
+.chip[data-filter="design"].is-active{background:#af52de !important}
+/* 激活态色点改为白色 */
+.chip.is-active::before{background:#fff !important;opacity:1 !important}
+.chip.is-active[data-count]::after{background:rgba(255,255,255,.24) !important;color:#fff !important}
+@media (max-width:600px){
+  .chip{height:34px !important;padding:0 12px !important;font-size:12.5px !important}
+  .toolbar__row{gap:14px !important}
+}
+
+/* 11. Hero 统计区对齐统一：三个数字 min-height 一致，标签基线对齐，
+      「免费」字号微增与其他数字视觉重量更协调（mimo 反馈对齐不工整） */
+.stat__num{min-height:48px !important;display:flex !important;align-items:center !important;justify-content:center !important}
+.stat__num--free{font-size:36px !important;letter-spacing:-.02em !important}
+.stat__label{margin-top:6px !important}
+
+/* 12. 工具栏计数与 chips 之间留出更明确间隔，强化搜索主导地位 */
+.toolbar__count{margin-top:10px !important}
+
+/* ============ 第十五轮·三修（mimo 7.5/10 反馈：标题层级 / 卡片等高 / 标签统一 / 按钮弱化 / 筛选呼吸） ============ */
+
+/* 13. Hero 副标题层级：颜色加深一档，字重微增，保持主标题原字号字重 */
+.hero__sub{color:#4d4d55 !important;font-weight:500 !important}
+
+/* 14. 卡片描述等高：用 -webkit-line-clamp 3 行截断 + min-height 双重保险 */
+.card__desc{
+  display:-webkit-box !important;
+  -webkit-box-orient:vertical !important;
+  -webkit-line-clamp:3 !important;
+  line-clamp:3 !important;
+  overflow:hidden !important;
+  min-height:48px !important;
+  text-overflow:ellipsis !important;
+}
+.card__body{min-height:170px !important}
+
+/* 15. 卡片标签风格统一：stack 标签彩色 pill，功能数徽标浅灰文 */
+.card__stack{
+  display:inline-flex !important;align-items:center !important;gap:5px !important;
+  font-size:11px !important;font-weight:600 !important;
+  padding:3px 9px !important;border-radius:980px !important;
+  background:var(--accent-soft) !important;color:var(--accent) !important;
+  border:1px solid rgba(0,122,255,.10) !important;
+}
+.card[data-stack="web"] .card__stack{background:rgba(0,122,255,.10) !important;color:#0066d6 !important;border-color:rgba(0,122,255,.12) !important}
+.card[data-stack="electron"] .card__stack{background:rgba(78,84,255,.10) !important;color:#4e54ff !important;border-color:rgba(78,84,255,.12) !important}
+.card[data-stack="python"] .card__stack{background:rgba(52,199,89,.12) !important;color:#1a9e3e !important;border-color:rgba(52,199,89,.14) !important}
+.card__feat-count{
+  font-size:11px !important;color:var(--ink3) !important;
+  font-weight:500 !important;padding:3px 0 3px 4px !important;
+}
+.card__meta{gap:6px !important;align-items:center !important}
+
+/* 16. 卡片 CTA 按钮弱化为 tint（浅蓝底蓝字） */
+.card__cta{
+  background:var(--accent-soft) !important;
+  color:var(--accent) !important;
+  border:1px solid rgba(0,122,255,.16) !important;
+  box-shadow:none !important;
+  font-weight:600 !important;
+}
+.card__cta:hover{
+  background:rgba(0,122,255,.14) !important;
+  color:#0066d6 !important;
+  border-color:rgba(0,122,255,.28) !important;
+  box-shadow:0 2px 8px rgba(0,122,255,.14) !important;
+  transform:translateY(-1px) !important;
+}
+.card__cta:active{transform:translateY(0) !important}
+
+/* 17. chips 区呼吸感 */
+.chips{gap:6px !important}
+.toolbar__row{gap:18px !important;align-items:center !important}
+@media (max-width:768px){
+  .chips{gap:5px !important}
+  .toolbar__row{gap:12px !important}
+}
+
+/* 18. emoji 容器统一为圆形柔光底 */
+.card__emoji{
+  display:inline-flex !important;align-items:center !important;justify-content:center !important;
+  border-radius:50% !important;
+  background:rgba(255,255,255,.55) !important;
+  backdrop-filter:blur(6px) saturate(150%);
+  -webkit-backdrop-filter:blur(6px) saturate(150%);
+  box-shadow:0 4px 14px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.6) !important;
+}
+
+/* 19. 卡片整体微调 */
+.card__media{height:160px !important}
+@media (max-width:600px){.card__media{height:150px !important}}
+
+/* 20. 焦点态优化 */
+.card:focus-visible{
+  outline:2px solid var(--accent) !important;
+  outline-offset:3px !important;
+  border-color:rgba(0,122,255,.3) !important;
+}
+
+/* 21. chips 圆点统一对齐 */
+.chip::before{
+  width:7px !important;height:7px !important;margin:0 !important;flex-shrink:0 !important;
+}
+.chip{align-items:center !important}
+
+/* 22. Hero 加柔和蓝青渐变光晕，建立品牌辨识度 */
+.hero{
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(0,122,255,.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 30% 30%, rgba(90,200,250,.05) 0%, transparent 60%),
+    linear-gradient(180deg,#fff 0%,#fafafd 30%,var(--bg) 70%,var(--bg) 100%) !important;
+}
+
+/* 23. 卡片默认投影加重（解决 mimo 5.5/10 反馈"无投影、平面化"） */
+.card{
+  box-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 16px rgba(0,0,0,.06),0 12px 28px rgba(0,122,255,.05) !important;
+  border:1px solid rgba(0,0,0,.06) !important;
+}
+.card:hover{
+  box-shadow:0 4px 12px rgba(0,0,0,.08),0 16px 36px rgba(0,0,0,.10),0 20px 48px rgba(0,122,255,.10) !important;
+  border-color:rgba(0,122,255,.2) !important;
+}
+
