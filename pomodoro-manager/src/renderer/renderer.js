@@ -387,6 +387,24 @@ function renderStats(state) {
   el.todayDate.textContent = `${d.getMonth()+1}月${d.getDate()}日 周${weekDays[d.getDay()]}`;
 }
 
+// 点击当前任务条：滚动任务列表到对应项并高亮闪烁一次
+if (el.currentTask) {
+  el.currentTask.addEventListener('click', () => {
+    if (!current || !current.currentTaskId) return;
+    const target = el.taskList.querySelector(`.task-item[data-id="${current.currentTaskId}"]`);
+    if (!target) return;
+    // 滚动到视野内（平滑）
+    target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // 高亮闪烁：先移除再加，触发动画重启
+    target.classList.remove('flash-highlight');
+    void target.offsetWidth;
+    target.classList.add('flash-highlight');
+    setTimeout(() => target.classList.remove('flash-highlight'), 1200);
+  });
+  // 鼠标移入时显示 pointer 光标，提示可点击
+  el.currentTask.style.cursor = 'pointer';
+}
+
 function renderTasks(state) {
   const tasks = state.tasks || [];
   const active = tasks.filter(t => !t.completed);
@@ -476,9 +494,11 @@ function renderWeekChart(daily) {
     const isToday = d.date === todayKey;
     const empty = !d.workSessions;
     const dot = isToday ? '<span class="week-bar-dot"></span>' : '';
+    // 今日为 0 时也显示 "0" 数字标注，颜色用 accent 突出今日锚点
+    const countText = d.workSessions || (isToday ? '0' : '');
     return `
       <div class="week-bar-wrap ${isToday ? 'today' : ''}">
-        <span class="week-bar-count">${d.workSessions || ''}</span>
+        <span class="week-bar-count">${countText}</span>
         <div class="week-bar ${empty ? 'empty' : ''} ${isToday ? 'today' : ''}" style="height:${Math.max(10, h)}px">${dot}</div>
         <span class="week-bar-label">${d.label}</span>
       </div>`;
@@ -568,6 +588,15 @@ async function confirmReset() {
 }
 
 el.skipBtn.addEventListener('click', async () => {
+  // 跳过专注确认：剩余时间 > 30% 时需二次确认，避免误点丢失大量专注进度
+  if (current && current.state === 'working' && (current.progress || 0) < 0.7 && !_skipConfirming) {
+    _skipConfirming = true;
+    const remainMin = Math.ceil((current.remainingMs || 0) / 60000);
+    toast(`将放弃剩余 ${remainMin} 分钟专注，再次点击确认跳过`);
+    setTimeout(() => { _skipConfirming = false; }, 3000);
+    return;
+  }
+  _skipConfirming = false;
   const ev = await window.api.skip();
   if (!ev) {
     if (current && (current.state === 'idle' || current.state === 'paused')) toast('计时未开始');
@@ -576,6 +605,8 @@ el.skipBtn.addEventListener('click', async () => {
     toast(ev.nextPhase === 'working' ? '已跳过休息' : '已跳过专注（不计入番茄）');
   }
 });
+// 跳过专注确认标志
+let _skipConfirming = false;
 
 el.phaseTabs.addEventListener('click', async (e) => {
   const tab = e.target.closest('.phase-tab');
@@ -583,9 +614,10 @@ el.phaseTabs.addEventListener('click', async (e) => {
   const phase = tab.dataset.phase;
   if (!phase) return;
   // 防误触：当前阶段进行中或暂停且有进度时，首次点击给提示，再次点击同标签才确认切换
+  // 阈值收紧到 3%：专注 >45 秒就触发确认（25min 制），避免刚启动误切丢失进度
   const curPhase = current && (current.state === 'paused' ? current.pausedState : current.state);
   const active = current && (current.state === 'working' || current.state === 'short_break' || current.state === 'long_break' || current.state === 'paused');
-  if (active && curPhase !== phase && (current.progress || 0) > 0.1 && tab.dataset.confirm !== '1') {
+  if (active && curPhase !== phase && (current.progress || 0) > 0.03 && tab.dataset.confirm !== '1') {
     tab.dataset.confirm = '1';
     toast(`当前阶段进度 ${(Math.round((current.progress||0)*100))}%，再次点击确认切换`);
     setTimeout(() => { tab.dataset.confirm = '0'; }, 3000);
@@ -617,6 +649,9 @@ async function addTask() {
   el.taskInput.value = '';
   updateTaskCounter();
   el.taskInput.focus();
+  // 添加任务成功反馈：让用户确认操作生效（任务名超 12 字截断）
+  const short = title.length > 12 ? title.slice(0, 12) + '…' : title;
+  toast(`已添加「${short}」`);
 }
 
 el.taskList.addEventListener('click', async (e) => {
@@ -630,6 +665,9 @@ el.taskList.addEventListener('click', async (e) => {
       await window.api.uncompleteTask(id);
       toast('已恢复为未完成');
     } else {
+      // 完成任务时触发庆祝动效：勾选弹跳 + 短暂绿色光晕
+      item.classList.add('task-celebrate');
+      setTimeout(() => item.classList.remove('task-celebrate'), 700);
       await window.api.completeTask(id);
     }
   } else if (action === 'delete') {
@@ -699,9 +737,42 @@ function enterTaskEdit(item, task) {
 
 // 设置
 el.settingsBtn.addEventListener('click', openSettings);
-el.settingsClose.addEventListener('click', () => el.settingsMask.classList.remove('show'));
-document.getElementById('settingsCancel').addEventListener('click', () => el.settingsMask.classList.remove('show'));
-el.settingsMask.addEventListener('click', (e) => { if (e.target === el.settingsMask) el.settingsMask.classList.remove('show'); });
+el.settingsClose.addEventListener('click', () => closeSettingsWithConfirm());
+document.getElementById('settingsCancel').addEventListener('click', () => closeSettingsWithConfirm());
+el.settingsMask.addEventListener('click', (e) => { if (e.target === el.settingsMask) closeSettingsWithConfirm(); });
+
+// 关闭设置弹层：检测到设置项有未保存改动时需二次确认
+let _settingsCloseConfirming = false;
+function closeSettingsWithConfirm() {
+  if (!el.settingsMask.classList.contains('show')) return;
+  if (hasUnsavedSettingsChanges() && !_settingsCloseConfirming) {
+    _settingsCloseConfirming = true;
+    toast('设置已修改未保存，再次关闭确认丢弃');
+    setTimeout(() => { _settingsCloseConfirming = false; }, 3000);
+    return;
+  }
+  _settingsCloseConfirming = false;
+  el.settingsMask.classList.remove('show');
+}
+
+// 检测设置弹层中是否有未保存的改动（与当前 config 对比）
+function hasUnsavedSettingsChanges() {
+  if (!current || !current.config) return false;
+  const c = current.config;
+  const get = (id) => document.getElementById(id);
+  if (parseInt(get('cfgWork').value, 10) !== c.workDuration) return true;
+  if (parseInt(get('cfgShort').value, 10) !== c.shortBreak) return true;
+  if (parseInt(get('cfgLong').value, 10) !== c.longBreak) return true;
+  if (parseInt(get('cfgInterval').value, 10) !== c.longBreakInterval) return true;
+  if (parseInt(get('cfgGoal').value, 10) !== c.dailyGoal) return true;
+  if (parseInt(get('cfgWeekGoal').value, 10) !== (c.weeklyGoal || 30)) return true;
+  if (get('cfgStrict').checked !== !!c.strictMode) return true;
+  if (get('cfgSound').checked !== !!c.soundEnabled) return true;
+  if (get('cfgNoise').checked !== !!c.whiteNoise) return true;
+  if (get('cfgAutoBreak').checked !== (c.autoStartBreak !== false)) return true;
+  if (get('cfgAutoWork').checked !== !!c.autoStartWork) return true;
+  return false;
+}
 
 function openSettings() {
   if (!current || !current.config) return;
@@ -809,9 +880,9 @@ function clamp(v, min, max) { return Math.max(min, Math.min(max, isNaN(v) ? min 
 // ---- 键盘快捷键 ----
 // Space 开始/暂停，R 重置，S 跳过；输入框中不触发
 document.addEventListener('keydown', async (e) => {
-  // 设置弹层打开时：Escape 关闭弹层，其余快捷键不触发
+  // 设置弹层打开时：Escape 关闭弹层（带未保存确认），其余快捷键不触发
   if (el.settingsMask.classList.contains('show')) {
-    if (e.key === 'Escape') el.settingsMask.classList.remove('show');
+    if (e.key === 'Escape') closeSettingsWithConfirm();
     return;
   }
   const tag = (e.target.tagName || '').toLowerCase();
@@ -844,9 +915,9 @@ document.addEventListener('keydown', async (e) => {
     const ph = map[key];
     const curPhase = current && (current.state === 'paused' ? current.pausedState : current.state);
     if (curPhase === ph) return; // 已在该阶段，不操作
-    // 与标签点击一致：进行中或暂停且有进度时需二次确认
+    // 与标签点击一致：进行中或暂停且有进度时需二次确认（3% 阈值，与标签点击一致）
     const active = current && (current.state === 'working' || current.state === 'short_break' || current.state === 'long_break' || current.state === 'paused');
-    if (active && (current.progress || 0) > 0.1 && !_numConfirm) {
+    if (active && (current.progress || 0) > 0.03 && !_numConfirm) {
       _numConfirm = true;
       toast(`当前阶段进度 ${Math.round((current.progress||0)*100)}%，再按 ${key} 确认切换`);
       setTimeout(() => { _numConfirm = false; }, 3000);
