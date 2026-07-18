@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; media-src 'self' file: data:; img-src 'self' data: file:; style-src 'self' 'unsafe-inline'; script-src 'self';" />
+  <title>音乐</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 顶栏 -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="app-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18V5l12-2v13" stroke="#007aff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="6" cy="18" r="3" stroke="#007aff" stroke-width="2"/>
+            <circle cx="18" cy="16" r="3" stroke="#007aff" stroke-width="2"/>
+          </svg>
+        </div>
+        <h1 class="app-title">音乐</h1>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-secondary" id="btnAddFiles">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          添加文件
+        </button>
+        <button class="btn btn-secondary" id="btnAddFolder">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          添加文件夹
+        </button>
+      </div>
+    </header>
+
+    <!-- 主体 -->
+    <main class="main">
+      <!-- 侧栏：播放列表 -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <span class="sidebar-label">播放列表</span>
+          <span class="sidebar-count" id="songCount">0 首</span>
+        </div>
+        <div class="playlist" id="playlist">
+          <div class="empty-state" id="emptyState">
+            <div class="empty-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                <path d="M9 18V5l12-2v13" stroke="#d2d2d7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="6" cy="18" r="3" stroke="#d2d2d7" stroke-width="1.5"/>
+                <circle cx="18" cy="16" r="3" stroke="#d2d2d7" stroke-width="1.5"/>
+              </svg>
+            </div>
+            <p class="empty-title">还没有音乐</p>
+            <p class="empty-subtitle">点击上方按钮添加本地音乐文件</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- 中央：正在播放 -->
+      <section class="nowplaying">
+        <div class="nowplaying-art" id="albumArt">
+          <div class="art-placeholder" id="artPlaceholder">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+              <path d="M9 18V5l12-2v13" stroke="#d2d2d7" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="6" cy="18" r="3" stroke="#d2d2d7" stroke-width="1.2"/>
+              <circle cx="18" cy="16" r="3" stroke="#d2d2d7" stroke-width="1.2"/>
+            </svg>
+          </div>
+        </div>
+        <div class="nowplaying-info">
+          <div class="nowplaying-title" id="nowTitle">未在播放</div>
+          <div class="nowplaying-artist" id="nowArtist">—</div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 底栏：播放控制 -->
+    <footer class="playerbar">
+      <div class="player-progress">
+        <span class="time time-current" id="timeCurrent">0:00</span>
+        <div class="progress-track" id="progressTrack">
+          <div class="progress-fill" id="progressFill"></div>
+          <div class="progress-thumb" id="progressThumb"></div>
+        </div>
+        <span class="time time-total" id="timeTotal">0:00</span>
+      </div>
+      <div class="player-controls">
+        <button class="ctrl-btn" id="btnShuffle" title="随机播放">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M16 3h5v5M4 20l16-16M21 16v5h-5M15 15l6 6M4 4l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="ctrl-btn" id="btnPrev" title="上一首">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6V5zm3.5 7l8.5 6V6l-8.5 6z"/></svg>
+        </button>
+        <button class="ctrl-btn ctrl-play" id="btnPlay" title="播放/暂停">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" id="iconPlay"><path d="M8 5v14l11-7L8 5z"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" id="iconPause" style="display:none"><path d="M6 5h4v14H6V5zm8 0h4v14h-4V5z"/></svg>
+        </button>
+        <button class="ctrl-btn" id="btnNext" title="下一首">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2V5zM6 6v12l8.5-6L6 6z"/></svg>
+        </button>
+        <button class="ctrl-btn" id="btnRepeat" title="循环模式">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M17 2l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="volume-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M11 5L6 9H3v6h3l5 4V5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <div class="volume-track" id="volumeTrack">
+            <div class="volume-fill" id="volumeFill"></div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <audio id="audio"></audio>
+  <script src="app.js"></script>
+</body>
+</html>
