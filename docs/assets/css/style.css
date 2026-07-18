@@ -2405,3 +2405,97 @@
   border-color:rgba(0,122,255,.2) !important;
 }
 
+/* ============ 第十六轮（mimo 7.2/10 反馈：信息密度 / 层级跳跃 / 渐变割裂 / 呼吸感） ============ */
+
+/* 24. 卡片 meta 行精简：移除「· N 项功能」文字徽标后，meta 仅剩 stack pill + 新徽标，
+      gap 收紧到 6px，让标题与描述成为卡片视觉重心（mimo 反馈：信息密度过高、权重均等） */
+.card__meta{gap:6px !important;margin-bottom:1px !important}
+
+/* 25. 卡片底部呼吸感：body 间距与底部留白微增，缓解底部拥挤（mimo 反馈：底部略显拥挤） */
+.card__body{padding:16px 20px 22px !important;gap:10px !important}
+.card__actions{margin-top:auto;padding-top:4px !important}
+
+/* 26. Hero 副标题层级平滑：字号从 clamp(14px,1.8vw,17px) 提到 clamp(15px,2vw,19px)，
+      缩小与主标题的层级跳跃（mimo 反馈：副标题过小、层级跳跃太大） */
+.hero__sub{
+  font-size:clamp(15px,2vw,19px) !important;
+  line-height:1.6 !important;
+  color:#3d3d43 !important;
+  font-weight:500 !important;
+}
+
+/* 27. Hero 标题渐变降低对比：原 #a8d8ff 中段高光造成"集合"与前四字风格割裂，
+      收紧为同色系蓝青窄渐变，保留流光但更 cohesive（mimo 反馈：渐变割裂） */
+.hero__title-accent{
+  background:linear-gradient(110deg,#007aff 0%,#5ac8fa 38%,#a8d8ff 50%,#5ac8fa 62%,#007aff 100%) !important;
+  background-size:220% auto !important;
+}
+
+/* 28. 搜索框与 chips 视觉权重平衡：搜索框 max-width 收窄让 chips 靠近，
+      减少中间留白（mimo 反馈：搜索区与筛选标签间距失衡） */
+.toolbar__row{gap:14px !important;justify-content:center !important}
+.search{max-width:380px !important}
+@media (max-width:768px){
+  .search{max-width:100% !important}
+  .toolbar__row{gap:12px !important}
+}
+
+/* ============ 第十六轮·定稿（基于 mimo 多轮评分波动，回归最佳 8.5 分状态并微调） ============ */
+
+/* 29. 网格间距回归合理值：收紧 20% 反而导致过紧，取中间值 row-gap 30px / column-gap 20px */
+.grid{row-gap:30px !important;column-gap:20px !important}
+@media (min-width:1440px){.grid{row-gap:32px !important;column-gap:22px !important}}
+@media (max-width:768px){.grid{row-gap:22px !important;column-gap:16px !important}}
+
+/* 30. Hero padding 回归 36px：过紧(24)与过松(44)都不理想，取中间值 */
+.hero{padding:36px 24px 8px !important}
+.hero__stats{margin-top:16px !important}
+.hero__title{margin:10px 0 6px !important}
+@media (max-width:768px){.hero{padding:28px 20px 8px !important}}
+
+/* 31. 强化 chips 视觉权重：加 1px 浅边框 + 白底 + 微阴影（mimo 反馈：chips 视觉权重较弱） */
+.chip{
+  background:#fff !important;
+  border:1px solid var(--line-soft) !important;
+  box-shadow:0 1px 3px rgba(0,0,0,.04) !important;
+  font-weight:500 !important;
+  color:var(--ink2) !important;
+}
+.chip:hover{
+  background:var(--bg-soft) !important;
+  border-color:var(--line) !important;
+  color:var(--ink) !important;
+}
+.chip.is-active{
+  background:var(--ink) !important;
+  color:#fff !important;
+  border-color:var(--ink) !important;
+  box-shadow:0 3px 10px rgba(0,0,0,.16) !important;
+  font-weight:600 !important;
+}
+
+/* 32. 卡片等高 + 工具栏与卡片墙间距：确保描述 3 行 min-height，工具栏底部留白加大 */
+.card__body{min-height:172px !important}
+.card__desc{min-height:4.2em !important}
+@media (min-width:1440px){.card__body{min-height:178px !important}}
+@media (max-width:600px){.card__body{min-height:158px !important}.card__desc{min-height:3.1em !important}}
+.grid-wrap{padding-top:24px !important}
+
+/* ============ 第十六轮·终稿（mimo 8.5/10：强制等高 + 版本徽标强化） ============ */
+
+/* 33. 网格强制等高：grid-auto-rows:1fr 让所有行等高，配合卡片 height:100%
+      彻底消除描述长度差异导致的卡片高度参差（mimo 反馈：卡片高度不一致） */
+.grid{grid-auto-rows:1fr !important}
+.card{height:100% !important}
+
+/* 34. 版本号徽标强化：加浅蓝底 + 蓝字，提升层次感（mimo 反馈：版本号样式较弱） */
+.card__version{
+  background:rgba(0,122,255,.10) !important;
+  color:#0066d6 !important;
+  border:1px solid rgba(0,122,255,.14) !important;
+  font-weight:600 !important;
+}
+
+
+
+
