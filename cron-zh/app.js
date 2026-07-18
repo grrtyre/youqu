@@ -19,6 +19,13 @@
   var cheatBody = $('cheatBody');
   var cheatArrow = $('cheatArrow');
 
+  // 调度节奏卡片相关 DOM
+  var rhythmChart = $('rhythmChart');
+  var rhythmHint = $('rhythmHint');
+  var rhythmPeak = $('rhythmPeak');
+  var rhythmPeakText = $('rhythmPeakText');
+  var rhythmStats = $('rhythmStats');
+
   // ===== 最近使用历史 =====
   var HISTORY_KEY = 'cron-history';
   var HISTORY_MAX = 8;
@@ -264,6 +271,167 @@
     }
   }
 
+  // ===== 调度节奏：24 小时柱状图 + 频率统计 =====
+  // 性能考虑：使用 runsInRange 一次拉取 24 小时内的执行点，
+  // 再分别统计今日/本周/本月剩余，年度用"今日 × 365"粗估避免大量计算
+  function startOfDay(d) { var x = new Date(d); x.setHours(0, 0, 0, 0); return x; }
+  function endOfDay(d) { var x = new Date(d); x.setHours(23, 59, 59, 999); return x; }
+  function startOfWeek(d) {
+    // 周一为一周起点
+    var x = startOfDay(d);
+    var day = x.getDay(); // 0=周日
+    var diff = (day === 0 ? -6 : 1 - day);
+    x.setDate(x.getDate() + diff);
+    return x;
+  }
+  function endOfWeek(d) {
+    var s = startOfWeek(d); s.setDate(s.getDate() + 6);
+    s.setHours(23, 59, 59, 999); return s;
+  }
+  function startOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
+  function endOfMonth(d) { return new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999); }
+
+  function formatNum(n) {
+    if (n >= 10000) return (n / 1000).toFixed(1) + 'k';
+    return String(n);
+  }
+
+  function clearRhythm() {
+    if (!rhythmChart) return;
+    rhythmChart.innerHTML = '<div class="rhythm-empty">输入有效表达式后显示</div>';
+    rhythmChart.style.removeProperty('--now-x');
+    rhythmHint.textContent = '接下来 24 小时';
+    rhythmPeak.style.display = 'none';
+    rhythmStats.innerHTML = '';
+  }
+
+  function renderSchedule(expr, hasSeconds) {
+    if (!rhythmChart) return;
+    try {
+      var now = new Date();
+
+      // ===== 1. 24 小时柱状图：统计接下来 24 小时内每小时的执行数 =====
+      var hStart = new Date(now);
+      var hEnd = new Date(now.getTime() + 24 * 3600 * 1000);
+      var stats = CronUtils.runsInRange(expr, hStart, hEnd, 2000);
+      var runs = stats.runs || [];
+
+      // 按小时分桶：hours[i] = 接下来 24 小时中第 i 个小时内的执行数
+      var hours = new Array(24).fill(0);
+      for (var i = 0; i < runs.length; i++) {
+        var diff = runs[i].getTime() - hStart.getTime();
+        var bucket = Math.floor(diff / 3600000);
+        if (bucket >= 0 && bucket < 24) hours[bucket]++;
+      }
+      var maxH = 1;
+      for (var m = 0; m < 24; m++) if (hours[m] > maxH) maxH = hours[m];
+
+      // 当前小时在 24 小时窗口中的索引（基于 now）
+      var nowBucket = 0;
+
+      // 先识别最密集时段索引（渲染柱子时加 peak 类用于橙色高亮）
+      var peakIdx = -1, peakVal = 0;
+      for (var p = 0; p < 24; p++) {
+        if (hours[p] > peakVal) { peakVal = hours[p]; peakIdx = p; }
+      }
+
+      // 渲染柱子（now 与 peak 可同时作用于同一根柱子）
+      var chartHtml = '';
+      for (var b = 0; b < 24; b++) {
+        var realHour = (hStart.getHours() + b) % 24;
+        var h = hours[b];
+        var isNow = (b === 0);
+        var isPeak = (b === peakIdx && peakVal > 0);
+        var cls = 'rhythm-bar' + (h === 0 ? ' empty' : '') + (isNow ? ' now' : '') + (isPeak ? ' peak' : '');
+        var heightPct = h === 0 ? 4 : Math.max(8, Math.round((h / maxH) * 100));
+        var tipText = pad(realHour) + ':00 · ' + h + ' 次';
+        chartHtml += '<div class="' + cls + '" style="height:' + heightPct + '%;" ' +
+                     'role="img" aria-label="' + realHour + '点执行' + h + '次">' +
+                     '<span class="rhythm-bar-tip">' + tipText + '</span>' +
+                     '</div>';
+      }
+      rhythmChart.innerHTML = chartHtml;
+      // 当前小时指示线位置（基于实际当前时间在 24h 窗口中的位置）
+      var nowOffset = (now.getMinutes() * 60 + now.getSeconds()) / 3600; // 0-1
+      // 第 0 根柱子（即当前小时）内部位置：百分比对应 (nowBucket + 0.5) / 24 * 100%
+      // 由于第 0 根就是当前小时，指示线放在 0~1/24 之间
+      var nowPct = ((nowBucket + nowOffset) / 24) * 100;
+      rhythmChart.style.setProperty('--now-x', nowPct + '%');
+
+      rhythmHint.textContent = '当前 ' + pad(hStart.getHours()) + ':' + pad(hStart.getMinutes()) + ' 起未来 24 小时';
+
+      // ===== Y 轴刻度：3 档（max / mid / 0）让柱高有明确语义 =====
+      var yAxisEl = document.getElementById('rhythmYAxis');
+      if (yAxisEl) {
+        var yMax = maxH;
+        var yMid = Math.round(maxH / 2);
+        yAxisEl.innerHTML =
+          '<span>' + yMax + '</span>' +
+          '<span>' + yMid + '</span>' +
+          '<span>0</span>';
+      }
+
+      // ===== X 轴标签：均匀 4 等分（0/6/12/18），跨日用 +N 天标记 =====
+      var axisEl = document.getElementById('rhythmAxis');
+      if (axisEl) {
+        var axisHtml = '';
+        var axisIdx = [0, 6, 12, 18];
+        var startHour = hStart.getHours();
+        for (var ai = 0; ai < axisIdx.length; ai++) {
+          var absHour = startHour + axisIdx[ai];
+          var dh = absHour % 24;
+          var dayOffset = Math.floor(absHour / 24);
+          var label = pad(dh);
+          if (dayOffset > 0) label = '+' + dayOffset + 'd ' + label;
+          axisHtml += '<span>' + label + '</span>';
+        }
+        axisEl.innerHTML = axisHtml;
+      }
+
+      // ===== 2. 最密集时段徽标 =====
+      if (peakIdx >= 0 && peakVal > 0) {
+        var peakHour = (hStart.getHours() + peakIdx) % 24;
+        rhythmPeak.style.display = '';
+        rhythmPeakText.innerHTML = '最密集时段 <strong>' + pad(peakHour) + ':00–' + pad(peakHour) + ':59</strong> · ' + peakVal + ' 次执行';
+      } else {
+        rhythmPeak.style.display = 'none';
+      }
+
+      // ===== 3. 频率统计：今日/本周/本月剩余 + 年度预估 =====
+      var todayEnd = endOfDay(now);
+      var weekEnd = endOfWeek(now);
+      var monthEnd = endOfMonth(now);
+      var tStats = CronUtils.runsInRange(expr, now, todayEnd, 5000);
+      var wStats = CronUtils.runsInRange(expr, now, weekEnd, 20000);
+      var mStats = CronUtils.runsInRange(expr, now, monthEnd, 100000);
+
+      // 年度预估 = 今日剩余 × 365（粗估，避免大量计算）
+      var yearEst;
+      // 更准的估算：用 24 小时的密度 × 365
+      var dayRate = runs.length; // 接下来 24 小时执行数
+      yearEst = Math.round(dayRate * 365);
+
+      var statsHtml = '';
+      statsHtml += makeStatBox(tStats.count, tStats.capped, '今日剩余');
+      statsHtml += makeStatBox(wStats.count, wStats.capped, '本周剩余');
+      statsHtml += makeStatBox(mStats.count, mStats.capped, '本月剩余');
+      statsHtml += makeStatBox(yearEst, false, '次/年 (估)');
+      rhythmStats.innerHTML = statsHtml;
+    } catch (e) {
+      rhythmChart.innerHTML = '<div class="rhythm-empty">调度节奏渲染失败</div>';
+      rhythmPeak.style.display = 'none';
+      rhythmStats.innerHTML = '';
+    }
+  }
+
+  function makeStatBox(value, capped, label) {
+    var v = formatNum(value);
+    return '<div class="rhythm-stat">' +
+             '<div class="rhythm-stat-value' + (capped ? ' capped' : '') + '">' + escapeHtml(v) + '</div>' +
+             '<div class="rhythm-stat-label">' + escapeHtml(label) + '</div>' +
+           '</div>';
+  }
+
   // ===== 模式徽标 =====
   function updateModeBadge(hasSeconds, ok) {
     if (!modeBadge) return;
@@ -294,6 +462,7 @@
       describeEl.textContent = '—';
       fieldsGrid.innerHTML = '';
       nextList.innerHTML = '<div class="next-empty">输入有效表达式后显示</div>';
+      clearRhythm();
       updateModeBadge(false, false);
       clearTimeout(historyTimer);
       return;
@@ -306,6 +475,7 @@
       describeEl.textContent = '无效表达式';
       renderFields({ ok: false, fields: { minute: '*', hour: '*', dom: '*', month: '*', dow: '*' } });
       nextList.innerHTML = '<div class="next-empty">表达式无效</div>';
+      clearRhythm();
       updateModeBadge(false, false);
       clearTimeout(historyTimer);
       return;
@@ -316,6 +486,7 @@
     describeEl.textContent = CronUtils.describe(expr);
     renderFields(parsed);
     renderNext(expr, parsed.hasSeconds);
+    renderSchedule(expr, parsed.hasSeconds);
     updateModeBadge(parsed.hasSeconds, true);
     // 同步 URL
     var u = new URL(location);

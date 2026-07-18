@@ -118,6 +118,35 @@
       </div>
     </section>
 
+    <!-- 调度节奏 -->
+    <section class="card rhythm-card">
+      <div class="card-label">
+        <span>调度节奏</span>
+        <span class="hint" id="rhythmHint">接下来 24 小时</span>
+      </div>
+      <!-- 24 小时柱状图（含 Y 轴刻度） -->
+      <div class="rhythm-chart-wrap">
+        <div class="rhythm-y-axis" id="rhythmYAxis" aria-hidden="true">
+          <!-- 由 JS 渲染 -->
+        </div>
+        <div class="rhythm-chart" id="rhythmChart" aria-label="24 小时执行分布">
+          <!-- 由 JS 渲染 24 根柱子 -->
+        </div>
+      </div>
+      <div class="rhythm-axis" id="rhythmAxis">
+        <!-- 由 JS 渲染 -->
+      </div>
+      <!-- 最密集时段 -->
+      <div class="rhythm-peak" id="rhythmPeak" style="display:none;">
+        <span class="rhythm-peak-icon">▍</span>
+        <span class="rhythm-peak-text" id="rhythmPeakText"></span>
+      </div>
+      <!-- 频率统计 -->
+      <div class="rhythm-stats" id="rhythmStats">
+        <!-- 由 JS 渲染统计徽标 -->
+      </div>
+    </section>
+
     <!-- 语法速查 -->
     <section class="card cheat-card">
       <button class="cheat-toggle" id="cheatToggle" aria-expanded="false">

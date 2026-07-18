@@ -329,6 +329,47 @@ eq('roundtrip 0 0 * * 0', roundtrip('0 0 * * 0'), '0 0 * * 0');
 // 6 字段
 eq('roundtrip 0 */5 * * * ?', roundtrip('0 */5 * * * ?'), '0 */5 * * * *');
 
+console.log('\n=== 14. runsInRange：区间内执行统计 ===');
+
+// 每分钟，1 小时区间内应有 60 次
+var rr1 = C.runsInRange('*/1 * * * *', new Date('2026-07-04T10:00:00'), new Date('2026-07-04T11:00:00'), 5000);
+eq('每分钟1小时共60次', rr1.count, 60);
+ok('每分钟未触发上限', rr1.capped === false);
+
+// 每小时整点，24 小时内应有 24 次
+var rr2 = C.runsInRange('0 * * * *', new Date('2026-07-04T00:00:00'), new Date('2026-07-05T00:00:00'), 5000);
+eq('整点24小时共24次', rr2.count, 24);
+
+// 每天 0 点，7 天内应有 7 次
+var rr3 = C.runsInRange('0 0 * * *', new Date('2026-07-04T00:00:00'), new Date('2026-07-11T00:00:00'), 5000);
+eq('每天0点7天共7次', rr3.count, 7);
+
+// 工作日 9 点，一周内应有 5 次（周一到周五）
+// 2026-07-06 是周一
+var rr4 = C.runsInRange('0 9 * * 1-5', new Date('2026-07-06T00:00:00'), new Date('2026-07-13T00:00:00'), 5000);
+eq('工作日9点一周5次', rr4.count, 5);
+
+// 区间内 0 次：每天 0 点，1 小时内（10:00-11:00）应 0 次
+var rr5 = C.runsInRange('0 0 * * *', new Date('2026-07-04T10:00:00'), new Date('2026-07-04T11:00:00'), 5000);
+eq('每天0点非0点区间0次', rr5.count, 0);
+
+// maxCount 上限触发
+var rr6 = C.runsInRange('*/1 * * * *', new Date('2026-07-04T00:00:00'), new Date('2026-07-05T00:00:00'), 100);
+ok('每分钟一天触发100上限', rr6.capped === true);
+eq('上限触发后count=100', rr6.count, 100);
+
+// 无效表达式：返回 count=0
+var rr7 = C.runsInRange('bad expr', new Date('2026-07-04T00:00:00'), new Date('2026-07-05T00:00:00'), 100);
+eq('无效表达式count=0', rr7.count, 0);
+
+// 6 字段（带秒）：每 10 秒，1 分钟内应有 6 次
+var rr8 = C.runsInRange('*/10 * * * * ?', new Date('2026-07-04T10:00:00'), new Date('2026-07-04T10:01:00'), 5000);
+eq('每10秒1分钟共6次', rr8.count, 6);
+
+// start 等于 end：应返回 0（半开区间）
+var rr9 = C.runsInRange('*/1 * * * *', new Date('2026-07-04T10:00:00'), new Date('2026-07-04T10:00:00'), 5000);
+eq('start==end 返回0', rr9.count, 0);
+
 console.log('\n=========================');
 console.log('通过: ' + pass + ' / 失败: ' + fail);
 console.log('=========================');

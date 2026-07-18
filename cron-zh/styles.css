@@ -532,6 +532,227 @@ body {
   padding: 24px;
 }
 
+/* ===== 调度节奏（24 小时柱状图 + 频率统计） ===== */
+.rhythm-card { display: flex; flex-direction: column; gap: 10px; }
+.rhythm-chart-wrap {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  padding-left: 4px;
+}
+.rhythm-y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 96px;
+  padding: 4px 0 8px;
+  font-size: 11px;
+  color: var(--text-3);
+  font-family: "JetBrains Mono", Consolas, monospace;
+  min-width: 30px;
+  text-align: right;
+  line-height: 1;
+}
+.rhythm-y-axis span {
+  display: block;
+}
+.rhythm-chart {
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  gap: 3px;
+  align-items: end;
+  height: 96px;
+  padding: 4px 2px 0;
+  background: var(--next-item-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+/* 中部水平参考线（对应 Y 轴中值） */
+.rhythm-chart::after {
+  content: "";
+  position: absolute;
+  left: 2px; right: 2px;
+  top: 50%;
+  height: 0;
+  border-top: 1px dashed rgba(0, 0, 0, 0.06);
+  pointer-events: none;
+  z-index: 0;
+}
+/* 当前时间指示线：细虚线，弱化处理避免抢眼 */
+.rhythm-chart::before {
+  content: "";
+  position: absolute;
+  top: -2px; bottom: -2px;
+  left: var(--now-x, 0%);
+  width: 0;
+  border-left: 1px dashed var(--accent);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.rhythm-bar {
+  position: relative;
+  min-height: 2px;
+  border-radius: 3px 3px 1px 1px;
+  background: linear-gradient(180deg, var(--accent) 0%, rgba(0, 122, 255, 0.55) 100%);
+  opacity: 0.85;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  cursor: pointer;
+}
+.rhythm-bar.empty {
+  background: var(--field-border);
+  opacity: 0.4;
+  min-height: 2px;
+}
+.rhythm-bar:hover {
+  opacity: 1;
+  transform: scaleY(1.04);
+}
+/* 当前小时柱：加深的蓝色 + 顶部圆点标记 + 描边，强化识别 */
+.rhythm-bar.now {
+  background: linear-gradient(180deg, #0050a8 0%, #007aff 100%);
+  opacity: 1;
+  box-shadow: 0 0 0 1.5px rgba(0, 122, 255, 0.4);
+}
+.rhythm-bar.now::after {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #007aff;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+/* 最密集时段柱：深蓝渐变 + 描边，全图表保持蓝色调统一，橙色仅用于下方徽标 */
+.rhythm-bar.peak {
+  background: linear-gradient(180deg, #003d82 0%, #0062cc 100%);
+  opacity: 1;
+  box-shadow: 0 0 0 1px rgba(0, 98, 204, 0.4);
+}
+.rhythm-bar.peak:hover {
+  background: linear-gradient(180deg, #0050a8 0%, #007aff 100%);
+}
+/* now + peak 同时命中：最深的蓝色 + 顶部圆点 */
+.rhythm-bar.now.peak {
+  background: linear-gradient(180deg, #002a5c 0%, #0050a8 100%);
+  box-shadow: 0 0 0 1.5px rgba(0, 80, 168, 0.5);
+}
+.rhythm-bar.now.peak::after {
+  background: #0050a8;
+  border-color: #fff;
+}
+.rhythm-bar-tip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--toast-bg);
+  color: var(--toast-text);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+  z-index: 10;
+}
+.rhythm-bar:hover .rhythm-bar-tip { opacity: 1; }
+.rhythm-axis {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 2px;
+  font-size: 11px;
+  color: var(--text-3);
+  font-family: "JetBrains Mono", Consolas, monospace;
+  letter-spacing: 0.3px;
+  margin-top: -4px;
+  margin-left: 42px;
+}
+/* 最密集时段 */
+.rhythm-peak {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: rgba(255, 149, 0, 0.1);
+  border: 1px solid rgba(255, 149, 0, 0.3);
+  font-size: 12.5px;
+  color: var(--text-1);
+  font-weight: 500;
+}
+.rhythm-peak-icon {
+  font-size: 13px;
+  line-height: 1;
+  color: #ff9500;
+  font-weight: 700;
+  transform: rotate(0deg);
+  display: inline-block;
+}
+.rhythm-peak-text strong {
+  color: #ff9500;
+  font-weight: 700;
+  font-family: "JetBrains Mono", Consolas, monospace;
+}
+/* 频率统计：平衡布局，数字突出但不拥挤 */
+.rhythm-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.rhythm-stat {
+  background: var(--next-item-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 10px 8px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+.rhythm-stat:hover {
+  border-color: var(--field-active-border);
+  transform: translateY(-1px);
+}
+.rhythm-stat-value {
+  font-family: "JetBrains Mono", "SF Mono", Consolas, monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1.2;
+  letter-spacing: -0.3px;
+}
+.rhythm-stat-value.capped::after {
+  content: "+";
+  color: var(--text-3);
+  margin-left: 1px;
+  font-weight: 500;
+}
+.rhythm-stat-label {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 4px;
+  letter-spacing: 0.2px;
+}
+.rhythm-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-3);
+  font-size: 13px;
+  padding: 18px;
+}
+@media (max-width: 640px) {
+  .rhythm-stats { grid-template-columns: repeat(2, 1fr); }
+  .rhythm-chart { height: 56px; }
+}
+
 /* ===== 最近使用 ===== */
 .recent-wrap {
   margin-top: 18px;

@@ -413,10 +413,39 @@ window.CronUtils = (function () {
     return v.join(',');
   }
 
+  // 统计 [start, end) 时间区间内的执行次数
+  // 返回 { count, runs, capped }，capped=true 表示触发 maxCount 上限
+  // 用于"调度节奏"卡片：今日/本周/本月剩余次数、24小时每小时分布等
+  function runsInRange(expr, start, end, maxCount) {
+    if (typeof maxCount !== 'number' || maxCount <= 0) maxCount = 2000;
+    var parsed = parseCron(expr);
+    if (!parsed.ok) return { count: 0, runs: [], capped: false, error: parsed.error };
+
+    var hasSeconds = parsed.hasSeconds;
+    var results = [];
+    // 从 start 前一刻开始，确保能命中 start 本身
+    var d = new Date(start.getTime() - (hasSeconds ? 1000 : 60000));
+    d.setMilliseconds(0);
+    if (!hasSeconds) d.setSeconds(0);
+
+    var safety = 0;
+    while (results.length < maxCount && safety < 500000) {
+      safety++;
+      var next = nextRun(expr, d, 1);
+      if (!next || next.length === 0) break;
+      var nd = next[0];
+      if (nd.getTime() >= end.getTime()) break;
+      if (nd.getTime() >= start.getTime()) results.push(nd);
+      d = new Date(nd.getTime());
+    }
+    return { count: results.length, runs: results, capped: results.length >= maxCount };
+  }
+
   return {
     parse: parseCron,
     describe: describeCron,
     nextRun: nextRun,
-    buildToken: buildToken
+    buildToken: buildToken,
+    runsInRange: runsInRange
   };
 })();
