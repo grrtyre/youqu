@@ -316,6 +316,7 @@ function cardHTML(p, idx, query){
     '<div class="card__body">'+
       '<div class="card__meta">'+
         '<span class="card__stack">'+si.icon+' '+si.label+'</span>'+
+        '<span class="card__feat-count" aria-label="共 '+p.features.length+' 项功能">· '+p.features.length+' 项功能</span>'+
         newBadge+
       '</div>'+
       '<h3 class="card__title">'+titleHTML+'</h3>'+
@@ -413,7 +414,15 @@ document.getElementById('chips').addEventListener('click', function(e){
 /* 搜索 */
 var searchInput = document.getElementById('search');
 var searchClear = document.getElementById('search-clear');
+var searchHint = document.querySelector('.search__hint');
 var searchTimer;
+/* 第十四轮：搜索 "/" kbd 提示呼吸脉冲——用户首次聚焦或按键后停止，引导快捷键发现 */
+var searchInteracted = false;
+function markSearchInteracted(){
+  if(searchInteracted) return;
+  searchInteracted = true;
+  if(searchHint) searchHint.classList.remove('is-pulsing');
+}
 searchInput.addEventListener('input', function(e){
   clearTimeout(searchTimer);
   searchTimer = setTimeout(function(){
@@ -422,6 +431,8 @@ searchInput.addEventListener('input', function(e){
     applyFilter();
   }, 120);
 });
+searchInput.addEventListener('focus', markSearchInteracted);
+searchInput.addEventListener('keydown', markSearchInteracted);
 searchClear.addEventListener('click', function(){
   searchInput.value = '';
   currentQuery = '';
@@ -442,6 +453,29 @@ document.getElementById('reset').addEventListener('click', function(){
   currentFilter = 'all';
   applyFilter();
 });
+
+/* 第十四轮：空状态搜索建议 chips——高频搜索词点击即填入并筛选 */
+var EMPTY_SUGGESTIONS = ['截图','JSON','cron','字体','剪贴板','二维码','Markdown','计时'];
+var emptyChipsEl = document.getElementById('empty-chips');
+if(emptyChipsEl){
+  emptyChipsEl.innerHTML = EMPTY_SUGGESTIONS.map(function(s){
+    return '<button class="empty__chip" type="button" data-q="'+escapeHTML(s)+'">'+s+'</button>';
+  }).join('');
+  emptyChipsEl.addEventListener('click', function(e){
+    var btn = e.target.closest('.empty__chip');
+    if(!btn) return;
+    var q = btn.dataset.q;
+    searchInput.value = q;
+    currentQuery = q;
+    searchClear.hidden = !q;
+    markSearchInteracted();
+    applyFilter();
+    /* 滚动回工具栏让用户看到筛选结果 */
+    var tb = document.querySelector('.toolbar');
+    if(tb) tb.scrollIntoView({behavior:'smooth',block:'start'});
+    searchInput.focus();
+  });
+}
 
 /* ---------- 详情弹窗 ---------- */
 var modal = document.getElementById('modal');
@@ -763,6 +797,10 @@ function updateChipCounts(){
 render(PROJECTS);
 updateChipCounts();
 loadScores();
+/* 第十四轮：搜索 kbd 提示初始呼吸脉冲（用户首次交互前引导快捷键发现） */
+if(searchHint && !searchInteracted){
+  searchHint.classList.add('is-pulsing');
+}
 
 /* ---------- 更新日志折叠：默认仅展示最新 4 条，点击展开/收起 ---------- */
 (function(){
