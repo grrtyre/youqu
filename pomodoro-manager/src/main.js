@@ -76,7 +76,7 @@ function seedDemoData() {
     const recencyBoost = i < 35 ? 2 : (i < 63 ? 1 : 0);
     let ws;
     if (isWeekend) {
-      ws = Math.random() < 0.45 ? Math.floor(Math.random() * 3) : 0;
+      ws = Math.random() < 0.5 ? Math.floor(Math.random() * 3) + 1 : 0;
     } else {
       const base2 = 3 + recencyBoost;
       ws = Math.max(0, base2 + Math.floor(Math.random() * 4) - 2);

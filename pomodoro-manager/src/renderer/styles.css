@@ -53,28 +53,44 @@ html, body {
   z-index: 10;
 }
 .brand { display: flex; align-items: center; gap: 10px; }
-.brand-icon { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; }
+.brand-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px;
+  filter: drop-shadow(0 2px 6px rgba(0,122,255,0.22));
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.brand:hover .brand-icon { transform: rotate(-6deg) scale(1.06); }
 .brand-name { font-size: 17px; font-weight: 600; letter-spacing: 0.2px; }
 .topbar-right { display: flex; align-items: center; gap: 14px; }
 
 .streak-badge {
   display: flex; align-items: center; gap: 6px;
-  padding: 5px 12px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
+  padding: 5px 12px 5px 10px;
+  background: var(--accent-soft);
+  border: 1px solid rgba(0,122,255,0.18);
   border-radius: 999px;
   font-size: 13px; font-weight: 600;
   color: var(--text-2);
+  transition: opacity 0.2s, transform 0.2s;
 }
-.streak-badge #streakNum { font-size: 15px; font-weight: 700; color: var(--warn); letter-spacing: -0.3px; }
+.streak-badge.zero { opacity: 0.55; }
+.streak-badge.zero .streak-flame { animation: none; filter: none; opacity: 0.5; }
+.streak-badge #streakNum {
+  font-size: 16px; font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.4px;
+  line-height: 1;
+}
 .streak-flame {
-  font-size: 14px; filter: drop-shadow(0 0 3px rgba(255,149,0,0.3));
-  animation: flameFlicker 2.4s ease-in-out infinite;
+  font-size: 13px;
+  filter: drop-shadow(0 0 2px rgba(255,149,0,0.18));
+  animation: flameFlicker 3.2s ease-in-out infinite;
   display: inline-flex;
+  opacity: 0.92;
 }
 @keyframes flameFlicker {
-  0%, 100% { transform: scale(1) rotate(-1deg); filter: drop-shadow(0 0 3px rgba(255,149,0,0.3)); }
-  50%      { transform: scale(1.1) rotate(2deg); filter: drop-shadow(0 0 5px rgba(255,149,0,0.5)); }
+  0%, 100% { transform: scale(1) rotate(-0.5deg); filter: drop-shadow(0 0 2px rgba(255,149,0,0.18)); }
+  50%      { transform: scale(1.06) rotate(1deg); filter: drop-shadow(0 0 3px rgba(255,149,0,0.3)); }
 }
 .streak-label { color: var(--text-2); font-weight: 500; }
 
@@ -93,7 +109,7 @@ html, body {
 .main {
   flex: 1;
   display: grid;
-  grid-template-columns: 286px 1fr;
+  grid-template-columns: 310px 1fr;
   gap: 18px;
   padding: 18px 22px 22px;
   overflow: hidden;
@@ -103,7 +119,7 @@ html, body {
 .sidebar {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   overflow-y: auto;
   overflow-x: hidden;
   align-self: stretch;
@@ -114,12 +130,22 @@ html, body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-  padding: 20px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03), 0 4px 12px rgba(0,0,0,0.04);
+  padding: 14px 16px;
+  animation: cardIn 0.4s cubic-bezier(0.16, 0.84, 0.44, 1) both;
 }
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+/* 侧栏卡片错落入场，营造优雅的视觉节奏 */
+.sidebar .card:nth-child(1) { animation-delay: 0.02s; }
+.sidebar .card:nth-child(2) { animation-delay: 0.08s; }
+.sidebar .card:nth-child(3) { animation-delay: 0.14s; }
+.timer-area { animation: cardIn 0.5s cubic-bezier(0.16, 0.84, 0.44, 1) both; animation-delay: 0.06s; }
 
 /* 今日进度卡片 */
-.stat-card { position: relative; overflow: hidden; padding: 16px; }
+.stat-card { position: relative; overflow: hidden; padding: 14px 16px; }
 
 .stat-card .stat-header {
   display: flex; justify-content: space-between; align-items: baseline;
@@ -127,11 +153,18 @@ html, body {
   padding-bottom: 10px;
   border-bottom: 1px solid var(--border);
 }
-.stat-header h3 { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.2px; }
+.stat-header h3 { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
 .stat-date { font-size: 12px; color: var(--text-3); }
 .stat-row { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
 .stat-big { display: flex; align-items: baseline; gap: 5px; flex-shrink: 0; }
-.stat-num { font-size: 32px; font-weight: 600; color: var(--text); line-height: 1; letter-spacing: -0.5px; }
+.stat-num {
+  font-size: 34px; font-weight: 700; color: var(--text);
+  line-height: 1; letter-spacing: -0.8px;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(135deg, var(--text) 0%, #3d9bff 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 .stat-unit { font-size: 13px; color: var(--text-3); font-weight: 500; }
 .stat-progress { flex: 1; }
 .stat-progress-bar {
@@ -156,9 +189,9 @@ html, body {
 .stat-mini span { color: var(--text); font-weight: 600; margin: 0 1px; }
 
 /* 任务 */
-.task-card { flex: 1; display: flex; flex-direction: column; min-height: 0; padding: 16px; }
+.task-card { flex: 1; display: flex; flex-direction: column; min-height: 0; padding: 14px 16px; }
 .task-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
-.task-header h3 { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.2px; }
+.task-header h3 { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
 .task-count {
   font-size: 11px; color: var(--text-3);
   background: var(--surface-2); padding: 2px 8px; border-radius: 999px;
@@ -166,6 +199,8 @@ html, body {
 .task-add {
   display: flex; gap: 8px; margin-bottom: 14px;
   flex-shrink: 0; align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
 }
 .task-add input[type="text"] {
   flex: 1; height: 36px;
@@ -239,21 +274,22 @@ html, body {
 .task-item.done .task-radio::after { content: '✓'; color: #fff; font-size: 11px; font-weight: bold; }
 .task-body { flex: 1; min-width: 0; }
 .task-title { font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-/* 任务番茄进度条：可视化 pomodoros/estimate */
+/* 任务番茄进度条：与主进度条统一风格（更细但同色系、同圆角） */
 .task-progress {
   display: flex; align-items: center; gap: 8px;
   margin-top: 5px;
 }
 .task-progress-bar {
-  flex: 1; height: 4px; min-width: 24px;
-  background: #e3e3e8; border-radius: 999px; overflow: hidden;
-  box-shadow: inset 0 1px 1px rgba(0,0,0,0.03);
+  flex: 1; height: 5px; min-width: 24px;
+  background: #e8e8ed; border-radius: 999px; overflow: hidden;
+  box-shadow: inset 0 1px 1px rgba(0,0,0,0.04);
 }
 .task-progress-fill {
   height: 100%; width: 0%;
-  background: linear-gradient(90deg, var(--accent), #3d9bff);
+  background: var(--accent);
   border-radius: 999px;
   transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0,122,255,0.18);
 }
 .task-item.current .task-progress-fill { box-shadow: 0 0 0 2px rgba(0,122,255,0.10); }
 .task-item.done .task-progress-fill { background: var(--accent-2); }
@@ -294,8 +330,8 @@ html, body {
 /* 任务卡片底部统计条带 */
 .task-footer {
   flex-shrink: 0;
-  padding: 12px 8px 6px;
-  margin-top: 6px;
+  padding: 14px 8px 4px;
+  margin-top: 10px;
   border-top: 1px solid var(--border);
   display: flex; justify-content: space-between; align-items: center;
   font-size: 11.5px; color: var(--text-3);
@@ -313,25 +349,25 @@ html, body {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  padding: 22px 32px 18px;
+  padding: 18px 32px 14px;
   overflow-y: auto;
-  gap: 6px;
+  gap: 4px;
   position: relative;
 }
-/* 顶部柔和渐变：极淡，仅作色调暗示，不抢圆环焦点 */
+/* 顶部柔和渐变：阶段色浸染（opacity 0.06），让计时区从环境"长出"而非贴上去 */
 .timer-area::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 80px;
-  background: linear-gradient(180deg, rgba(0,122,255,0.03) 0%, transparent 100%);
+  height: 120px;
+  background: linear-gradient(180deg, rgba(0,122,255,0.06) 0%, rgba(0,122,255,0.02) 50%, transparent 100%);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   pointer-events: none;
   z-index: 0;
   transition: background 0.4s;
 }
-.timer-area.phase-short_break::before { background: linear-gradient(180deg, rgba(52,199,89,0.03) 0%, transparent 100%); }
-.timer-area.phase-long_break::before { background: linear-gradient(180deg, rgba(255,149,0,0.03) 0%, transparent 100%); }
+.timer-area.phase-short_break::before { background: linear-gradient(180deg, rgba(52,199,89,0.07) 0%, rgba(52,199,89,0.02) 50%, transparent 100%); }
+.timer-area.phase-long_break::before { background: linear-gradient(180deg, rgba(255,149,0,0.07) 0%, rgba(255,149,0,0.02) 50%, transparent 100%); }
 .timer-area > * { position: relative; z-index: 1; }
 
 /* 阶段标签：提升未选中态对比度，确保功能可辨识 */
@@ -362,8 +398,8 @@ html, body {
 /* 圆环：增加上下留白，让计时器成为绝对视觉焦点 */
 .timer-ring-wrap {
   position: relative;
-  width: 252px; height: 252px;
-  margin: 4px 0 12px;
+  width: 240px; height: 240px;
+  margin: 2px 0 8px;
   filter: drop-shadow(0 8px 24px rgba(0,122,255,0.16));
 }
 .timer-ring-wrap::before {
@@ -382,21 +418,29 @@ html, body {
 .timer-ring-wrap.long_break::before {
   background: radial-gradient(circle, rgba(255,149,0,0.12), transparent 66%);
 }
-.timer-ring { width: 100%; height: 100%; transform: rotate(-90deg); position: relative; z-index: 1; }
+.timer-ring {
+  width: 100%; height: 100%;
+  transform: rotate(-90deg);
+  position: relative; z-index: 1;
+  background: radial-gradient(circle at 50% 50%, rgba(0,122,255,0.015) 0%, transparent 60%);
+  border-radius: 50%;
+}
 .ring-ripple { z-index: 1; }
 /* 圆环轨道：双层视觉，外层柔和阴影 + 内层细描边，营造立体凹槽感 */
 .ring-track {
-  fill: none; stroke: #ededf0; stroke-width: 10;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.03));
+  fill: none;
+  stroke: #ededf0;
+  stroke-width: 10;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.04));
 }
 /* 进度弧：渐变描边 + 端点圆角 + 柔光，呈现高端计时器质感 */
 .ring-progress {
-  fill: none; stroke: url(#ringGradWork); stroke-width: 13;
+  fill: none; stroke: url(#ringGradWork); stroke-width: 10;
   stroke-linecap: round;
   stroke-dasharray: 879.6; /* 2*PI*140 */
   stroke-dashoffset: 879.6;
   transition: stroke-dashoffset 0.5s linear, stroke 0.3s;
-  filter: drop-shadow(0 0 14px rgba(0,122,255,0.32));
+  filter: drop-shadow(0 0 8px rgba(0,122,255,0.22));
 }
 .ring-progress.short_break { stroke: url(#ringGradShort); filter: drop-shadow(0 0 8px rgba(52,199,89,0.3)); }
 .ring-progress.long_break { stroke: url(#ringGradLong); filter: drop-shadow(0 0 8px rgba(255,149,0,0.3)); }
@@ -407,7 +451,7 @@ html, body {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
 .timer-time {
-  font-size: 64px; font-weight: 600; letter-spacing: -3px;
+  font-size: 60px; font-weight: 600; letter-spacing: -2.5px;
   color: var(--text); font-variant-numeric: tabular-nums;
   line-height: 1;
   text-shadow: 0 1px 2px rgba(0,0,0,0.04);
@@ -436,7 +480,7 @@ html, body {
 
 /* 控制按钮：统一描边粗细与尺寸节奏，主次分明 */
 .timer-controls {
-  display: flex; align-items: center; gap: 20px;
+  display: flex; align-items: center; gap: 24px;
   margin-bottom: 4px;
 }
 .ctrl-btn {
@@ -468,34 +512,37 @@ html, body {
   font-size: 13px; color: var(--text-2); font-weight: 500;
   margin-bottom: 8px; margin-top: 2px;
 }
-/* 快捷键提示：极简辅助文字，不抢焦点 */
+/* 快捷键提示：辅助文字，保持低调但可读 */
 .kbd-hint {
-  font-size: 11px; color: var(--text-3); margin: 4px 0 12px;
-  display: flex; align-items: center; justify-content: center; gap: 4px;
+  font-size: 12px; color: var(--text-2);
+  margin: 4px 0 16px;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
   flex-wrap: wrap; letter-spacing: 0.1px;
   font-weight: 500;
+  opacity: 0.95;
 }
 .kbd-hint kbd {
   font-family: -apple-system, "SF Pro Text", "PingFang SC", sans-serif;
-  font-size: 10.5px; font-weight: 600;
-  color: var(--text-2);
+  font-size: 12px; font-weight: 600;
+  color: var(--text);
   background: var(--surface-2);
   border: 1px solid var(--border);
-  padding: 1px 6px; margin: 0 2px;
+  padding: 3px 9px; margin: 0 2px;
   line-height: 1.3;
-  min-width: 16px; text-align: center;
-  border-radius: 4px;
+  min-width: 22px; text-align: center;
+  border-radius: 6px;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.05), inset 0 -1px 0 rgba(0,0,0,0.03);
 }
 .kbd-hint .kbd-sep { color: var(--border); margin: 0 4px; }
 
 /* 当前任务 */
 .current-task {
   display: flex; align-items: center; gap: 10px;
-  padding: 9px 14px;
+  padding: 10px 16px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  margin-bottom: 14px;
+  border-radius: 14px;
+  margin-bottom: 12px;
   max-width: 440px; width: 100%;
   transition: border-color 0.2s, background 0.2s;
 }
@@ -506,9 +553,9 @@ html, body {
   box-shadow: inset 3px 0 0 var(--accent);
 }
 .current-task-label {
-  font-size: 10px; color: var(--accent); font-weight: 600;
+  font-size: 10.5px; color: var(--accent); font-weight: 600;
   flex-shrink: 0; letter-spacing: 0.3px;
-  padding: 3px 8px 3px 18px; background: var(--accent-soft); border-radius: 999px;
+  padding: 4px 10px 4px 18px; background: var(--accent-soft); border-radius: 999px;
   position: relative;
 }
 /* 脉动指示点：与运行中圆环呼吸动效呼应 */
@@ -558,12 +605,22 @@ html, body {
   margin-bottom: 6px;
   padding: 0 4px;
 }
-.week-total { color: var(--accent); font-weight: 600; }
-/* 周柱状图：圆角 + 渐变 + 数值标注，与其他区域设计语言统一 */
+.week-total { color: var(--accent); font-weight: 600; display: flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; }
+.week-legend {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10.5px; color: var(--text-3); font-weight: 500;
+}
+.week-legend-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #0a84ff 0%, #3d9bff 100%);
+}
+/* 周柱状图：圆角 + 蓝→靛渐变 + 数值标注，与热力图色阶呼应 */
 .week-chart {
   display: flex; align-items: flex-end; gap: 12px;
   height: 76px; width: 100%;
-  padding: 8px 6px 2px;
+  padding: 8px 12px 2px;
 }
 .week-bar-wrap {
   flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px;
@@ -571,18 +628,18 @@ html, body {
 }
 .week-bar {
   width: 100%; max-width: 38px;
-  background: linear-gradient(180deg, #7ab8f5 0%, #a8d2f9 100%);
-  border-radius: 3px 3px 2px 2px;
+  background: linear-gradient(180deg, #a8d2f9 0%, #8ec2f6 100%);
+  border-radius: 4px 4px 3px 3px;
   min-height: 4px;
-  transition: height 0.4s ease, opacity 0.2s;
+  transition: height 0.4s ease, opacity 0.2s, transform 0.15s;
   opacity: 0.95;
   position: relative;
 }
-.week-bar:hover { opacity: 1; }
+.week-bar:hover { opacity: 1; transform: translateY(-1px); }
 .week-bar.today {
   opacity: 1;
   background: linear-gradient(180deg, #0a84ff 0%, #3d9bff 100%);
-  box-shadow: 0 3px 10px rgba(0,122,255,0.28);
+  box-shadow: 0 3px 10px rgba(0,122,255,0.32), 0 1px 4px rgba(0,122,255,0.18);
 }
 .week-bar.empty {
   background: transparent;
@@ -595,8 +652,13 @@ html, body {
   border-color: var(--accent);
   background: rgba(0,122,255,0.06);
 }
-.week-bar-label { font-size: 10px; color: var(--text-3); }
-.week-bar-count { font-size: 11.5px; color: var(--text-2); font-weight: 700; min-height: 15px; font-variant-numeric: tabular-nums; }
+.week-bar-label { font-size: 10px; color: var(--text-3); line-height: 1; }
+.week-bar-count {
+  font-size: 11.5px; color: var(--text-2); font-weight: 700;
+  height: 16px; line-height: 16px;
+  font-variant-numeric: tabular-nums;
+  display: flex; align-items: center; justify-content: center;
+}
 .week-bar-wrap.today .week-bar-label { color: var(--accent); font-weight: 600; }
 .week-bar-wrap.today .week-bar-count { color: var(--accent); }
 /* 今日柱顶圆点指示器，强化"今天"视觉锚点 */
@@ -723,8 +785,8 @@ input, button { font-family: inherit; }
 .ring-ripple {
   position: absolute;
   top: 50%; left: 50%;
-  width: 252px; height: 252px;
-  margin-top: -126px; margin-left: -126px;
+  width: 240px; height: 240px;
+  margin-top: -120px; margin-left: -120px;
   border-radius: 50%;
   border: 2px solid var(--accent);
   opacity: 0;
@@ -789,14 +851,14 @@ input, button { font-family: inherit; }
 }
 
 /* ===== 专注热力图 ===== */
-.heat-card { flex-shrink: 0; padding: 16px; }
+.heat-card { flex-shrink: 0; padding: 14px 16px; }
 .heat-header {
   display: flex; justify-content: space-between; align-items: baseline;
-  margin-bottom: 10px;
-  padding-bottom: 10px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
   border-bottom: 1px solid var(--border);
 }
-.heat-header h3 { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.2px; }
+.heat-header h3 { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
 .heat-total { font-size: 11px; color: var(--text-3); font-weight: 500; }
 
 /* 周目标进度条 */
@@ -824,53 +886,53 @@ input, button { font-family: inherit; }
 .heatmap-scroll {
   overflow-x: auto;
   overflow-y: hidden;
-  margin: 0 -6px;
-  padding: 4px 6px 8px;
+  margin: 0 -4px;
+  padding: 2px 4px 4px;
 }
 .heatmap-scroll::-webkit-scrollbar { height: 5px; }
 .heat-month-labels {
   display: flex;
-  gap: 4px;
+  gap: 3px;
   min-width: max-content;
-  margin-bottom: 5px;
-  height: 12px;
+  margin-bottom: 4px;
+  height: 11px;
   padding: 0 1px;
 }
 .heat-month {
-  width: 13px;
+  width: 11px;
   font-size: 9px;
   color: var(--text-3);
   font-weight: 600;
-  line-height: 12px;
+  line-height: 11px;
   letter-spacing: 0;
   white-space: nowrap;
 }
 .heat-month.has-text { color: var(--text-2); }
 .heatmap {
   display: flex;
-  gap: 3px;
+  gap: 2px;
   align-items: stretch;
   min-width: max-content;
 }
 .heat-col {
-  display: flex; flex-direction: column; gap: 3px;
+  display: flex; flex-direction: column; gap: 2px;
 }
 .heat-cell {
-  width: 13px; height: 13px;
-  border-radius: 3px;
+  width: 11px; height: 11px;
+  border-radius: 2.5px;
   background: #ececf0;
   transition: transform 0.12s;
   cursor: default;
 }
-/* 热力图色阶：苹果蓝单色系 5 级，对比均匀避免深色黑洞 */
+/* 热力图色阶：苹果蓝单色系 5 级，深浅渐进清晰，小尺寸下辨识度高 */
 .heat-cell.level-0 { background: #ececf0; }
 .heat-cell.level-1 { background: #c5dffa; }   /* 浅蓝 */
 .heat-cell.level-2 { background: #8ec2f6; }   /* 中浅蓝 */
 .heat-cell.level-3 { background: #4ea4f0; }   /* 中蓝 */
-.heat-cell.level-4 { background: #1e7fe0; }   /* 深蓝（与中蓝过渡更平滑） */
+.heat-cell.level-4 { background: #1e7fe0; }   /* 深蓝（Apple 标准蓝） */
 .heat-cell.future { background: #f4f4f6; opacity: 0.55; }
 .heat-cell.today {
-  box-shadow: 0 0 0 1.5px var(--accent);
+  box-shadow: 0 0 0 1.5px var(--accent), 0 0 0 3px rgba(0,122,255,0.12);
 }
 @keyframes heatPulse {
   0%, 100% { box-shadow: 0 0 0 1.5px var(--accent); }
@@ -878,17 +940,17 @@ input, button { font-family: inherit; }
 }
 .heat-cell:hover { transform: scale(1.3); z-index: 2; position: relative; }
 
-/* 图例 */
+/* 图例：3 级色块（少/中/多），减少视觉噪音 */
 .heat-legend {
-  display: flex; align-items: center; gap: 4px;
+  display: flex; align-items: center; gap: 5px;
   justify-content: flex-end;
-  margin-top: 5px;
-  padding-top: 5px;
+  margin-top: 6px;
+  padding-top: 6px;
   border-top: 1px solid var(--border);
 }
-.heat-legend .heat-cell { width: 11px; height: 11px; cursor: default; border-radius: 2.5px; }
+.heat-legend .heat-cell { width: 12px; height: 12px; cursor: default; border-radius: 3px; }
 .heat-legend .heat-cell:hover { transform: none; }
-.heat-legend-label { font-size: 10px; color: var(--text-2); margin: 0 2px; font-weight: 500; }
+.heat-legend-label { font-size: 10.5px; color: var(--text-2); margin: 0 4px; font-weight: 500; }
 
 /* 热力图自定义 tooltip：苹果白样式，替代原生 title */
 .heat-tooltip {

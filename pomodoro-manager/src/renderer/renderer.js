@@ -163,6 +163,9 @@ function render(state) {
   renderHeatmap(state.heatmap);
   renderWeekGoal(state);
   el.streakNum.textContent = state.streak || 0;
+  // streak=0 时给徽章降级（火焰静止半透明），>0 时恢复正常暖色调
+  const streakBadge = document.getElementById('streakBadge');
+  if (streakBadge) streakBadge.classList.toggle('zero', !state.streak);
   el.todayGoal.textContent = (state.config && state.config.dailyGoal) || 8;
 }
 
@@ -317,7 +320,7 @@ function renderTimer(state) {
     el.startIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
     el.startText.textContent = '继续';
   } else {
-    el.startIcon.innerHTML = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
+    el.startIcon.innerHTML = '<path d="M5 4h5v16H5zM14 4h5v16h-5z"/>';
     el.startText.textContent = '暂停';
   }
 
@@ -362,14 +365,26 @@ function renderTasks(state) {
     ? `<span class="tf-label">暂无任务，开始添加吧</span>`
     : `<span class="tf-label">已完成 <span class="tf-done">${doneCount}</span><span class="tf-sep">/</span><span class="tf-total">${tasks.length}</span></span><span class="tf-label">番茄 <span class="tf-total">${totalPomo}</span><span class="tf-sep">/</span><span class="tf-total">${totalEst}</span></span>`;
   if (tasks.length === 0) {
-    // 精致空状态：番茄图标 + 主标题 + 副标题，避免纯文字的单薄感
+    // 精致空状态：蓝紫渐变抽象番茄 + 主副标题，高级感优于红绿卡通
     el.taskList.innerHTML = `
       <li class="task-empty">
         <div class="empty-illu">
-          <svg width="44" height="44" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-            <path d="M24 15c-8 0-14 5-14 14 0 7 6 13 14 13s14-6 14-13c0-9-6-14-14-14z" fill="#fff5f5" stroke="#ffd6d6" stroke-width="1.5"/>
-            <path d="M24 15c0-3 2-5 5-6M24 15c0-2-1-4-3-5" stroke="#34c759" stroke-width="1.8" stroke-linecap="round"/>
-            <path d="M24 23v8M20 27h8" stroke="#007aff" stroke-width="2" stroke-linecap="round"/>
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="emptyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0a84ff"/>
+                <stop offset="100%" stop-color="#7c3aed"/>
+              </linearGradient>
+              <radialGradient id="emptyGlow" cx="50%" cy="45%" r="55%">
+                <stop offset="0%" stop-color="rgba(0,122,255,0.18)"/>
+                <stop offset="100%" stop-color="rgba(124,58,237,0)"/>
+              </radialGradient>
+            </defs>
+            <circle cx="24" cy="24" r="20" fill="url(#emptyGlow)"/>
+            <path d="M24 14c-7 0-13 5-13 13 0 7 6 12 13 12s13-5 13-12c0-8-6-13-13-13z" fill="url(#emptyGrad)" opacity="0.92"/>
+            <path d="M24 14c0-2.5 1.8-4.5 4.5-5.5" stroke="#34c759" stroke-width="2" stroke-linecap="round"/>
+            <path d="M24 14c0-1.8-1-3.5-2.5-4.5" stroke="#34c759" stroke-width="1.6" stroke-linecap="round"/>
+            <circle cx="19" cy="22" r="1.6" fill="rgba(255,255,255,0.55)"/>
           </svg>
         </div>
         <div class="empty-title">还没有任务</div>
@@ -409,7 +424,8 @@ function renderWeekChart(daily) {
   if (!daily || daily.length === 0) { el.weekChart.innerHTML = ''; return; }
   const max = Math.max(1, ...daily.map(d => d.workSessions));
   const total = daily.reduce((s, d) => s + (d.workSessions || 0), 0);
-  el.weekTotal.textContent = `共 ${total}`;
+  // 图例：深蓝色块 + "今日" 文字 + 总数，让今日柱体含义不言自明
+  el.weekTotal.innerHTML = '<span class="week-legend"><span class="week-legend-dot"></span>今日</span> 共 ' + total;
   const todayKey = (() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
