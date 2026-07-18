@@ -58,7 +58,10 @@
         </div>
         <div class="heatmap-scroll">
           <div class="heat-month-labels" id="heatMonths"></div>
-          <div class="heatmap" id="heatmap"></div>
+          <div class="heat-body">
+            <div class="heat-row-labels" id="heatRowLabels" aria-hidden="true"></div>
+            <div class="heatmap" id="heatmap"></div>
+          </div>
         </div>
         <div class="heat-legend">
           <span class="heat-legend-label">少</span>
@@ -87,10 +90,11 @@
 
     <!-- 中间：计时器 -->
     <section class="timer-area">
-      <div class="phase-tabs" id="phaseTabs">
-        <button class="phase-tab active working" data-phase="working">专注</button>
-        <button class="phase-tab short_break" data-phase="short_break">短休息</button>
-        <button class="phase-tab long_break" data-phase="long_break">长休息</button>
+      <div class="phase-tabs" id="phaseTabs" role="tablist">
+        <span class="phase-indicator" id="phaseIndicator" aria-hidden="true"></span>
+        <button class="phase-tab active working" data-phase="working" role="tab">专注</button>
+        <button class="phase-tab short_break" data-phase="short_break" role="tab">短休息</button>
+        <button class="phase-tab long_break" data-phase="long_break" role="tab">长休息</button>
       </div>
 
       <div class="timer-ring-wrap">
@@ -127,18 +131,24 @@
       </div>
 
       <div class="timer-controls">
-        <button class="ctrl-btn ctrl-secondary" id="resetBtn" title="重置">
+        <button class="ctrl-btn ctrl-secondary" id="resetBtn" title="重置" aria-label="重置">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 1 0 3-6.7L3 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 4v4h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <button class="ctrl-btn ctrl-primary" id="startBtn" title="开始/暂停">
+        <button class="ctrl-btn ctrl-primary" id="startBtn" title="开始/暂停" aria-label="开始/暂停">
           <svg id="startIcon" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
         </button>
-        <button class="ctrl-btn ctrl-secondary" id="skipBtn" title="跳过">
+        <button class="ctrl-btn ctrl-secondary" id="skipBtn" title="跳过" aria-label="跳过">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 5l9 7-9 7V5z" fill="currentColor"/><path d="M18 5v14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
         </button>
       </div>
       <div class="ctrl-label" id="startText">开始专注</div>
-      <div class="kbd-hint"><kbd>Space</kbd> 开始/暂停<span class="kbd-sep">·</span><kbd>R</kbd> 重置<span class="kbd-sep">·</span><kbd>S</kbd> 跳过</div>
+      <div class="kbd-hint" role="note">
+        <span class="kbd-group"><kbd>Space</kbd><span class="kbd-text">开始/暂停</span></span>
+        <span class="kbd-sep-dim">·</span>
+        <span class="kbd-group"><kbd>R</kbd><span class="kbd-text">重置</span></span>
+        <span class="kbd-sep-dim">·</span>
+        <span class="kbd-group"><kbd>S</kbd><span class="kbd-text">跳过</span></span>
+      </div>
 
       <!-- 当前任务 -->
       <div class="current-task" id="currentTask">

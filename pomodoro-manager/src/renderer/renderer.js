@@ -46,6 +46,8 @@ const el = {
   heatmap: document.getElementById('heatmap'),
   heatMonths: document.getElementById('heatMonths'),
   heatTotal: document.getElementById('heatTotal'),
+  heatRowLabels: document.getElementById('heatRowLabels'),
+  phaseIndicator: document.getElementById('phaseIndicator'),
   weekNowCount: document.getElementById('weekNowCount'),
   weekGoalNum: document.getElementById('weekGoalNum'),
   weekGoalFill: document.getElementById('weekGoalFill'),
@@ -170,10 +172,13 @@ function render(state) {
 }
 
 // 专注热力图：13 周 × 7 天网格，颜色深浅表示当日番茄数
+// 行序：周一(i=0) ~ 周日(i=6)，仅显示 一/三/五 标签降低视觉噪音
+const HEAT_ROW_LABELS = ['一', '', '三', '', '五', '', ''];
 function renderHeatmap(hm) {
   if (!hm || !hm.weeks || hm.weeks.length === 0) {
     el.heatmap.innerHTML = '';
     if (el.heatMonths) el.heatMonths.innerHTML = '';
+    if (el.heatRowLabels) el.heatRowLabels.innerHTML = '';
     el.heatTotal.textContent = '近 13 周 · 0 \u{1F345}';
     return;
   }
@@ -185,6 +190,10 @@ function renderHeatmap(hm) {
       const prev = idx > 0 ? hm.weeks[idx - 1][0].month : -1;
       return '<span class="heat-month' + (m !== prev ? ' has-text' : '') + '">' + (m !== prev ? (m + '月') : '') + '</span>';
     }).join('');
+  }
+  // 行标签列：一 / 三 / 五，与每行单元格垂直对齐
+  if (el.heatRowLabels) {
+    el.heatRowLabels.innerHTML = HEAT_ROW_LABELS.map(t => '<span class="heat-row-label">' + t + '</span>').join('');
   }
   // 用 data-* 属性承载 tooltip 数据，取代原生 title（原生 title 延迟长、样式不可控）
   el.heatmap.innerHTML = hm.weeks.map(col => {
@@ -251,6 +260,35 @@ el.heatmap.addEventListener('mouseleave', hideHeatTooltip);
 // 滚动时隐藏，避免 tooltip 滞留在旧位置
 el.heatmap.addEventListener('scroll', hideHeatTooltip, true);
 
+// ---- 滑动指示器：根据当前 active phase 把指示器滑动到对应 tab 位置 ----
+function positionPhaseIndicator(phase) {
+  if (!el.phaseIndicator) return;
+  const tab = el.phaseTabs.querySelector('.phase-tab[data-phase="' + phase + '"]') ||
+              el.phaseTabs.querySelector('.phase-tab.active') ||
+              el.phaseTabs.querySelector('.phase-tab');
+  if (!tab) return;
+  const tabsRect = el.phaseTabs.getBoundingClientRect();
+  const tabRect = tab.getBoundingClientRect();
+  // 相对 phase-tabs 容器的偏移（已含 padding），用 translateX 平移
+  const offsetLeft = tabRect.left - tabsRect.left;
+  el.phaseIndicator.style.width = tabRect.width + 'px';
+  el.phaseIndicator.style.transform = 'translateX(' + offsetLeft + 'px)';
+  // 首次定位后显示，避免初始位置闪烁
+  el.phaseIndicator.style.opacity = '1';
+}
+// 窗口尺寸变化时重新定位指示器，避免错位
+window.addEventListener('resize', () => {
+  const active = el.phaseTabs.querySelector('.phase-tab.active');
+  if (active) positionPhaseIndicator(active.dataset.phase);
+});
+// 字体加载完成后再次校准位置（SF Pro / PingFang 异步加载可能导致初始宽度估算偏差）
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(() => {
+    const active = el.phaseTabs.querySelector('.phase-tab.active');
+    if (active) positionPhaseIndicator(active.dataset.phase);
+  });
+}
+
 // 周目标进度条（本自然周已完成 / 每周目标）—— 周目标行已移除，此函数保留为空操作避免报错
 function renderWeekGoal(state) {
   if (!el.weekNowCount || !el.weekGoalFill) return;
@@ -310,6 +348,8 @@ function renderTimer(state) {
   el.phaseTabs.querySelectorAll('.phase-tab').forEach(t => {
     t.classList.toggle('active', t.dataset.phase === activePhase);
   });
+  // 滑动指示器：随 active tab 切换平滑滑动到对应位置
+  positionPhaseIndicator(activePhase);
 
   // 按钮状态（running 已在上方声明，复用）
   el.startBtn.classList.toggle('running', running);
