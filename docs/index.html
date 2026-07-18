@@ -170,6 +170,22 @@
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-18</div>
         <div class="tl__card">
+          <h3>展示站点细节打磨（第十五轮·三修 · 标题层级 / 卡片等高 / 标签统一 / CTA 弱化 / 筛选呼吸 / emoji 圆形容器）</h3>
+          <p>针对 mimo 第三轮审美反馈的 8 项细节修复：Hero 主标题字号微增（34→36px 上限 60px）+ 字重 700 + 字距收紧 -.04em + 副标题下方间距 10→14px，副标题颜色由 var(--ink2) #6e6e73 加深至 #4d4d55 + 字重 500，让主副标题形成清晰两级；卡片描述强制 3 行 line-clamp 截断 + min-height 48px 双重保险 + body min-height 170px，彻底消除描述长短不一导致的卡片高度不齐；stack 标签统一为彩色 pill 风格（web 蓝 / electron 紫 / python 绿），功能数徽标降为 11px 浅灰文，meta 行 gap 收紧到 6px 让两者成组；卡片 CTA「获取」按钮由实心 primary（深蓝填充白字）降级为 tint（浅蓝底蓝字 + 浅边），消除整页几十个深蓝按钮造成的视觉噪音；chips 之间 gap 增至 6px + toolbar__row gap 18px，缓解「全部 57 · 开发 11 · 系统 16 · 效率 26 · 设计 4」一行过密；emoji 容器统一为圆形柔光底（白色半透明 + backdrop-blur + 双层阴影），让不同 emoji 渲染差异收敛到统一外层容器；卡片 media 高度统一 160px（移动 150px）避免长短不一；卡片键盘焦点加 2px 双层 ring 提升无障碍可见性。</p>
+        </div>
+      </div>
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-18</div>
+        <div class="tl__card">
+          <h3>展示站点细节打磨（第十五轮 · 弹窗项目导航 / 卡片 3D 倾斜 / 快捷键帮助浮层 / Hero 支柱光晕 / 标题分类色下划线）</h3>
+          <p>详情弹窗补齐与 Lightbox 一致的项目切换体验：左上角加胶囊式 ←/→ 导航按钮 + 「3 / 57」计数器，支持键盘 ←/→ 切换，切换时面板带横向位移反馈，边界自动禁用，看完一个项目无需关闭再开下一个；卡片 3D 倾斜跟随鼠标激活——CSS 已预留 preserve-3d 与 is-tilting，补 JS 计算鼠标位置驱动 rotateX/rotateY（±5°），媒体区与内容区 translateZ 分层视差增强景深，尊重 prefers-reduced-motion，鼠标离开平滑复位；新增键盘快捷键帮助浮层——按「?」或点击左下角键盘图标按钮唤起苹果白卡片，列出 / 聚焦搜索、Esc 关闭/清空、←/→ 切换项目、? 帮助四组快捷键，仿 macOS 键帽样式 kbd，提升快捷键发现性；Hero 信任支柱条图标加柔和呼吸光晕动画——三个图标分别用蓝（开源）/绿（隐私）/橙（免费）径向柔光，呼吸节奏 3.4s，hover 时光晕加强 + 图标放大旋转，让首屏三列承诺更有活力；卡片标题 hover 时分类色下划线从左滑入（开发蓝/系统绿/效率橙/设计紫），精致的可点击暗示。</p>
+        </div>
+      </div>
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-18</div>
+        <div class="tl__card">
           <h3>展示站点细节打磨（第十四轮 · favicon 全套 / 空状态搜索建议 / skip-link / kbd 脉冲 / 功能数徽标）</h3>
           <p>修复高端站点长期缺失的品牌基础：新增 SVG favicon（蓝青渐变 + 白色「柚」字与品牌 logo 一致）、PNG apple-touch-icon（PIL 渲染 180×180）、PWA manifest.json + 192/512 maskable 图标，支持 iOS 添加到主屏与 Android 安装为 PWA；空状态从冷冰冰的「🔍 没有找到」升级为温暖引导卡——加副标题「也许你想找：」+ 8 个高频搜索词 chip（截图 / JSON / cron / 字体 / 剪贴板 / 二维码 / Markdown / 计时），点击即填入搜索框并筛选，让无结果页成为发现入口而非死胡同；新增无障碍 skip-to-content 链接（默认 visually-hidden，Tab 聚焦时浮现于左上角），键盘用户无需 Tab 过整条导航；搜索框右侧「/」kbd 提示从静态升级为柔和呼吸脉冲动画（用户未交互时引导快捷键发现，首次聚焦或按键后自动停止）；卡片 meta 行追加「· N 项功能」文字徽标，让用户在卡片墙即可感知每个工具的功能丰富度，提升信息密度。</p>
         </div>
@@ -355,12 +371,42 @@
   <svg class="to-top__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
 </button>
 
+<!-- 第十五轮：快捷键帮助入口（左下角，按 ? 或点击打开） -->
+<button class="kbd-trigger" id="kbd-trigger" aria-label="键盘快捷键帮助">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/></svg>
+</button>
+
 <!-- 项目详情弹窗 -->
 <div class="modal" id="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modal-title">
   <div class="modal__backdrop" data-close></div>
   <div class="modal__panel">
     <button class="modal__close" data-close aria-label="关闭">×</button>
+    <!-- 第十五轮：弹窗项目导航（与 lightbox 一致） -->
+    <div class="modal__nav">
+      <button class="modal__nav-btn" id="modal-prev" aria-label="上一个项目">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <span class="modal__counter" id="modal-counter" aria-live="polite">1 / 57</span>
+      <button class="modal__nav-btn" id="modal-next" aria-label="下一个项目">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
     <div class="modal__body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- 第十五轮：键盘快捷键帮助浮层（按 ? 唤起） -->
+<div class="kbd-help" id="kbd-help" aria-hidden="true" role="dialog" aria-modal="true" aria-label="键盘快捷键">
+  <div class="kbd-help__card">
+    <button class="kbd-help__close" aria-label="关闭">×</button>
+    <h2 class="kbd-help__title">键盘快捷键</h2>
+    <p class="kbd-help__sub">随时用键盘高效浏览</p>
+    <ul class="kbd-help__list">
+      <li><kbd>/</kbd><span>聚焦搜索框</span></li>
+      <li><kbd>Esc</kbd><span>关闭弹窗 / 清空搜索</span></li>
+      <li><kbd>←</kbd><kbd>→</kbd><span>弹窗与大图中切换项目</span></li>
+      <li><kbd>?</kbd><span>打开本帮助面板</span></li>
+    </ul>
   </div>
 </div>
 
