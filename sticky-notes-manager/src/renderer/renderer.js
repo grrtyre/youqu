@@ -13,6 +13,19 @@ const COLORS = {
 
 const CATEGORIES = ['工作', '个人', '灵感', '待办', '其他'];
 
+// === SVG 图标库（用于确认弹窗、空状态、卡片置顶按钮等） ===
+const ICON_SVG = {
+  // 确认弹窗图标
+  info:  '<svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14" fill="#e3f0ff"/><circle cx="16" cy="16" r="14" stroke="#007aff" stroke-width="1.5"/><path d="M16 9V18" stroke="#007aff" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="23" r="1.5" fill="#007aff"/></svg>',
+  warn:  '<svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14" fill="#fff0f0"/><circle cx="16" cy="16" r="14" stroke="#ff3b30" stroke-width="1.5"/><path d="M16 9V19" stroke="#ff3b30" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="23" r="1.5" fill="#ff3b30"/></svg>',
+  // 空状态：便签图标（默认空）
+  notes: '<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><rect x="12" y="16" width="40" height="36" rx="6" stroke="#d1d1d6" stroke-width="2.5"/><path d="M20 16V12C20 9.79 21.79 8 24 8H40C42.21 8 44 9.79 44 12V16" stroke="#d1d1d6" stroke-width="2.5"/><line x1="22" y1="30" x2="42" y2="30" stroke="#d1d1d6" stroke-width="2" stroke-linecap="round"/><line x1="22" y1="38" x2="34" y2="38" stroke="#d1d1d6" stroke-width="2" stroke-linecap="round"/></svg>',
+  // 空状态：回收站空
+  trash: '<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><path d="M14 18H50M22 18V14C22 11.79 23.79 10 26 10H38C40.21 10 42 11.79 42 14V18M20 18L21 50C21.1 53.3 23.7 56 27 56H37C40.3 56 42.9 53.3 43 50L44 18" stroke="#d1d1d6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="28" y1="30" x2="28" y2="46" stroke="#d1d1d6" stroke-width="2" stroke-linecap="round"/><line x1="36" y1="30" x2="36" y2="46" stroke="#d1d1d6" stroke-width="2" stroke-linecap="round"/></svg>',
+  // 空状态：无搜索结果（放大镜）
+  search: '<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><circle cx="26" cy="26" r="14" stroke="#d1d1d6" stroke-width="2.5"/><line x1="36" y1="36" x2="50" y2="50" stroke="#d1d1d6" stroke-width="2.5" stroke-linecap="round"/><line x1="20" y1="26" x2="32" y2="26" stroke="#d1d1d6" stroke-width="2" stroke-linecap="round"/></svg>'
+};
+
 // 分类对应颜色（与侧边栏一致，标签文字用降低饱和度版）
 const CATEGORY_COLORS = {
   '工作': '#0066cc',
@@ -61,6 +74,15 @@ const deleteBtn = document.getElementById('deleteBtn');
 const charCount = document.getElementById('charCount');
 const categoryOptions = document.getElementById('categoryOptions');
 const colorOptions = document.getElementById('colorOptions');
+const searchClearBtn = document.getElementById('searchClearBtn');
+
+// 自定义确认弹窗元素
+const confirmOverlay = document.getElementById('confirmOverlay');
+const confirmIcon = document.getElementById('confirmIcon');
+const confirmTitle = document.getElementById('confirmTitle');
+const confirmMessage = document.getElementById('confirmMessage');
+const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+const confirmOkBtn = document.getElementById('confirmOkBtn');
 
 // === 时间格式化 ===
 function formatDate(ts) {
@@ -123,6 +145,7 @@ function updateViewControls() {
     searchInput.placeholder = '回收站中不支持搜索';
     searchInput.value = '';
     currentSearch = ''; // 同步清空搜索状态，避免返回便签视图时输入框空但列表仍被过滤
+    searchClearBtn.style.display = 'none'; // 同步隐藏清除按钮
   } else {
     trashList.style.display = 'none';
     notesGrid.style.display = 'grid';
@@ -132,6 +155,8 @@ function updateViewControls() {
     newNoteBtn.style.pointerEvents = 'auto';
     searchInput.disabled = false;
     searchInput.placeholder = '搜索便签...';
+    // 恢复清除按钮的可见性（基于当前搜索值）
+    searchClearBtn.style.display = currentSearch ? 'flex' : 'none';
   }
 }
 
@@ -166,24 +191,31 @@ function renderNotes() {
   if (filtered.length === 0) {
     notesGrid.style.display = 'none';
     emptyState.style.display = 'flex';
+    const emptyIconEl = document.getElementById('emptyIcon');
     if (currentSearch) {
       emptyState.querySelector('.empty-title').textContent = '没有找到便签';
-      emptyState.querySelector('.empty-desc').textContent = '试试其他关键词';
+      emptyState.querySelector('.empty-desc').textContent = '试试其他关键词，或点击右侧清除按钮';
+      if (emptyIconEl) emptyIconEl.innerHTML = ICON_SVG.search;
     } else {
       emptyState.querySelector('.empty-title').textContent = '还没有便签';
       emptyState.querySelector('.empty-desc').textContent = '点击「新建便签」开始记录你的想法';
+      if (emptyIconEl) emptyIconEl.innerHTML = ICON_SVG.notes;
     }
   } else {
     notesGrid.style.display = 'grid';
     emptyState.style.display = 'none';
     notesGrid.innerHTML = filtered.map(n => {
       const color = COLORS[n.color] || COLORS.default;
-      const pinIcon = n.pinned ? `
-        <div class="note-pin" title="已置顶">
+      // 置顶按钮：放在卡片右上角，可见+可点击，与右键快捷方式等价
+      // pinned 状态下始终显示；未 pinned 状态下 hover 才显示
+      const pinBtnClass = n.pinned ? 'note-pin-btn pinned' : 'note-pin-btn';
+      const pinTitle = n.pinned ? '点击取消置顶' : '点击置顶 · 也可右键卡片';
+      const pinBtnHtml = `
+        <button class="${pinBtnClass}" data-id="${n.id}" title="${pinTitle}" aria-label="${n.pinned ? '取消置顶' : '置顶'}" aria-pressed="${n.pinned}">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
             <path d="M7 0.5L8.8 4.5L13 5L10 8L10.5 12.5L7 10.5L3.5 12.5L4 8L1 5L5.2 4.5L7 0.5Z"/>
           </svg>
-        </div>` : '';
+        </button>`;
       const titleHtml = n.title
         ? `<div class="note-title">${escapeHtml(n.title)}</div>`
         : `<div class="note-title" style="color:var(--text-tertiary);font-weight:400;">无标题</div>`;
@@ -191,10 +223,10 @@ function renderNotes() {
         ? `<div class="note-content-preview">${escapeHtml(n.content)}</div>`
         : `<div class="note-content-preview" style="color:var(--text-tertiary);font-style:italic;">空便签</div>`;
       return `
-        <div class="note-card" data-id="${n.id}" style="border-left-color:${color.dot}">
+        <div class="note-card" data-id="${n.id}" tabindex="0" style="border-left-color:${color.dot}">
+          ${pinBtnHtml}
           <div class="note-card-header">
             ${titleHtml}
-            ${pinIcon}
           </div>
           ${contentHtml}
           <div class="note-card-footer">
@@ -206,13 +238,29 @@ function renderNotes() {
 
     // 绑定点击事件
     notesGrid.querySelectorAll('.note-card').forEach(card => {
-      card.addEventListener('click', () => {
+      card.addEventListener('click', (e) => {
+        // 如果点击的是置顶按钮，不打开编辑弹窗
+        if (e.target.closest('.note-pin-btn')) return;
         openEditModal(card.dataset.id);
+      });
+      // 键盘支持：Enter / Space 打开
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openEditModal(card.dataset.id);
+        }
       });
       // 右键切换置顶
       card.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         togglePin(card.dataset.id);
+      });
+    });
+    // 置顶按钮点击：切换置顶状态（不打开编辑弹窗）
+    notesGrid.querySelectorAll('.note-pin-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        togglePin(btn.dataset.id);
       });
     });
   }
@@ -229,6 +277,8 @@ function renderTrash() {
     emptyState.style.display = 'flex';
     emptyState.querySelector('.empty-title').textContent = '回收站为空';
     emptyState.querySelector('.empty-desc').textContent = '删除的便签会暂存于此，30 天后自动清理';
+    const emptyIconEl = document.getElementById('emptyIcon');
+    if (emptyIconEl) emptyIconEl.innerHTML = ICON_SVG.trash;
   } else {
     emptyState.style.display = 'none';
     trashList.style.display = 'flex';
@@ -255,14 +305,14 @@ function renderTrash() {
             </div>
           </div>
           <div class="trash-row-actions">
-            <button class="trash-restore-btn" data-id="${n.id}" title="恢复">
+            <button class="trash-restore-btn" data-id="${n.id}" title="恢复到便签列表" aria-label="恢复便签">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M3 8C3 5.24 5.24 3 8 3C10.76 3 13 5.24 13 8C13 10.76 10.76 13 8 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                 <path d="M5 3L3 5L5 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
               恢复
             </button>
-            <button class="trash-delete-btn" data-id="${n.id}" title="彻底删除" aria-label="彻底删除">
+            <button class="trash-delete-btn" data-id="${n.id}" title="彻底删除（不可恢复）" aria-label="彻底删除便签">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M3 4H13M6 4V3C6 2.45 6.45 2 7 2H9C9.55 2 10 2.45 10 3V4M5 4L5.5 13C5.55 13.83 6.17 14 7 14H9C9.83 14 10.45 13.83 10.5 13L11 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
@@ -355,9 +405,17 @@ function hasUnsavedChanges() {
   }
   return true; // 新建便签且已输入内容
 }
-function closeModal(force) {
+async function closeModal(force) {
   if (!force && hasUnsavedChanges()) {
-    if (!confirm('有未保存的内容，确定要关闭吗？\n关闭后未保存的内容将丢失。')) return;
+    const ok = await showConfirm({
+      title: '有未保存的内容',
+      message: '关闭后未保存的内容将丢失，确定要关闭吗？',
+      okText: '关闭',
+      cancelText: '继续编辑',
+      danger: true,
+      icon: 'warn'
+    });
+    if (!ok) return;
   }
   modalOverlay.style.display = 'none';
   editingNoteId = null;
@@ -377,6 +435,13 @@ function updateCharCount() {
   const chinese = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
   const english = (text.replace(/[\u4e00-\u9fa5]/g, ' ').match(/[a-zA-Z0-9]+/g) || []).length;
   charCount.textContent = (chinese + english) + ' 字';
+  updateSaveButtonState();
+}
+
+// 保存按钮禁用态：标题与正文都为空时禁用
+function updateSaveButtonState() {
+  const isEmpty = !editTitle.value.trim() && !editContent.value.trim();
+  saveBtn.disabled = isEmpty;
 }
 
 // === 保存便签 ===
@@ -384,6 +449,7 @@ async function saveNote() {
   const title = editTitle.value.trim();
   const content = editContent.value.trim();
 
+  // 双重保险：禁用态被绕过时也阻止
   if (!title && !content) {
     showToast('请输入标题或内容');
     return;
@@ -470,7 +536,15 @@ async function restoreNote(id) {
 async function deleteFromTrash(id) {
   const note = trash.find(n => n.id === id);
   const name = note && note.title ? '「' + note.title + '」' : '该便签';
-  if (!confirm('确定要彻底删除' + name + '吗？\n此操作不可恢复，删除后无法找回。')) return;
+  const ok = await showConfirm({
+    title: '彻底删除便签',
+    message: '确定要彻底删除' + name + '吗？此操作不可恢复，删除后无法找回。',
+    okText: '彻底删除',
+    cancelText: '取消',
+    danger: true,
+    icon: 'warn'
+  });
+  if (!ok) return;
   const result = await window.notesAPI.deleteFromTrash(id);
   trash = result.trash;
   render();
@@ -480,7 +554,15 @@ async function deleteFromTrash(id) {
 // === 清空回收站（二次确认，防误操作） ===
 async function emptyTrash() {
   if (trash.length === 0) return;
-  if (!confirm('确定要清空回收站吗？\n共 ' + trash.length + ' 条便签将被永久删除，此操作不可恢复。')) return;
+  const ok = await showConfirm({
+    title: '清空回收站',
+    message: '共 ' + trash.length + ' 条便签将被永久删除，此操作不可恢复。',
+    okText: '清空回收站',
+    cancelText: '取消',
+    danger: true,
+    icon: 'warn'
+  });
+  if (!ok) return;
   const result = await window.notesAPI.emptyTrash();
   trash = result.trash;
   render();
@@ -499,6 +581,59 @@ function showToast(msg) {
   }, 2000);
 }
 
+// === 自定义确认弹窗（Promise，替代原生 confirm，保持苹果白风格一致） ===
+// options: { title, message, okText, cancelText, danger (bool), icon }
+let confirmResolveFn = null;
+function showConfirm(opts) {
+  return new Promise((resolve) => {
+    confirmTitle.textContent = opts.title || '确认';
+    // 消息支持换行
+    confirmMessage.textContent = opts.message || '';
+    confirmOkBtn.textContent = opts.okText || '确定';
+    confirmCancelBtn.textContent = opts.cancelText || '取消';
+
+    // 危险操作样式
+    if (opts.danger) {
+      confirmOkBtn.classList.add('danger');
+      confirmIcon.classList.add('danger');
+      confirmIcon.classList.remove('info');
+    } else {
+      confirmOkBtn.classList.remove('danger');
+      confirmIcon.classList.remove('danger');
+      confirmIcon.classList.add('info');
+    }
+
+    // 注入图标（默认问号 / 警告三角 / 信息）
+    const iconType = opts.icon || (opts.danger ? 'warn' : 'info');
+    confirmIcon.innerHTML = ICON_SVG[iconType] || ICON_SVG.info;
+
+    confirmOverlay.style.display = 'flex';
+    // 自动聚焦确认按钮以便键盘操作
+    setTimeout(() => confirmOkBtn.focus(), 50);
+    confirmResolveFn = resolve;
+  });
+}
+
+function resolveConfirm(result) {
+  confirmOverlay.style.display = 'none';
+  const fn = confirmResolveFn;
+  confirmResolveFn = null;
+  if (fn) fn(result);
+}
+
+confirmCancelBtn.addEventListener('click', () => resolveConfirm(false));
+confirmOkBtn.addEventListener('click', () => resolveConfirm(true));
+// 点击遮罩 = 取消
+confirmOverlay.addEventListener('click', (e) => {
+  if (e.target === confirmOverlay) resolveConfirm(false);
+});
+// Esc 取消
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && confirmOverlay.style.display === 'flex') {
+    resolveConfirm(false);
+  }
+});
+
 // === 事件绑定 ===
 newNoteBtn.addEventListener('click', () => {
   editingNoteId = null;
@@ -508,7 +643,29 @@ newNoteBtn.addEventListener('click', () => {
 searchInput.addEventListener('input', (e) => {
   if (currentView === 'trash') return; // 回收站不支持搜索
   currentSearch = e.target.value;
+  // 显示/隐藏清除按钮
+  searchClearBtn.style.display = currentSearch ? 'flex' : 'none';
   render();
+});
+
+// 清除搜索按钮：点击后清空搜索框 + 隐藏按钮 + 重新聚焦输入框
+searchClearBtn.addEventListener('click', () => {
+  searchInput.value = '';
+  currentSearch = '';
+  searchClearBtn.style.display = 'none';
+  render();
+  searchInput.focus();
+});
+
+// Ctrl+F 聚焦搜索框（应用内快捷键）
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
+    if (currentView !== 'trash' && modalOverlay.style.display !== 'flex') {
+      e.preventDefault();
+      searchInput.focus();
+      searchInput.select();
+    }
+  }
 });
 
 document.querySelectorAll('.category-item').forEach(item => {
@@ -549,6 +706,10 @@ editContent.addEventListener('input', updateCharCount);
 function ctrlEnterSave(e) {
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
     e.preventDefault();
+    if (saveBtn.disabled) {
+      showToast('请输入标题或内容');
+      return;
+    }
     saveNote();
   }
 }
