@@ -1977,3 +1977,119 @@
 .toolbar{padding-top:4px !important;padding-bottom:8px !important}
 .toolbar__row{margin-bottom:12px !important}
 
+/* ============ 第十四轮 · 细节打磨（favicon 配套 / 空状态升级 / skip-link / kbd 脉冲 / 功能数徽标） ============ */
+
+/* 24. skip-to-content 链接：键盘用户跳过导航直达主内容，默认 visually-hidden，Tab 聚焦时浮现 */
+.skip-link{
+  position:fixed;top:8px;left:8px;z-index:2000;
+  transform:translateY(-200%);opacity:0;
+  padding:10px 18px;border-radius:980px;
+  background:#fff;color:var(--accent);
+  font-size:14px;font-weight:600;letter-spacing:-.01em;
+  border:1px solid rgba(0,122,255,.22);
+  box-shadow:0 8px 24px rgba(0,0,0,.12),0 2px 6px rgba(0,122,255,.1);
+  transition:transform .25s var(--ease-out),opacity .2s var(--ease-out);
+}
+.skip-link:focus{
+  transform:translateY(0);opacity:1;
+  outline:2px solid var(--accent);outline-offset:2px;
+}
+
+/* 25. 空状态升级：从冷冰冰的「没找到」改为温暖引导卡，加副标题 + 搜索建议 chips */
+.empty{padding:72px 24px !important}
+.empty__icon{
+  font-size:44px;display:block;margin-bottom:14px;
+  animation:emptyFloat 3.2s ease-in-out infinite;
+}
+@keyframes emptyFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.empty__title{font-size:18px;font-weight:600;color:var(--ink);margin-bottom:6px !important}
+.empty__sub{font-size:13px;color:var(--ink3);margin-bottom:16px !important;letter-spacing:.02em}
+.empty__chips{
+  display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
+  max-width:520px;margin:0 auto 22px;
+}
+.empty__chip{
+  padding:7px 16px;border-radius:980px;
+  background:#fff;border:1px solid var(--line);
+  color:var(--ink2);font-size:13px;font-weight:500;font-family:inherit;
+  cursor:pointer;transition:all .2s var(--ease);
+  box-shadow:0 1px 2px rgba(0,0,0,.03);
+}
+.empty__chip:hover{
+  background:var(--accent-soft);color:var(--accent);
+  border-color:rgba(0,122,255,.28);transform:translateY(-1px);
+  box-shadow:0 4px 12px rgba(0,122,255,.1);
+}
+.empty__chip:focus-visible{
+  outline:2px solid var(--accent);outline-offset:2px;
+}
+.empty__chip:active{transform:translateY(0)}
+
+/* 26. 搜索 "/" kbd 提示呼吸脉冲：用户首次交互前柔和脉冲引导快捷键发现 */
+.search__hint.is-pulsing{
+  animation:kbdPulse 2.4s ease-in-out infinite;
+}
+@keyframes kbdPulse{
+  0%,100%{
+    box-shadow:0 0 0 0 rgba(0,122,255,0);
+    background:var(--bg-soft);
+    color:var(--ink3);
+  }
+  50%{
+    box-shadow:0 0 0 4px rgba(0,122,255,.12);
+    background:var(--accent-soft);
+    color:var(--accent);
+  }
+}
+
+/* 27. 卡片功能数徽标：在 meta 行 stack 后追加「· N 项功能」，提升信息密度 */
+.card__feat-count{
+  font-size:12px;color:var(--ink3);font-weight:500;
+  letter-spacing:-.005em;
+  transition:color .2s var(--ease);
+}
+.card:hover .card__feat-count{color:var(--ink2)}
+/* 移动端字号略缩避免拥挤 */
+@media (max-width:600px){
+  .card__feat-count{font-size:11px}
+  .empty__chips{gap:6px}
+  .empty__chip{padding:6px 13px;font-size:12px}
+}
+
+/* 28. prefers-reduced-motion：尊重用户偏好，关闭新增的脉冲与浮动动画 */
+@media (prefers-reduced-motion:reduce){
+  .search__hint.is-pulsing{animation:none}
+  .empty__icon{animation:none}
+}
+
+/* ============ 第十四轮 · mimo 反馈修复（卡片高度对齐 / 图标统一 / 移动端间距） ============ */
+
+/* 29. 卡片 meta 行强制单行：新增功能数徽标后可能换行导致卡片高度不一致，
+   改 flex-wrap:nowrap + overflow:hidden + 子元素 nowrap，保证所有卡片 meta 等高单行 */
+.card__meta{flex-wrap:nowrap !important;overflow:hidden;white-space:nowrap}
+.card__feat-count{
+  flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+/* 新徽标不收缩，保证可见 */
+.card__new{flex-shrink:0}
+
+/* 30. 卡片 emoji 字体标准化：消除不同 emoji 渲染引擎导致的视觉风格不一致，
+   统一使用 Apple Color Emoji 优先，回退到 Segoe UI Emoji / Noto Color Emoji */
+.card__emoji,
+.modal__big-emoji{
+  font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",system-ui,sans-serif !important;
+}
+
+/* 31. 移动端头部间距收紧：mimo 反馈 Logo 与搜索栏之间空白过大，
+   hero 顶部 padding 48px→32px，pillars 间距收紧，stats 上下间距收敛 */
+@media (max-width:600px){
+  .hero{padding-top:32px !important;padding-bottom:16px !important}
+  .hero__pillars{gap:10px !important;margin-top:14px !important}
+  .hero__pillar{padding:8px 12px !important}
+  .hero__pillar-text strong{font-size:12px !important}
+  .hero__pillar-text em{font-size:10px !important}
+  .hero__stats{margin-top:14px !important;gap:24px !important}
+  .stat__num{font-size:26px !important}
+  .hero__actions{margin-top:10px !important}
+}
+
