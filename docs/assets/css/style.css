@@ -1674,3 +1674,306 @@
   animation:none !important;
 }
 
+/* ============ 第十三轮细节打磨（squircle 图标 / 边框光晕 / 搜索图标 / 时间轴最新条目 / Hero 分隔线） ============ */
+
+/* 1. 卡片 emoji 容器升级为 iOS 应用图标 squircle 风格 + 渐变描边
+   原圆形过于柔和缺乏精致感，改 22px 圆角方形 + 1px 渐变内描边 + 双层阴影，
+   呈现类 macOS 应用图标的悬浮质感，强化苹果白高端调性 */
+.card__emoji{
+  border-radius:22px !important;
+  background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(245,247,252,.78)) !important;
+  box-shadow:
+    0 6px 18px rgba(0,0,0,.08),
+    0 2px 6px rgba(0,122,255,.06),
+    inset 0 1px 0 rgba(255,255,255,.95),
+    inset 0 0 0 1px rgba(0,122,255,.10) !important;
+}
+.card:hover .card__emoji{
+  box-shadow:
+    0 12px 28px rgba(0,0,0,.12),
+    0 4px 10px rgba(0,122,255,.12),
+    inset 0 1px 0 rgba(255,255,255,.95),
+    inset 0 0 0 1px rgba(0,122,255,.22) !important;
+}
+/* 移动端 squircle 圆角同步收敛 */
+@media (max-width:600px){
+  .card__emoji{border-radius:18px !important}
+}
+
+/* 2. 卡片 hover 时整体柔和蓝色边框光晕
+   原仅顶条变色，hover 反馈偏弱；增加 1px 蓝色描边 + 外层柔光，
+   让选中态更清晰但不喧宾夺主 */
+.card{
+  border:1px solid rgba(0,0,0,.06) !important;
+  transition:transform .35s var(--ease-out),box-shadow .35s var(--ease-out),border-color .3s var(--ease) !important;
+}
+.card:hover{
+  border-color:rgba(0,122,255,.28) !important;
+  box-shadow:
+    0 1px 2px rgba(0,0,0,.04),
+    0 12px 32px rgba(0,0,0,.07),
+    0 20px 48px rgba(0,122,255,.08),
+    0 0 0 1px rgba(0,122,255,.04) !important;
+}
+
+/* 3. 搜索框聚焦时搜索图标变蓝 + 双层柔光环
+   原聚焦仅边框变蓝，图标始终灰色缺乏一致性；图标随聚焦变蓝形成视觉呼应，
+   双层光环（内实外柔）替代单层呼吸，提升精致感 */
+.search__icon{
+  transition:color .25s var(--ease) !important;
+}
+.search__input:focus ~ .search__icon,
+.search:focus-within .search__icon{
+  color:var(--accent) !important;
+}
+.search__input:focus{
+  box-shadow:
+    0 0 0 4px var(--accent-soft),
+    0 0 0 1px rgba(0,122,255,.12),
+    0 2px 8px rgba(0,122,255,.10) !important;
+  animation:searchGlowRefined 2.8s ease-in-out infinite !important;
+}
+@keyframes searchGlowRefined{
+  0%,100%{box-shadow:0 0 0 4px var(--accent-soft),0 0 0 1px rgba(0,122,255,.12),0 2px 8px rgba(0,122,255,.10)}
+  50%{box-shadow:0 0 0 6px rgba(0,122,255,.10),0 0 0 1px rgba(0,122,255,.18),0 2px 8px rgba(0,122,255,.10)}
+}
+@media (prefers-reduced-motion:reduce){
+  .search__input:focus{animation:none !important}
+}
+
+/* 4. 时间轴最新条目加蓝色渐变背景 + 精化「最新」徽标
+   原仅边框区分，最新条目存在感不足；加柔和蓝色渐变背景让最新更新视觉锚点更强，
+   「最新」徽标改为左上角浮出式 + 阴影，更精致 */
+.tl__item:first-child .tl__card{
+  background:linear-gradient(180deg,#ffffff 0%,#f5f9ff 100%) !important;
+  border:1px solid rgba(0,122,255,.22) !important;
+  box-shadow:0 2px 8px rgba(0,122,255,.06),0 12px 32px rgba(0,0,0,.07),inset 0 1px 0 rgba(255,255,255,.8) !important;
+}
+.tl__item:first-child .tl__card::before{
+  content:"最新" !important;
+  position:absolute;top:-9px;left:18px !important;
+  right:auto !important;
+  font-size:10px;font-weight:700;color:#fff;letter-spacing:.08em;
+  padding:3px 11px;border-radius:980px;
+  background:linear-gradient(135deg,#007aff,#5ac8fa);
+  box-shadow:0 3px 10px rgba(0,122,255,.32),inset 0 1px 0 rgba(255,255,255,.3);
+  z-index:2;
+}
+.tl__item:first-child .tl__card{padding-top:24px}
+
+/* 5. Hero 标题下方加品牌蓝渐变分隔短线 + 统计数字下方短线精化
+   原标题与副标题间仅靠间距区分，加细分隔短线让标题区有收束感，
+   呈现苹果发布会式克制分隔 */
+.hero__title{
+  position:relative;
+  padding-bottom:14px;
+}
+.hero__title::after{
+  content:"";position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+  width:48px;height:3px;border-radius:3px;
+  background:linear-gradient(90deg,#007aff,#5ac8fa);
+  opacity:.7;
+}
+/* 统计数字下方短线收敛（避免与新分隔线重复视觉） */
+.stat::after{
+  width:20px !important;height:2px !important;opacity:.4 !important;
+}
+
+/* 6. squircle 图标内 emoji 微调垂直对齐（圆角方形容器内视觉重心略上移） */
+.card__emoji{
+  display:flex;align-items:center;justify-content:center;
+  padding-top:2px;
+}
+
+/* 7. 卡片媒体区背景微增层次：原单一渐变偏平，加对角柔光叠加 */
+.card__media{
+  background-image:
+    radial-gradient(circle at 25% 25%,rgba(255,255,255,.55),transparent 55%),
+    radial-gradient(circle at 75% 75%,rgba(0,122,255,.04),transparent 55%) !important;
+}
+
+/* ============ 第十三轮 · mimo 反馈修复（行距 / chips 权重 / 底部渐隐） ============ */
+
+/* 8. 卡片行间距加大：mimo 反馈呼吸感不足，row-gap 24px → 32px，
+   列间距保持 24px 维持横向紧凑，让纵向扫描更有节奏 */
+.grid{row-gap:32px !important;column-gap:24px !important}
+@media (min-width:1440px){.grid{row-gap:34px !important;column-gap:26px !important}}
+
+/* 9. chips 视觉权重增强：mimo 反馈与搜索框重心不匹配，
+   加大高度 + 增强背景 + 描边，让左右两侧视觉重量平衡 */
+.chip{
+  height:44px !important;
+  padding:0 18px 0 14px !important;
+  font-size:14px !important;
+  background:rgba(255,255,255,.9) !important;
+  border:1px solid rgba(0,0,0,.08) !important;
+  box-shadow:0 1px 3px rgba(0,0,0,.05),inset 0 1px 0 rgba(255,255,255,.8) !important;
+}
+.chip:hover{
+  background:#fff !important;
+  border-color:rgba(0,122,255,.2) !important;
+  box-shadow:0 3px 10px rgba(0,122,255,.08),inset 0 1px 0 rgba(255,255,255,.9) !important;
+}
+/* chips 圆点稍大，增强存在感 */
+.chip::before{width:8px !important;height:8px !important}
+/* chips 数量徽标同步增大，与加大后的 chips 匹配 */
+.chip[data-count]::after{
+  min-width:20px !important;height:19px !important;font-size:11px !important;padding:0 6px !important;
+}
+/* 搜索框高度同步到 44px，与 chips 完全对齐 */
+.search__input{height:44px !important;padding:0 44px 0 46px !important;line-height:44px}
+.search__clear{top:11px !important}
+
+/* 10. 底部渐隐遮罩前移 + 增强：mimo 反馈截断处无滚动暗示，
+   将 grid-wrap::after 高度从 90px → 140px，起点透明度提前，
+   并在 toolbar 下方加一处微弱渐隐，让首屏底部的卡片渐变更柔和 */
+.grid-wrap::after{
+  height:140px !important;
+  background:linear-gradient(180deg,rgba(245,245,247,0) 0%,rgba(245,245,247,.5) 35%,rgba(245,245,247,.85) 70%,var(--bg) 100%) !important;
+}
+
+/* ============ 第十三轮 · mimo v2 反馈修复（Hero 压缩 / 图标等高 / CTA 间距） ============ */
+
+/* 11. Hero 压缩：mimo 反馈标题与搜索栏间空旷地带，收紧 Hero 上下留白 + 统计区上移 */
+.hero{padding-top:12px !important;padding-bottom:0 !important}
+.hero__badge{margin-top:0 !important}
+.hero__title{margin:8px 0 4px !important}
+.hero__sub{margin:0 auto 12px !important}
+.hero__actions{margin-bottom:4px !important}
+.hero__stats{margin-top:16px !important}
+/* Hero 底部渐变收尾高度收敛，减少与工具栏间的空旷感 */
+.hero::after{height:24px !important}
+/* 工具栏顶部留白收敛，紧贴 Hero */
+.grid-wrap{padding-top:8px !important}
+.toolbar{padding-top:6px !important;padding-bottom:10px !important}
+
+/* 12. 卡片 emoji 等高约束：mimo 反馈不同 emoji 视觉面积不一，
+   强制固定 line-height + overflow 可见 + 居中对齐，消除 glyph 大小差异 */
+.card__emoji{
+  font-size:36px !important;
+  line-height:1 !important;
+  width:60px !important;
+  height:60px !important;
+  overflow:visible;
+  align-items:center !important;
+  justify-content:center !important;
+  padding:0 !important;
+}
+.card__emoji-glow{width:92px !important;height:92px !important}
+@media (max-width:600px){
+  .card__emoji{width:54px !important;height:54px !important;font-size:32px !important}
+  .card__emoji-glow{width:84px !important;height:84px !important}
+}
+
+/* 13. CTA 按钮与 GitHub 图标间距加大：mimo 反馈过近，
+   gap 10px → 14px，并给 GitHub 图标增加右侧呼吸留白 */
+.card__actions{gap:14px !important}
+.card__src{margin-right:2px}
+/* 获取按钮 min-width 略增，增强主操作存在感 */
+.card__actions .card__cta{min-width:100px !important;padding:0 22px !important}
+
+/* ============ 第十三轮 · mimo v4 反馈修复（搜索权重 / GitHub 按钮平衡 / 媒体区精化） ============ */
+
+/* 14. 搜索框视觉权重增强：mimo 反馈搜索区略显单薄，
+   加浅灰底色 + 加深边框 + 双层阴影，让搜索区与卡片墙视觉分量匹配 */
+.search__input{
+  background:var(--bg-soft) !important;
+  border:1.5px solid rgba(0,0,0,.1) !important;
+  box-shadow:0 1px 3px rgba(0,0,0,.05),inset 0 1px 0 rgba(255,255,255,.9) !important;
+}
+.search__input:hover{border-color:rgba(0,0,0,.16) !important;background:#fff !important}
+.search__input:focus{
+  background:#fff !important;
+  border:1.5px solid var(--accent) !important;
+}
+
+/* 15. GitHub 图标按钮与 CTA 按钮比例协调：mimo 反馈 GitHub 图标过小孤立，
+   略增大尺寸 36→40px + 加深背景 + 蓝色 hover 描边，让次要操作更显眼 */
+.card__src{
+  width:40px !important;height:40px !important;
+  background:rgba(0,0,0,.05) !important;
+  border:1px solid rgba(0,0,0,.08) !important;
+  box-shadow:0 1px 3px rgba(0,0,0,.04),inset 0 1px 0 rgba(255,255,255,.8) !important;
+}
+.card__src-icon{width:17px !important;height:17px !important;opacity:.7 !important}
+.card__src:hover{
+  background:var(--accent-soft) !important;
+  border-color:rgba(0,122,255,.22) !important;
+  box-shadow:0 3px 10px rgba(0,122,255,.1) !important;
+}
+.card__src:hover .card__src-icon{opacity:1 !important;color:var(--accent) !important}
+/* CTA 按钮高度同步到 40px，与 GitHub 图标按钮等高 */
+.card__actions .btn--sm{height:40px !important}
+
+/* 16. 卡片媒体区顶部加微弱分类色顶条光晕：增强分类辨识度，
+   在 squircle 图标上方加一道极淡的分类色渐变线，提升精致感 */
+.card__media::before{
+  background:radial-gradient(circle at 50% 0%,rgba(0,122,255,.06),transparent 60%) !important;
+}
+
+/* 17. chips 激活态微调：当前浅蓝填充在白底上对比度略低，
+   加深填充至 12% + 增强字重，让选中态更明确 */
+.chip.is-active{
+  background:rgba(0,122,255,.12) !important;
+  border-color:rgba(0,122,255,.3) !important;
+  color:#0066d6 !important;
+  box-shadow:0 3px 10px rgba(0,122,255,.12),inset 0 1px 0 rgba(255,255,255,.9) !important;
+}
+
+/* ============ 第十三轮 · mimo v5 反馈修复（标题层级 / 卡片密度 / 版本徽标统一） ============ */
+
+/* 18. 主标题字号收敛：mimo 反馈标题与卡片内容层级落差过大，
+   clamp(36px,5.5vw,60px) → clamp(32px,4.8vw,52px)，缩小落差建立中间过渡 */
+.hero__title{font-size:clamp(32px,4.8vw,52px) !important;letter-spacing:-.035em !important}
+/* Hero 副标题略增字重，作为标题到卡片的中间层级过渡 */
+.hero__sub{font-weight:500 !important;color:var(--ink2) !important}
+
+/* 19. 卡片高度收紧：mimo 反馈底部留白过多显"空"，
+   grid-auto-rows 360px → 340px，card__body min-height 178px → 158px */
+.grid{grid-auto-rows:340px !important}
+@media (min-width:1440px){.grid{grid-auto-rows:348px !important}}
+.card__body{min-height:158px !important}
+@media (min-width:1440px){.card__body{min-height:164px !important}}
+/* 卡片媒体区高度同步收敛 */
+.card__media{height:140px !important}
+@media (min-width:1440px){.card__media{height:146px !important}}
+
+/* 20. 版本徽标统一：mimo 反馈部分卡片版本角标不一致，
+   强制固定 min-width + 等宽字体 + 统一字号，消除宽度差异 */
+.card__version{
+  min-width:48px !important;
+  text-align:center !important;
+  font-variant-numeric:tabular-nums !important;
+  letter-spacing:0 !important;
+}
+
+/* 21. 卡片描述区最小高度同步收敛，配合卡片收紧 */
+.card__desc{min-height:4.2em !important}
+@media (max-width:600px){.card__desc{min-height:3.1em !important}}
+
+/* 22. 卡片正文 padding 收敛，配合整体紧凑化 */
+.card__body{padding:14px 18px 16px !important}
+.card__actions{margin-top:4px !important}
+
+/* ============ 第十三轮 · Hero 极致压缩（解决 mimo 反复反馈留白过大） ============ */
+
+/* 23. Hero 极致压缩：mimo 多轮反馈顶部留白过大，
+   统计区字号收敛 + 间距最小化 + 标题区间距收紧，让首屏内容更紧凑 */
+.hero{padding-top:8px !important}
+.hero__badge{padding:7px 16px !important;font-size:13px !important}
+.hero__title{margin:6px 0 2px !important;font-size:clamp(30px,4.2vw,46px) !important}
+.hero__title::after{width:40px !important;height:2px !important;bottom:8px !important}
+.hero__title{padding-bottom:14px !important}
+.hero__sub{margin:0 auto 10px !important;font-size:clamp(14px,1.8vw,17px) !important}
+.hero__actions{margin-bottom:2px !important;gap:10px !important}
+.hero__actions .btn{padding:9px 20px !important;font-size:14px !important}
+.hero__stats{margin-top:12px !important;gap:32px !important}
+.stat__num{font-size:32px !important;min-height:32px !important}
+.stat__num--free{font-size:24px !important}
+.stat__label{font-size:11px !important;margin-top:2px !important}
+.stat__sep{height:24px !important}
+.hero::after{height:16px !important}
+.grid-wrap{padding-top:4px !important}
+.toolbar{padding-top:4px !important;padding-bottom:8px !important}
+.toolbar__row{margin-bottom:12px !important}
+
