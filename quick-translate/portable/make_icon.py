@@ -87,13 +87,19 @@ def main():
     big = draw_icon(256)
     png_path = os.path.join(OUT_DIR, "icon.png")
     big.save(png_path, "PNG")
-    print(f"✓ PNG: {png_path}")
+    print(f"✓ PNG: {png_path} ({os.path.getsize(png_path)} 字节)")
 
-    # 生成多尺寸 ICO
-    ico_imgs = [draw_icon(s) for s in SIZES]
+    # 生成多尺寸 ICO —— 用 PIL 多次保存 + 拼接
+    # PIL 的 ICO 格式：传入 image + sizes 列表，会自动缩放生成
     ico_path = os.path.join(OUT_DIR, "icon.ico")
-    ico_imgs[0].save(ico_path, format="ICO", sizes=[(s, s) for s in SIZES], append_images=ico_imgs[1:])
-    print(f"✓ ICO: {ico_path}  尺寸={SIZES}")
+    # 用大图作为基础，指定 sizes 让 PIL 自动生成多尺寸
+    big.save(ico_path, format="ICO", sizes=[(s, s) for s in SIZES])
+    print(f"✓ ICO: {ico_path} ({os.path.getsize(ico_path)} 字节)  尺寸={SIZES}")
+
+    # 验证：用 PIL 重新打开 ICO 看尺寸
+    from PIL import Image as PILImage
+    ico_check = PILImage.open(ico_path)
+    print(f"  ICO 验证: size={ico_check.size}, format={ico_check.format}")
 
 
 if __name__ == "__main__":
