@@ -148,6 +148,8 @@
         <span class="kbd-group"><kbd>R</kbd><span class="kbd-text">重置</span></span>
         <span class="kbd-sep-dim">·</span>
         <span class="kbd-group"><kbd>S</kbd><span class="kbd-text">跳过</span></span>
+        <span class="kbd-sep-dim">·</span>
+        <span class="kbd-group"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><span class="kbd-text">阶段</span></span>
       </div>
 
       <!-- 当前任务 -->
@@ -172,7 +174,9 @@
     <div class="modal">
       <div class="modal-head">
         <h3>设置</h3>
-        <button class="icon-btn" id="settingsClose" aria-label="关闭设置">×</button>
+        <button class="icon-btn" id="settingsClose" aria-label="关闭设置">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
       </div>
       <div class="modal-body">
         <div class="setting-group">
@@ -205,7 +209,7 @@
         <div class="setting-group">
           <div class="group-title">行为模式</div>
           <div class="setting-row setting-switch">
-            <label>严格模式（不可跳过休息）</label>
+            <label>严格模式（不可跳过休息）<span class="setting-help" title="启用后，专注结束后的休息阶段无法被跳过，强制执行番茄工作法的休息规则。保护你的休息节奏，避免连续专注导致疲劳。">?</span></label>
             <input type="checkbox" id="cfgStrict">
           </div>
           <div class="setting-row setting-switch">
