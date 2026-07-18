@@ -1,0 +1,69 @@
+{
+  "name": "wallpaper-manager",
+  "version": "1.0.0",
+  "description": "苹果白风格的壁纸管理器 - 本地壁纸库、定时切换、必应每日壁纸、收藏管理",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "test": "node test/logic.test.js",
+    "build": "electron-builder --win",
+    "build:portable": "electron-builder --win portable"
+  },
+  "keywords": [
+    "wallpaper",
+    "desktop",
+    "electron",
+    "windows",
+    "bing"
+  ],
+  "author": "youqu",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.13"
+  },
+  "build": {
+    "appId": "com.youqu.wallpaper-manager",
+    "productName": "壁纸管理器",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "src/assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "壁纸管理器"
+    },
+    "portable": {
+      "artifactName": "壁纸管理器-便携版.exe"
+    }
+  },
+  "electronMirror": {
+    "mirror": "https://npmmirror.com/mirrors/electron/"
+  },
+  "electronBuilderMirror": {
+    "mirror": "https://npmmirror.com/mirrors/electron-builder-binaries/"
+  }
+}

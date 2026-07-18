@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: file: https:; style-src 'self' 'unsafe-inline'; script-src 'self';" />
+  <title>壁纸管理器</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 顶部工具栏 -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+            <rect x="3" y="4" width="18" height="13" rx="2.5" stroke="#007aff" stroke-width="1.8"/>
+            <circle cx="8" cy="9" r="1.6" fill="#007aff"/>
+            <path d="M3 14l4-4 3 3 4-4 7 6" stroke="#007aff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">壁纸管理器</div>
+          <div class="brand-sub">优雅地管理你的桌面</div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button id="btn-bing" class="btn btn-ghost btn-icon-text" title="必应每日壁纸">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M4.5 4.5l2.1 2.1m8.4 8.4l2.1 2.1M4.5 19.5l2.1-2.1m8.4-8.4l2.1-2.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <span>必应今日</span>
+        </button>
+        <button id="btn-add-folder" class="btn btn-primary" title="添加壁纸文件夹">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none"><path d="M3 7a2 2 0 012-2h4l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" stroke="currentColor" stroke-width="1.6"/><path d="M12 10v5m-2.5-2.5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <span>添加文件夹</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="body">
+      <!-- 侧边栏 -->
+      <aside class="sidebar">
+        <div class="side-section">
+          <div class="side-title">视图</div>
+          <nav class="side-nav">
+            <button class="side-nav-item active" data-view="all">
+              <span class="dot"></span><span>全部壁纸</span>
+            </button>
+            <button class="side-nav-item" data-view="favorites">
+              <span class="dot dot-fav"></span><span>我的收藏</span>
+            </button>
+            <button class="side-nav-item" data-view="current">
+              <span class="dot dot-cur"></span><span>当前壁纸</span>
+            </button>
+          </nav>
+        </div>
+
+        <div class="side-section">
+          <div class="side-title">壁纸来源</div>
+          <div id="sources-list" class="sources-list">
+            <div class="empty-hint">暂无来源，点击右上「添加文件夹」</div>
+          </div>
+        </div>
+
+        <div class="side-section side-section-bottom">
+          <div class="side-title">自动切换</div>
+          <label class="switch-row">
+            <span>启用定时切换</span>
+            <span class="switch">
+              <input type="checkbox" id="toggle-auto" />
+              <span class="slider"></span>
+            </span>
+          </label>
+          <div class="interval-row" id="interval-row" style="display:none;">
+            <label for="interval-hours">间隔</label>
+            <select id="interval-hours">
+              <option value="1">1 小时</option>
+              <option value="2">2 小时</option>
+              <option value="4">4 小时</option>
+              <option value="6" selected>6 小时</option>
+              <option value="12">12 小时</option>
+              <option value="24">24 小时</option>
+            </select>
+          </div>
+          <label class="switch-row">
+            <span>必应每日壁纸</span>
+            <span class="switch">
+              <input type="checkbox" id="toggle-bing" />
+              <span class="slider"></span>
+            </span>
+          </label>
+        </div>
+      </aside>
+
+      <!-- 主内容区 -->
+      <main class="main">
+        <div class="main-header">
+          <h2><span id="view-title">全部壁纸</span><span id="count-badge" class="count-badge">0 张</span></h2>
+          <div class="main-meta">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><circle cx="11" cy="11" r="7" stroke="#8e8e93" stroke-width="1.6"/><path d="M21 21l-4-4" stroke="#8e8e93" stroke-width="1.6" stroke-linecap="round"/></svg>
+              <input type="search" id="search-input" placeholder="搜索壁纸名称…" />
+            </div>
+          </div>
+        </div>
+
+        <div id="grid" class="grid"></div>
+
+        <div id="empty" class="empty-state" style="display:none;">
+          <div class="empty-icon">
+            <svg viewBox="0 0 64 64" width="56" height="56" fill="none">
+              <rect x="8" y="14" width="48" height="36" rx="4" stroke="#d1d1d6" stroke-width="2"/>
+              <circle cx="20" cy="26" r="4" fill="#d1d1d6"/>
+              <path d="M8 40l10-10 8 8 12-12 16 14" stroke="#d1d1d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+          </div>
+          <div class="empty-title">还没有壁纸</div>
+          <div class="empty-desc">添加一个包含壁纸的文件夹即可开始</div>
+          <button class="btn btn-primary" id="btn-empty-add">添加文件夹</button>
+        </div>
+
+        <div id="loading" class="loading" style="display:none;">
+          <div class="spinner"></div>
+          <span>加载中…</span>
+        </div>
+      </main>
+    </div>
+
+    <!-- 状态栏 -->
+    <footer class="statusbar">
+      <span class="status-item">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.6"/><circle cx="8" cy="9" r="1.4" fill="currentColor"/><path d="M3 14l4-4 3 3 4-4 7 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        <span id="status-current" class="status-text">未设置壁纸</span>
+      </span>
+      <span class="status-sep"></span>
+      <span class="status-item">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 7a2 2 0 012-2h4l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" stroke="currentColor" stroke-width="1.6"/></svg>
+        <span id="status-sources">0 个来源</span>
+      </span>
+      <span class="status-sep"></span>
+      <span class="status-item">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.9 6.9L22 9.3l-5.5 4.7 1.7 7.1L12 17.3 5.8 21l1.7-7L2 9.3l7.1-.4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" fill="none"/></svg>
+        <span id="status-favorites">0 个收藏</span>
+      </span>
+      <span class="status-right">
+        <button id="btn-quit" class="link-btn">退出</button>
+      </span>
+    </footer>
+  </div>
+
+  <!-- 大图预览 -->
+  <div id="preview-overlay" class="preview-overlay" style="display:none;">
+    <div id="preview-backdrop" class="preview-backdrop"></div>
+    <div class="preview-container">
+      <img id="preview-img" alt="" />
+      <div class="preview-info">
+        <div id="preview-name" class="preview-name"></div>
+        <div class="preview-actions">
+          <button id="preview-set" class="btn btn-primary">设为壁纸</button>
+          <button id="preview-fav" class="btn btn-ghost">收藏</button>
+          <button id="preview-folder" class="btn btn-ghost">在文件夹中显示</button>
+          <button id="preview-close" class="btn btn-ghost">关闭</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
