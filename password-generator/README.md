@@ -1,27 +1,42 @@
 <div align="center">
 
+<img src="assets/icon.png" alt="密码生成器 Logo" width="96">
+
 # 🔐 密码生成器 · Password Generator
 
 **苹果白高端风格的本地密码生成与管理工具**
 
-基于 Node.js `crypto` 模块 · CSPRNG 密码学安全随机数 · 拒绝采样消除模偏置
+基于 Node.js `crypto` 模块 · CSPRNG 密码学安全随机数 · 拒绝采样消除模偏置 · 纯本地离线运行
 
-[![platform](https://img.shields.io/badge/platform-Windows%2010%2B-0078D4?style=flat-square&logo=windows&logoColor=white)](https://github.com/grrtyre/youqu)
-[![version](https://img.shields.io/badge/version-1.1.0-FF9500?style=flat-square)](../../releases)
-[![license](https://img.shields.io/badge/license-MIT-34C759?style=flat-square)](LICENSE)
+[![version](https://img.shields.io/badge/%E7%89%88%E6%9C%AC-v1.1.0-007aff?style=flat-square&logo=electron)](../../releases)
+[![platform](https://img.shields.io/badge/%E5%B9%B3%E5%8F%B0-Windows%2010%2B-007aff?style=flat-square&logo=windows)](https://github.com/grrtyre/youqu)
+[![license](https://img.shields.io/badge/License-MIT-007aff?style=flat-square)](LICENSE)
+[![electron](https://img.shields.io/badge/Electron-28-007aff?style=flat-square)](https://www.electronjs.org)
+[![stars](https://img.shields.io/github/stars/grrtyre/youqu?style=flat-square&color=007aff)](https://github.com/grrtyre/youqu)
 
 </div>
 
+> 🔒 **所有密码均在本地生成，不会上传或留存云端。** 拒绝 `Math.random()`，使用 Node.js `crypto` 模块密码学安全随机数（CSPRNG）+ 拒绝采样消除模偏置，每一次生成都符合工业级安全标准。
+
 ---
 
-> 🔒 **所有密码均在本地生成，不会上传或留存云端。** 拒绝 `Math.random()`，使用 Node.js `crypto` 模块密码学安全随机数（CSPRNG）+ 拒绝采样消除模偏置，每一次生成都符合工业级安全标准。
+## ✨ 核心亮点
+
+| 亮点 | 说明 |
+| --- | --- |
+| 🛡️ **工业级安全** | Node.js `crypto` 模块 CSPRNG，与银行系统同级；拒绝采样消除模偏置，杜绝伪随机偏差 |
+| 🎨 **苹果白高端风格** | `#f5f5f7` 背景 / `#ffffff` 卡片 / `#007aff` 蓝色强调，参考 macOS/iOS 原生设计 |
+| ⚡ **5 种场景预设** | PIN / WiFi / 标准 / 高强 / 极强，一键套用配置并生成，告别参数纠结 |
+| 🧠 **可记忆口令** | 80 词词库，3-8 词英文组合，便于人类记忆，适合日常账号 |
+| 📊 **熵值可视化** | 基于 Shannon 熵实时评估，估算离线破解耗时，强度色阶一目了然 |
+| 🌈 **字符高亮** | 密码区按字符类型上色（数字蓝 / 符号橙 / 字母默认），可读性倍增 |
 
 ---
 
 ## 🖼️ 效果展示
 
 <p align="center">
-  <img src="assets/preview-main.png" alt="密码生成器主界面" width="640" />
+  <img src="./screenshots/password-generator-main.png" alt="密码生成器主界面" width="880">
 </p>
 
 <p align="center"><em>苹果白主界面 · 字符高亮（数字蓝 / 符号橙）· 强度渐变条 · 五种快速预设 · 实时熵值与破解耗时</em></p>
@@ -51,6 +66,20 @@
 | **源码版** | `git clone` | 自行编译运行，可二次定制 | [源码](.) |
 
 > **最低系统要求：** Windows 10 1809+ · 80MB 可用空间 · 64 位
+
+### 🚀 快速开始
+
+```bash
+# 1. 下载便携版 EXE（推荐）
+#    从 Releases 页面下载 PasswordGenerator-1.1.0-x64.exe
+# 2. 双击运行，无需安装
+
+# 或从源码运行
+git clone https://github.com/grrtyre/youqu.git
+cd youqu/password-generator
+npm install --registry=https://registry.npmmirror.com
+npm start
+```
 
 ### 源码运行
 
@@ -144,6 +173,8 @@ password-generator/
 │   ├── icon.png         # 应用图标（256×256）
 │   ├── icon.ico         # Windows 多尺寸图标
 │   └── preview-main.png # 主界面示意图（PIL 生成）
+├── screenshots/
+│   └── password-generator-main.png  # 主界面真实截图
 ├── LICENSE              # MIT 许可证
 └── README.md            # 项目说明
 ```
@@ -211,7 +242,7 @@ password-generator/
 
 <div align="center">
 
-[![爱发电](https://img.shields.io/badge/爱发电-支持我们-ff5c5c?style=for-the-badge&logo=like&logoColor=white)](https://www.ifdian.net/a/giquwei)
+[![爱发电](https://img.shields.io/badge/%E7%88%B1%E5%8F%91%E7%94%B5-%E6%94%AF%E6%8C%81%E6%88%91%E4%BB%AC-007aff?style=for-the-badge&logo=like&logoColor=white)](https://www.ifdian.net/a/giquwei)
 
 **爱发电链接：** https://www.ifdian.net/a/giquwei
 
@@ -223,8 +254,17 @@ password-generator/
 
 感谢以下朋友的支持（按支持时间排序）：
 
-<!-- 鸣谢名单占位：支持者姓名将在此处展示 -->
+<!-- 鸣谢名单占位：支持者姓名将在此处展示，格式：- [@用户名](主页链接) 或 - 张三 -->
+
 _暂无，期待第一个支持者的出现。_
+
+### 🌟 技术致谢
+
+| 项目 | 用途 | 链接 |
+| --- | --- | --- |
+| Electron | 跨平台桌面应用框架 | [electronjs.org](https://www.electronjs.org) |
+| Node.js `crypto` | 密码学安全随机数 | [nodejs.org](https://nodejs.org/api/crypto.html) |
+| electron-builder | 应用打包与分发 | [electron.build](https://www.electron.build) |
 
 ---
 
@@ -235,3 +275,9 @@ _暂无，期待第一个支持者的出现。_
 <div align="center">
 <sub>Built with 🔒 for users who care about password security</sub>
 </div>
+
+---
+
+## 🔗 相关项目
+
+密码生成器是 [youqu 工具集](https://github.com/grrtyre/youqu) 的一员，更多苹果白风格的实用小工具欢迎访问主仓库。
