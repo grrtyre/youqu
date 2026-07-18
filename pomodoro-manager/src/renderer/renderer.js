@@ -183,18 +183,70 @@ function renderHeatmap(hm) {
       return '<span class="heat-month' + (m !== prev ? ' has-text' : '') + '">' + (m !== prev ? (m + '月') : '') + '</span>';
     }).join('');
   }
+  // 用 data-* 属性承载 tooltip 数据，取代原生 title（原生 title 延迟长、样式不可控）
   el.heatmap.innerHTML = hm.weeks.map(col => {
     const cells = col.map(c => {
       const cls = ['heat-cell'];
       if (c.isFuture) cls.push('future');
       else cls.push('level-' + (c.level || 0));
       if (c.isToday) cls.push('today');
-      const tip = c.date + ' · ' + c.workSessions + ' 个番茄';
-      return '<span class="' + cls.join(' ') + '" title="' + tip + '"></span>';
+      return '<span class="' + cls.join(' ') + '" data-date="' + c.date + '" data-sessions="' + c.workSessions + '" data-future="' + (c.isFuture ? 1 : 0) + '"></span>';
     }).join('');
     return '<div class="heat-col">' + cells + '</div>';
   }).join('');
 }
+
+// ---- 热力图自定义 tooltip（苹果白样式，替代原生 title） ----
+let heatTooltip = null;
+function ensureHeatTooltip() {
+  if (heatTooltip) return heatTooltip;
+  heatTooltip = document.createElement('div');
+  heatTooltip.className = 'heat-tooltip';
+  heatTooltip.setAttribute('role', 'tooltip');
+  document.body.appendChild(heatTooltip);
+  return heatTooltip;
+}
+function formatDateCN(dateStr) {
+  const parts = String(dateStr).split('-');
+  if (parts.length !== 3) return dateStr;
+  const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+  const weekDays = ['日','一','二','三','四','五','六'];
+  return parseInt(parts[1], 10) + '月' + parseInt(parts[2], 10) + '日 周' + weekDays[d.getDay()];
+}
+function showHeatTooltip(cell) {
+  const tip = ensureHeatTooltip();
+  const date = cell.dataset.date;
+  if (!date) { hideHeatTooltip(); return; }
+  const ws = parseInt(cell.dataset.sessions, 10) || 0;
+  const isFuture = cell.dataset.future === '1';
+  let line2;
+  if (isFuture) line2 = '尚未到来';
+  else if (ws === 0) line2 = '无专注记录';
+  else line2 = ws + ' 个番茄 \u{1F345}';
+  tip.innerHTML = '<div class="ht-date">' + escapeHtml(formatDateCN(date)) + '</div><div class="ht-count' + (ws > 0 && !isFuture ? ' ht-has' : '') + '">' + line2 + '</div>';
+  tip.classList.add('show');
+  // 定位：默认在单元格上方居中，超出视口则翻转/夹紧
+  const rect = cell.getBoundingClientRect();
+  const tipRect = tip.getBoundingClientRect();
+  let left = rect.left + rect.width / 2 - tipRect.width / 2;
+  let top = rect.top - tipRect.height - 8;
+  left = Math.max(8, Math.min(left, window.innerWidth - tipRect.width - 8));
+  if (top < 8) top = rect.bottom + 8; // 上方空间不足则翻转到下方
+  tip.style.left = left + 'px';
+  tip.style.top = top + 'px';
+}
+function hideHeatTooltip() {
+  if (heatTooltip) heatTooltip.classList.remove('show');
+}
+// 事件委托：鼠标进入单元格显示 tooltip，离开热力图区域隐藏
+el.heatmap.addEventListener('mouseover', (e) => {
+  const cell = e.target.closest('.heat-cell');
+  if (!cell) return;
+  showHeatTooltip(cell);
+});
+el.heatmap.addEventListener('mouseleave', hideHeatTooltip);
+// 滚动时隐藏，避免 tooltip 滞留在旧位置
+el.heatmap.addEventListener('scroll', hideHeatTooltip, true);
 
 // 周目标进度条（本自然周已完成 / 每周目标）—— 周目标行已移除，此函数保留为空操作避免报错
 function renderWeekGoal(state) {
@@ -310,7 +362,19 @@ function renderTasks(state) {
     ? `<span class="tf-label">暂无任务，开始添加吧</span>`
     : `<span class="tf-label">已完成 <span class="tf-done">${doneCount}</span><span class="tf-sep">/</span><span class="tf-total">${tasks.length}</span></span><span class="tf-label">番茄 <span class="tf-total">${totalPomo}</span><span class="tf-sep">/</span><span class="tf-total">${totalEst}</span></span>`;
   if (tasks.length === 0) {
-    el.taskList.innerHTML = '<li class="task-empty">还没有任务，添加一个开始专注吧</li>';
+    // 精致空状态：番茄图标 + 主标题 + 副标题，避免纯文字的单薄感
+    el.taskList.innerHTML = `
+      <li class="task-empty">
+        <div class="empty-illu">
+          <svg width="44" height="44" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+            <path d="M24 15c-8 0-14 5-14 14 0 7 6 13 14 13s14-6 14-13c0-9-6-14-14-14z" fill="#fff5f5" stroke="#ffd6d6" stroke-width="1.5"/>
+            <path d="M24 15c0-3 2-5 5-6M24 15c0-2-1-4-3-5" stroke="#34c759" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M24 23v8M20 27h8" stroke="#007aff" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="empty-title">还没有任务</div>
+        <div class="empty-desc">在上方添加一个任务，开启第一次专注</div>
+      </li>`;
     return;
   }
   // 未完成在前（排序副本，避免就地修改 state.tasks 顺序）

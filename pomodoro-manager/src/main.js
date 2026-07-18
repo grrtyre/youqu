@@ -63,7 +63,7 @@ function seedDemoData() {
   }
   core.streak = 4;
   core.state = 'working';
-  core.remainingMs = 24 * 60 * 1000 + 54 * 1000;
+  core.remainingMs = 12 * 60 * 1000 + 30 * 1000;
   core.cycleCount = 2;
   // 热力图演示数据：最近 12 周，工作日偏多、周末偏少，模拟真实专注规律
   const todayBase = new Date(); todayBase.setHours(0, 0, 0, 0);

@@ -6,10 +6,10 @@
 
 专注 · 休息 · 心流 · 打卡 · 统计
 
-<img alt="version" src="https://img.shields.io/badge/%E7%89%88%E6%9C%AC-v1.3.0-007aff?style=flat-square">
+<img alt="version" src="https://img.shields.io/badge/%E7%89%88%E6%9C%AC-v1.3.1-007aff?style=flat-square">
 <img alt="platform" src="https://img.shields.io/badge/Windows-x64-007aff?style=flat-square">
 <img alt="license" src="https://img.shields.io/badge/License-MIT-34c759?style=flat-square">
-<img alt="tests" src="https://img.shields.io/badge/%E6%B5%8B%E8%AF%95-87%20%E7%94%A8%E4%BE%8B-ff9500?style=flat-square">
+<img alt="tests" src="https://img.shields.io/badge/%E6%B5%8B%E8%AF%95-119%20%E7%94%A8%E4%BE%8B-ff9500?style=flat-square">
 
 </div>
 
@@ -110,11 +110,13 @@ pomodoro-manager/
 │   │   └── renderer.js         # 渲染逻辑
 │   ├── main.js                 # Electron 主进程
 │   └── preload.js              # 预加载桥接
-├── test/test.js                # 87 项测试
+├── test/test.js                # 119 项测试
 └── package.json
 ```
 
 ## 📜 更新日志
+
+**v1.3.1** —— 专注热力图自定义 tooltip（苹果白样式，替代原生 title，显示日期+番茄数）、任务空状态视觉升级（番茄图标+主副标题）、快捷键提示精修（柔和胶囊容器+蓝色 kbd 标签）、README 测试用例数同步（87→119）
 
 **v1.3.0** —— 任务番茄进度条（可视化 pomodoros/estimate）、`N` 键快速新建任务、连续打卡火焰动效增强、当前任务条与计时圆环视觉整合、任务间距统一；修复截图演示模式启动崩溃
 
