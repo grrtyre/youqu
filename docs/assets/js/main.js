@@ -234,14 +234,44 @@ var PROJECTS = [
   {id:'prompt-manager',icon:'💡',name:'提示词管家',cat:'efficiency',stack:'electron',ver:'v1.0.0',
    desc:'AI 用户的提示词管理利器：集中收纳、分类、复用你的 AI 提示词，支持 {{变量}} 占位符表单填写、一键复制到 AI 工具、收藏与最近使用、使用次数统计、全文搜索、JSON 导入导出，纯本地隐私优先。',
    tags:['Electron','原生 JS'],dl:R+'/tag/prompt-manager-v1.0.0',gh:G+'/tree/main/prompt-manager',
-   features:['集中管理所有提示词，告别「上次那个提示词去哪了」','分类 + 标签双维度组织','{{变量名}} 占位符，使用时弹表单逐个填写','一键复制到 AI 工具（无变量直接复制）','收藏置顶 + 自动记录最近使用','使用次数与最后使用时间统计','全文搜索：标题/内容/标签/分类','网格 / 列表两种视图随需切换','JSON 导入导出，跨设备同步','Ctrl/Cmd+N 新建、Ctrl/Cmd+F 搜索、Esc 关闭','本地存储，不上传任何服务器']}
+   features:['集中管理所有提示词，告别「上次那个提示词去哪了」','分类 + 标签双维度组织','{{变量名}} 占位符，使用时弹表单逐个填写','一键复制到 AI 工具（无变量直接复制）','收藏置顶 + 自动记录最近使用','使用次数与最后使用时间统计','全文搜索：标题/内容/标签/分类','网格 / 列表两种视图随需切换','JSON 导入导出，跨设备同步','Ctrl/Cmd+N 新建、Ctrl/Cmd+F 搜索、Esc 关闭','本地存储，不上传任何服务器']},
+  /* 第十六轮：补录 7 个遗漏项目，工具总数 57→64，与 GitHub 仓库实际目录完全对齐 */
+  {id:'authenticator-manager',icon:'🔑',name:'验证器管家',cat:'system',stack:'electron',ver:'v1.0.0',
+   desc:'本地两步验证（2FA/TOTP）桌面应用：系统级 DPAPI 加密存储密钥、一键复制动态验证码、倒计时圆环可视化、全局热键唤起、系统托盘常驻、otpauth:// 链接解析、AES-256-GCM 加密备份、兼容 SHA1/SHA256/SHA512。',
+   tags:['Electron','原生 JS'],gh:G+'/tree/main/authenticator-manager',
+   features:['系统级 DPAPI 加密存储，密钥绝不离开本机','一键复制 6/7/8 位动态验证码','圆环倒计时可视化，≤10s 黄色 ≤5s 红色警示','全局热键 Ctrl+Shift+A 唤起/隐藏','系统托盘常驻，失焦自动隐藏','otpauth:// 链接自动解析','AES-256-GCM 加密备份导入导出','兼容 SHA1/SHA256/SHA512 算法']},
+  {id:'image-compressor',icon:'🗜️',name:'图片压缩管家',cat:'design',stack:'electron',ver:'v1.0.0',
+   desc:'批量图片压缩工具：拖拽导入多张图片、质量滑块调节（1-100）、JPG/PNG/WebP 互转、实时预览原始与压缩后大小及节省比例、极致/均衡/高清预设、本地处理隐私安全。',
+   tags:['Electron','sharp'],gh:G+'/tree/main/image-compressor',
+   features:['拖拽导入批量压缩','质量滑块 1-100 可调','JPG / PNG / WebP 互转','实时预览节省比例','极致 / 均衡 / 高清三档预设','本地处理，图片不上传云端']},
+  {id:'launcher-manager',icon:'🔦',name:'启动器管家',cat:'efficiency',stack:'electron',ver:'v1.0.0',
+   desc:'macOS Spotlight 风格的 Windows 快速应用启动器：Alt+Space 全局唤起、自研智能模糊搜索算法（精确/单词边界/前缀/子序列匹配）、自动索引本地应用、最近使用排序置顶、全键盘操作、5 分钟增量索引。',
+   tags:['Electron','原生 JS'],gh:G+'/tree/main/launcher-manager',
+   features:['Alt+Space 全局热键唤起','智能模糊搜索（精确/单词边界/前缀/子序列）','自动索引开始菜单/桌面/用户目录应用','最近使用排序，常用应用置顶','全键盘操作 ↑↓ 选择 Enter 启动','5 分钟增量索引，内存占用低']},
+  {id:'music-player',icon:'🎧',name:'音乐播放器',cat:'efficiency',stack:'electron',ver:'v1.0.0',
+   desc:'苹果白风格本地音乐播放器：支持 MP3/WAV/OGG/FLAC/M4A/AAC 多格式、文件/文件夹/拖拽导入、播放列表持久化、动态渐变封面、顺序/随机/列表循环/单曲循环、空格暂停 Shift+←/→ 快进退、轻量纯净无网络请求。',
+   tags:['Electron','原生 JS'],gh:G+'/tree/main/music-player',
+   features:['本地音乐导入：文件/文件夹/拖拽','多格式 MP3/WAV/OGG/FLAC/M4A/AAC','播放列表自动持久化','动态渐变封面，根据歌名生成','顺序/随机/列表循环/单曲循环','空格暂停 Shift+←/→ 快进退','无广告无遥测无网络请求']},
+  {id:'quick-translate',icon:'🗣️',name:'快速翻译管家',cat:'efficiency',stack:'electron',ver:'v1.0.0',
+   desc:'系统托盘驻留的快速翻译工具：Ctrl+Shift+T 全局唤起并翻译剪贴板、双引擎翻译（Google gtx + MyMemory 备用）、20 种语言、自动检测源语言、剪贴板监听复制即翻译、历史记录 100 条。',
+   tags:['Electron','原生 JS'],gh:G+'/tree/main/quick-translate',
+   features:['Ctrl+Shift+T 全局唤起翻译剪贴板','双引擎 Google gtx + MyMemory 备用','20 种语言互译','自动检测源语言','剪贴板监听，复制即翻译','历史记录最近 100 条一键回填','托盘驻留，关闭即最小化']},
+  {id:'reading-list-manager',icon:'📚',name:'稍后阅读管家',cat:'efficiency',stack:'electron',ver:'v1.0.0',
+   desc:'桌面「稍后阅读」工具，摆脱浏览器标签爆炸：粘贴 URL 自动提取域名与 favicon、状态管理（未读/阅读中/已读/已归档）、标签分类侧栏、Ctrl+Shift+L 全局收藏剪贴板链接、搜索过滤、JSON 导入导出、系统托盘。',
+   tags:['Electron','原生 JS'],gh:G+'/tree/main/reading-list-manager',
+   features:['粘贴 URL 自动提取域名与 favicon','未读/阅读中/已读/已归档四态管理','标签分类侧栏筛选','Ctrl+Shift+L 全局热键收藏剪贴板链接','即时搜索：标题/URL/笔记/标签','多种排序：添加时间/更新时间/标题','JSON 导入导出','系统托盘常驻，本地存储']},
+  {id:'wallpaper-manager',icon:'🌄',name:'壁纸管家',cat:'design',stack:'electron',ver:'v1.0.0',
+   desc:'本地壁纸管理工具：多文件夹来源管理、网格瀑布预览缩略图、收藏最爱一键筛选、定时自动轮换（1/2/4/6/12/24 小时）、必应每日壁纸一键设置、全文搜索、系统托盘常驻快速切换。',
+   tags:['Electron','原生 JS'],gh:G+'/tree/main/wallpaper-manager',
+   features:['多文件夹来源管理，自动扫描图片','网格瀑布预览缩略图','收藏最爱，一键筛选','定时轮换（1/2/4/6/12/24 小时）','必应每日壁纸一键拉取设置','全文搜索按文件名过滤','系统托盘常驻快速切换']}
 ];
 
 /* Assign screenshot path + score placeholder to each project */
 /* shot  = 卡片尺寸小图 (480px wide, ~5KB) 用于卡片首屏 */
 /* full  = 大图尺寸 (1200px wide, ~22KB) 用于 lightbox */
 /* 仅最近新增的项目标记「新」徽标，保持徽标稀缺性与视觉指引价值 */
-var NEW_IDS = ['diary-manager','system-monitor','prompt-manager'];
+/* 第十六轮：新徽标刷新为本次补录的 7 个项目，让用户一眼看到新收录工具 */
+var NEW_IDS = ['authenticator-manager','image-compressor','launcher-manager','music-player','quick-translate','reading-list-manager','wallpaper-manager'];
 PROJECTS.forEach(function(p){
   p.shot = 'assets/img/' + p.id + '.webp';
   p.full = 'assets/img/' + p.id + '-full.webp';
@@ -316,7 +346,6 @@ function cardHTML(p, idx, query){
     '<div class="card__body">'+
       '<div class="card__meta">'+
         '<span class="card__stack">'+si.icon+' '+si.label+'</span>'+
-        '<span class="card__feat-count" aria-label="共 '+p.features.length+' 项功能">· '+p.features.length+' 项功能</span>'+
         newBadge+
       '</div>'+
       '<h3 class="card__title">'+titleHTML+'</h3>'+
