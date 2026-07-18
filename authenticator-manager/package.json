@@ -1,0 +1,50 @@
+{
+  "name": "authenticator-manager",
+  "version": "1.0.0",
+  "description": "苹果白风格的本地 2FA 验证器，安全存储 TOTP 密钥，一键复制动态验证码",
+  "main": "main.js",
+  "author": "youqu",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "test": "node test/totp.test.js",
+    "build": "electron-builder --win portable --x64",
+    "build:dir": "electron-builder --win --x64 --dir"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0",
+    "jsqr": "^1.4.6",
+    "otpauth": "^9.2.0",
+    "qrcode": "^1.5.3"
+  },
+  "build": {
+    "appId": "com.youqu.authenticator",
+    "productName": "验证器",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**",
+      "build/**",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    }
+  }
+}
