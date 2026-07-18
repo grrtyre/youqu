@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>稍后阅读管理器 - 预览</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- 与 index.html 完全一致的结构，仅用于截图预览 -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="app-brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M4 5.5C4 4.67 4.67 4 5.5 4h13c.83 0 1.5.67 1.5 1.5v13c0 .83-.67 1.5-1.5 1.5H8l-4 4V5.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M8 9h8M8 12h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>稍后阅读</h1>
+          <span class="brand-sub">Reading List Manager</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-center">
+      <div class="search-box">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M20 20l-3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <input type="text" id="searchInput" placeholder="搜索标题、URL、标签或笔记..." autocomplete="off" />
+        <button class="search-clear" id="searchClear" aria-label="清除" hidden>×</button>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn btn-ghost" id="importBtn" title="导入">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 4v10m0 0l-4-4m4 4l4-4M5 19h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>导入</span>
+      </button>
+      <button class="btn btn-ghost" id="exportBtn" title="导出">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 14V4m0 0L8 8m4-4l4 4M5 19h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>导出</span>
+      </button>
+      <button class="btn btn-primary" id="addBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span>添加文章</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">状态</h3>
+        <ul class="filter-list" id="statusFilter">
+          <li class="filter-item active" data-filter="status" data-value="all">
+            <span class="filter-icon">●</span>
+            <span class="filter-label">全部</span>
+            <span class="filter-count" data-count="all">0</span>
+          </li>
+          <li class="filter-item" data-filter="status" data-value="unread">
+            <span class="filter-icon status-unread">●</span>
+            <span class="filter-label">未读</span>
+            <span class="filter-count" data-count="unread">0</span>
+          </li>
+          <li class="filter-item" data-filter="status" data-value="reading">
+            <span class="filter-icon status-reading">●</span>
+            <span class="filter-label">阅读中</span>
+            <span class="filter-count" data-count="reading">0</span>
+          </li>
+          <li class="filter-item" data-filter="status" data-value="read">
+            <span class="filter-icon status-read">●</span>
+            <span class="filter-label">已读</span>
+            <span class="filter-count" data-count="read">0</span>
+          </li>
+          <li class="filter-item" data-filter="status" data-value="archived">
+            <span class="filter-icon status-archived">●</span>
+            <span class="filter-label">已归档</span>
+            <span class="filter-count" data-count="archived">0</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">标签</h3>
+        <ul class="filter-list" id="tagFilter">
+          <li class="filter-item active" data-filter="tag" data-value="all">
+            <span class="filter-label">全部标签</span>
+          </li>
+        </ul>
+        <div class="empty-tags" id="emptyTags" hidden>暂无标签</div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="stats-card">
+          <div class="stat-row">
+            <span>共</span><strong id="statTotal">0</strong><span>篇</span>
+          </div>
+          <div class="stat-row">
+            <span>未读</span><strong id="statUnread">0</strong><span>篇</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <section class="content">
+      <div class="content-toolbar">
+        <div class="result-info">
+          <span id="resultCount">0 篇文章</span>
+        </div>
+        <div class="toolbar-actions">
+          <select id="sortBy" class="select-control" title="排序方式">
+            <option value="createdAt:desc">添加时间 ↓</option>
+            <option value="createdAt:asc">添加时间 ↑</option>
+            <option value="updatedAt:desc">更新时间 ↓</option>
+            <option value="updatedAt:asc">更新时间 ↑</option>
+            <option value="title:asc">标题 A-Z</option>
+            <option value="title:desc">标题 Z-A</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="article-list" id="articleList"></div>
+
+      <div class="empty-state" id="emptyState" hidden>
+        <div class="empty-icon">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+            <path d="M4 5.5C4 4.67 4.67 4 5.5 4h13c.83 0 1.5.67 1.5 1.5v13c0 .83-.67 1.5-1.5 1.5H8l-4 4V5.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3 class="empty-title">还没有收藏任何文章</h3>
+        <p class="empty-desc">把想稍后读的链接添加进来吧<br/>或按 <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd> 从剪贴板快速添加</p>
+        <button class="btn btn-primary" id="emptyAddBtn">添加第一篇文章</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="articleModal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-content">
+      <header class="modal-header">
+        <h2 id="modalTitle">添加文章</h2>
+        <button class="modal-close" data-close aria-label="关闭">×</button>
+      </header>
+      <form id="articleForm">
+        <input type="hidden" id="articleId" />
+        <div class="form-group">
+          <label for="inputUrl">URL <span class="required">*</span></label>
+          <input type="url" id="inputUrl" placeholder="https://example.com/article" required />
+          <div class="form-hint">粘贴完整网址，支持 http/https</div>
+        </div>
+        <div class="form-group">
+          <label for="inputTitle">标题</label>
+          <input type="text" id="inputTitle" placeholder="（可选）留空将使用域名" />
+        </div>
+        <div class="form-group">
+          <label for="inputTags">标签</label>
+          <input type="text" id="inputTags" placeholder="用逗号或空格分隔多个标签" />
+          <div class="form-hint">例如：技术, 设计, 产品</div>
+        </div>
+        <div class="form-group">
+          <label for="inputNotes">笔记</label>
+          <textarea id="inputNotes" rows="3" placeholder="（可选）记录为什么收藏这篇文章..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="inputStatus">状态</label>
+          <select id="inputStatus" class="select-control">
+            <option value="unread">未读</option>
+            <option value="reading">阅读中</option>
+            <option value="read">已读</option>
+            <option value="archived">已归档</option>
+          </select>
+        </div>
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-close>取消</button>
+          <button type="submit" class="btn btn-primary" id="saveBtn">保存</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+  <input type="file" id="importFile" accept=".json" hidden />
+
+  <!-- 预览用 mock 数据：模拟主进程 preload 注入的 window.api -->
+  <script>
+    // 预览模式：注入样例数据，让 app.js 能直接渲染
+    const now = Date.now();
+    const MIN = 60 * 1000;
+    const HOUR = 60 * MIN;
+    const DAY = 24 * HOUR;
+
+    const SAMPLE_ARTICLES = [
+      {
+        id: 's1',
+        url: 'https://zhuanlan.zhihu.com/p/685423981',
+        title: '深入理解 JavaScript 异步编程：Promise、async/await 与事件循环',
+        notes: '想详细了解事件循环机制，里面关于 macrotask 和 microtask 的部分讲得很好。',
+        tags: ['前端', 'JavaScript', '编程'],
+        status: 'unread',
+        createdAt: now - 2 * HOUR,
+        updatedAt: now - 2 * HOUR,
+        readAt: null
+      },
+      {
+        id: 's2',
+        url: 'https://www.ruanyifeng.com/blog/2026/07/weekly-issue-312.html',
+        title: '科技爱好者周刊（第 312 期）：AI 编程助手的下半场',
+        notes: '',
+        tags: ['资讯', '周刊'],
+        status: 'unread',
+        createdAt: now - 5 * HOUR,
+        updatedAt: now - 5 * HOUR,
+        readAt: null
+      },
+      {
+        id: 's3',
+        url: 'https://sspai.com/post/97213',
+        title: '我用 30 天把工作流换成了 Apple 生态：效率翻倍的真实复盘',
+        notes: '作者提到的 Shortcuts + 提醒事项的组合思路值得借鉴。',
+        tags: ['效率', 'Apple', '工作流'],
+        status: 'reading',
+        createdAt: now - 1 * DAY,
+        updatedAt: now - 30 * MIN,
+        readAt: null
+      },
+      {
+        id: 's4',
+        url: 'https://github.com/anthropics/anthropic-cookbook',
+        title: 'anthropic-cookbook - 一系列使用 Claude API 的实用指南与代码示例',
+        notes: '',
+        tags: ['GitHub', 'AI', '编程'],
+        status: 'read',
+        createdAt: now - 3 * DAY,
+        updatedAt: now - 2 * DAY,
+        readAt: now - 2 * DAY
+      },
+      {
+        id: 's5',
+        url: 'https://medium.com/@designweekly/design-systems-in-2026-a-practical-guide-8e4f3a1b2c3',
+        title: 'Design Systems in 2026: A Practical Guide for Product Teams',
+        notes: '英文文章，需要细读。关于设计 token 与组件 API 的部分很有启发。',
+        tags: ['设计', '英文'],
+        status: 'reading',
+        createdAt: now - 4 * DAY,
+        updatedAt: now - 6 * HOUR,
+        readAt: null
+      },
+      {
+        id: 's6',
+        url: 'https://www.bilibili.com/video/BV1xx411c7mY',
+        title: '【硬核科普】SSD 固态硬盘到底是怎么工作的？',
+        notes: '',
+        tags: ['硬件', '科普'],
+        status: 'archived',
+        createdAt: now - 10 * DAY,
+        updatedAt: now - 8 * DAY,
+        readAt: now - 8 * DAY
+      }
+    ];
+
+    window.STATUS = { UNREAD: 'unread', READING: 'reading', READ: 'read', ARCHIVED: 'archived' };
+    window.STATUS_LABELS = { unread: '未读', reading: '阅读中', read: '已读', archived: '已归档' };
+    window.api = {
+      list: async () => SAMPLE_ARTICLES,
+      add: async () => ({ ok: false, error: '预览模式不可写' }),
+      update: async () => ({ ok: false, error: '预览模式不可写' }),
+      remove: async () => ({ ok: false, error: '预览模式不可写' }),
+      stats: async () => ({}),
+      tags: async () => ({}),
+      exportData: async () => '{}',
+      importData: async () => ({ ok: false }),
+      openExternal: async () => ({ ok: false }),
+      onArticleAddedFromClipboard: () => () => {},
+      onArticleAlreadyExists: () => () => {},
+      onClipboardNotUrl: () => () => {}
+    };
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>

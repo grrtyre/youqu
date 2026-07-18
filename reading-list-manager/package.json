@@ -1,0 +1,45 @@
+{
+  "name": "reading-list-manager",
+  "version": "1.0.0",
+  "description": "稍后阅读管理器 - 收集、整理、追踪你想要稍后阅读的文章",
+  "main": "src/main.js",
+  "author": "grrtyre",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/",
+    "build": "electron-builder --win",
+    "build:portable": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.grrtyre.reading-list-manager",
+    "productName": "稍后阅读管理器",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "src/assets/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "稍后阅读管理器"
+    },
+    "portable": {
+      "artifactName": "稍后阅读管理器-Portable-${version}.exe"
+    },
+    "electronDownload": {
+      "mirror": "https://npmmirror.com/mirrors/electron/"
+    }
+  }
+}
