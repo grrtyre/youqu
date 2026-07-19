@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; media-src 'self' data: blob:;" />
+  <title>语音备忘录</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- 顶部拖拽区 + 标题 -->
+  <header class="titlebar">
+    <div class="drag-region">
+      <div class="title-text">语音备忘录</div>
+    </div>
+    <div class="title-actions">
+      <button class="icon-btn" id="openDirBtn" title="打开录音目录">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- 录音控制区 -->
+    <section class="record-section">
+      <div class="timer" id="timer">00:00</div>
+      <div class="wave" id="wave">
+        <!-- 动态柱状由 JS 注入 -->
+      </div>
+      <div class="record-controls">
+        <button id="recordBtn" class="record-btn" title="开始/停止录音">
+          <span class="record-dot"></span>
+        </button>
+        <div class="record-hint" id="recordHint">点击开始录音</div>
+      </div>
+    </section>
+
+    <!-- 搜索栏 -->
+    <section class="search-section">
+      <div class="search-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="searchInput" type="text" placeholder="搜索录音标题..." />
+      </div>
+      <div class="list-caption">
+        <span class="caption-label">全部录音</span>
+        <span class="count" id="count">0 条</span>
+      </div>
+    </section>
+
+    <!-- 录音列表 -->
+    <section class="list-section">
+      <div class="list" id="list">
+        <!-- JS 注入 -->
+      </div>
+      <div class="empty" id="empty">
+        <div class="empty-icon">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+        </div>
+        <div class="empty-text">还没有录音</div>
+        <div class="empty-sub">点击上方红色按钮开始你的第一条录音</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
