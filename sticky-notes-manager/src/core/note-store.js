@@ -42,7 +42,8 @@ function createNote(data) {
     category: data.category && CATEGORIES.includes(data.category) ? data.category : '其他',
     pinned: !!data.pinned,
     createdAt: data.createdAt || now,
-    updatedAt: now
+    // 保留导入/恢复数据中的原始 updatedAt；新建便签使用 now
+    updatedAt: typeof data.updatedAt === 'number' && data.updatedAt > 0 ? data.updatedAt : now
   };
 }
 
@@ -283,10 +284,13 @@ function importNotes(jsonStr, existingNotes) {
   if (!Array.isArray(data.notes)) {
     throw new Error('无效的便签数据格式');
   }
-  // 合并导入：保留已有便签，新增导入便签（重新生成 ID 避免冲突）
+  // 合并导入：保留已有便签，新增导入便签（重新生成 ID 避免冲突，保留原 updatedAt 时间戳）
   const imported = data.notes.map(n => createNote({
     ...n,
-    id: undefined // 重新生成 ID
+    id: undefined, // 重新生成 ID
+    // 保留原 createdAt / updatedAt，避免导入后所有便签显示「刚刚」
+    createdAt: n.createdAt,
+    updatedAt: n.updatedAt
   }));
   return [...existingNotes, ...imported];
 }
