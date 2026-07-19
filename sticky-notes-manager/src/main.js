@@ -48,7 +48,10 @@ function createWindow() {
     if (!app.isQuitting) {
       e.preventDefault();
       mainWindow.hide();
-      app.dock && app.dock && app.dock.hide();
+      // macOS 隐藏 Dock 图标（Windows/Linux 无 dock API）
+      if (app.dock && typeof app.dock.hide === 'function') {
+        app.dock.hide();
+      }
     }
   });
 
@@ -75,7 +78,7 @@ function createTray() {
   const contextMenu = Menu.buildFromTemplate([
     {
       label: '新建便签',
-      accelerator: 'CmdOrCtrl+N',
+      accelerator: 'CommandOrControl+Alt+N',
       click: () => {
         if (mainWindow) {
           if (!mainWindow.isVisible()) {
@@ -88,6 +91,7 @@ function createTray() {
     },
     {
       label: '显示主窗口',
+      accelerator: 'CommandOrControl+Alt+S',
       click: () => {
         if (mainWindow) {
           if (!mainWindow.isVisible()) {
