@@ -1,0 +1,4 @@
+customtkinter>=6.0.0
+pystray>=0.19.5
+keyboard>=0.13.5
+pillow>=11.0.0
