@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;" />
+  <title>房贷计算器</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect x="2" y="2" width="24" height="24" rx="6" fill="#007aff"/>
+            <path d="M14 7L20 12V20H16V15H12V20H8V12L14 7Z" fill="white"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>房贷计算器</h1>
+          <span class="brand-sub">Mortgage Manager · 精准测算，明明白白还款</span>
+        </div>
+      </div>
+      <nav class="tabs" role="tablist">
+        <button class="tab active" data-tab="commercial" role="tab">商业贷款</button>
+        <button class="tab" data-tab="fund" role="tab">公积金贷款</button>
+        <button class="tab" data-tab="combined" role="tab">组合贷款</button>
+        <button class="tab" data-tab="prepay" role="tab">提前还款</button>
+      </nav>
+    </header>
+
+    <main class="main">
+      <section class="panel form-panel" aria-label="贷款参数">
+        <div class="panel-head">
+          <h2>贷款参数</h2>
+          <span class="panel-sub" id="form-hint">填写贷款信息后实时计算</span>
+        </div>
+
+        <form id="form-single" class="form active">
+          <div class="field">
+            <label>贷款本金 <span class="unit">万元</span></label>
+            <input type="number" id="principal" value="100" min="0" step="0.1" />
+            <div class="quick">
+              <button type="button" data-set="50">50</button>
+              <button type="button" data-set="100">100</button>
+              <button type="button" data-set="200">200</button>
+              <button type="button" data-set="500">500</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>年利率 <span class="unit">%</span></label>
+            <input type="number" id="rate" value="4.2" min="0" step="0.01" />
+            <div class="quick">
+              <button type="button" data-rate="3.1">公积金 3.10</button>
+              <button type="button" data-rate="3.6">LPR 3.60</button>
+              <button type="button" data-rate="4.2">商贷 4.20</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>贷款年限 <span class="unit">年</span></label>
+            <input type="number" id="years" value="30" min="1" max="50" step="1" />
+            <div class="quick">
+              <button type="button" data-year="10">10</button>
+              <button type="button" data-year="20">20</button>
+              <button type="button" data-year="25">25</button>
+              <button type="button" data-year="30">30</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>还款方式</label>
+            <div class="seg">
+              <button type="button" class="seg-btn active" data-method="equalInstallment">等额本息</button>
+              <button type="button" class="seg-btn" data-method="equalPrincipal">等额本金</button>
+            </div>
+          </div>
+          <div class="field-row">
+            <button type="button" id="btn-calc" class="primary">立即计算</button>
+            <button type="button" id="btn-export" class="ghost">导出 CSV</button>
+          </div>
+        </form>
+
+        <form id="form-combined" class="form">
+          <div class="field">
+            <label>商业贷款本金 <span class="unit">万元</span></label>
+            <input type="number" id="c-principal" value="70" min="0" step="0.1" />
+          </div>
+          <div class="field">
+            <label>商业贷款利率 <span class="unit">%</span></label>
+            <input type="number" id="c-rate" value="4.2" min="0" step="0.01" />
+          </div>
+          <div class="field">
+            <label>公积金贷款本金 <span class="unit">万元</span></label>
+            <input type="number" id="f-principal" value="30" min="0" step="0.1" />
+          </div>
+          <div class="field">
+            <label>公积金贷款利率 <span class="unit">%</span></label>
+            <input type="number" id="f-rate" value="3.1" min="0" step="0.01" />
+          </div>
+          <div class="field">
+            <label>贷款年限 <span class="unit">年</span></label>
+            <input type="number" id="combined-years" value="30" min="1" max="50" step="1" />
+          </div>
+          <div class="field">
+            <label>还款方式</label>
+            <div class="seg">
+              <button type="button" class="seg-btn active" data-c-method="equalInstallment">等额本息</button>
+              <button type="button" class="seg-btn" data-c-method="equalPrincipal">等额本金</button>
+            </div>
+          </div>
+          <div class="field-row">
+            <button type="button" id="btn-calc-combined" class="primary">立即计算</button>
+            <button type="button" id="btn-export-combined" class="ghost">导出 CSV</button>
+          </div>
+        </form>
+
+        <form id="form-prepay" class="form">
+          <div class="callout">
+            <p>基于「商业贷款」当前参数生成的原还款计划进行测算。</p>
+          </div>
+          <div class="field">
+            <label>提前还款期次 <span class="unit">第几期</span></label>
+            <input type="number" id="prepay-month" value="36" min="1" step="1" />
+          </div>
+          <div class="field">
+            <label>提前还款金额 <span class="unit">万元</span></label>
+            <input type="number" id="prepay-amount" value="20" min="0" step="0.1" />
+          </div>
+          <div class="field">
+            <label>处理方式</label>
+            <div class="seg">
+              <button type="button" class="seg-btn active" data-prepay-mode="reduceTerm">缩短年限</button>
+              <button type="button" class="seg-btn" data-prepay-mode="reducePayment">减少月供</button>
+            </div>
+          </div>
+          <div class="field-row">
+            <button type="button" id="btn-calc-prepay" class="primary">测算节省</button>
+            <button type="button" id="btn-export-prepay" class="ghost">导出 CSV</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel result-panel" aria-label="计算结果">
+        <div class="panel-head">
+          <h2>计算结果</h2>
+          <span class="panel-sub" id="result-sub">等待计算…</span>
+        </div>
+
+        <div class="result-cards">
+          <div class="metric metric-primary">
+            <div class="metric-label">月供</div>
+            <div class="metric-value" id="m-monthly">—</div>
+            <div class="metric-foot" id="m-monthly-foot">元 / 月</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">利息总额</div>
+            <div class="metric-value" id="m-interest">—</div>
+            <div class="metric-foot">元</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">还款总额</div>
+            <div class="metric-value" id="m-total">—</div>
+            <div class="metric-foot">元</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">利息占比</div>
+            <div class="metric-value" id="m-ratio">—</div>
+            <div class="metric-foot">%</div>
+          </div>
+        </div>
+
+        <div class="chart-block">
+          <div class="chart-head">
+            <h3>本金 / 利息构成</h3>
+            <div class="legend">
+              <span class="legend-item"><i class="dot dot-p"></i>本金</span>
+              <span class="legend-item"><i class="dot dot-i"></i>利息</span>
+            </div>
+          </div>
+          <div class="chart" id="chart-pie"></div>
+        </div>
+
+        <div class="chart-block">
+          <div class="chart-head">
+            <h3>剩余本金变化曲线</h3>
+            <div class="legend">
+              <span class="legend-item"><i class="dot dot-line"></i>剩余本金</span>
+            </div>
+          </div>
+          <div class="chart chart-line" id="chart-line"></div>
+        </div>
+
+        <div class="table-block">
+          <div class="chart-head">
+            <h3>还款明细表</h3>
+            <span class="panel-sub" id="table-sub">每年汇总，可展开查看</span>
+          </div>
+          <div class="table-wrap">
+            <table class="table" id="schedule-table">
+              <thead>
+                <tr>
+                  <th>期次</th>
+                  <th>月供（元）</th>
+                  <th>本金（元）</th>
+                  <th>利息（元）</th>
+                  <th>剩余本金（元）</th>
+                </tr>
+              </thead>
+              <tbody id="schedule-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>© youqu · 房贷计算结果仅供参考，最终以银行核算为准</span>
+      <a href="#" id="link-afdian">支持我们 → 爱发电</a>
+    </footer>
+  </div>
+
+  <script src="calc.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>
