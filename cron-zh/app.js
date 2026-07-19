@@ -361,14 +361,23 @@
       rhythmHint.textContent = '当前 ' + pad(hStart.getHours()) + ':' + pad(hStart.getMinutes()) + ' 起未来 24 小时';
 
       // ===== Y 轴刻度：3 档（max / mid / 0）让柱高有明确语义 =====
+      // 当 maxH <= 1 时（低密度），yMid 会重复 0，改为只显示 max 和 0 两档，避免重复刻度
       var yAxisEl = document.getElementById('rhythmYAxis');
       if (yAxisEl) {
         var yMax = maxH;
-        var yMid = Math.round(maxH / 2);
-        yAxisEl.innerHTML =
-          '<span>' + yMax + '</span>' +
-          '<span>' + yMid + '</span>' +
-          '<span>0</span>';
+        var yMid = Math.floor(maxH / 2);
+        if (yMid === 0 || yMid === yMax) {
+          // 极低密度：只显示 max 和 0，避免刻度重复
+          yAxisEl.innerHTML =
+            '<span>' + yMax + '</span>' +
+            '<span></span>' +
+            '<span>0</span>';
+        } else {
+          yAxisEl.innerHTML =
+            '<span>' + yMax + '</span>' +
+            '<span>' + yMid + '</span>' +
+            '<span>0</span>';
+        }
       }
 
       // ===== X 轴标签：均匀 4 等分（0/6/12/18），跨日用 +N 天标记 =====
@@ -388,11 +397,19 @@
         axisEl.innerHTML = axisHtml;
       }
 
-      // ===== 2. 最密集时段徽标 =====
+      // ===== 2. 最密集时段徽标（或低频场景的友好提示） =====
+      var totalRuns24h = runs.length;
       if (peakIdx >= 0 && peakVal > 0) {
         var peakHour = (hStart.getHours() + peakIdx) % 24;
         rhythmPeak.style.display = '';
-        rhythmPeakText.innerHTML = '最密集时段 <strong>' + pad(peakHour) + ':00–' + pad(peakHour) + ':59</strong> · ' + peakVal + ' 次执行';
+        // 低频场景（24h 内 ≤ 2 次执行）显示更柔和的提示色，避免视觉空洞
+        if (totalRuns24h <= 2) {
+          rhythmPeak.className = 'rhythm-peak rhythm-peak-low';
+          rhythmPeakText.innerHTML = '低频执行 · 未来 24 小时仅 <strong>' + totalRuns24h + '</strong> 次';
+        } else {
+          rhythmPeak.className = 'rhythm-peak';
+          rhythmPeakText.innerHTML = '最密集时段 <strong>' + pad(peakHour) + ':00–' + pad(peakHour) + ':59</strong> · ' + peakVal + ' 次执行';
+        }
       } else {
         rhythmPeak.style.display = 'none';
       }
@@ -482,7 +499,12 @@
     }
     parsedState = parsed;
     exprStatus.className = 'expr-status status-ok';
-    exprStatus.textContent = '✓ 表达式有效';
+    // 宏表达式：在状态行直接展示展开结果，让用户看清「宏 → 标准表达式」
+    if (parsed.macro && parsed.expanded) {
+      exprStatus.innerHTML = '✓ 宏 <code class="macro-name">' + escapeHtml(parsed.macro) + '</code> → <code class="macro-expanded">' + escapeHtml(parsed.expanded) + '</code>';
+    } else {
+      exprStatus.textContent = '✓ 表达式有效';
+    }
     describeEl.textContent = CronUtils.describe(expr);
     renderFields(parsed);
     renderNext(expr, parsed.hasSeconds);
@@ -855,4 +877,173 @@
       });
     }
   }
+
+  // ===== 全局键盘快捷键 =====
+  // 设计参考：Cmd/Ctrl+K 聚焦输入、Cmd/Ctrl+Enter 复制、Cmd/Ctrl+Backspace 清空、
+  //          T 切主题、? 展开快捷键帮助、L 展开语法速查、数字 1-5 切换预设标签
+  // 已有 Esc 关闭字段编辑器（保留优先级）
+  var SHORTCUTS = [
+    { key: 'mod+k',      desc: '聚焦表达式输入',      handler: function () { exprInput.focus(); exprInput.select(); } },
+    { key: 'mod+enter',  desc: '复制当前表达式',      handler: function () {
+      if (exprInput.value.trim()) { copyText(exprInput.value.trim()); }
+      else { showToast('表达式为空'); }
+    } },
+    { key: 'mod+backspace', desc: '清空表达式',      handler: function () {
+      exprInput.value = ''; update(); exprInput.focus();
+    } },
+    { key: 't',           desc: '切换主题（苹果白/暗色）', handler: function () {
+      var cur = document.documentElement.getAttribute('data-theme');
+      applyTheme(cur === 'dark' ? 'light' : 'dark');
+    } },
+    { key: 'l',           desc: '展开/折叠语法速查',  handler: function () {
+      var expanded = cheatBody.classList.toggle('open');
+      cheatToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      cheatArrow.textContent = expanded ? '⌄' : '›';
+    } },
+    { key: '?',           desc: '显示/隐藏快捷键面板',  handler: function () { toggleShortcutHint(); } },
+    { key: 'escape',      desc: '关闭快捷键面板（在面板打开时）', handler: function () {} }
+  ];
+
+  // 检测是否为 Mac（用于显示 ⌘ 还是 Ctrl）
+  var isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+  function modLabel() { return isMac ? '⌘' : 'Ctrl'; }
+
+  // 构建快捷键提示气泡 DOM（按需创建，避免污染初始 HTML）
+  var shortcutHint = null;
+  function ensureShortcutHint() {
+    if (shortcutHint) return shortcutHint;
+    shortcutHint = document.createElement('div');
+    shortcutHint.className = 'shortcut-hint';
+    shortcutHint.setAttribute('role', 'dialog');
+    shortcutHint.setAttribute('aria-label', '键盘快捷键');
+    var html = '<div class="shortcut-hint-header">' +
+                 '<span class="shortcut-hint-title">⌨ 键盘快捷键</span>' +
+                 '<button class="shortcut-hint-close" aria-label="关闭">×</button>' +
+               '</div><ul class="shortcut-hint-list">';
+    for (var i = 0; i < SHORTCUTS.length; i++) {
+      var sc = SHORTCUTS[i];
+      // 格式化按键显示
+      var parts = sc.key.split('+');
+      var display = '';
+      for (var p = 0; p < parts.length; p++) {
+        var part = parts[p];
+        if (part === 'mod') display += '<kbd>' + modLabel() + '</kbd>';
+        else if (part === 'enter') display += '<kbd>Enter</kbd>';
+        else if (part === 'backspace') display += '<kbd>⌫</kbd>';
+        else if (part === 'escape') display += '<kbd>Esc</kbd>';
+        else display += '<kbd>' + part.toUpperCase() + '</kbd>';
+        if (p < parts.length - 1) display += '<span class="plus">+</span>';
+      }
+      // escape 行为关闭面板，单独展示
+      if (sc.key === 'escape') {
+        display = '<kbd>Esc</kbd>';
+      }
+      html += '<li><span class="shortcut-desc">' + sc.desc + '</span><span class="shortcut-keys">' + display + '</span></li>';
+    }
+    html += '</ul>';
+    shortcutHint.innerHTML = html;
+
+    // 关闭按钮
+    shortcutHint.querySelector('.shortcut-hint-close').addEventListener('click', function () {
+      toggleShortcutHint(false);
+    });
+    // 点击遮罩外区域关闭
+    shortcutHint.addEventListener('click', function (e) {
+      if (e.target === shortcutHint) toggleShortcutHint(false);
+    });
+    return shortcutHint;
+  }
+
+  function toggleShortcutHint(force) {
+    var hint = ensureShortcutHint();
+    var shouldShow = (typeof force === 'boolean') ? force : (hint.style.display !== 'block');
+    if (shouldShow) {
+      hint.style.display = 'block';
+      // 焦点移到关闭按钮，便于按 Esc 关闭
+      var closeBtn = hint.querySelector('.shortcut-hint-close');
+      if (closeBtn) closeBtn.focus();
+    } else {
+      hint.style.display = 'none';
+    }
+  }
+
+  // 挂载快捷键提示气泡到 body（延迟到首次需要时才创建）
+  document.body.appendChild(ensureShortcutHint());
+  // 默认隐藏
+  shortcutHint.style.display = 'none';
+
+  // 全局键盘事件监听
+  document.addEventListener('keydown', function (e) {
+    var key = e.key;
+    // macOS 的 metaKey，其它平台是 ctrlKey
+    var mod = isMac ? e.metaKey : e.ctrlKey;
+
+    // mod+k：聚焦输入
+    if (mod && (key === 'k' || key === 'K')) {
+      e.preventDefault();
+      exprInput.focus(); exprInput.select();
+      return;
+    }
+    // mod+enter：复制
+    if (mod && key === 'Enter') {
+      e.preventDefault();
+      if (exprInput.value.trim()) { copyText(exprInput.value.trim()); }
+      else { showToast('表达式为空'); }
+      return;
+    }
+    // mod+backspace：清空
+    if (mod && key === 'Backspace') {
+      e.preventDefault();
+      exprInput.value = ''; update(); exprInput.focus();
+      return;
+    }
+
+    // 如果有输入框聚焦，单字符快捷键不触发（避免冲突输入）
+    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+    var inInput = (tag === 'input' || tag === 'textarea');
+    var editorOpen = !!fieldEditor;
+    var hintOpen = shortcutHint && shortcutHint.style.display === 'block';
+
+    // Esc：面板打开时关闭面板（编辑器优先级更高，由原 Esc 处理）
+    if (key === 'Escape' && hintOpen && !editorOpen) {
+      e.preventDefault();
+      toggleShortcutHint(false);
+      return;
+    }
+    // Esc 关闭字段编辑器（已有逻辑处理）—— 这里不重复
+
+    // 单字符快捷键：仅在非输入框聚焦、编辑器未打开时触发
+    if (inInput || editorOpen) return;
+
+    // ? 显示快捷键帮助
+    if (key === '?' || (e.shiftKey && key === '/')) {
+      e.preventDefault();
+      toggleShortcutHint();
+      return;
+    }
+    // t 切换主题
+    if (key === 't' || key === 'T') {
+      e.preventDefault();
+      var cur = document.documentElement.getAttribute('data-theme');
+      applyTheme(cur === 'dark' ? 'light' : 'dark');
+      return;
+    }
+    // l 展开/折叠语法速查
+    if (key === 'l' || key === 'L') {
+      e.preventDefault();
+      var expanded = cheatBody.classList.toggle('open');
+      cheatToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      cheatArrow.textContent = expanded ? '⌄' : '›';
+      return;
+    }
+  });
+
+  // 在页面右下角添加一个常驻的小问号按钮，引导用户发现快捷键
+  var shortcutHintBtn = document.createElement('button');
+  shortcutHintBtn.className = 'shortcut-hint-trigger';
+  shortcutHintBtn.setAttribute('aria-label', '查看键盘快捷键');
+  shortcutHintBtn.setAttribute('title', '键盘快捷键 (' + modLabel() + '+? 或 ? )');
+  shortcutHintBtn.textContent = '?';
+  shortcutHintBtn.addEventListener('click', function () { toggleShortcutHint(); });
+  document.body.appendChild(shortcutHintBtn);
 })();

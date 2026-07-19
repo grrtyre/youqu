@@ -81,10 +81,74 @@ window.CronUtils = (function () {
     return { ok: true, values: result };
   }
 
+  // ===== Cron 宏表达式（@yearly / @monthly 等） =====
+  // 宏映射到标准 5 字段 cron 表达式（参考 vixie-cron 标准）
+  var CRON_MACROS = {
+    '@yearly':   '0 0 1 1 *',   // 每年 1 月 1 日 0 点
+    '@annually':  '0 0 1 1 *',   // @yearly 别名
+    '@monthly':   '0 0 1 * *',   // 每月 1 日 0 点
+    '@weekly':    '0 0 * * 0',   // 每周日 0 点
+    '@daily':     '0 0 * * *',   // 每天 0 点
+    '@midnight':  '0 0 * * *',   // @daily 别名
+    '@hourly':    '0 * * * *'    // 每小时整点
+  };
+  // 中文别名（让中文用户更顺手）
+  var CRON_MACROS_ZH = {
+    '@每年': '@yearly',
+    '@每月': '@monthly',
+    '@每周': '@weekly',
+    '@每天': '@daily',
+    '@每时': '@hourly'
+  };
+
+  // 展开宏：返回 { ok, expanded, macro } 或 { ok: false, error }
+  // 支持递归（虽然标准宏不会递归，但安全起见限制深度）
+  function expandMacro(expr, depth) {
+    if (typeof expr !== 'string') return { ok: false, error: '表达式必须为字符串' };
+    if (typeof depth !== 'number') depth = 0;
+    if (depth > 3) return { ok: false, error: '宏嵌套过深' };
+
+    var trimmed = expr.trim();
+    if (trimmed.charAt(0) !== '@') {
+      return { ok: true, expanded: trimmed, macro: null };
+    }
+
+    // 中文别名先转英文名
+    var lower = trimmed.toLowerCase();
+    if (CRON_MACROS_ZH[trimmed]) {
+      lower = CRON_MACROS_ZH[trimmed];
+    }
+
+    if (CRON_MACROS.hasOwnProperty(lower)) {
+      var expanded = CRON_MACROS[lower];
+      // 递归展开（防止宏指向另一个宏）
+      var inner = expandMacro(expanded, depth + 1);
+      if (!inner.ok) return inner;
+      return { ok: true, expanded: inner.expanded, macro: lower };
+    }
+
+    // @reboot / @every 等暂不支持
+    if (lower === '@reboot') {
+      return { ok: false, error: '@reboot 表示启动时执行，无法用 cron 表达式表示' };
+    }
+    if (lower.indexOf('@every') === 0) {
+      return { ok: false, error: '@every <duration> 暂不支持，请用 */N 步长表达式替代' };
+    }
+
+    return { ok: false, error: '未知宏: ' + trimmed };
+  }
+
   // 解析 cron 表达式：自动识别 5 字段（标准）或 6 字段（带秒，Quartz/Spring）
+  // 也能解析 @yearly / @monthly 等宏（自动展开）
   function parseCron(expr) {
     if (typeof expr !== 'string') return { ok: false, error: '表达式必须为字符串' };
-    var parts = expr.trim().split(/\s+/);
+
+    // 宏展开
+    var macroInfo = expandMacro(expr);
+    if (!macroInfo.ok) return { ok: false, error: macroInfo.error };
+    var expanded = macroInfo.expanded;
+
+    var parts = expanded.split(/\s+/);
     if (parts.length !== 5 && parts.length !== 6) {
       return { ok: false, error: '需要5或6个字段，实际' + parts.length + '个' };
     }
@@ -136,7 +200,14 @@ window.CronUtils = (function () {
       fields.dow = dedup;
     }
 
-    return { ok: true, fields: fields, hasSeconds: hasSeconds, unspecified: unspecified };
+    return {
+      ok: true,
+      fields: fields,
+      hasSeconds: hasSeconds,
+      unspecified: unspecified,
+      macro: macroInfo.macro,        // 输入是宏时为宏名（如 '@daily'），否则 null
+      expanded: macroInfo.macro ? expanded : null  // 宏展开后的标准表达式
+    };
   }
 
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
@@ -158,9 +229,25 @@ window.CronUtils = (function () {
     return step;
   }
 
+  // 宏中文描述表
+  var MACRO_DESC_ZH = {
+    '@yearly':   '每年 1 月 1 日 00:00',
+    '@annually':  '每年 1 月 1 日 00:00',
+    '@monthly':   '每月 1 日 00:00',
+    '@weekly':    '每周日 00:00',
+    '@daily':     '每天 00:00',
+    '@midnight':  '每天 00:00（午夜）',
+    '@hourly':    '每小时整点'
+  };
+
   function describeCron(expr) {
     var parsed = parseCron(expr);
     if (!parsed.ok) return '无效表达式: ' + parsed.error;
+
+    // 宏优先返回精简描述（更友好、更直观）
+    if (parsed.macro && MACRO_DESC_ZH[parsed.macro]) {
+      return MACRO_DESC_ZH[parsed.macro];
+    }
 
     var f = parsed.fields;
     var hasSeconds = parsed.hasSeconds;
@@ -446,6 +533,9 @@ window.CronUtils = (function () {
     describe: describeCron,
     nextRun: nextRun,
     buildToken: buildToken,
-    runsInRange: runsInRange
+    runsInRange: runsInRange,
+    expandMacro: expandMacro,           // 暴露宏展开能力
+    macros: CRON_MACROS,                // 暴露宏表（只读）
+    macroDescriptions: MACRO_DESC_ZH   // 暴露宏中文描述（只读）
   };
 })();

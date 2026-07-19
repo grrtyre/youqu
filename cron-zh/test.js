@@ -370,6 +370,142 @@ eq('每10秒1分钟共6次', rr8.count, 6);
 var rr9 = C.runsInRange('*/1 * * * *', new Date('2026-07-04T10:00:00'), new Date('2026-07-04T10:00:00'), 5000);
 eq('start==end 返回0', rr9.count, 0);
 
+console.log('\n=== 15. 宏表达式 expandMacro / parse ===');
+
+// expandMacro 单元测试
+var m1 = C.expandMacro('@yearly');
+ok('@yearly 展开成功', m1.ok === true);
+eq('@yearly 展开', m1.expanded, '0 0 1 1 *');
+eq('@yearly macro', m1.macro, '@yearly');
+
+var m2 = C.expandMacro('@annually');
+eq('@annually 展开', m2.expanded, '0 0 1 1 *');
+eq('@annually macro', m2.macro, '@annually');
+
+eq('@monthly 展开', C.expandMacro('@monthly').expanded, '0 0 1 * *');
+eq('@weekly 展开',  C.expandMacro('@weekly').expanded,  '0 0 * * 0');
+eq('@daily 展开',   C.expandMacro('@daily').expanded,   '0 0 * * *');
+eq('@midnight 展开', C.expandMacro('@midnight').expanded, '0 0 * * *');
+eq('@hourly 展开',  C.expandMacro('@hourly').expanded,  '0 * * * *');
+
+// 大小写不敏感
+eq('@Yearly 大小写不敏感', C.expandMacro('@Yearly').expanded, '0 0 1 1 *');
+eq('@DAILY 大写不敏感', C.expandMacro('@DAILY').expanded, '0 0 * * *');
+
+// 中文别名
+var mzh = C.expandMacro('@每年');
+ok('@每年 中文别名成功', mzh.ok === true);
+eq('@每年 展开为 0 0 1 1 *', mzh.expanded, '0 0 1 1 *');
+eq('@每年 macro 标识', mzh.macro, '@yearly');
+eq('@每月 展开', C.expandMacro('@每月').expanded, '0 0 1 * *');
+eq('@每周 展开', C.expandMacro('@每周').expanded, '0 0 * * 0');
+eq('@每天 展开', C.expandMacro('@每天').expanded, '0 0 * * *');
+eq('@每时 展开', C.expandMacro('@每时').expanded, '0 * * * *');
+
+// 不支持的宏
+ok('@reboot 报错', !C.expandMacro('@reboot').ok);
+ok('@every 5m 报错', !C.expandMacro('@every 5m').ok);
+ok('@未知 报错', !C.expandMacro('@未知').ok);
+
+// 非宏表达式（普通 cron）
+var notMacro = C.expandMacro('0 9 * * 1-5');
+ok('普通 cron 不视为宏', notMacro.ok === true && notMacro.macro === null);
+eq('普通 cron 透传', notMacro.expanded, '0 9 * * 1-5');
+
+console.log('\n=== 16. 宏表达式 parse ===');
+
+// @yearly → 0 0 1 1 *
+var py = C.parse('@yearly');
+ok('@yearly parse ok', py.ok === true);
+eq('@yearly macro 字段', py.macro, '@yearly');
+eq('@yearly expanded', py.expanded, '0 0 1 1 *');
+eq('@yearly minute=0', py.fields.minute, [0]);
+eq('@yearly hour=0', py.fields.hour, [0]);
+eq('@yearly dom=1', py.fields.dom, [1]);
+eq('@yearly month=1', py.fields.month, [1]);
+
+// @daily → 0 0 * * *
+var pd = C.parse('@daily');
+ok('@daily parse ok', pd.ok === true);
+eq('@daily macro', pd.macro, '@daily');
+eq('@daily expanded', pd.expanded, '0 0 * * *');
+ok('@daily dom 全选', pd.fields.dom.length === 31);
+
+// @hourly → 0 * * * *
+var ph = C.parse('@hourly');
+eq('@hourly expanded', ph.expanded, '0 * * * *');
+eq('@hourly minute=0', ph.fields.minute, [0]);
+
+// 宏在 parse 中识别 hasSeconds = false
+ok('@yearly 非秒模式', py.hasSeconds === false);
+
+// 中文别名 parse
+var pzh = C.parse('@每月');
+ok('@每月 parse ok', pzh.ok === true);
+eq('@每月 macro', pzh.macro, '@monthly');
+eq('@每月 expanded', pzh.expanded, '0 0 1 * *');
+
+// @reboot 不能 parse
+ok('@reboot parse 失败', !C.parse('@reboot').ok);
+
+console.log('\n=== 17. 宏表达式 describe ===');
+
+eq('@yearly 描述', C.describe('@yearly'), '每年 1 月 1 日 00:00');
+eq('@annually 描述', C.describe('@annually'), '每年 1 月 1 日 00:00');
+eq('@monthly 描述', C.describe('@monthly'), '每月 1 日 00:00');
+eq('@weekly 描述', C.describe('@weekly'), '每周日 00:00');
+eq('@daily 描述', C.describe('@daily'), '每天 00:00');
+eq('@midnight 描述', C.describe('@midnight'), '每天 00:00（午夜）');
+eq('@hourly 描述', C.describe('@hourly'), '每小时整点');
+
+// 中文别名描述（也走 macro 路径）
+ok('@每年 描述非空', C.describe('@每年').length > 0);
+eq('@每年 描述', C.describe('@每年'), '每年 1 月 1 日 00:00');
+
+console.log('\n=== 18. 宏表达式 nextRun（与等价 cron 表达式一致） ===');
+
+// @yearly 从 2026-07-04 → 下次应是 2027-01-01 0:00
+var ry1 = C.nextRun('@yearly', new Date('2026-07-04T10:00:00'), 1);
+eq('@yearly 下一个年份', ry1[0].getFullYear(), 2027);
+eq('@yearly 下一个月份', ry1[0].getMonth(), 0); // 1月 = index 0
+eq('@yearly 下一个日期', ry1[0].getDate(), 1);
+
+// @daily 从 2026-07-04T10:00 → 下次 2026-07-05 0:00
+var ry2 = C.nextRun('@daily', new Date('2026-07-04T10:00:00'), 1);
+eq('@daily 下一个日期', ry2[0].getDate(), 5);
+eq('@daily 下一个时', ry2[0].getHours(), 0);
+eq('@daily 下一个分', ry2[0].getMinutes(), 0);
+
+// @hourly 从 2026-07-04T10:30 → 下次 2026-07-04 11:00
+var ry3 = C.nextRun('@hourly', new Date('2026-07-04T10:30:00'), 1);
+eq('@hourly 下一个时', ry3[0].getHours(), 11);
+eq('@hourly 下一个分', ry3[0].getMinutes(), 0);
+
+// @yearly 与等价 cron 0 0 1 1 * 的 nextRun 结果应该相等
+var ryEq1 = C.nextRun('@yearly', new Date('2026-07-04T10:00:00'), 3);
+var ryEq2 = C.nextRun('0 0 1 1 *', new Date('2026-07-04T10:00:00'), 3);
+eq('@yearly 与 0 0 1 1 * 等价 (count)', ryEq1.length, ryEq2.length);
+eq('@yearly 与 0 0 1 1 * 等价 (first)', ryEq1[0].getTime(), ryEq2[0].getTime());
+
+console.log('\n=== 19. 宏表达式 runsInRange（与等价 cron 一致） ===');
+
+// @daily 7 天区间内应有 7 次
+var rrM1 = C.runsInRange('@daily', new Date('2026-07-04T00:00:00'), new Date('2026-07-11T00:00:00'), 5000);
+eq('@daily 7天7次', rrM1.count, 7);
+ok('@daily 7天未触发上限', rrM1.capped === false);
+
+// @hourly 24 小时内应有 24 次
+var rrM2 = C.runsInRange('@hourly', new Date('2026-07-04T00:00:00'), new Date('2026-07-05T00:00:00'), 5000);
+eq('@hourly 24小时24次', rrM2.count, 24);
+
+// @monthly 一个月内（2026-07-04 到 2026-08-04）应有 1 次（8月1日）
+var rrM3 = C.runsInRange('@monthly', new Date('2026-07-04T00:00:00'), new Date('2026-08-04T00:00:00'), 5000);
+eq('@monthly 1个月1次', rrM3.count, 1);
+
+// 无效宏
+var rrM4 = C.runsInRange('@reboot', new Date('2026-07-04T00:00:00'), new Date('2026-07-05T00:00:00'), 100);
+eq('@reboot 无效 → count=0', rrM4.count, 0);
+
 console.log('\n=========================');
 console.log('通过: ' + pass + ' / 失败: ' + fail);
 console.log('=========================');

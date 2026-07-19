@@ -79,6 +79,7 @@
         <div class="preset-tabs">
           <button class="preset-tab active" data-mode="5">标准 5 字段</button>
           <button class="preset-tab" data-mode="6">Quartz 6 字段</button>
+          <button class="preset-tab" data-mode="macro">宏 @yearly</button>
         </div>
       </div>
       <div class="presets-group active" data-mode="5">
@@ -104,6 +105,18 @@
         <button class="preset" data-cron="30 0 0 * * ?">每天 0 点 30 秒</button>
         <button class="preset" data-cron="*/10 * * * * ?">每 10 秒</button>
         <button class="preset" data-cron="0 0 0 1 1 ?">每年 1 月 1 号</button>
+      </div>
+      <div class="presets-group" data-mode="macro">
+        <button class="preset" data-cron="@yearly">@yearly · 每年</button>
+        <button class="preset" data-cron="@annually">@annually · 每年（别名）</button>
+        <button class="preset" data-cron="@monthly">@monthly · 每月</button>
+        <button class="preset" data-cron="@weekly">@weekly · 每周</button>
+        <button class="preset" data-cron="@daily">@daily · 每天</button>
+        <button class="preset" data-cron="@midnight">@midnight · 午夜（别名）</button>
+        <button class="preset" data-cron="@hourly">@hourly · 每小时</button>
+        <button class="preset" data-cron="@每年">@每年 · 中文别名</button>
+        <button class="preset" data-cron="@每月">@每月 · 中文别名</button>
+        <button class="preset" data-cron="@每天">@每天 · 中文别名</button>
       </div>
     </section>
 
@@ -182,6 +195,19 @@
             <div class="cheat-row"><code>0 9 * * 1-5</code><span>工作日 9 点</span><em>—</em></div>
             <div class="cheat-row"><code>0 0 1 * *</code><span>每月 1 号 0 点</span><em>—</em></div>
             <div class="cheat-row"><code>0 0/2 * * *</code><span>每 2 小时整点</span><em>—</em></div>
+          </div>
+        </div>
+        <div class="cheat-section">
+          <div class="cheat-section-title">宏表达式（@）</div>
+          <div class="cheat-table">
+            <div class="cheat-row"><code>@yearly</code><span>每年 1 月 1 日 0 点</span><em>= 0 0 1 1 *</em></div>
+            <div class="cheat-row"><code>@annually</code><span>@yearly 别名</span><em>= 0 0 1 1 *</em></div>
+            <div class="cheat-row"><code>@monthly</code><span>每月 1 日 0 点</span><em>= 0 0 1 * *</em></div>
+            <div class="cheat-row"><code>@weekly</code><span>每周日 0 点</span><em>= 0 0 * * 0</em></div>
+            <div class="cheat-row"><code>@daily</code><span>每天 0 点</span><em>= 0 0 * * *</em></div>
+            <div class="cheat-row"><code>@midnight</code><span>@daily 别名</span><em>= 0 0 * * *</em></div>
+            <div class="cheat-row"><code>@hourly</code><span>每小时整点</span><em>= 0 * * * *</em></div>
+            <div class="cheat-row"><code>@每年/月/天</code><span>中文别名</span><em>同样支持</em></div>
           </div>
         </div>
       </div>

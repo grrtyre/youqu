@@ -9,7 +9,7 @@
 可视化编辑 · 中文解读 · 下次执行预览 · 预设一键填入
 
 <a href="https://cdn.jsdelivr.net/gh/grrtyre/youqu@main/cron-zh/index.html"><img alt="在线使用" src="https://img.shields.io/badge/%E5%9C%A8%E7%BA%BF%E4%BD%BF%E7%94%A8-%E7%82%B9%E6%AD%A4%E6%89%93%E5%BC%80-007aff?style=flat-square"></a>
-<img alt="version" src="https://img.shields.io/badge/%E7%89%88%E6%9C%AC-v2.3-007aff?style=flat-square">
+<img alt="version" src="https://img.shields.io/badge/%E7%89%88%E6%9C%AC-v2.4-007aff?style=flat-square">
 <img alt="license" src="https://img.shields.io/badge/License-MIT-007aff?style=flat-square">
 <img alt="stars" src="https://img.shields.io/github/stars/grrtyre/youqu?style=flat-square&color=007aff">
 
@@ -59,6 +59,8 @@
 | 最近使用 | 历史记录 | 最近 8 条，点击复用，localStorage 持久化 |
 | 语法速查 | 可折叠面板 | 特殊字符 `* , - / ?` + 取值范围 + 示例 |
 | 标准语义 | 严谨计算 | 正确处理 dom/dow OR 关系与闰年；L/# 明确报错 |
+| 宏表达式 | `@` 语法支持 | `@yearly`/`@annually`/`@monthly`/`@weekly`/`@daily`/`@midnight`/`@hourly` 自动展开；中文别名 `@每年`/`@每月`/`@每周`/`@每天`/`@每时` 同样支持；大小写不敏感；`@reboot`/`@every` 明确报错 |
+| 键盘快捷键 | 全局快捷键系统 | `⌘/Ctrl+K` 聚焦输入、`⌘/Ctrl+Enter` 复制、`⌘/Ctrl+Backspace` 清空、`T` 切主题、`L` 切语法速查、`?` 显示快捷键面板 |
 
 ## 下载与使用
 
@@ -118,7 +120,7 @@ https://cdn.jsdelivr.net/gh/grrtyre/youqu@main/cron-zh/index.html?cron=0%209%20*
 node test.js
 ```
 
-**125 个用例**覆盖：5 字段解析（步长/范围/逗号/越界/非法字符）、6 字段（秒）解析、Quartz `?` 标记（dom/dow 合法、其他字段非法）、L/# 特殊字符明确报错、中文描述（含秒描述）、下次执行计算（含 dom/dow OR 逻辑、2 月 29 日闰年、跨月跨年、6 字段精确到秒）、5/6 字段兼容性、边界健壮性、最近使用历史逻辑（增删去重/上限截断/空值过滤/清空）、buildToken 反向还原（空/全选/单值/连续范围/等差/列表/去重排序/parse 互逆验证）、**runsInRange 区间统计（每分钟/每小时/每天/工作日/上限触发/无效表达式/6 字段带秒/半开区间）**。
+**191 个用例**覆盖：5 字段解析（步长/范围/逗号/越界/非法字符）、6 字段（秒）解析、Quartz `?` 标记（dom/dow 合法、其他字段非法）、L/# 特殊字符明确报错、中文描述（含秒描述）、下次执行计算（含 dom/dow OR 逻辑、2 月 29 日闰年、跨月跨年、6 字段精确到秒）、5/6 字段兼容性、边界健壮性、最近使用历史逻辑（增删去重/上限截断/空值过滤/清空）、buildToken 反向还原（空/全选/单值/连续范围/等差/列表/去重排序/parse 互逆验证）、**runsInRange 区间统计（每分钟/每小时/每天/工作日/上限触发/无效表达式/6 字段带秒/半开区间）**、**宏表达式（@yearly/@annually/@monthly/@weekly/@daily/@midnight/@hourly 展开与等价 cron 一致性验证、中文别名、大小写不敏感、@reboot/@every 报错）**。
 
 ## 项目结构
 
@@ -147,6 +149,43 @@ cron-zh/
 > 市面缺少一个**中文原生**的可视化 cron 工具——不是翻译版，而是从中文语义出发设计的交互体验。这个项目填补这个空白。
 
 ## 更新日志
+
+### v2.4（2026-07-19）
+
+**新增功能**
+- 🎯 **Cron 宏表达式支持** —— 输入 `@yearly` / `@annually` / `@monthly` / `@weekly` / `@daily` / `@midnight` / `@hourly` 即可自动展开为标准 5 字段 cron：
+  - 输入栏直接展示「宏 → 标准表达式」状态提示（如 `@daily → 0 0 * * *`），让用户看清展开过程
+  - 大小写不敏感（`@Yearly` / `@DAILY` 同样识别）
+  - 中文别名支持：`@每年` / `@每月` / `@每周` / `@每天` / `@每时` 同样可解析
+  - `@reboot` / `@every 5m` 暂不支持，明确报错提示（不会静默接受产生错误结果）
+- ⌨️ **全局键盘快捷键系统** —— 专业用户效率翻倍：
+  - `⌘/Ctrl + K`：聚焦表达式输入框
+  - `⌘/Ctrl + Enter`：复制当前表达式
+  - `⌘/Ctrl + Backspace`：清空表达式
+  - `T`：切换主题（苹果白 ↔ 暗色）
+  - `L`：展开 / 折叠语法速查面板
+  - `?` 或 `Shift + /`：显示 / 隐藏快捷键帮助面板
+  - 右下角常驻 `?` 圆形按钮，鼠标点击也能打开快捷键面板
+  - Mac 平台自动显示 `⌘`，其它平台显示 `Ctrl`
+- 📑 **预设区新增「宏 @yearly」标签页** —— 与「标准 5 字段」「Quartz 6 字段」并列第三标签页，10 个宏预设一键填入，宏预设按钮采用虚线边框+等宽字体区分于普通预设
+- 📖 **语法速查新增「宏表达式（@）」章节** —— 列出 7 个英文宏 + 中文别名说明，含等价 cron 表达式参考
+
+**样式与交互细节**
+- 字段卡片选中态统一为「白底 + 蓝色实线边框（1px）+ 蓝文字 + 柔和阴影」，避免不同卡片间的视觉割裂感
+- 预设按钮间距收紧（gap 8 → 6、padding 9×16 → 7×13），视觉更紧凑对齐
+- 调度节奏低频场景（24h 内 ≤ 2 次执行）改用柔和蓝色「低频执行 · 未来 24 小时仅 N 次」徽标，替代橙色「最密集时段」，避免视觉突兀
+- Y 轴刻度修复：`maxH=1` 时不再显示重复的 `1, 1, 0`，改为只显示 `1, _, 0` 避免读图困惑
+- 表达式输入字号略减（27 → 23px），让中文解读区与上方标题视觉权重更平衡
+- 爱发电按钮红色饱和度降低（`#ff5b8c → #d16690`），与整体蓝色调更协调
+- 快捷键帮助气泡：右下角浮层卡片，列出 7 项快捷键 + 关闭按钮，Esc 一键关闭
+
+**测试**
+- 单元测试从 125 项扩展到 191 项，新增 66 项覆盖宏表达式：
+  - `expandMacro` 单元测试（7 个英文宏 + 大小写 + 5 个中文别名 + 3 个不支持宏 + 普通 cron 透传）
+  - `parse` 宏识别测试（`@yearly` / `@daily` / `@hourly` / `@每月` / `@reboot` 等，验证 macro / expanded 字段）
+  - `describe` 宏中文描述（7 个英文宏 + 1 个中文别名）
+  - `nextRun` 宏与等价 cron 表达式一致性验证（如 `@yearly` 与 `0 0 1 1 *` 结果完全相等）
+  - `runsInRange` 宏在区间内的执行统计（`@daily 7 天 7 次`、`@hourly 24 小时 24 次`、`@monthly 1 个月 1 次`、`@reboot 无效返回 0`）
 
 ### v2.3（2026-07-18）
 

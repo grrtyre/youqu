@@ -39,7 +39,7 @@
   --toast-bg: rgba(29, 29, 31, 0.92);
   --toast-text: #ffffff;
 
-  --afdian-color: #ff5b8c;
+  --afdian-color: #d16690;
 }
 
 /* ===== 主题变量：深色（用户主动切换时启用） ===== */
@@ -77,7 +77,7 @@
   --toast-bg: rgba(245, 245, 247, 0.95);
   --toast-text: #1d1d1f;
 
-  --afdian-color: #ff6b9d;
+  --afdian-color: #e87ba6;
 }
 
 /* ===== 基础 ===== */
@@ -170,10 +170,10 @@ body {
 }
 .ghost-btn:hover { background: var(--chip-bg-hover); transform: translateY(-1px); }
 .ghost-btn.afdian {
-  border-color: rgba(255, 91, 140, 0.3);
+  border-color: rgba(209, 102, 144, 0.3);
   color: var(--afdian-color);
 }
-.ghost-btn.afdian:hover { background: rgba(255, 91, 140, 0.08); }
+.ghost-btn.afdian:hover { background: rgba(209, 102, 144, 0.08); }
 
 .theme-toggle {
   width: 38px; height: 38px;
@@ -267,7 +267,7 @@ body {
   color: var(--text-1);
   font-family: "JetBrains Mono", "Fira Code", "SF Mono", "Cascadia Code",
                Consolas, "Courier New", monospace;
-  font-size: clamp(20px, 4vw, 27px);
+  font-size: clamp(18px, 3.2vw, 23px);
   font-weight: 600;
   letter-spacing: 1px;
   padding: 14px 18px;
@@ -377,17 +377,17 @@ body {
   text-overflow: ellipsis;
 }
 .field-box.is-active {
-  /* 白底 + 蓝色实线边框 + 蓝文字，与通配符卡片保持相同的视觉结构（白底+实线边框） */
+  /* 选中态：保持白底 + 蓝色实线边框 + 蓝文字 + 柔和阴影，与未选中卡片视觉结构一致（白底+边框） */
   background: var(--field-bg);
-  border-color: var(--field-active-border);
-  box-shadow: 0 0 0 1px var(--field-active-border);
+  border: 1px solid var(--accent);
+  box-shadow: 0 2px 6px rgba(0, 122, 255, 0.12);
 }
 .field-box.is-active .field-name { color: var(--accent); font-weight: 700; }
 .field-box.is-active .field-value { color: var(--accent); }
 /* 通配符(*)/不指定(?)卡片：保持实线边框，仅用更浅的文字色降权，避免与激活卡片风格割裂 */
-.field-box.is-wildcard .field-name { color: var(--text-3); }
-.field-box.is-wildcard .field-value { color: var(--text-3); font-weight: 500; }
-.field-box.is-wildcard .field-desc { opacity: 0.85; }
+.field-box.is-wildcard .field-name { color: var(--text-2); }
+.field-box.is-wildcard .field-value { color: var(--text-2); font-weight: 500; }
+.field-box.is-wildcard .field-desc { color: var(--text-2); opacity: 0.9; }
 
 @media (max-width: 820px) {
   .fields-grid,
@@ -428,12 +428,12 @@ body {
 .presets-group {
   display: none;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 .presets-group.active { display: flex; }
 .preset {
-  font-size: 13px;
-  padding: 9px 16px;
+  font-size: 12.5px;
+  padding: 7px 13px;
   border-radius: 999px;
   border: 1px solid var(--card-border);
   background: var(--card-bg);
@@ -441,15 +441,30 @@ body {
   cursor: pointer;
   transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
   font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.1px;
 }
 .preset:hover {
   background: var(--accent);
   color: #ffffff;
   border-color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px var(--accent-soft);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--accent-soft);
 }
 .preset:active { transform: translateY(0); }
+/* 宏预设样式：稍突出，让用户一眼看到这是宏表达式入口 */
+.presets-group[data-mode="macro"] .preset {
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 12px;
+  letter-spacing: 0;
+  border-style: dashed;
+  border-color: var(--field-border);
+}
+.presets-group[data-mode="macro"] .preset:hover {
+  border-style: solid;
+  background: var(--accent);
+  border-color: var(--accent);
+}
 
 /* ===== 模式徽标 ===== */
 .mode-badge {
@@ -689,6 +704,15 @@ body {
   font-size: 12.5px;
   color: var(--text-1);
   font-weight: 500;
+}
+/* 低频场景：柔和蓝色而非橙色，与图表蓝色调统一，避免视觉突兀 */
+.rhythm-peak-low {
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+}
+.rhythm-peak-low .rhythm-peak-icon { color: var(--accent); }
+.rhythm-peak-low .rhythm-peak-text strong {
+  color: var(--accent);
 }
 .rhythm-peak-icon {
   font-size: 13px;
@@ -1091,3 +1115,164 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(128, 128, 128, 0.3); border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(128, 128, 128, 0.5); }
+
+/* ===== 宏展示（状态行内的 @daily → 0 0 * * *） ===== */
+.expr-status .macro-name,
+.expr-status .macro-expanded {
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  margin: 0 2px;
+}
+.expr-status .macro-expanded {
+  background: var(--chip-bg);
+  color: var(--text-2);
+}
+
+/* ===== 快捷键帮助气泡（苹果白风格） ===== */
+.shortcut-hint {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 320px;
+  max-width: calc(100vw - 32px);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 16px 18px 14px;
+  z-index: 1100;
+  font-family: inherit;
+  color: var(--text-1);
+  animation: shortcutHintIn 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes shortcutHintIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.shortcut-hint-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--card-border);
+}
+.shortcut-hint-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: 0.3px;
+}
+.shortcut-hint-close {
+  width: 24px; height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.18s ease;
+  padding: 0;
+}
+.shortcut-hint-close:hover {
+  background: var(--chip-bg-hover);
+  color: var(--text-1);
+}
+.shortcut-hint-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.shortcut-hint-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+}
+.shortcut-desc {
+  color: var(--text-2);
+  flex: 1;
+}
+.shortcut-keys {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.shortcut-keys kbd {
+  font-family: "JetBrains Mono", "SF Mono", Consolas, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: var(--chip-bg);
+  color: var(--text-1);
+  border: 1px solid var(--field-border);
+  border-bottom-width: 2px;
+  line-height: 1;
+  min-width: 18px;
+  text-align: center;
+}
+.shortcut-keys .plus {
+  color: var(--text-3);
+  font-size: 11px;
+  margin: 0 1px;
+}
+
+/* 右下角常驻问号按钮 */
+.shortcut-hint-trigger {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--text-2);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  padding: 0;
+}
+.shortcut-hint-trigger:hover {
+  transform: translateY(-2px) scale(1.05);
+  color: var(--accent);
+  border-color: var(--accent-border);
+  box-shadow: 0 6px 20px var(--accent-soft);
+}
+/* 当快捷键面板打开时，隐藏触发按钮（视觉上替换为面板） */
+.shortcut-hint[style*="display: block"] ~ .shortcut-hint-trigger {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.8);
+}
+@media (max-width: 640px) {
+  .shortcut-hint {
+    left: 12px;
+    right: 12px;
+    width: auto;
+    bottom: 12px;
+  }
+  .shortcut-hint-trigger {
+    bottom: 16px;
+    right: 16px;
+  }
+}
