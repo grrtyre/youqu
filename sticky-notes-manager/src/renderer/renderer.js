@@ -47,9 +47,12 @@ let trash = [];
 let currentView = 'notes'; // 'notes' | 'trash'
 let currentCategory = '全部';
 let currentSearch = '';
+let currentSort = 'pinned-update'; // 'pinned-update' | 'update' | 'create' | 'title'
 let editingNoteId = null;
 let editingCategory = '其他';
 let editingColor = 'default';
+let lastDeletedNote = null; // 用于「撤销删除」功能
+let undoTimer = null;
 
 // DOM 元素
 const notesGrid = document.getElementById('notesGrid');
@@ -63,6 +66,8 @@ const exportBtn = document.getElementById('exportBtn');
 const trashEntry = document.getElementById('trashEntry');
 const emptyTrashBtn = document.getElementById('emptyTrashBtn');
 const sortInfo = document.getElementById('sortInfo');
+const sortSelect = document.getElementById('sortSelect');
+const sortWrapper = document.getElementById('sortWrapper');
 
 // 弹窗元素
 const modalOverlay = document.getElementById('modalOverlay');
@@ -138,9 +143,11 @@ function updateViewControls() {
     notesGrid.style.display = 'none';
     trashList.style.display = 'flex';
     emptyTrashBtn.style.display = trash.length > 0 ? 'inline-flex' : 'none';
-    sortInfo.style.display = 'none';
-    newNoteBtn.style.opacity = '0.5';
-    newNoteBtn.style.pointerEvents = 'none';
+    if (sortWrapper) sortWrapper.style.display = 'none';
+    // 回收站视图也允许新建（点击会切回便签视图并打开弹窗）
+    newNoteBtn.style.opacity = '1';
+    newNoteBtn.style.pointerEvents = 'auto';
+    newNoteBtn.title = '切回便签视图并新建（Ctrl+Alt+N）';
     searchInput.disabled = true;
     searchInput.placeholder = '回收站中不支持搜索';
     searchInput.value = '';
@@ -150,9 +157,10 @@ function updateViewControls() {
     trashList.style.display = 'none';
     notesGrid.style.display = 'grid';
     emptyTrashBtn.style.display = 'none';
-    sortInfo.style.display = 'block';
+    if (sortWrapper) sortWrapper.style.display = 'inline-flex';
     newNoteBtn.style.opacity = '1';
     newNoteBtn.style.pointerEvents = 'auto';
+    newNoteBtn.title = '';
     searchInput.disabled = false;
     searchInput.placeholder = '搜索便签...';
     // 恢复清除按钮的可见性（基于当前搜索值）
@@ -178,10 +186,25 @@ function renderNotes() {
     );
   }
 
-  // 排序：置顶优先 → 更新时间倒序
+  // 排序：根据用户选择
   filtered = [...filtered].sort((a, b) => {
-    if (a.pinned !== b.pinned) return b.pinned - a.pinned;
-    return b.updatedAt - a.updatedAt;
+    switch (currentSort) {
+      case 'update':
+        return b.updatedAt - a.updatedAt;
+      case 'create':
+        return b.createdAt - a.createdAt;
+      case 'title': {
+        const ta = (a.title || '').toLowerCase();
+        const tb = (b.title || '').toLowerCase();
+        if (ta === tb) return b.updatedAt - a.updatedAt;
+        return ta < tb ? -1 : 1;
+      }
+      case 'pinned-update':
+      default:
+        // 置顶优先 → 更新时间倒序
+        if (a.pinned !== b.pinned) return b.pinned - a.pinned;
+        return b.updatedAt - a.updatedAt;
+    }
   });
 
   // 更新标题
@@ -237,7 +260,8 @@ function renderNotes() {
     }).join('');
 
     // 绑定点击事件
-    notesGrid.querySelectorAll('.note-card').forEach(card => {
+    const cards = Array.from(notesGrid.querySelectorAll('.note-card'));
+    cards.forEach(card => {
       card.addEventListener('click', (e) => {
         // 如果点击的是置顶按钮，不打开编辑弹窗
         if (e.target.closest('.note-pin-btn')) return;
@@ -263,6 +287,32 @@ function renderNotes() {
         togglePin(btn.dataset.id);
       });
     });
+
+    // 键盘方向键导航：在便签卡片间移动焦点
+    if (cards.length > 0 && !notesGrid.dataset.keynavBound) {
+      notesGrid.dataset.keynavBound = '1';
+      notesGrid.setAttribute('tabindex', '-1');
+      notesGrid.addEventListener('keydown', (e) => {
+        if (modalOverlay.style.display === 'flex') return; // 弹窗打开时不处理
+        const focused = document.activeElement;
+        const idx = cards.indexOf(focused);
+        if (idx === -1) return;
+        let nextIdx = idx;
+        // 估算每行卡片数（基于网格宽度与卡片最小宽度）
+        const gridStyle = getComputedStyle(notesGrid);
+        const gridWidth = notesGrid.clientWidth - parseFloat(gridStyle.paddingLeft || 0) - parseFloat(gridStyle.paddingRight || 0);
+        const minCard = 248;
+        const gap = 20;
+        const perRow = Math.max(1, Math.floor((gridWidth + gap) / (minCard + gap)));
+        if (e.key === 'ArrowRight') nextIdx = Math.min(idx + 1, cards.length - 1);
+        else if (e.key === 'ArrowLeft') nextIdx = Math.max(idx - 1, 0);
+        else if (e.key === 'ArrowDown') nextIdx = Math.min(idx + perRow, cards.length - 1);
+        else if (e.key === 'ArrowUp') nextIdx = Math.max(idx - perRow, 0);
+        else return;
+        e.preventDefault();
+        cards[nextIdx].focus();
+      });
+    }
   }
 }
 
@@ -492,7 +542,7 @@ async function saveNote() {
   showToast(wasUpdating ? '已保存' : '已创建');
 }
 
-// === 删除便签（移入回收站） ===
+// === 删除便签（移入回收站，5 秒内可撤销） ===
 async function deleteNote() {
   if (!editingNoteId) return;
   const note = notes.find(n => n.id === editingNoteId);
@@ -504,7 +554,29 @@ async function deleteNote() {
   await window.notesAPI.save(notes, trash);
   closeModal(true);
   render();
-  showToast('已移入回收站');
+  // 5 秒内可撤销
+  lastDeletedNote = note ? { ...note } : null;
+  showToast('已移入回收站', { undo: true, undoFn: undoDelete });
+  if (undoTimer) clearTimeout(undoTimer);
+  undoTimer = setTimeout(() => { lastDeletedNote = null; undoTimer = null; }, 5000);
+}
+
+// 撤销删除：把刚移入回收站的便签恢复到 notes
+async function undoDelete() {
+  if (!lastDeletedNote) {
+    showToast('撤销窗口已过期');
+    return;
+  }
+  const noteToRestore = lastDeletedNote;
+  // 从 trash 中移除
+  trash = trash.filter(n => n.id !== noteToRestore.id);
+  // 加回 notes（保持原 id / 原字段，仅更新 updatedAt）
+  notes.unshift({ ...noteToRestore, updatedAt: Date.now() });
+  await window.notesAPI.save(notes, trash);
+  lastDeletedNote = null;
+  if (undoTimer) { clearTimeout(undoTimer); undoTimer = null; }
+  render();
+  showToast('已撤销删除');
 }
 
 // === 切换置顶 ===
@@ -569,16 +641,35 @@ async function emptyTrash() {
   showToast('回收站已清空');
 }
 
-// === Toast ===
+// === Toast（支持可选的撤销按钮） ===
 let toastTimer = null;
-function showToast(msg) {
+function showToast(msg, opts) {
+  opts = opts || {};
   const toast = document.getElementById('toast');
-  toast.textContent = msg;
-  toast.style.display = 'block';
+  // 构建 toast 内容：消息 + 可选撤销按钮
+  toast.textContent = '';
+  const msgSpan = document.createElement('span');
+  msgSpan.textContent = msg;
+  toast.appendChild(msgSpan);
+  if (opts.undo && typeof opts.undoFn === 'function') {
+    const undoBtn = document.createElement('button');
+    undoBtn.className = 'toast-undo';
+    undoBtn.textContent = '撤销';
+    undoBtn.setAttribute('aria-label', '撤销刚才的操作');
+    undoBtn.addEventListener('click', () => {
+      if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
+      toast.style.display = 'none';
+      toast.innerHTML = '';
+      opts.undoFn();
+    });
+    toast.appendChild(undoBtn);
+  }
+  toast.style.display = 'flex';
   if (toastTimer) clearTimeout(toastTimer);
   toastTimer = setTimeout(() => {
     toast.style.display = 'none';
-  }, 2000);
+    toast.innerHTML = '';
+  }, opts.undo ? 5000 : 2000);
 }
 
 // === 自定义确认弹窗（Promise，替代原生 confirm，保持苹果白风格一致） ===
@@ -636,9 +727,26 @@ document.addEventListener('keydown', (e) => {
 
 // === 事件绑定 ===
 newNoteBtn.addEventListener('click', () => {
+  // 回收站视图下点击新建：先切回便签视图
+  if (currentView === 'trash') {
+    document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
+    const allItem = document.querySelector('.category-item[data-category="全部"]');
+    if (allItem) allItem.classList.add('active');
+    currentCategory = '全部';
+    currentView = 'notes';
+    render();
+  }
   editingNoteId = null;
   openEditModal(null);
 });
+
+// 排序选择器变更
+if (sortSelect) {
+  sortSelect.addEventListener('change', (e) => {
+    currentSort = e.target.value;
+    render();
+  });
+}
 
 searchInput.addEventListener('input', (e) => {
   if (currentView === 'trash') return; // 回收站不支持搜索
@@ -746,16 +854,33 @@ importBtn.addEventListener('click', async () => {
     notes = result.notes;
     currentView = 'notes';
     render();
-    showToast('导入成功');
+    showToast('导入成功，共 ' + notes.length + ' 条便签');
   } else if (result.error) {
-    showToast('导入失败：' + result.error);
+    // 友好的错误文案：技术细节打印到控制台
+    console.error('导入失败详情：', result.error);
+    let friendly = '导入失败';
+    if (/unexpected token/i.test(result.error)) friendly = '文件格式不正确，请选择便签管家导出的 JSON 文件';
+    else if (/invalid/i.test(result.error)) friendly = '文件内容无效，请确认是便签管家导出的文件';
+    else friendly = '导入失败：' + result.error;
+    showToast(friendly);
   }
 });
 
 exportBtn.addEventListener('click', async () => {
+  if (notes.length === 0) {
+    showToast('当前没有便签可导出');
+    return;
+  }
   const result = await window.notesAPI.exportNotes(notes);
   if (result.success) {
-    showToast('已导出到 ' + result.path);
+    // 路径过长时只显示文件名，避免 toast 撑破
+    const p = result.path || '';
+    const sep = p.includes('\\') ? '\\' : '/';
+    const parts = p.split(sep).filter(Boolean);
+    const fileName = parts.length > 0 ? parts[parts.length - 1] : p;
+    showToast('已导出 ' + fileName);
+  } else {
+    showToast('已取消导出');
   }
 });
 
