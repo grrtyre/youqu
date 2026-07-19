@@ -210,6 +210,25 @@ input { font-family: inherit; }
 }
 .icon-btn.primary:hover { background: var(--accent-hover); }
 .icon-btn:active { transform: translateY(0); }
+/* 复制成功态：图标按钮短暂变绿带 ✓ 反馈 */
+.icon-btn.copied {
+  color: #fff !important;
+  background: var(--success) !important;
+  border-color: var(--success) !important;
+  box-shadow: 0 2px 8px rgba(52, 199, 89, 0.35) !important;
+  transform: translateY(0) !important;
+}
+/* 复制按钮禁用态（密码未生成时） */
+.icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+  background: var(--surface-2);
+  color: var(--text-3);
+  border-color: var(--border);
+  box-shadow: none;
+  transform: none !important;
+}
 
 .strength-meter { display: flex; flex-direction: column; gap: 8px; }
 
@@ -242,11 +261,15 @@ input { font-family: inherit; }
   align-items: center;
   font-size: 12px;
   color: var(--text-2);
+  /* 让标签与强度条左对齐、提示与强度条右对齐，避免 bits 文字飘空 */
+  align-self: stretch;
 }
 .strength-info span:first-child {
   font-weight: 700;
   color: var(--text);
   font-size: 13px;
+  display: inline-flex;
+  align-items: center;
 }
 .strength-hint {
   font-size: 11px;
@@ -254,6 +277,9 @@ input { font-family: inherit; }
   font-variant-numeric: tabular-nums;
   font-family: "SF Mono", "JetBrains Mono", "Cascadia Code", "Menlo", "Consolas", monospace;
   letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  text-align: right;
 }
 .strength-info span:first-child.c-s1 { color: #d70015; }
 .strength-info span:first-child.c-s2 { color: #e0531a; }
@@ -716,9 +742,17 @@ input { font-family: inherit; }
   border-radius: 6px;
   font-weight: 500;
   transition: var(--transition);
+  min-width: 36px;
+  text-align: center;
 }
 .batch-item-copy:hover, .copy-mini:hover { background: var(--accent); color: #fff; }
 .batch-item-copy:focus-visible, .copy-mini:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* 小复制按钮成功态：变绿 + ✓ */
+.copy-mini.copied {
+  background: var(--success) !important;
+  color: #fff !important;
+  font-weight: 700;
+}
 
 .ghost-btn.danger.armed {
   background: rgba(255, 59, 48, 0.12);
@@ -794,13 +828,15 @@ input { font-family: inherit; }
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 20px;
+  padding: 9px 20px;
   font-size: 12px;
   color: var(--text);
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border-top: 1px solid var(--border);
+  /* 加强顶部视觉分隔：从 1px 浅边升级为 1px 实边 + 内阴影 */
+  border-top: 1px solid var(--border-strong);
+  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.02);
   flex-shrink: 0;
 }
 

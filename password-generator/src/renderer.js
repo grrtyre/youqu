@@ -77,6 +77,30 @@ function showToast(msg) {
 
 function setStatus(text) { $('statusText').textContent = text; }
 
+// ============ 复制按钮短暂视觉反馈（✓ 闪现 900ms）============
+// 在按钮上临时叠加 .copied 类，切换图标为 ✓，900ms 后恢复原 SVG
+function flashCopyFeedback(btn) {
+  if (!btn) return;
+  const original = btn.innerHTML;
+  btn.classList.add('copied');
+  btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>';
+  setTimeout(() => {
+    btn.classList.remove('copied');
+    btn.innerHTML = original;
+  }, 900);
+}
+
+// ============ 复制按钮 disabled 态管理 ============
+// 密码/口令未生成时，复制按钮置 disabled 视觉禁用
+function syncCopyDisabled() {
+  const pwdText = $('pwdDisplay').textContent;
+  const pwdEmpty = !pwdText || pwdText === '点击生成开始';
+  $('copyPwd').disabled = pwdEmpty;
+  const phraseText = $('phraseDisplay').textContent;
+  const phraseEmpty = !phraseText || phraseText === '点击生成开始';
+  $('copyPhrase').disabled = phraseEmpty;
+}
+
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -85,8 +109,23 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     $('panel-' + target).classList.add('active');
     if (target === 'history') renderHistory();
+    // 切换 Tab 时复位清空历史的 armed 态，避免跨 Tab 来回误确认
+    resetClearHistoryArmed();
   });
 });
+
+// ============ 清空历史 armed 态复位（切换 Tab / 点击其他区域时调用）============
+function resetClearHistoryArmed() {
+  if (clearHistoryArmed) {
+    clearHistoryArmed = false;
+    clearTimeout(clearHistoryTimer);
+    const btn = $('clearHistory');
+    if (btn) {
+      btn.textContent = '清空历史';
+      btn.classList.remove('armed');
+    }
+  }
+}
 
 function clampInt(v, dft, min, max) {
   let n = parseInt(v);
@@ -195,11 +234,18 @@ async function genPassword(silent) {
   const opts = getPwdOpts();
   if (!opts.lower && !opts.upper && !opts.digits && !opts.symbols) {
     if (!silent) showToast('至少选择一种字符类型');
+    else setStatus('请至少选择一种字符类型');
     return;
+  }
+  // 弱密码配置警告：长度<8 或 仅数字 + 长度<10 视为高风险配置
+  if (!silent) {
+    const warn = weakConfigWarning(opts);
+    if (warn) showToast(warn);
   }
   if (!silent) setStatus('生成中…');
   const pwd = await window.pg.generate(opts);
   renderPasswordDisplay(pwd);
+  syncCopyDisabled();
   if (!silent) addHistory(pwd, '密码');
   const result = await window.pg.evaluate(pwd);
   updateStrengthMeter('strengthFill', 'strengthLabel', null, result);
@@ -207,6 +253,15 @@ async function genPassword(silent) {
   if (hint) hint.textContent = result.entropy > 0 ? `熵 ${result.entropy} bits · 破解 ${estimateCrackTime(result.entropy)}` : '实时评估';
   updatePwdMeta(pwd, result);
   if (!silent) setStatus('已生成');
+  else setStatus('就绪');
+}
+
+// 弱密码配置警告：返回非空字符串表示有警告
+function weakConfigWarning(opts) {
+  if (opts.length < 8) return '当前长度<8，密码强度极弱，仅用于PIN等场景';
+  const onlyDigits = opts.digits && !opts.lower && !opts.upper && !opts.symbols;
+  if (onlyDigits && opts.length < 10) return '纯数字+短长度易被暴力破解，建议加字母/符号或增加长度';
+  return '';
 }
 
 function updateStrengthMeter(fillId, labelId, entropyId, result) {
@@ -223,17 +278,39 @@ function updateStrengthMeter(fillId, labelId, entropyId, result) {
 
 $('genBtn').addEventListener('click', genPassword);
 $('regenPwd').addEventListener('click', genPassword);
-$('copyPwd').addEventListener('click', async () => {
+$('copyPwd').addEventListener('click', async (e) => {
   const text = $('pwdDisplay').textContent;
-  if (!text || text === '点击生成开始') { showToast('暂无内容'); return; }
+  if (!text || text === '点击生成开始') { showToast('暂无内容可复制'); return; }
   await window.pg.copy(text);
-  showToast('已复制到剪贴板');
+  flashCopyFeedback(e.currentTarget);
+  showToast('已复制 ' + text.length + ' 位');
 });
 
-$('lengthSlider').addEventListener('input', (e) => { $('lengthInput').value = e.target.value; updateSliderFill(e.target); });
+// ============ 滑块拖动期间防抖刷新密码（150ms 节流）============
+// 解决：拖动滑块时数字输入框已变，但密码展示区/强度条/元信息仍显示旧密码的视觉错位
+let sliderPreviewTimer = null;
+function debouncedGenPassword() {
+  clearTimeout(sliderPreviewTimer);
+  sliderPreviewTimer = setTimeout(() => genPassword(true), 150);
+}
+
+$('lengthSlider').addEventListener('input', (e) => {
+  $('lengthInput').value = e.target.value;
+  updateSliderFill(e.target);
+  debouncedGenPassword();
+});
 $('lengthSlider').addEventListener('change', () => { genPassword(true); });
-$('lengthInput').addEventListener('input', (e) => { syncNumberInput(e.target, $('lengthSlider'), 4, 64, 16); });
+$('lengthInput').addEventListener('input', (e) => { syncNumberInput(e.target, $('lengthSlider'), 4, 64, 16); debouncedGenPassword(); });
 $('lengthInput').addEventListener('change', (e) => { syncNumberInput(e.target, $('lengthSlider'), 4, 64, 16); genPassword(true); });
+// 长度输入框 Enter 键直接生成（非静默，写入历史 + 状态栏更新）
+$('lengthInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); genPassword(); }
+});
+
+// ============ 字符类型勾选改变后自动重新生成（与滑块 change 行为一致）============
+['chkUpper','chkLower','chkDigits','chkSymbols','chkExcludeAmb'].forEach(id => {
+  $(id).addEventListener('change', () => genPassword(true));
+});
 
 function updateSliderFill(slider) {
   const min = parseFloat(slider.min) || 0;
@@ -259,30 +336,43 @@ async function genPassphrase(silent) {
   const display = $('phraseDisplay');
   display.textContent = phrase;
   display.classList.remove('empty');
+  syncCopyDisabled();
   if (!silent) addHistory(phrase, '口令');
   if (!silent) setStatus('已生成');
+  else setStatus('就绪');
 }
 
 $('phraseBtn').addEventListener('click', genPassphrase);
 $('regenPhrase').addEventListener('click', genPassphrase);
-$('copyPhrase').addEventListener('click', async () => {
+$('copyPhrase').addEventListener('click', async (e) => {
   const text = $('phraseDisplay').textContent;
-  if (!text || text === '点击生成开始') { showToast('暂无内容'); return; }
+  if (!text || text === '点击生成开始') { showToast('暂无内容可复制'); return; }
   await window.pg.copy(text);
-  showToast('已复制到剪贴板');
+  flashCopyFeedback(e.currentTarget);
+  showToast('已复制 ' + text.length + ' 字符');
 });
 
 $('wordSlider').addEventListener('input', (e) => { $('wordInput').value = e.target.value; updateSliderFill(e.target); });
 $('wordSlider').addEventListener('change', () => { genPassphrase(true); });
 $('wordInput').addEventListener('input', (e) => { syncNumberInput(e.target, $('wordSlider'), 3, 8, 4); });
 $('wordInput').addEventListener('change', (e) => { syncNumberInput(e.target, $('wordSlider'), 3, 8, 4); genPassphrase(true); });
+// 单词数量输入框 Enter 触发口令生成
+$('wordInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); genPassphrase(); }
+});
 
 document.querySelectorAll('.seg').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.seg').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     state.currentSeparator = btn.dataset.sep;
+    // 切换分隔符后立即重新生成口令，避免"切了分隔符但展示不变"的视觉错位
+    genPassphrase(true);
   });
+});
+// 口令选项勾选后自动重新生成
+['chkCapitalize','chkNumber'].forEach(id => {
+  $(id).addEventListener('change', () => genPassphrase(true));
 });
 
 function estimateCrackTime(entropy) {
@@ -390,9 +480,14 @@ function renderBatch(list) {
     const btn = document.createElement('button');
     btn.className = 'copy-mini';
     btn.textContent = '复制';
-    btn.addEventListener('click', async () => {
+    btn.addEventListener('click', async (e) => {
       await window.pg.copy(pwd);
-      showToast('已复制');
+      // 复制按钮短暂 ✓ 反馈
+      const orig = btn.textContent;
+      btn.textContent = '✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 800);
+      showToast('已复制 ' + pwd.length + ' 位');
     });
     item.appendChild(idx);
     item.appendChild(txt);
@@ -402,9 +497,9 @@ function renderBatch(list) {
 }
 
 $('batchCopyAll').addEventListener('click', async () => {
-  if (!state.lastBatch.length) { showToast('暂无内容'); return; }
+  if (!state.lastBatch.length) { showToast('暂无内容可复制'); return; }
   await window.pg.copy(state.lastBatch.join('\n'));
-  showToast('已复制全部');
+  showToast('已复制全部 ' + state.lastBatch.length + ' 个');
 });
 
 function formatHistoryTime(ts) {
@@ -446,7 +541,11 @@ function renderHistory() {
     btn.textContent = '复制';
     btn.addEventListener('click', async () => {
       await window.pg.copy(item.text);
-      showToast('已复制');
+      const orig = btn.textContent;
+      btn.textContent = '✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 800);
+      showToast('已复制 ' + item.text.length + ' 字符');
     });
     div.appendChild(txt);
     div.appendChild(meta);
@@ -509,6 +608,7 @@ document.addEventListener('keydown', (e) => {
     if (t === 'password') { genPassword(); e.preventDefault(); }
     else if (t === 'passphrase') { genPassphrase(); e.preventDefault(); }
     else if (t === 'batch') { $('batchBtn').click(); e.preventDefault(); }
+    else { showToast('当前页不支持 Ctrl+G 生成'); e.preventDefault(); }
     return;
   }
   // Ctrl+Shift+C 复制当前结果
@@ -518,6 +618,11 @@ document.addEventListener('keydown', (e) => {
     const t = active.dataset.tab;
     if (t === 'password') { $('copyPwd').click(); e.preventDefault(); }
     else if (t === 'passphrase') { $('copyPhrase').click(); e.preventDefault(); }
+    else if (t === 'batch' && state.lastBatch.length) {
+      window.pg.copy(state.lastBatch.join('\n'));
+      showToast('已复制全部 ' + state.lastBatch.length + ' 个');
+      e.preventDefault();
+    } else { showToast('当前页无内容可复制'); e.preventDefault(); }
     return;
   }
   // Ctrl+L 聚焦强度输入
@@ -529,4 +634,5 @@ document.addEventListener('keydown', (e) => {
 });
 
 loadHistory();
+syncCopyDisabled();
 setTimeout(() => genPassword(true), 200);
