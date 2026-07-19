@@ -10,16 +10,18 @@
   const { SOUNDS } = window.AmbientSynth;
   const SoundEngine = window.AmbientEngine;
 
-// 声音图标（线性 SVG，颜色随 currentColor 变化）
+// 声音图标（统一线性描边风格，stroke-width 1.7，linecap/linejoin 全部 round）
 const ICONS = {
-  white:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="2.5"/><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="10.5"/></svg>',
-  pink:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12a9 9 0 0 1 18 0"/><path d="M3 12a9 9 0 0 0 9 9" stroke-dasharray="2 2.5"/></svg>',
-  brown:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 14c1.5-3 3-3 4.5 0s3 3 4.5 0 3-3 4.5 0 3 3 4.5 0"/></svg>',
-  rain:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 14a4 4 0 0 1 .5-7.97 5 5 0 0 1 9.4 1.4A3.5 3.5 0 0 1 16.5 14"/><path d="M9 17l-1 3.5M13 17l-1 3.5M16 17l-1 3.5"/></svg>',
-  waves:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 8c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M2 14c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M2 20c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/></svg>',
-  wind:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 8h11a2.5 2.5 0 1 0-2.5-2.5"/><path d="M3 14h15a2.5 2.5 0 1 1-2.5 2.5"/><path d="M3 20h8"/></svg>',
-  fire:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3c.5 3 3.5 4.5 3.5 8.5a3.5 3.5 0 0 1-7 0c0-1.8.8-2.8.8-4.5 1 .8 1.8 2 2 4 .3-3-.2-5-.5-6.5-.3-1.2-.8-1.5-.8-1.5z"/></svg>',
-  stream: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3s5 5 5 9.5a5 5 0 0 1-10 0C7 8 12 3 12 3z"/><path d="M9.5 13a2.5 2.5 0 0 0 2.5 2.5" stroke-linecap="round"/></svg>',
+  white:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.5"/><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="10.5"/></svg>',
+  pink:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 18 0"/><path d="M3 12a9 9 0 0 0 9 9" stroke-dasharray="2 2.5"/></svg>',
+  brown:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14c1.5-3 3-3 4.5 0s3 3 4.5 0 3-3 4.5 0 3 3 4.5 0"/></svg>',
+  rain:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 14a4 4 0 0 1 .5-7.97 5 5 0 0 1 9.4 1.4A3.5 3.5 0 0 1 16.5 14"/><path d="M9 17l-1 3.5M13 17l-1 3.5M16 17l-1 3.5"/></svg>',
+  waves:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M2 14c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M2 20c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/></svg>',
+  wind:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h11a2.5 2.5 0 1 0-2.5-2.5"/><path d="M3 14h15a2.5 2.5 0 1 1-2.5 2.5"/><path d="M3 20h8"/></svg>',
+  // 篝火：开放线条风格（两条主火焰 + 一根木柴），避免闭合形状看起来像填充
+  fire:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.6 2.4 2.8 3.8 2.8 7.2 0 1.4-.6 2.6-1.6 3.3.3-1.4-.2-2.8-1.2-3.6-.2 1.6-1 2.4-1.6 3-.4-1.2-.1-2.4.4-3.4-1.2.6-2 2-2 3.6 0 .3 0 .6.1.9-1.2-.7-2-2-2-3.6 0-3.4 2.3-5 3.1-7.4z"/><path d="M7 19h10"/><path d="M9 19l-1 2M15 19l1 2"/></svg>',
+  // 溪流：开放水滴 + 三道波纹，避免闭合水滴看起来像填充
+  stream: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c2 2.8 4.5 5.2 4.5 8.5"/><path d="M12 3c-2 2.8-4.5 5.2-4.5 8.5"/><path d="M7 14c1.5 1.5 3.5 1.5 5 0s3.5-1.5 5 0"/><path d="M7 18c1.5 1.5 3.5 1.5 5 0s3.5-1.5 5 0"/></svg>',
 };
 
 const DEFAULT_PRESETS = [
@@ -51,14 +53,26 @@ async function init() {
     updateStatus();
     // 演示模式（仅用于截图展示）：激活若干卡片 + 模拟频谱，不真正播放音频
     if (new URLSearchParams(location.search).get('demo') === '1') {
-      engine._demoMode = true;
-      ['rain', 'fire', 'waves'].forEach((id) => {
+      if (engine) engine._demoMode = true;
+      const demoIds = ['rain', 'fire', 'waves'];
+      demoIds.forEach((id) => {
         const card = document.querySelector(`.sound-card[data-id="${id}"]`);
-        if (card) card.classList.add('active');
+        if (card) {
+          card.classList.add('active');
+          // 重新计算滑块填充色以反映激活态
+          const slider = card.querySelector('input[type=range]');
+          if (slider) updateSliderFill(slider);
+        }
       });
+      const demoNames = demoIds.map((id) => {
+        const s = SOUNDS.find((x) => x.id === id);
+        return s ? s.name : id;
+      }).join('、');
       const st = $('#status');
-      st.textContent = '播放中 · 3 个声音';
+      st.textContent = '播放中 · ' + demoNames;
       st.classList.add('playing');
+      // 频谱在无引擎时也启用 demo 视觉
+      window.__demoMode = true;
     }
     await engine.prepare();
   } catch (e) {
@@ -125,6 +139,9 @@ function toggleSound(id) {
     engine.play(id);
     card.classList.add('active');
   }
+  // 重新计算滑块填充色（激活/非激活态颜色不同）
+  const slider = card.querySelector('input[type=range]');
+  if (slider) updateSliderFill(slider);
   clearPresetActive();
   updateStatus();
 }
@@ -135,7 +152,11 @@ function ensureResume() {
 
 function updateSliderFill(slider) {
   const v = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
-  slider.style.background = `linear-gradient(to right, #007aff ${v}%, #e5e5ea ${v}%)`;
+  // 激活卡片的滑块未填充部分使用浅蓝，强化"正在播放"反馈
+  const card = slider.closest('.sound-card');
+  const isActive = card && card.classList.contains('active');
+  const unfilled = isActive ? 'rgba(0, 122, 255, 0.15)' : '#e5e5ea';
+  slider.style.background = `linear-gradient(to right, #007aff ${v}%, ${unfilled} ${v}%)`;
 }
 
 function bindControls() {
@@ -205,11 +226,108 @@ function renderPresets() {
   const list = $('#presetList');
   const presets = loadPresets();
   list.innerHTML = presets.map((p, i) => `
-    <button class="preset-chip" data-idx="${i}" type="button">${escapeHtml(p.name)}</button>
+    <button class="preset-chip" data-idx="${i}" type="button" title="左键应用 · 右键重命名/删除">
+      <span class="preset-name">${escapeHtml(p.name)}</span>
+    </button>
   `).join('');
   $$('.preset-chip').forEach((b) => {
-    b.addEventListener('click', () => applyPreset(parseInt(b.dataset.idx, 10)));
+    const idx = parseInt(b.dataset.idx, 10);
+    b.addEventListener('click', () => {
+      if (b.classList.contains('editing')) return;
+      applyPreset(idx);
+    });
+    // 右键打开管理菜单（重命名 / 删除）—— UX 报告 #10 未完成项
+    b.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      showPresetMenu(b, idx);
+    });
   });
+}
+
+// 预设右键菜单：重命名 + 删除
+function showPresetMenu(chip, idx) {
+  hidePresetMenu();
+  const menu = document.createElement('div');
+  menu.className = 'preset-menu';
+  menu.innerHTML =
+    '<button class="preset-menu-item" data-action="rename" type="button">重命名</button>' +
+    '<button class="preset-menu-item danger" data-action="delete" type="button">删除</button>';
+  document.body.appendChild(menu);
+  const rect = chip.getBoundingClientRect();
+  // 防止菜单超出右边界
+  const menuW = 120;
+  menu.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - menuW - 8)) + 'px';
+  menu.style.top = (rect.bottom + 4) + 'px';
+  menu.querySelectorAll('.preset-menu-item').forEach((b) => {
+    b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const action = b.dataset.action;
+      hidePresetMenu();
+      if (action === 'rename') startRenamePreset(idx);
+      else if (action === 'delete') deletePreset(idx);
+    });
+  });
+  // 点击其他区域关闭菜单（下一帧生效，避免立即触发）
+  setTimeout(() => document.addEventListener('click', hidePresetMenu, { once: true }), 0);
+  // Esc 关闭
+  setTimeout(() => document.addEventListener('keydown', hidePresetMenuOnEsc, { once: true }), 0);
+}
+
+function hidePresetMenuOnEsc(e) {
+  if (e.key === 'Escape') hidePresetMenu();
+}
+
+function hidePresetMenu() {
+  const m = document.querySelector('.preset-menu');
+  if (m) m.remove();
+}
+
+function startRenamePreset(idx) {
+  const presets = loadPresets();
+  const p = presets[idx];
+  if (!p) return;
+  const chip = document.querySelector('.preset-chip[data-idx="' + idx + '"]');
+  if (!chip) return;
+  chip.classList.add('editing');
+  chip.innerHTML = '<input class="preset-rename-input" type="text" maxlength="16" aria-label="预设名称">';
+  const input = chip.querySelector('input');
+  input.value = p.name;
+  input.focus();
+  input.select();
+  let done = false;
+  const commit = () => {
+    if (done) return;
+    done = true;
+    const name = input.value.trim();
+    if (name && name !== p.name) {
+      p.name = name;
+      savePresets(presets);
+      toast('已重命名：' + name);
+    }
+    renderPresets();
+  };
+  const cancel = () => {
+    if (done) return;
+    done = true;
+    renderPresets();
+  };
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); commit(); }
+    else if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+  });
+  input.addEventListener('blur', commit);
+}
+
+function deletePreset(idx) {
+  const presets = loadPresets();
+  const p = presets[idx];
+  if (!p) return;
+  presets.splice(idx, 1);
+  savePresets(presets);
+  if (activePresetIdx === idx) activePresetIdx = -1;
+  else if (activePresetIdx > idx) activePresetIdx -= 1;
+  renderPresets();
+  toast('已删除预设：' + p.name);
 }
 
 function loadPresets() {
@@ -311,35 +429,62 @@ function drawSpectrum() {
   if (!engine) return;
 
   const data = engine.getFrequencyData();
-  const bars = 40;
+  const bars = 24;
   const usable = Math.floor(data.length * 0.7); // 只取低中频段（更有动感）
   const step = Math.max(1, Math.floor(usable / bars));
-  const gap = 2;
+  const gap = 4;
   const barW = (w - gap * (bars - 1)) / bars;
   const active = engine.activeCount() > 0;
   const demo = engine._demoMode === true || window.__demoMode === true;
+  const radius = Math.min(barW / 2, 2.2); // 统一圆角半径，避免锯齿
 
   for (let i = 0; i < bars; i++) {
     let sum = 0;
     for (let j = 0; j < step; j++) sum += data[i * step + j] || 0;
     let v = (sum / step) / 255;
     if (!active && demo) {
-      v = 0.22 + 0.5 * Math.abs(Math.sin(i * 0.35 + Date.now() * 0.0015));
+      // 多频段叠加，模拟更真实的频谱律动
+      const t = Date.now() * 0.0015;
+      const base = 0.18
+        + 0.38 * Math.abs(Math.sin(i * 0.35 + t))
+        + 0.20 * Math.abs(Math.sin(i * 0.18 + t * 0.7 + 0.4))
+        + 0.12 * Math.abs(Math.sin(i * 0.62 + t * 1.3));
+      // 低频更高，高频衰减（更像真实音乐频谱）
+      const positional = 1 - Math.pow(i / bars, 1.4) * 0.55;
+      v = Math.min(1, base * positional);
     } else if (!active) {
       v = 0;
     }
-    const bh = Math.max(2, v * h);
+    // 提高最小高度，避免极小值导致圆角失真
+    const bh = Math.max(3, v * h);
     const x = i * (barW + gap);
     const y = h - bh;
+    // 三段渐变：深蓝 → 青蓝 → 暖紫，增加层次感与动态感
     const grad = ctx.createLinearGradient(0, h, 0, y);
-    grad.addColorStop(0, 'rgba(0,122,255,0.85)');
-    grad.addColorStop(1, 'rgba(90,200,250,0.9)');
+    grad.addColorStop(0, 'rgba(0,122,255,0.92)');
+    grad.addColorStop(0.5, 'rgba(90,200,250,0.95)');
+    grad.addColorStop(1, 'rgba(175,160,255,0.98)');
     ctx.fillStyle = (active || demo) ? grad : '#ececf0';
-    roundRect(ctx, x, y, barW, bh, Math.min(barW / 2, 2));
+    // 只圆角顶部，底部保持平直，避免极小高度时四角圆化失真
+    roundRectTop(ctx, x, y, barW, bh, radius);
     ctx.fill();
   }
 }
 
+// 只圆角顶部的圆角矩形 —— 频谱条底部贴底，顶部圆润，视觉更精致一致
+function roundRectTop(ctx, x, y, w, h, r) {
+  r = Math.min(r, w / 2, h);
+  ctx.beginPath();
+  ctx.moveTo(x, y + h);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h);
+  ctx.closePath();
+}
+
+// 保留通用 roundRect（其他场景备用）
 function roundRect(ctx, x, y, w, h, r) {
   r = Math.min(r, w / 2, h / 2);
   ctx.beginPath();
