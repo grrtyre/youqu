@@ -128,7 +128,8 @@
   opacity:0;animation:fadeUp .9s var(--ease-out) .25s forwards;
 }
 .hero__title-accent{
-  background:linear-gradient(110deg,#007aff 0%,#5ac8fa 38%,#a8d8ff 50%,#5ac8fa 62%,#007aff 100%);
+  /* 第十七轮：柔化渐变 —— 移除过亮的青色 #5ac8fa/#a8d8ff，改为深蓝到中蓝的柔和过渡，与整体浅色风格协调 */
+  background:linear-gradient(110deg,#1d1d1f 0%,#007aff 45%,#3a8eff 55%,#1d1d1f 100%);
   background-size:220% auto;
   -webkit-background-clip:text;background-clip:text;
   -webkit-text-fill-color:transparent;color:transparent;
@@ -1347,8 +1348,9 @@
   transition:all .2s var(--ease);
 }
 .card__src:hover{color:var(--accent);background:var(--accent-soft);border-color:transparent;transform:translateY(-1px)}
-.card__src-icon{width:15px;height:15px;opacity:.85;transition:opacity .2s}
-.card__src:hover .card__src-icon{opacity:1}
+/* 第十七轮：GitHub 源码图标加大 15→17px，与「获取」按钮高度更协调（mimo 反馈：图标偏小） */
+.card__src-icon{width:17px;height:17px;opacity:.88;transition:opacity .2s,transform .2s}
+.card__src:hover .card__src-icon{opacity:1;transform:scale(1.06)}
 
 /* 9. 卡片 meta 区无索引号后的间距精简 */
 .card__meta{gap:8px}
@@ -2354,7 +2356,8 @@
 
 /* 17. chips 区呼吸感 */
 .chips{gap:6px !important}
-.toolbar__row{gap:18px !important;align-items:center !important}
+/* 第十七轮：toolbar__row gap 收紧 18→14px，缓解搜索框与 chips 之间留白偏大的视觉断裂 */
+.toolbar__row{gap:14px !important;align-items:center !important}
 @media (max-width:768px){
   .chips{gap:5px !important}
   .toolbar__row{gap:12px !important}
@@ -2495,6 +2498,197 @@
   border:1px solid rgba(0,122,255,.14) !important;
   font-weight:600 !important;
 }
+
+/* ============ 第十七轮（内容对齐 + scroll-spy + 智能提示 + Hero 视差 + 卡片 CTA 微动画） ============ */
+
+/* 35. Hero orbs 鼠标视差包装层：translate 由 JS 鼠标事件驱动，transition 提供柔和回归 */
+.hero__orbs{
+  position:absolute; inset:0; pointer-events:none; z-index:1;
+  transition:transform .8s cubic-bezier(.16,1,.3,1);
+  will-change:transform;
+}
+/* 原 .hero__orb--N 的 top/left 仍生效，因 .hero__orbs 是 absolute 全屏覆盖，坐标系一致 */
+
+/* 36. Nav 链接基础态：position:relative 为 is-current 下划线做准备 */
+.nav__link{position:relative;transition:color .2s var(--ease)}
+.nav__link:hover{color:var(--ink)}
+/* 37. Nav 当前区段高亮：品牌蓝 + 下方 18px 短下划线 + aria-current 提升无障碍 */
+.nav__link.is-current{color:var(--accent);font-weight:600}
+.nav__link.is-current::after{
+  content:""; position:absolute; left:50%; bottom:-8px;
+  width:18px; height:2px; border-radius:2px;
+  background:var(--accent);
+  transform:translateX(-50%);
+  animation:navUnderlineIn .35s cubic-bezier(.16,1,.3,1);
+}
+@keyframes navUnderlineIn{
+  from{width:0;opacity:0}
+  to{width:18px;opacity:1}
+}
+@media (max-width:768px){
+  .nav__link.is-current::after{bottom:-6px}
+}
+
+/* 38. 卡片 CTA 箭头微动画：默认隐藏，hover 时滑入；
+      不改变按钮宽度（用 negative margin 收回空间），避免布局位移 */
+.card__cta{display:inline-flex !important;align-items:center !important;gap:5px !important}
+.card__cta > span:first-child{display:inline-block}
+.card__cta-arrow{
+  display:inline-block; font-size:13px; line-height:1;
+  opacity:0; transform:translateX(-4px);
+  margin-right:-14px; /* 收回箭头空间，按钮宽度与原版一致 */
+  transition:opacity .25s var(--ease-out), transform .25s var(--ease-out), margin-right .25s var(--ease-out);
+}
+.card:hover .card__cta-arrow,
+.card:focus-visible .card__cta-arrow{
+  opacity:1; transform:translateX(0); margin-right:0;
+}
+.card:hover .card__cta{gap:6px !important}
+/* 移动端无 hover，箭头始终显示，避免触屏用户无法看到 */
+@media (hover:none){
+  .card__cta-arrow{opacity:.85;transform:translateX(0);margin-right:0}
+  .card__cta{gap:6px !important}
+}
+
+/* 39. chips 点击弹跳动画：scale 1 → 1.08 → 1，400ms 完成 */
+.chip.is-bounce{
+  animation:chipBounce .4s cubic-bezier(.34,1.56,.64,1) !important;
+}
+@keyframes chipBounce{
+  0%{transform:scale(1)}
+  40%{transform:scale(1.08)}
+  100%{transform:scale(1)}
+}
+/* is-active 状态的 chip 仍保持 translateY(-1px)，弹跳动画结束后由 active 样式接管 */
+
+/* 40. 搜索框 placeholder 切换过渡：opacity 由 JS 控制 */
+.search__input{transition:opacity .3s var(--ease)}
+
+/* 41. 工具栏滚动浏览暗示（mimo 反馈：底部卡片截断缺收尾暗示）
+      仅在用户尚未滚动时显示，滚动 >400px 后淡出消失 */
+.toolbar__scroll-hint{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  margin-top:14px;padding:6px 14px;border-radius:980px;
+  background:rgba(255,255,255,.7);backdrop-filter:blur(10px);
+  border:1px solid var(--line-soft);
+  font-size:12px;color:var(--ink3);font-weight:500;letter-spacing:.01em;
+  width:fit-content;margin-left:auto;margin-right:auto;
+  opacity:0;transform:translateY(-4px);
+  transition:opacity .4s var(--ease-out),transform .4s var(--ease-out);
+  animation:scrollHintIn .6s var(--ease-out) 1.2s forwards;
+}
+.toolbar__scroll-hint-text{white-space:nowrap}
+.toolbar__scroll-hint-arrow{
+  width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;
+  color:var(--accent);
+  animation:scrollHintBounce 1.8s ease-in-out infinite;
+}
+.toolbar__scroll-hint-arrow svg{width:100%;height:100%}
+.toolbar__scroll-hint.is-hidden{opacity:0 !important;transform:translateY(-4px) !important;pointer-events:none}
+@keyframes scrollHintIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scrollHintBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+@media (max-width:600px){
+  .toolbar__scroll-hint{font-size:11px;padding:5px 12px;margin-top:10px}
+}
+@media (prefers-reduced-motion:reduce){
+  .toolbar__scroll-hint-arrow{animation:none}
+  .toolbar__scroll-hint{animation:none;opacity:1;transform:translateY(0)}
+}
+
+/* ============ 第十八轮（mimo v2 8.8/10 反馈修复：CTA 呼吸 / chips 对比 / 描述行数 / placeholder 字号 / scroll-hint 让位） ============ */
+
+/* 42. CTA 按钮与 GitHub 图标间距加大 8px（mimo 反馈：CTA 与信息图标间距略紧）
+      原 .card__actions{gap:10px} → 18px，给两个动作元素足够呼吸空间 */
+.card__actions{gap:18px !important}
+@media (max-width:600px){.card__actions{gap:14px !important}}
+/* 卡片 CTA 内边距同步加大，让按钮本身也更舒展 */
+.card__cta{padding-left:18px !important;padding-right:18px !important}
+
+/* 43. chips 选中态对比度增强（mimo 反馈：选中态与未选中态视觉权重相近）
+      未选中态：背景从纯白改为更浅的灰，文字从 ink2 降为 ink3，让未选中更"退后"
+      选中态：保持深黑底白字，加强阴影 + 轻微缩放，让对比更鲜明 */
+.chip{
+  background:var(--bg-soft) !important;
+  color:var(--ink3) !important;
+  border-color:var(--line-soft) !important;
+  font-weight:500 !important;
+  box-shadow:none !important;
+}
+.chip:hover{
+  background:#fff !important;
+  color:var(--ink2) !important;
+  border-color:var(--line) !important;
+  box-shadow:0 2px 8px rgba(0,0,0,.05) !important;
+}
+.chip.is-active{
+  background:var(--ink) !important;
+  color:#fff !important;
+  border-color:var(--ink) !important;
+  box-shadow:0 4px 14px rgba(29,29,31,.32),0 1px 3px rgba(0,0,0,.18) !important;
+  font-weight:600 !important;
+  transform:translateY(-1px) !important;
+}
+/* 选中态圆点变白 + 略放大，强化选中识别 */
+.chip.is-active::before{background:#fff !important;transform:scale(1.15) !important}
+
+/* 44. 卡片描述强制 3 行 line-clamp 统一（mimo 反馈：3 行 vs 2 行导致高度参差）
+      桌面端统一 3 行；移动端原本 2 行是为了节省空间，但为视觉一致性仍保持 3 行
+      配合 min-height:4.2em 兜底，所有卡片描述区高度完全一致 */
+.card__desc{
+  -webkit-line-clamp:3 !important;
+  line-clamp:3 !important;
+  min-height:4.62em !important; /* 3 行 × 1.54 行高，确保短描述也占满 3 行 */
+}
+@media (max-width:600px){
+  .card__desc{
+    -webkit-line-clamp:3 !important;
+    line-clamp:3 !important;
+    min-height:4.62em !important;
+  }
+}
+
+/* 45. 搜索框 placeholder 字号增大（mimo 反馈：placeholder 偏小，与 chips 字号比例不协调）
+      主字号 15 → 16px（与 chips 14px 拉开 2px 梯度），placeholder 颜色加深一档提升可读性 */
+.search__input{font-size:16px !important;height:44px !important;padding:12px 40px 12px 46px !important}
+.search__input::placeholder{
+  color:#86868b !important;
+  font-size:16px !important;
+  opacity:1 !important;
+}
+/* 搜索框整体高度同步 chips 高度 40px → 44px，对齐更整齐 */
+.chip{height:44px !important}
+@media (max-width:600px){
+  .search__input{font-size:15px !important;height:42px !important}
+  .search__input::placeholder{font-size:15px !important}
+  .chip{height:42px !important}
+}
+
+/* 46. scroll-hint 位置下移 + 让位（mimo 反馈：滚动指示器位置遮挡首行卡片）
+      原 margin-top:14px → 22px，与卡片墙 padding-top:24px 形成节奏；
+      toolbar 底部 padding 加大 16 → 22px，确保 scroll-hint 与首行卡片之间有足够间距 */
+.toolbar__scroll-hint{
+  margin-top:22px !important;
+  margin-bottom:6px !important;
+}
+.toolbar{padding-bottom:22px !important}
+.toolbar.is-stuck{padding-bottom:20px !important}
+@media (max-width:600px){
+  .toolbar__scroll-hint{margin-top:16px !important}
+  .toolbar{padding-bottom:18px !important}
+}
+/* 卡片墙顶部留白同步加大，确保首行卡片与 scroll-hint 之间 ≥30px */
+.grid-wrap{padding-top:30px !important}
+
+/* 47. 修正：search__input 高度变更后，search__icon 垂直居中需重新对齐 */
+.search{height:44px}
+@media (max-width:600px){.search{height:42px}}
+.search__icon{top:50%;transform:translateY(-50%);left:16px}
+.search__clear{top:50%;transform:translateY(-50%);right:12px}
+.search__hint{top:50%;transform:translateY(-50%);right:14px}
+
+/* 48. 卡片 body padding 微调：CTA 行间距加大后，body 底部 padding 同步收紧 2px 保持节奏 */
+.card__body{padding:18px 20px 16px !important}
+
 
 
 
