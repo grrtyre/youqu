@@ -1,7 +1,7 @@
 /* ============ youqu 展示站点 · 交互逻辑 ============ */
 'use strict';
 
-/* ---------- 项目数据（57 个工具） ---------- */
+/* ---------- 项目数据（66 个工具） ---------- */
 var G = 'https://github.com/grrtyre/youqu';
 var R = 'https://github.com/grrtyre/youqu/releases';
 var AF = 'https://www.ifdian.net/a/giquwei';
@@ -263,15 +263,24 @@ var PROJECTS = [
   {id:'wallpaper-manager',icon:'🌄',name:'壁纸管家',cat:'design',stack:'electron',ver:'v1.0.0',
    desc:'本地壁纸管理工具：多文件夹来源管理、网格瀑布预览缩略图、收藏最爱一键筛选、定时自动轮换（1/2/4/6/12/24 小时）、必应每日壁纸一键设置、全文搜索、系统托盘常驻快速切换。',
    tags:['Electron','原生 JS'],gh:G+'/tree/main/wallpaper-manager',
-   features:['多文件夹来源管理，自动扫描图片','网格瀑布预览缩略图','收藏最爱，一键筛选','定时轮换（1/2/4/6/12/24 小时）','必应每日壁纸一键拉取设置','全文搜索按文件名过滤','系统托盘常驻快速切换']}
+   features:['多文件夹来源管理，自动扫描图片','网格瀑布预览缩略图','收藏最爱，一键筛选','定时轮换（1/2/4/6/12/24 小时）','必应每日壁纸一键拉取设置','全文搜索按文件名过滤','系统托盘常驻快速切换']},
+  /* 第十七轮：补录 2 个遗漏项目，工具总数 64→66，与 GitHub 仓库实际目录完全对齐 */
+  {id:'mortgage-manager',icon:'🏠',name:'房贷计算器',cat:'efficiency',stack:'electron',ver:'v1.0.0',
+   desc:'苹果白风格本地房贷计算器：商业贷款/公积金贷款/组合贷款三种模式、等额本息与等额本金两种还款方式、提前还款测算（缩短年限/减少月供）、按年折叠还款明细、本金利息饼图与剩余本金曲线、CSV 导出、纯本地隐私优先。',
+   tags:['Electron','原生 JS'],gh:G+'/tree/main/mortgage-manager',
+   features:['商业贷款 / 公积金贷款 / 组合贷款三种模式','等额本息、等额本金两种还款方式','提前还款两种策略：缩短年限 / 减少月供','按年折叠还款明细，展开查看每月本金/利息/剩余本金','本金-利息构成饼图 + 剩余本金变化曲线','常用本金/利率/年限一键填入','CSV 导出还款计划，Excel 直接打开','16 项核心计算单元测试','所有计算在本地完成，不联网不上传']},
+  {id:'voice-memo-manager',icon:'🎙️',name:'语音备忘录',cat:'efficiency',stack:'electron',ver:'v1.0.0',
+   desc:'苹果白风格桌面语音备忘录：一键录音、实时波形动画、精确计时、流畅播放（进度条可拖动）、录音列表自动倒序、模糊搜索、重命名/删除、打开目录定位、系统托盘常驻，纯本地隐私优先。',
+   tags:['Electron','MediaRecorder API'],gh:G+'/tree/main/voice-memo-manager',
+   features:['一键录音，单击开始/再次单击结束','录音时实时波形动画 + 精确到秒计时器','内置播放器，进度条可拖动跳转','录音列表自动按时间倒序','按标题模糊搜索','悬停显示重命名/删除按钮','一键在文件管理器中定位录音','系统托盘常驻，关闭即最小化','空格键开始/停止录音（输入框聚焦时除外）']}
 ];
 
 /* Assign screenshot path + score placeholder to each project */
 /* shot  = 卡片尺寸小图 (480px wide, ~5KB) 用于卡片首屏 */
 /* full  = 大图尺寸 (1200px wide, ~22KB) 用于 lightbox */
 /* 仅最近新增的项目标记「新」徽标，保持徽标稀缺性与视觉指引价值 */
-/* 第十六轮：新徽标刷新为本次补录的 7 个项目，让用户一眼看到新收录工具 */
-var NEW_IDS = ['authenticator-manager','image-compressor','launcher-manager','music-player','quick-translate','reading-list-manager','wallpaper-manager'];
+/* 第十七轮：新徽标刷新为本次补录的 2 个项目，让用户一眼看到新收录工具，恢复徽标稀缺性 */
+var NEW_IDS = ['mortgage-manager','voice-memo-manager'];
 PROJECTS.forEach(function(p){
   p.shot = 'assets/img/' + p.id + '.webp';
   p.full = 'assets/img/' + p.id + '-full.webp';
@@ -325,8 +334,8 @@ function cardHTML(p, idx, query){
   var cc = CAT_COLOR[p.cat];
   var si = STACK_INFO[p.stack] || {icon:'⚡',label:p.stack};
   var dlBtn = p.dl
-    ? '<a class="btn btn--primary btn--sm card__cta" href="'+p.dl+'" target="_blank" rel="noopener">获取</a>'
-    : '<a class="btn btn--primary btn--sm card__cta" href="'+p.gh+'" target="_blank" rel="noopener">获取</a>';
+    ? '<a class="btn btn--primary btn--sm card__cta" href="'+p.dl+'" target="_blank" rel="noopener"><span>获取</span><span class="card__cta-arrow" aria-hidden="true">→</span></a>'
+    : '<a class="btn btn--primary btn--sm card__cta" href="'+p.gh+'" target="_blank" rel="noopener"><span>获取</span><span class="card__cta-arrow" aria-hidden="true">→</span></a>';
   var scoreBadge = p.score > 0
     ? '<span class="card__score" title="mimo 审美评分">'+p.score+'</span>'
     : '';
@@ -774,7 +783,7 @@ function openLightboxByIdx(idx){
       '<span class="lb-caption__name">'+p.name+'</span>'+
       '<span class="lb-caption__cat">'+CAT_NAME[p.cat]+'</span>';
   }
-  /* 更新计数器：3 / 57 */
+  /* 更新计数器：3 / 66 */
   if(lbCounter){
     lbCounter.textContent = (idx+1)+' / '+PROJECTS.length;
   }
@@ -968,4 +977,123 @@ if(searchHint && !searchInteracted){
 (function(){
   var y = document.getElementById('footer-year');
   if(y) y.textContent = String(new Date().getFullYear());
+})();
+
+/* ============ 第十七轮：滚动监听 / 智能提示 / Hero 视差 / 卡片 CTA 微动画 ============ */
+
+/* ---------- 滚动监听高亮当前 nav 区段（scroll-spy） ---------- */
+/* 用户滚动到不同区段时，对应 nav 链接高亮，并加 aria-current="location" 提升无障碍 */
+(function(){
+  var SECTIONS = ['projects', 'changelog', 'support'];
+  var sectionEls = SECTIONS.map(function(id){ return document.getElementById(id); });
+  var linkEls = SECTIONS.map(function(id){ return document.querySelector('.nav__link[href="#'+id+'"]'); });
+  /* 任一元素缺失则跳过 */
+  if(sectionEls.indexOf(null) !== -1 || linkEls.indexOf(null) !== -1) return;
+  if(!('IntersectionObserver' in window)) return;
+  function clearCurrent(){
+    linkEls.forEach(function(l){ l.classList.remove('is-current'); l.removeAttribute('aria-current'); });
+  }
+  var spy = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      var idx = sectionEls.indexOf(e.target);
+      if(idx < 0) return;
+      clearCurrent();
+      linkEls[idx].classList.add('is-current');
+      linkEls[idx].setAttribute('aria-current', 'location');
+    });
+  }, {rootMargin: '-45% 0px -50% 0px', threshold: 0});
+  sectionEls.forEach(function(el){ if(el) spy.observe(el); });
+})();
+
+/* ---------- 搜索框 placeholder 轮播智能提示 ---------- */
+/* 未聚焦且为空时，placeholder 在多个高频搜索词间轮播，引导发现；
+   聚焦或输入后停止；失焦且仍为空时恢复轮播；尊重 prefers-reduced-motion */
+(function(){
+  if(prefersReducedMotion) return;
+  var PLACEHOLDERS = [
+    '搜索工具名称、功能、关键词…',
+    '试试搜索：截图、JSON、cron…',
+    '搜索「密码」找密码工具…',
+    '搜索「翻译」找翻译工具…',
+    '搜索「Markdown」找笔记工具…',
+    '搜索「字体」找字体工具…'
+  ];
+  var idx = 0;
+  var timer = null;
+  function rotate(){
+    idx = (idx + 1) % PLACEHOLDERS.length;
+    /* 用 opacity 渐变切换，避免硬切 */
+    searchInput.style.transition = 'opacity .3s';
+    searchInput.style.opacity = '0.4';
+    setTimeout(function(){
+      searchInput.placeholder = PLACEHOLDERS[idx];
+      searchInput.style.opacity = '1';
+    }, 200);
+  }
+  function start(){
+    if(timer) return;
+    timer = setInterval(rotate, 3400);
+  }
+  function stop(){
+    if(timer){ clearInterval(timer); timer = null; }
+    searchInput.style.opacity = '';
+    searchInput.placeholder = PLACEHOLDERS[0];
+  }
+  start();
+  searchInput.addEventListener('focus', stop);
+  searchInput.addEventListener('blur', function(){
+    if(!searchInput.value) start();
+  });
+})();
+
+/* ---------- Hero orbs 鼠标视差微交互 ---------- */
+/* 鼠标在 Hero 区移动时，orbs 整体柔和偏移，增强首屏空间感；
+   离开时平滑回归原位；尊重 prefers-reduced-motion */
+(function(){
+  if(prefersReducedMotion) return;
+  var heroEl = document.querySelector('.hero');
+  var heroOrbs = document.getElementById('hero-orbs');
+  if(!heroEl || !heroOrbs) return;
+  /* 仅桌面端（pointer:fine）启用，触屏设备无鼠标视差意义 */
+  if(!window.matchMedia('(pointer:fine)').matches) return;
+  heroEl.addEventListener('mousemove', function(e){
+    var r = heroEl.getBoundingClientRect();
+    var x = (e.clientX - r.left) / r.width - 0.5;
+    var y = (e.clientY - r.top) / r.height - 0.5;
+    /* 偏移幅度小（24px / 18px），保持柔和 */
+    heroOrbs.style.transform = 'translate(' + (x * 24).toFixed(2) + 'px, ' + (y * 18).toFixed(2) + 'px)';
+  });
+  heroEl.addEventListener('mouseleave', function(){
+    heroOrbs.style.transform = '';
+  });
+})();
+
+/* ---------- chips 点击微反馈：短暂 scale 弹跳 ---------- */
+/* 用户点击 chip 时，chip 短暂放大再回弹，增强点击反馈（替代静默切换） */
+(function(){
+  if(prefersReducedMotion) return;
+  var chipsWrap = document.getElementById('chips');
+  if(!chipsWrap) return;
+  chipsWrap.addEventListener('click', function(e){
+    var chip = e.target.closest('.chip');
+    if(!chip) return;
+    chip.classList.remove('is-bounce');
+    void chip.offsetWidth; /* 强制 reflow 以重启动画 */
+    chip.classList.add('is-bounce');
+    setTimeout(function(){ chip.classList.remove('is-bounce'); }, 400);
+  });
+})();
+
+/* ---------- 工具栏滚动暗示：滚动 >400px 后淡出 ---------- */
+/* 配合 CSS .toolbar__scroll-hint，让"向下滚动浏览全部 66 个工具"提示在用户开始滚动后消失 */
+(function(){
+  var hint = document.getElementById('scroll-hint');
+  if(!hint) return;
+  function onHintScroll(){
+    var y = window.scrollY;
+    hint.classList.toggle('is-hidden', y > 400);
+  }
+  window.addEventListener('scroll', onHintScroll, {passive:true});
+  onHintScroll();
 })();
