@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>youqu · 实用工具集合 — 64 个开源工具，苹果白高端风格</title>
-<meta name="description" content="由 Trae + MiMo Code 人机协作打造的开源实用工具集合。64 个工具，每个解决一个真实痛点。纯本地、零门槛、苹果白高端风格。">
+<title>youqu · 实用工具集合 — 66 个开源工具，苹果白高端风格</title>
+<meta name="description" content="由 Trae + MiMo Code 人机协作打造的开源实用工具集合。66 个工具，每个解决一个真实痛点。纯本地、零门槛、苹果白高端风格。">
 <meta name="theme-color" content="#f5f5f7">
 <meta property="og:title" content="youqu · 实用工具集合">
-<meta property="og:description" content="64 个开源实用工具，苹果白高端风格，纯本地隐私优先。">
+<meta property="og:description" content="66 个开源实用工具，苹果白高端风格，纯本地隐私优先。">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="zh_CN">
 <meta name="twitter:card" content="summary_large_image">
@@ -15,9 +15,9 @@
 <meta property="og:image" content="https://grrtyre.github.io/youqu/assets/img/og-cover.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="youqu 实用工具集合 — 64 个开源工具，苹果白高端风格">
+<meta property="og:image:alt" content="youqu 实用工具集合 — 66 个开源工具，苹果白高端风格">
 <meta name="twitter:title" content="youqu · 实用工具集合">
-<meta name="twitter:description" content="64 个开源实用工具，苹果白高端风格，纯本地隐私优先。">
+<meta name="twitter:description" content="66 个开源实用工具，苹果白高端风格，纯本地隐私优先。">
 <link rel="canonical" href="https://grrtyre.github.io/youqu/">
 <!-- 第十四轮：补齐 favicon / apple-touch-icon / PWA manifest（品牌基础缺失） -->
 <link rel="icon" href="favicon.svg" type="image/svg+xml" sizes="any">
@@ -58,9 +58,9 @@
       <span class="nav__logo">柚</span><span class="nav__name">youqu</span>
     </a>
     <div class="nav__links">
-      <a href="#projects">项目</a>
-      <a href="#changelog">更新</a>
-      <a href="#support">支持</a>
+      <a class="nav__link" href="#projects">项目</a>
+      <a class="nav__link" href="#changelog">更新</a>
+      <a class="nav__link" href="#support">支持</a>
       <a class="nav__gh" href="https://github.com/grrtyre/youqu" target="_blank" rel="noopener">GitHub</a>
     </div>
   </div>
@@ -68,11 +68,14 @@
 
 <!-- Hero -->
 <header class="hero" id="top">
-  <div class="hero__orb hero__orb--1" aria-hidden="true"></div>
-  <div class="hero__orb hero__orb--2" aria-hidden="true"></div>
-  <div class="hero__orb hero__orb--3" aria-hidden="true"></div>
+  <!-- 第十七轮：Hero orbs 鼠标视差包装层 —— 整体随鼠标柔和偏移，内部 orb 仍保留各自 float 动画 -->
+  <div class="hero__orbs" id="hero-orbs" aria-hidden="true">
+    <div class="hero__orb hero__orb--1"></div>
+    <div class="hero__orb hero__orb--2"></div>
+    <div class="hero__orb hero__orb--3"></div>
+  </div>
   <div class="hero__content">
-    <span class="hero__badge">开源 · MIT 协议 · <span id="hero-count">57</span> 个工具</span>
+    <span class="hero__badge">开源 · MIT 协议 · <span id="hero-count">66</span> 个工具</span>
     <h1 class="hero__title">实用工具<span class="hero__title-accent">集合</span></h1>
     <p class="hero__sub">每个工具都解决一个真实痛点。</p>
     <div class="hero__actions">
@@ -80,7 +83,7 @@
       <a class="btn btn--ghost" href="https://www.ifdian.net/a/giquwei" target="_blank" rel="noopener">☕ 爱发电支持</a>
     </div>
     <div class="hero__stats">
-      <div class="stat"><span class="stat__num" id="stat-count">57</span><span class="stat__label">开源工具</span></div>
+      <div class="stat"><span class="stat__num" id="stat-count">66</span><span class="stat__label">开源工具</span></div>
       <div class="stat__sep" aria-hidden="true"></div>
       <div class="stat"><span class="stat__num">4</span><span class="stat__label">工具分类</span></div>
       <div class="stat__sep" aria-hidden="true"></div>
@@ -139,7 +142,14 @@
         <button class="chip" data-filter="design" role="tab">设计</button>
       </div>
     </div>
-    <div class="toolbar__count" id="count" aria-live="polite">共 57 个工具</div>
+    <div class="toolbar__count" id="count" aria-live="polite">共 66 个工具</div>
+    <!-- 第十七轮：滚动浏览更多暗示 —— mimo 反馈"底部卡片被截断缺少收尾暗示"，加柔和渐隐遮罩 + 滚动提示 -->
+    <div class="toolbar__scroll-hint" id="scroll-hint" aria-hidden="true">
+      <span class="toolbar__scroll-hint-text">向下滚动浏览全部 66 个工具</span>
+      <span class="toolbar__scroll-hint-arrow" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+      </span>
+    </div>
   </div>
 </section>
 
@@ -166,6 +176,22 @@
       <p class="section__desc">按时间倒序，记录每次迭代</p>
     </div>
     <div class="timeline is-collapsed" id="timeline">
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-20</div>
+        <div class="tl__card">
+          <h3>展示站点视觉细节打磨（第十八轮 · mimo v2 反馈五项修复：CTA 呼吸 / chips 对比 / 描述行数统一 / placeholder 字号 / scroll-hint 让位）</h3>
+          <p>针对 mimo 第二轮审美评分 8.8/10 反馈的 5 项视觉问题逐一修复：① 卡片底部 CTA 按钮与 GitHub 图标间距由 10px 加大到 18px（移动端 14px），CTA 内边距同步加大到 18px，给两个动作元素足够呼吸空间；② 分类 chips 选中态与未选中态对比度强化——未选中态背景从纯白改为更浅的 #fbfbfd 灰，文字从 #6e6e73 降为 #86868b，让未选中更"退后"；选中态保持深黑底白字，阴影由 0 3px 10px rgba(0,0,0,.16) 增强到 0 4px 14px rgba(29,29,31,.32) 双层投影，圆点变白且放大 1.15 倍，识别度显著提升；③ 卡片描述强制 3 行 line-clamp 统一（原桌面 3 行/移动 2 行 → 全部 3 行），min-height 同步设置为 4.62em（3 行 × 1.54 行高）兜底，所有卡片描述区高度完全一致，彻底消除 3 行 vs 2 行导致的卡片高度参差；④ 搜索框 placeholder 字号由 15px 增大到 16px（与 chips 14px 拉开 2px 梯度），颜色从 #86868b 加深到 #6e6e73，opacity 强制为 1 避免 Safari 默认变淡，搜索框整体高度从 40px 增到 44px 与 chips 44px 对齐，搜索图标与清空按钮同步重新垂直居中；⑤ 工具栏滚动浏览暗示 margin-top 由 14px 加大到 22px，toolbar 底部 padding 由 16px 加到 22px，卡片墙顶部 padding 由 24px 加到 30px，确保 scroll-hint 与首行卡片之间至少 30px 间距，不再遮挡首行卡片。本次所有修复均保持苹果白高端风格不变，无新增功能，专注视觉细节打磨。</p>
+        </div>
+      </div>
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-20</div>
+        <div class="tl__card">
+          <h3>展示站点内容对齐 + 四项交互细节打磨（第十七轮 · 补录 2 个遗漏项目 / 工具总数 64→66 / scroll-spy / 智能提示 / Hero 视差 / 卡片 CTA 箭头 / chips 弹跳）</h3>
+          <p>核对 GitHub 仓库 grrtyre/youqu 实际目录后发现展示站点仍遗漏 2 个项目，本次补齐：房贷计算器（商业/公积金/组合贷款 + 等额本息/本金两种还款方式 + 提前还款测算 + 按年折叠还款明细 + 饼图曲线可视化 + CSV 导出，🏠 emoji）、语音备忘录（一键录音 + 实时波形动画 + 流畅播放进度拖动 + 模糊搜索 + 重命名删除 + 系统托盘常驻，🎙️ emoji）。同步更新：页面 title、meta description、og:description、og:image:alt、twitter:description、manifest.json、modal 计数器全部 64→66；JSON-LD ItemList 追加 position 65-66 两个条目供搜索引擎收录；「新」徽标从第十六轮的 7 个项目刷新为本次新增的 2 个，恢复徽标稀缺性与指引价值；chips 分类计数由 JS 动态计算自动同步。本次同步追加四项交互细节打磨：① Scroll-spy 滚动监听——用户滚动到项目/更新/支持三个区段时，对应顶部 nav 链接自动高亮（品牌蓝 + 下方 18px 短下划线渐入动画）并加 aria-current="location" 提升无障碍；② 搜索框 placeholder 智能轮播——未聚焦且为空时，placeholder 在 6 条高频搜索词间每 3.4s 柔和切换（opacity 渐变 0.4→1），聚焦或输入后立即停止，引导快捷键与关键词发现；③ Hero orbs 鼠标视差——orbs 整体包装在 .hero__orbs 容器内，鼠标在 Hero 区移动时整体柔和偏移（最大 24×18px），离开时 0.8s 缓动回归原位，仅桌面端 pointer:fine 启用，内部各 orb 仍保留独立 float 动画互不干扰；④ 卡片「获取」CTA 箭头微动画——按钮内追加 → 箭头 span，默认 opacity:0 + translateX(-4px) + 负 margin 收回空间保持按钮宽度不变，hover 时箭头滑入显现，移动端 hover:none 始终显示避免触屏用户错过；⑤ chips 点击弹跳反馈——点击分类 chip 时短暂 scale 1→1.08→1 弹跳（cubic-bezier 回弹曲线，400ms），替代静默切换状态。所有动效均尊重 prefers-reduced-motion，无障碍降级完备。展示站点与 GitHub 仓库实际项目目录实现完全对齐。</p>
+        </div>
+      </div>
       <div class="tl__item">
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-18</div>
@@ -394,7 +420,7 @@
       <button class="modal__nav-btn" id="modal-prev" aria-label="上一个项目">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
       </button>
-      <span class="modal__counter" id="modal-counter" aria-live="polite">1 / 57</span>
+      <span class="modal__counter" id="modal-counter" aria-live="polite">1 / 66</span>
       <button class="modal__nav-btn" id="modal-next" aria-label="下一个项目">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
       </button>
@@ -444,7 +470,7 @@
 {"@context":"https://schema.org","@type":"SoftwareApplication","name":"youqu 实用工具集合","applicationCategory":"UtilitiesApplication","operatingSystem":"Windows, Web","offers":{"@type":"Offer","price":"0","priceCurrency":"CNY"},"author":{"@type":"Organization","name":"grrtyre"}}
 </script>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"ItemList","name":"youqu 工具列表","itemListElement":[{"@type":"ListItem","position":1,"name":"Cron 中文可视化","url":"https://github.com/grrtyre/youqu/tree/main/cron-zh"},{"@type":"ListItem","position":2,"name":"剪贴板管家","url":"https://github.com/grrtyre/youqu/tree/main/clipboard-manager"},{"@type":"ListItem","position":3,"name":"Markdown 预览器","url":"https://github.com/grrtyre/youqu/tree/main/markdown-preview"},{"@type":"ListItem","position":4,"name":"开发者工具箱","url":"https://github.com/grrtyre/youqu/tree/main/dev-toolbox"},{"@type":"ListItem","position":5,"name":"拾色管家","url":"https://github.com/grrtyre/youqu/tree/main/color-picker"},{"@type":"ListItem","position":6,"name":"截图管家","url":"https://github.com/grrtyre/youqu/tree/main/screenshot-manager"},{"@type":"ListItem","position":7,"name":"世界时钟","url":"https://github.com/grrtyre/youqu/tree/main/world-clock"},{"@type":"ListItem","position":8,"name":"重命名管家","url":"https://github.com/grrtyre/youqu/tree/main/file-rename-manager"},{"@type":"ListItem","position":9,"name":"速览管家","url":"https://github.com/grrtyre/youqu/tree/main/quick-look"},{"@type":"ListItem","position":10,"name":"文本管家","url":"https://github.com/grrtyre/youqu/tree/main/text-manager"},{"@type":"ListItem","position":11,"name":"清重管家","url":"https://github.com/grrtyre/youqu/tree/main/duplicate-finder"},{"@type":"ListItem","position":12,"name":"屏幕尺管家","url":"https://github.com/grrtyre/youqu/tree/main/screen-ruler"},{"@type":"ListItem","position":13,"name":"字体管家","url":"https://github.com/grrtyre/youqu/tree/main/font-manager"},{"@type":"ListItem","position":14,"name":"PDF管家","url":"https://github.com/grrtyre/youqu/tree/main/pdf-toolbox"},{"@type":"ListItem","position":15,"name":"文本对比管家","url":"https://github.com/grrtyre/youqu/tree/main/diff-checker"},{"@type":"ListItem","position":16,"name":"倒计时管家","url":"https://github.com/grrtyre/youqu/tree/main/countdown-manager"},{"@type":"ListItem","position":17,"name":"二维码管家","url":"https://github.com/grrtyre/youqu/tree/main/qr-manager"},{"@type":"ListItem","position":18,"name":"习惯管家","url":"https://github.com/grrtyre/youqu/tree/main/habit-keeper"},{"@type":"ListItem","position":19,"name":"记账管家","url":"https://github.com/grrtyre/youqu/tree/main/accounting-manager"},{"@type":"ListItem","position":20,"name":"代码片段管家","url":"https://github.com/grrtyre/youqu/tree/main/snippet-manager"},{"@type":"ListItem","position":21,"name":"时间管家","url":"https://github.com/grrtyre/youqu/tree/main/time-tracker"},{"@type":"ListItem","position":22,"name":"端口管家","url":"https://github.com/grrtyre/youqu/tree/main/port-manager"},{"@type":"ListItem","position":23,"name":"校验管家","url":"https://github.com/grrtyre/youqu/tree/main/checksum-manager"},{"@type":"ListItem","position":24,"name":"API管家","url":"https://github.com/grrtyre/youqu/tree/main/api-manager"},{"@type":"ListItem","position":25,"name":"置顶管家","url":"https://github.com/grrtyre/youqu/tree/main/topmost-manager"},{"@type":"ListItem","position":26,"name":"护眼管家","url":"https://github.com/grrtyre/youqu/tree/main/eye-rest-manager"},{"@type":"ListItem","position":27,"name":"Hosts管家","url":"https://github.com/grrtyre/youqu/tree/main/hosts-manager"},{"@type":"ListItem","position":28,"name":"网络管家","url":"https://github.com/grrtyre/youqu/tree/main/network-manager"},{"@type":"ListItem","position":29,"name":"订阅管家","url":"https://github.com/grrtyre/youqu/tree/main/subscription-manager"},{"@type":"ListItem","position":30,"name":"便签管家","url":"https://github.com/grrtyre/youqu/tree/main/sticky-notes-manager"},{"@type":"ListItem","position":31,"name":"水印管家","url":"https://github.com/grrtyre/youqu/tree/main/watermark-manager"},{"@type":"ListItem","position":32,"name":"正则管家","url":"https://github.com/grrtyre/youqu/tree/main/regex-manager"},{"@type":"ListItem","position":33,"name":"表格管家","url":"https://github.com/grrtyre/youqu/tree/main/csv-manager"},{"@type":"ListItem","position":34,"name":"启动项管家","url":"https://github.com/grrtyre/youqu/tree/main/startup-manager"},{"@type":"ListItem","position":35,"name":"番茄管家","url":"https://github.com/grrtyre/youqu/tree/main/pomodoro-manager"},{"@type":"ListItem","position":36,"name":"识字管家","url":"https://github.com/grrtyre/youqu/tree/main/ocr-manager"},{"@type":"ListItem","position":37,"name":"计算器管家","url":"https://github.com/grrtyre/youqu/tree/main/calculator-manager"},{"@type":"ListItem","position":38,"name":"思维导图管家","url":"https://github.com/grrtyre/youqu/tree/main/mind-map-manager"},{"@type":"ListItem","position":39,"name":"录屏管家","url":"https://github.com/grrtyre/youqu/tree/main/screen-recorder-manager"},{"@type":"ListItem","position":40,"name":"抽签转盘管家","url":"https://github.com/grrtyre/youqu/tree/main/wheel-manager"},{"@type":"ListItem","position":41,"name":"纪念日管家","url":"https://github.com/grrtyre/youqu/tree/main/anniversary-manager"},{"@type":"ListItem","position":42,"name":"闹钟管家","url":"https://github.com/grrtyre/youqu/tree/main/alarm-manager"},{"@type":"ListItem","position":43,"name":"磁盘管家","url":"https://github.com/grrtyre/youqu/tree/main/disk-manager"},{"@type":"ListItem","position":44,"name":"表情管家便携版","url":"https://github.com/grrtyre/youqu/tree/main/emoji-manager"},{"@type":"ListItem","position":45,"name":"闪卡记忆管家","url":"https://github.com/grrtyre/youqu/tree/main/flashcard-manager"},{"@type":"ListItem","position":46,"name":"图片转换管家","url":"https://github.com/grrtyre/youqu/tree/main/image-converter"},{"@type":"ListItem","position":47,"name":"JSON管家","url":"https://github.com/grrtyre/youqu/tree/main/json-manager"},{"@type":"ListItem","position":48,"name":"键鼠管家","url":"https://github.com/grrtyre/youqu/tree/main/keyboard-tester"},{"@type":"ListItem","position":49,"name":"日志管家","url":"https://github.com/grrtyre/youqu/tree/main/log-manager"},{"@type":"ListItem","position":50,"name":"密码生成器","url":"https://github.com/grrtyre/youqu/tree/main/password-generator"},{"@type":"ListItem","position":51,"name":"单位转换器","url":"https://github.com/grrtyre/youqu/tree/main/unit-converter"},{"@type":"ListItem","position":52,"name":"剧集管家","url":"https://github.com/grrtyre/youqu/tree/main/watching-manager"},{"@type":"ListItem","position":53,"name":"调色板管家","url":"https://github.com/grrtyre/youqu/tree/main/palette-manager"},{"@type":"ListItem","position":54,"name":"环境音播放器","url":"https://github.com/grrtyre/youqu/tree/main/ambient-sound"},{"@type":"ListItem","position":55,"name":"日记本","url":"https://github.com/grrtyre/youqu/tree/main/diary-manager"},{"@type":"ListItem","position":56,"name":"系统监控器","url":"https://github.com/grrtyre/youqu/tree/main/system-monitor"},{"@type":"ListItem","position":57,"name":"提示词管家","url":"https://github.com/grrtyre/youqu/tree/main/prompt-manager"},{"@type":"ListItem","position":58,"name":"验证器管家","url":"https://github.com/grrtyre/youqu/tree/main/authenticator-manager"},{"@type":"ListItem","position":59,"name":"图片压缩管家","url":"https://github.com/grrtyre/youqu/tree/main/image-compressor"},{"@type":"ListItem","position":60,"name":"启动器管家","url":"https://github.com/grrtyre/youqu/tree/main/launcher-manager"},{"@type":"ListItem","position":61,"name":"音乐播放器","url":"https://github.com/grrtyre/youqu/tree/main/music-player"},{"@type":"ListItem","position":62,"name":"快速翻译管家","url":"https://github.com/grrtyre/youqu/tree/main/quick-translate"},{"@type":"ListItem","position":63,"name":"稍后阅读管家","url":"https://github.com/grrtyre/youqu/tree/main/reading-list-manager"},{"@type":"ListItem","position":64,"name":"壁纸管家","url":"https://github.com/grrtyre/youqu/tree/main/wallpaper-manager"}]}
+{"@context":"https://schema.org","@type":"ItemList","name":"youqu 工具列表","itemListElement":[{"@type":"ListItem","position":1,"name":"Cron 中文可视化","url":"https://github.com/grrtyre/youqu/tree/main/cron-zh"},{"@type":"ListItem","position":2,"name":"剪贴板管家","url":"https://github.com/grrtyre/youqu/tree/main/clipboard-manager"},{"@type":"ListItem","position":3,"name":"Markdown 预览器","url":"https://github.com/grrtyre/youqu/tree/main/markdown-preview"},{"@type":"ListItem","position":4,"name":"开发者工具箱","url":"https://github.com/grrtyre/youqu/tree/main/dev-toolbox"},{"@type":"ListItem","position":5,"name":"拾色管家","url":"https://github.com/grrtyre/youqu/tree/main/color-picker"},{"@type":"ListItem","position":6,"name":"截图管家","url":"https://github.com/grrtyre/youqu/tree/main/screenshot-manager"},{"@type":"ListItem","position":7,"name":"世界时钟","url":"https://github.com/grrtyre/youqu/tree/main/world-clock"},{"@type":"ListItem","position":8,"name":"重命名管家","url":"https://github.com/grrtyre/youqu/tree/main/file-rename-manager"},{"@type":"ListItem","position":9,"name":"速览管家","url":"https://github.com/grrtyre/youqu/tree/main/quick-look"},{"@type":"ListItem","position":10,"name":"文本管家","url":"https://github.com/grrtyre/youqu/tree/main/text-manager"},{"@type":"ListItem","position":11,"name":"清重管家","url":"https://github.com/grrtyre/youqu/tree/main/duplicate-finder"},{"@type":"ListItem","position":12,"name":"屏幕尺管家","url":"https://github.com/grrtyre/youqu/tree/main/screen-ruler"},{"@type":"ListItem","position":13,"name":"字体管家","url":"https://github.com/grrtyre/youqu/tree/main/font-manager"},{"@type":"ListItem","position":14,"name":"PDF管家","url":"https://github.com/grrtyre/youqu/tree/main/pdf-toolbox"},{"@type":"ListItem","position":15,"name":"文本对比管家","url":"https://github.com/grrtyre/youqu/tree/main/diff-checker"},{"@type":"ListItem","position":16,"name":"倒计时管家","url":"https://github.com/grrtyre/youqu/tree/main/countdown-manager"},{"@type":"ListItem","position":17,"name":"二维码管家","url":"https://github.com/grrtyre/youqu/tree/main/qr-manager"},{"@type":"ListItem","position":18,"name":"习惯管家","url":"https://github.com/grrtyre/youqu/tree/main/habit-keeper"},{"@type":"ListItem","position":19,"name":"记账管家","url":"https://github.com/grrtyre/youqu/tree/main/accounting-manager"},{"@type":"ListItem","position":20,"name":"代码片段管家","url":"https://github.com/grrtyre/youqu/tree/main/snippet-manager"},{"@type":"ListItem","position":21,"name":"时间管家","url":"https://github.com/grrtyre/youqu/tree/main/time-tracker"},{"@type":"ListItem","position":22,"name":"端口管家","url":"https://github.com/grrtyre/youqu/tree/main/port-manager"},{"@type":"ListItem","position":23,"name":"校验管家","url":"https://github.com/grrtyre/youqu/tree/main/checksum-manager"},{"@type":"ListItem","position":24,"name":"API管家","url":"https://github.com/grrtyre/youqu/tree/main/api-manager"},{"@type":"ListItem","position":25,"name":"置顶管家","url":"https://github.com/grrtyre/youqu/tree/main/topmost-manager"},{"@type":"ListItem","position":26,"name":"护眼管家","url":"https://github.com/grrtyre/youqu/tree/main/eye-rest-manager"},{"@type":"ListItem","position":27,"name":"Hosts管家","url":"https://github.com/grrtyre/youqu/tree/main/hosts-manager"},{"@type":"ListItem","position":28,"name":"网络管家","url":"https://github.com/grrtyre/youqu/tree/main/network-manager"},{"@type":"ListItem","position":29,"name":"订阅管家","url":"https://github.com/grrtyre/youqu/tree/main/subscription-manager"},{"@type":"ListItem","position":30,"name":"便签管家","url":"https://github.com/grrtyre/youqu/tree/main/sticky-notes-manager"},{"@type":"ListItem","position":31,"name":"水印管家","url":"https://github.com/grrtyre/youqu/tree/main/watermark-manager"},{"@type":"ListItem","position":32,"name":"正则管家","url":"https://github.com/grrtyre/youqu/tree/main/regex-manager"},{"@type":"ListItem","position":33,"name":"表格管家","url":"https://github.com/grrtyre/youqu/tree/main/csv-manager"},{"@type":"ListItem","position":34,"name":"启动项管家","url":"https://github.com/grrtyre/youqu/tree/main/startup-manager"},{"@type":"ListItem","position":35,"name":"番茄管家","url":"https://github.com/grrtyre/youqu/tree/main/pomodoro-manager"},{"@type":"ListItem","position":36,"name":"识字管家","url":"https://github.com/grrtyre/youqu/tree/main/ocr-manager"},{"@type":"ListItem","position":37,"name":"计算器管家","url":"https://github.com/grrtyre/youqu/tree/main/calculator-manager"},{"@type":"ListItem","position":38,"name":"思维导图管家","url":"https://github.com/grrtyre/youqu/tree/main/mind-map-manager"},{"@type":"ListItem","position":39,"name":"录屏管家","url":"https://github.com/grrtyre/youqu/tree/main/screen-recorder-manager"},{"@type":"ListItem","position":40,"name":"抽签转盘管家","url":"https://github.com/grrtyre/youqu/tree/main/wheel-manager"},{"@type":"ListItem","position":41,"name":"纪念日管家","url":"https://github.com/grrtyre/youqu/tree/main/anniversary-manager"},{"@type":"ListItem","position":42,"name":"闹钟管家","url":"https://github.com/grrtyre/youqu/tree/main/alarm-manager"},{"@type":"ListItem","position":43,"name":"磁盘管家","url":"https://github.com/grrtyre/youqu/tree/main/disk-manager"},{"@type":"ListItem","position":44,"name":"表情管家便携版","url":"https://github.com/grrtyre/youqu/tree/main/emoji-manager"},{"@type":"ListItem","position":45,"name":"闪卡记忆管家","url":"https://github.com/grrtyre/youqu/tree/main/flashcard-manager"},{"@type":"ListItem","position":46,"name":"图片转换管家","url":"https://github.com/grrtyre/youqu/tree/main/image-converter"},{"@type":"ListItem","position":47,"name":"JSON管家","url":"https://github.com/grrtyre/youqu/tree/main/json-manager"},{"@type":"ListItem","position":48,"name":"键鼠管家","url":"https://github.com/grrtyre/youqu/tree/main/keyboard-tester"},{"@type":"ListItem","position":49,"name":"日志管家","url":"https://github.com/grrtyre/youqu/tree/main/log-manager"},{"@type":"ListItem","position":50,"name":"密码生成器","url":"https://github.com/grrtyre/youqu/tree/main/password-generator"},{"@type":"ListItem","position":51,"name":"单位转换器","url":"https://github.com/grrtyre/youqu/tree/main/unit-converter"},{"@type":"ListItem","position":52,"name":"剧集管家","url":"https://github.com/grrtyre/youqu/tree/main/watching-manager"},{"@type":"ListItem","position":53,"name":"调色板管家","url":"https://github.com/grrtyre/youqu/tree/main/palette-manager"},{"@type":"ListItem","position":54,"name":"环境音播放器","url":"https://github.com/grrtyre/youqu/tree/main/ambient-sound"},{"@type":"ListItem","position":55,"name":"日记本","url":"https://github.com/grrtyre/youqu/tree/main/diary-manager"},{"@type":"ListItem","position":56,"name":"系统监控器","url":"https://github.com/grrtyre/youqu/tree/main/system-monitor"},{"@type":"ListItem","position":57,"name":"提示词管家","url":"https://github.com/grrtyre/youqu/tree/main/prompt-manager"},{"@type":"ListItem","position":58,"name":"验证器管家","url":"https://github.com/grrtyre/youqu/tree/main/authenticator-manager"},{"@type":"ListItem","position":59,"name":"图片压缩管家","url":"https://github.com/grrtyre/youqu/tree/main/image-compressor"},{"@type":"ListItem","position":60,"name":"启动器管家","url":"https://github.com/grrtyre/youqu/tree/main/launcher-manager"},{"@type":"ListItem","position":61,"name":"音乐播放器","url":"https://github.com/grrtyre/youqu/tree/main/music-player"},{"@type":"ListItem","position":62,"name":"快速翻译管家","url":"https://github.com/grrtyre/youqu/tree/main/quick-translate"},{"@type":"ListItem","position":63,"name":"稍后阅读管家","url":"https://github.com/grrtyre/youqu/tree/main/reading-list-manager"},{"@type":"ListItem","position":64,"name":"壁纸管家","url":"https://github.com/grrtyre/youqu/tree/main/wallpaper-manager"},{"@type":"ListItem","position":65,"name":"房贷计算器","url":"https://github.com/grrtyre/youqu/tree/main/mortgage-manager"},{"@type":"ListItem","position":66,"name":"语音备忘录","url":"https://github.com/grrtyre/youqu/tree/main/voice-memo-manager"}]}
 </script>
 <script src="assets/js/main.js" defer></script>
 </body>
