@@ -3,7 +3,7 @@
 
 'use strict';
 
-const { app, BrowserWindow, globalShortcut, ipcMain, shell, nativeImage, Tray, Menu, dialog, clipboard } = require('electron');
+const { app, BrowserWindow, globalShortcut, ipcMain, shell, nativeImage, Tray, Menu, dialog, clipboard, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { execSync } = require('child_process');
@@ -16,6 +16,28 @@ const HISTORY_PATH = path.join(app.getPath('userData'), 'quick-look-history.json
 let mainWindow = null;
 let tray = null;
 let history = new core.History(50);
+
+// ===== blur 隐藏控制（修复 S1/S2/S3/S4）=====
+// startupGraceUntil：启动后 1.5 秒内忽略 blur 隐藏，避免 ready-to-show 后窗口一闪而过
+let startupGraceUntil = 0;
+// suppressBlurHide：拖拽/dialog/外部应用打开期间临时禁用 blur 隐藏
+let suppressBlurHide = false;
+let suppressBlurHideTimers = new Set();
+
+function setSuppressBlurHide(ms) {
+  suppressBlurHide = true;
+  const timer = setTimeout(() => {
+    suppressBlurHide = false;
+    suppressBlurHideTimers.delete(timer);
+  }, ms);
+  suppressBlurHideTimers.add(timer);
+}
+
+function shouldHideOnBlur() {
+  if (suppressBlurHide) return false;
+  if (Date.now() < startupGraceUntil) return false;
+  return true;
+}
 
 // ===== 配置读写 =====
 function loadConfig() {
@@ -81,9 +103,21 @@ Write-Output ($paths -join \"\`n\")
 // ===== 创建主窗口 =====
 function createWindow() {
   const cfg = loadConfig();
+
+  // 修复 M8：窗口尺寸不超过屏幕 90%
+  let winW = cfg.windowWidth;
+  let winH = cfg.windowHeight;
+  try {
+    const area = screen.getPrimaryDisplay().workAreaSize;
+    const maxW = Math.floor(area.width * 0.9);
+    const maxH = Math.floor(area.height * 0.9);
+    if (winW > maxW) winW = maxW;
+    if (winH > maxH) winH = maxH;
+  } catch {}
+
   mainWindow = new BrowserWindow({
-    width: cfg.windowWidth,
-    height: cfg.windowHeight,
+    width: winW,
+    height: winH,
     minWidth: 480,
     minHeight: 360,
     show: false,
@@ -102,21 +136,20 @@ function createWindow() {
 
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
 
+  // 修复 S1：启动 grace 期，1.5 秒内忽略 blur 隐藏
   mainWindow.once('ready-to-show', () => {
-    // 首次启动显示主窗口（欢迎页），后续按 Alt+Q 唤起
+    startupGraceUntil = Date.now() + 1500;
     showWindow();
   });
 
-  // 失焦隐藏（仿 Mac QuickLook 行为）
+  // 修复 S1/S2/S3/S4：blur 隐藏前先检查 grace 期和 suppress 标志
   mainWindow.on('blur', () => {
-    // 仅在已显示时隐藏，避免重复触发
     if (mainWindow && mainWindow.isVisible()) {
-      // 通过延迟避免误触
       setTimeout(() => {
-        if (mainWindow && !mainWindow.isFocused()) {
+        if (mainWindow && !mainWindow.isFocused() && shouldHideOnBlur()) {
           hideWindow();
         }
-      }, 120);
+      }, 200);
     }
   });
 
@@ -129,7 +162,16 @@ function showWindow() {
   if (!mainWindow) createWindow();
   if (mainWindow.isMinimized()) mainWindow.restore();
   if (!mainWindow.isVisible()) mainWindow.show();
-  mainWindow.focus();
+  // 修复 S5：被遮挡时强制置顶 200ms，再恢复，避免 Alt+Q 看似无效
+  try {
+    mainWindow.setAlwaysOnTop(true);
+    mainWindow.focus();
+    setTimeout(() => {
+      if (mainWindow) mainWindow.setAlwaysOnTop(false);
+    }, 200);
+  } catch {
+    mainWindow.focus();
+  }
   // 唤起后立即尝试读取选中文件
   tryAutoPreviewSelection();
 }
@@ -150,6 +192,18 @@ function tryAutoPreviewSelection() {
   }
 }
 
+// ===== 生成默认托盘图标（16x16 蓝色圆点 PNG，修复 S6）=====
+function createDefaultTrayIcon() {
+  // 16x16 PNG，蓝色实心圆 + 白色描边
+  // 预先用 Python PIL 生成好的 base64，避免重复构造
+  const pngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAb0lEQVR4nM1SMRLAIAhr8u3Ovpueg3c0ItJeh2ZSICEKOAKYmUVxANAYq+RVDqskTiG32A1UQImTi3YX4BOyrxkcZm/eoXOpyhX4Wr7t/kMBkzln8LWM1rOKzuU4VF3oIn23yiuhyLa/T1PI/iTKXT08OhwHYyJrAAAAAElFTkSuQmCC';
+  try {
+    return nativeImage.createFromBuffer(Buffer.from(pngBase64, 'base64'));
+  } catch {
+    return nativeImage.createEmpty();
+  }
+}
+
 // ===== 托盘 =====
 function createTray() {
   const iconPath = path.join(__dirname, '..', 'build', 'icon.ico');
@@ -159,12 +213,18 @@ function createTray() {
       icon = nativeImage.createFromPath(iconPath);
     }
   } catch {}
-  tray = new Tray(icon.isEmpty() ? nativeImage.createEmpty() : icon);
+  // 修复 S6：图标为空时使用默认蓝色圆点，避免任务栏空白图标
+  if (icon.isEmpty()) {
+    icon = createDefaultTrayIcon();
+  }
+  tray = new Tray(icon);
   const menu = Menu.buildFromTemplate([
     { label: '速览管家', enabled: false },
     { type: 'separator' },
     { label: '显示主窗口', click: () => showWindow() },
     { label: '打开文件选择', click: () => {
+        // 修复 S4：dialog 期间禁用 blur 隐藏 3 秒
+        setSuppressBlurHide(3000);
         showWindow();
         dialog.showOpenDialog({
           properties: ['openFile'],
@@ -208,7 +268,18 @@ if (!gotLock) {
       }
     });
     if (!ok) {
+      // 修复 S7：快捷键注册失败时弹出提示，避免用户毫不知情
       console.error('快捷键注册失败:', cfg.hotkey);
+      try {
+        dialog.showMessageBoxSync({
+          type: 'warning',
+          title: '速览管家 - 快捷键注册失败',
+          message: `全局快捷键 ${cfg.hotkey} 注册失败`,
+          detail: '可能被其他应用占用。请关闭占用该快捷键的程序后重启速览管家，或修改配置中的 hotkey 字段。',
+          buttons: ['知道了'],
+        });
+      } catch {}
+      if (tray) tray.setToolTip('速览管家 - 快捷键注册失败，请检查');
     }
 
     // 隐藏 dock 图标（仿后台运行）
@@ -328,6 +399,12 @@ ipcMain.handle('window:toggle-max', async () => {
     mainWindow.maximize();
   }
   return mainWindow.isMaximized();
+});
+
+// 修复 S2/S3：渲染进程通知拖拽/外部操作开始，期间禁用 blur 隐藏
+ipcMain.handle('blur-control:suspend', async (event, ms) => {
+  setSuppressBlurHide(ms || 1500);
+  return true;
 });
 
 ipcMain.handle('config:get', async () => {
