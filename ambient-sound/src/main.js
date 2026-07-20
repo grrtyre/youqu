@@ -17,12 +17,13 @@ function createWindow() {
   const demoShot = process.env.DEMO_SHOT === '1';
   mainWindow = new BrowserWindow({
     width: 460,
-    height: 720,
+    height: 1000,
     minWidth: 420,
     minHeight: 640,
     show: false,
     frame: true,
     titleBarStyle: 'default',
+    autoHideMenuBar: true, // 隐藏系统菜单栏（按 Alt 才显示），避免与精致 UI 风格割裂
     backgroundColor: '#ffffff',
     title: '环境音播放器',
     icon: path.join(__dirname, '..', 'assets', 'icon.png'),
@@ -32,6 +33,8 @@ function createWindow() {
       nodeIntegration: false,
     },
   });
+  // 额外保险：即使 autoHideMenuBar 失效也强制隐藏菜单栏
+  mainWindow.setMenuBarVisibility(false);
 
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
@@ -39,10 +42,11 @@ function createWindow() {
     if (demoShot) {
       // demo 截图模式：不抢用户焦点，渲染完成后注入演示状态
       mainWindow.showInactive();
-      // 2 秒后激活 3 张卡片用于截图展示（不真正播放音频，仅视觉态）
+      // 2 秒后激活 3 张卡片 + 30 分钟定时器用于截图展示（不真正播放音频，仅视觉态）
+      // 同步更新头部"正在播放"徽章计数 + 圆环进度（renderer.js 内部函数在 IIFE 内不可直接调用）
       setTimeout(() => {
         mainWindow.webContents.executeJavaScript(
-          "window.__demoMode=true;['rain','fire','waves'].forEach(function(id){var c=document.querySelector('.sound-card[data-id=\"'+id+'\"]');if(c)c.classList.add('active');});var st=document.getElementById('status');if(st){st.textContent='播放中 · 雨声、篝火、海浪';st.classList.add('playing');};"
+          "window.__demoMode=true;['rain','fire','waves'].forEach(function(id){var c=document.querySelector('.sound-card[data-id=\"'+id+'\"]');if(c)c.classList.add('active');});var st=document.getElementById('status');if(st){st.textContent='播放中 · 雨声、篝火、海浪';st.classList.add('playing');};var pb=document.getElementById('playingBadge');var pc=document.getElementById('playingCount');if(pb&&pc){pc.textContent='3';pb.hidden=false;};var tb=document.querySelector('.timer-btn[data-min=\"30\"]');if(tb){tb.click();};var pp=document.querySelector('.preset-chip[data-idx=\"0\"]');if(pp){pp.classList.add('active');};"
         ).catch(() => {});
       }, 2000);
     } else {

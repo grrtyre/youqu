@@ -34,6 +34,7 @@ const DEFAULT_PRESETS = [
 let engine = null;
 let spectrumCanvas, spectrumCtx, spectrumDpr = 1;
 let timerEnd = null, timerInterval = null;
+let timerDuration = 0; // 总时长（毫秒），用于计算圆环进度
 let activePresetIdx = -1;
 
 const $ = (s) => document.querySelector(s);
@@ -50,6 +51,7 @@ async function init() {
     renderPresets();
     bindControls();
     initSpectrum();
+    updateGreeting();
     updateStatus();
     // 演示模式（仅用于截图展示）：激活若干卡片 + 模拟频谱，不真正播放音频
     if (new URLSearchParams(location.search).get('demo') === '1') {
@@ -73,6 +75,8 @@ async function init() {
       st.classList.add('playing');
       // 频谱在无引擎时也启用 demo 视觉
       window.__demoMode = true;
+      // demo 模式下也更新头部"正在播放"徽章
+      updatePlayingBadge();
     }
     await engine.prepare();
   } catch (e) {
@@ -83,6 +87,7 @@ async function init() {
       renderPresets();
       bindControls();
       initSpectrum();
+      updateGreeting();
       updateStatus();
     }
   }
@@ -93,7 +98,10 @@ function renderSounds() {
   grid.innerHTML = SOUNDS.map((s) => `
     <div class="sound-card" data-id="${s.id}">
       <button class="card-toggle" type="button">
-        <div class="card-icon">${ICONS[s.id] || ''}</div>
+        <div class="card-icon icon-${s.id}">
+          ${ICONS[s.id] || ''}
+          <div class="card-eq"><span></span><span></span><span></span><span></span></div>
+        </div>
         <div class="card-text">
           <div class="card-name">${s.name}</div>
           <div class="card-desc">${s.desc}</div>
@@ -152,11 +160,9 @@ function ensureResume() {
 
 function updateSliderFill(slider) {
   const v = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
-  // 激活卡片的滑块未填充部分使用浅蓝，强化"正在播放"反馈
-  const card = slider.closest('.sound-card');
-  const isActive = card && card.classList.contains('active');
-  const unfilled = isActive ? 'rgba(0, 122, 255, 0.15)' : '#e5e5ea';
-  slider.style.background = `linear-gradient(to right, #007aff ${v}%, ${unfilled} ${v}%)`;
+  // 所有滑块统一使用蓝色填充，避免"顶部蓝/卡片灰"的样式割裂感
+  // 卡片激活态通过背景渐变 + 边框 + 顶部高亮条 + 均衡器律动来区分，不再依赖滑块颜色
+  slider.style.background = `linear-gradient(to right, #007aff ${v}%, rgba(0, 122, 255, 0.15) ${v}%)`;
 }
 
 function bindControls() {
@@ -189,14 +195,19 @@ function setTimer(minutes) {
   });
   clearInterval(timerInterval);
   const display = $('#timerDisplay');
+  const ringWrap = $('#timerRingWrap');
   if (minutes <= 0) {
     timerEnd = null;
+    timerDuration = 0;
     display.textContent = '未启用';
     display.classList.remove('running');
+    if (ringWrap) ringWrap.hidden = true;
     return;
   }
-  timerEnd = Date.now() + minutes * 60000;
+  timerDuration = minutes * 60000;
+  timerEnd = Date.now() + timerDuration;
   display.classList.add('running');
+  if (ringWrap) ringWrap.hidden = false;
   updateTimerDisplay();
   timerInterval = setInterval(() => {
     if (Date.now() >= timerEnd) {
@@ -204,8 +215,10 @@ function setTimer(minutes) {
       $$('.sound-card').forEach((c) => c.classList.remove('active'));
       clearInterval(timerInterval);
       timerEnd = null;
+      timerDuration = 0;
       display.textContent = '已停止';
       display.classList.remove('running');
+      if (ringWrap) ringWrap.hidden = true;
       updateStatus();
       toast('定时结束，已停止播放');
       return;
@@ -219,7 +232,18 @@ function updateTimerDisplay() {
   const remain = Math.max(0, timerEnd - Date.now());
   const m = Math.floor(remain / 60000);
   const s = Math.floor((remain % 60000) / 1000);
-  $('#timerDisplay').textContent = `${m}:${String(s).padStart(2, '0')} 后停止`;
+  const txt = `${m}:${String(s).padStart(2, '0')}`;
+  $('#timerDisplay').textContent = txt + ' 后停止';
+  // 圆环进度：剩余比例 * 周长
+  const ringFill = $('#timerRingFill');
+  const ringText = $('#timerRingText');
+  if (ringFill && timerDuration > 0) {
+    const ratio = remain / timerDuration;
+    const circumference = 125.66; // 2 * π * r (r=20)
+    // 剩余时间越多，圆环越满（offset 越小）
+    ringFill.style.strokeDashoffset = (circumference * (1 - ratio)).toFixed(2);
+  }
+  if (ringText) ringText.textContent = txt;
 }
 
 function renderPresets() {
@@ -400,6 +424,38 @@ function updateStatus() {
     st.textContent = `播放中 · ${names}`;
     st.classList.add('playing');
   }
+  // 同步更新头部"正在播放"计数徽章
+  updatePlayingBadge();
+}
+
+/* ---------- 头部"正在播放"徽章 ---------- */
+function updatePlayingBadge() {
+  const badge = $('#playingBadge');
+  const count = $('#playingCount');
+  if (!badge || !count) return;
+  // demo 模式：3 张演示卡片
+  const n = (window.__demoMode || (engine && engine._demoMode))
+    ? document.querySelectorAll('.sound-card.active').length
+    : (engine ? engine.activeCount() : 0);
+  if (n > 0) {
+    count.textContent = n;
+    badge.hidden = false;
+  } else {
+    badge.hidden = true;
+  }
+}
+
+/* ---------- 基于时间的问候语 ---------- */
+function updateGreeting() {
+  const el = $('#subtitle');
+  if (!el) return;
+  const h = new Date().getHours();
+  let text;
+  if (h >= 5 && h < 12)       text = '早安 · 开启专注一天';
+  else if (h >= 12 && h < 18) text = '午安 · 沉浸心流时刻';
+  else if (h >= 18 && h < 23) text = '晚安 · 释放一日疲惫';
+  else                        text = '深夜 · 助眠好梦相伴';
+  el.textContent = text;
 }
 
 /* ---------- 频谱可视化 ---------- */
@@ -429,29 +485,31 @@ function drawSpectrum() {
   if (!engine) return;
 
   const data = engine.getFrequencyData();
-  const bars = 24;
+  const bars = 14;
   const usable = Math.floor(data.length * 0.7); // 只取低中频段（更有动感）
   const step = Math.max(1, Math.floor(usable / bars));
-  const gap = 4;
+  const gap = 6;
   const barW = (w - gap * (bars - 1)) / bars;
   const active = engine.activeCount() > 0;
   const demo = engine._demoMode === true || window.__demoMode === true;
-  const radius = Math.min(barW / 2, 2.2); // 统一圆角半径，避免锯齿
+  const radius = Math.min(barW / 2, 4); // 统一圆角半径，避免锯齿
 
   for (let i = 0; i < bars; i++) {
     let sum = 0;
     for (let j = 0; j < step; j++) sum += data[i * step + j] || 0;
     let v = (sum / step) / 255;
     if (!active && demo) {
-      // 多频段叠加，模拟更真实的频谱律动
-      const t = Date.now() * 0.0015;
-      const base = 0.18
-        + 0.38 * Math.abs(Math.sin(i * 0.35 + t))
-        + 0.20 * Math.abs(Math.sin(i * 0.18 + t * 0.7 + 0.4))
-        + 0.12 * Math.abs(Math.sin(i * 0.62 + t * 1.3));
-      // 低频更高，高频衰减（更像真实音乐频谱）
-      const positional = 1 - Math.pow(i / bars, 1.4) * 0.55;
-      v = Math.min(1, base * positional);
+      // 多频段叠加 + 频段差异化权重，让 bar 高度有明显起伏（避免均匀感）
+      const t = Date.now() * 0.0018;
+      // 主波：低频强、高频弱（模拟真实音乐频谱）
+      const positional = 1 - Math.pow(i / bars, 1.5) * 0.55;
+      // 三个独立频段叠加：低频缓动 + 中频抖动 + 高频闪烁
+      const wave1 = 0.55 * Math.abs(Math.sin(i * 0.32 + t));
+      const wave2 = 0.30 * Math.abs(Math.sin(i * 0.71 + t * 1.7 + 0.5));
+      const wave3 = 0.18 * Math.abs(Math.sin(i * 1.43 + t * 2.9 + 1.2));
+      // 中间频段随机衰减（产生明显高低差，强化律动感）
+      const dip = (i === 3 || i === 7 || i === 11) ? 0.35 : 1;
+      v = Math.min(1, (wave1 + wave2 + wave3) * positional * dip);
     } else if (!active) {
       v = 0;
     }
@@ -459,12 +517,12 @@ function drawSpectrum() {
     const bh = Math.max(3, v * h);
     const x = i * (barW + gap);
     const y = h - bh;
-    // 三段渐变：深蓝 → 青蓝 → 暖紫，增加层次感与动态感
+    // 双段渐变：底部深蓝 → 顶部浅蓝，增加层次感
     const grad = ctx.createLinearGradient(0, h, 0, y);
-    grad.addColorStop(0, 'rgba(0,122,255,0.92)');
-    grad.addColorStop(0.5, 'rgba(90,200,250,0.95)');
-    grad.addColorStop(1, 'rgba(175,160,255,0.98)');
-    ctx.fillStyle = (active || demo) ? grad : '#ececf0';
+    grad.addColorStop(0, 'rgba(0,122,255,0.85)');
+    grad.addColorStop(0.5, 'rgba(60,160,250,0.7)');
+    grad.addColorStop(1, 'rgba(120,200,255,0.55)');
+    ctx.fillStyle = (active || demo) ? grad : '#e0e0e6';
     // 只圆角顶部，底部保持平直，避免极小高度时四角圆化失真
     roundRectTop(ctx, x, y, barW, bh, radius);
     ctx.fill();

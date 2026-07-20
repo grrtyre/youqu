@@ -38,8 +38,15 @@
           </svg>
         </div>
         <div class="title-text">
-          <h1>环境音</h1>
-          <p class="subtitle">专注 · 放松 · 助眠</p>
+          <div class="title-line">
+            <h1>环境音</h1>
+            <span class="playing-badge" id="playingBadge" hidden>
+              <span class="dot"></span>
+              <span class="badge-label">播放中</span>
+              <span id="playingCount">0</span>
+            </span>
+          </div>
+          <p class="subtitle" id="subtitle">专注 · 放松 · 助眠</p>
         </div>
         <div class="master-volume">
           <svg class="vol-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
@@ -63,7 +70,16 @@
         <button class="timer-btn" data-min="60">60 分</button>
         <button class="timer-btn" data-min="90">90 分</button>
       </div>
-      <div class="timer-display" id="timerDisplay">未启用</div>
+      <div class="timer-status">
+        <div class="timer-ring-wrap" id="timerRingWrap" hidden>
+          <svg class="timer-ring" viewBox="0 0 48 48" width="44" height="44">
+            <circle class="timer-ring-bg" cx="24" cy="24" r="20"></circle>
+            <circle class="timer-ring-fill" id="timerRingFill" cx="24" cy="24" r="20"></circle>
+          </svg>
+          <div class="timer-ring-text" id="timerRingText">15:00</div>
+        </div>
+        <div class="timer-display" id="timerDisplay">未启用</div>
+      </div>
     </section>
 
     <section class="panel preset-section">
@@ -75,8 +91,10 @@
     </section>
 
     <footer class="footer">
-      <span class="status" id="status">空闲</span>
-      <button class="btn-stop" id="stopAll" type="button">全部停止</button>
+      <div class="footer-inner">
+        <span class="status" id="status">空闲</span>
+        <button class="btn-stop" id="stopAll" type="button">全部停止</button>
+      </div>
     </footer>
   </div>
 
