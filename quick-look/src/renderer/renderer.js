@@ -69,17 +69,32 @@ els.dropzone.addEventListener('click', async () => {
   if (p) await loadPreview(p);
 });
 
-// ===== 拖拽支持 =====
+// ===== 拖拽支持（修复 S2：拖拽期间禁用 blur 隐藏）=====
+let dragDepth = 0; // 用计数器避免子元素切换误触 dragleave
 ['dragenter', 'dragover'].forEach(ev => {
   els.dropzone.addEventListener(ev, e => {
     e.preventDefault();
-    els.dropzone.classList.add('dragover');
+    if (ev === 'dragenter') {
+      dragDepth++;
+      if (dragDepth === 1) {
+        els.dropzone.classList.add('dragover');
+        window.api.blurControl.suspend(10000); // 拖拽最多 10 秒禁用 blur
+      }
+    }
   });
 });
 ['dragleave', 'drop'].forEach(ev => {
   els.dropzone.addEventListener(ev, e => {
     e.preventDefault();
-    els.dropzone.classList.remove('dragover');
+    if (ev === 'dragleave') {
+      dragDepth = Math.max(0, dragDepth - 1);
+      if (dragDepth === 0) {
+        els.dropzone.classList.remove('dragover');
+      }
+    } else if (ev === 'drop') {
+      dragDepth = 0;
+      els.dropzone.classList.remove('dragover');
+    }
   });
 });
 els.dropzone.addEventListener('drop', async (e) => {
@@ -93,16 +108,39 @@ els.dropzone.addEventListener('drop', async (e) => {
   document.addEventListener(ev, e => e.preventDefault());
 });
 
-// ===== 历史抽屉 =====
+// ===== 历史抽屉（修复 L4：抽屉用 .open 类切换，配合 CSS 过渡动画）=====
 els.btnHistory.addEventListener('click', async () => {
-  if (els.historyPanel.hidden) {
+  if (els.historyPanel.hidden || !els.historyPanel.classList.contains('open')) {
     await renderHistory();
     els.historyPanel.hidden = false;
+    // 强制 reflow 后再加 open 类，触发 transition
+    void els.historyPanel.offsetWidth;
+    els.historyPanel.classList.add('open');
   } else {
-    els.historyPanel.hidden = true;
+    els.historyPanel.classList.remove('open');
+    setTimeout(() => { els.historyPanel.hidden = true; }, 250);
   }
 });
+// 修复 M5：清空历史二次确认（第一次点击切换为"确认清空？"红色按钮，3 秒内再点才真正清空）
+let clearHistoryArmed = false;
+let clearHistoryTimer = null;
 els.btnClearHistory.addEventListener('click', async () => {
+  if (!clearHistoryArmed) {
+    clearHistoryArmed = true;
+    els.btnClearHistory.textContent = '确认清空？';
+    els.btnClearHistory.classList.add('danger');
+    clearTimeout(clearHistoryTimer);
+    clearHistoryTimer = setTimeout(() => {
+      clearHistoryArmed = false;
+      els.btnClearHistory.textContent = '清空';
+      els.btnClearHistory.classList.remove('danger');
+    }, 3000);
+    return;
+  }
+  clearTimeout(clearHistoryTimer);
+  clearHistoryArmed = false;
+  els.btnClearHistory.textContent = '清空';
+  els.btnClearHistory.classList.remove('danger');
   await window.api.history.clear();
   await renderHistory();
   showToast('历史已清空');
@@ -120,21 +158,32 @@ async function renderHistory() {
     const li = document.createElement('li');
     const sep = item.path.lastIndexOf(/[\\/]/);
     const name = sep >= 0 ? item.path.slice(sep + 1) : item.path;
-    li.innerHTML = `<span class="h-name">${escapeHtml(name)}</span><span class="h-path">${escapeHtml(item.path)}</span>`;
+    // mimo 修复：路径用「...」前缀截断,突出文件名
+    const dir = sep >= 0 ? item.path.slice(0, sep) : '';
+    const shortDir = dir.length > 30 ? '...' + dir.slice(-28) : dir;
+    li.innerHTML = `<span class="h-name">${escapeHtml(name)}</span><span class="h-path">${escapeHtml(shortDir)}</span>`;
+    li.title = item.path; // 完整路径放 tooltip
     li.addEventListener('click', () => {
-      els.historyPanel.hidden = true;
+      els.historyPanel.classList.remove('open');
+      setTimeout(() => { els.historyPanel.hidden = true; }, 250);
       loadPreview(item.path);
     });
     els.historyList.appendChild(li);
   }
 }
 
-// ===== Meta 操作 =====
+// ===== Meta 操作（修复 S3：外部应用打开期间禁用 blur 隐藏）=====
 els.btnFolder.addEventListener('click', () => {
-  if (currentMeta) window.api.shell.showInFolder(currentMeta.path);
+  if (currentMeta) {
+    window.api.blurControl.suspend(2000);
+    window.api.shell.showInFolder(currentMeta.path);
+  }
 });
 els.btnOpenExt.addEventListener('click', () => {
-  if (currentMeta) window.api.shell.open(currentMeta.path);
+  if (currentMeta) {
+    window.api.blurControl.suspend(2000);
+    window.api.shell.open(currentMeta.path);
+  }
 });
 els.btnCopyPath.addEventListener('click', async () => {
   if (currentMeta) {
@@ -185,6 +234,35 @@ function showError(msg) {
   `;
 }
 
+// 修复 L5：unsupported 文件用中性 info 样式展示元信息，而不是错误样式
+function showUnsupported(meta) {
+  els.welcome.hidden = true;
+  els.preview.hidden = false;
+  els.metaBar.style.display = '';
+  els.titleText.textContent = meta.name;
+  els.metaName.textContent = meta.name;
+  els.metaInfo.textContent = `${meta.sizeText} · ${formatTime(meta.mtime)} · ${meta.ext.toUpperCase() || '文件'}`;
+  els.stage.innerHTML = `
+    <div class="preview-unsupported">
+      <div class="uns-icon">📄</div>
+      <h3>${escapeHtml(meta.name)}</h3>
+      <div class="uns-meta">${meta.sizeText} · ${meta.ext.toUpperCase() || '未知格式'}</div>
+      <p class="uns-hint">暂不支持该格式预览，点击下方「系统打开」用默认程序查看</p>
+    </div>
+  `;
+}
+
+// 修复 M7：用 encodeURI 转义 file:// 路径，避免 #、?、空格导致加载失败
+function filePathToUrl(p) {
+  if (!p) return '';
+  const forward = p.replace(/\\/g, '/');
+  // file:// 后的路径用 encodeURI 转义（保留 :/ 不变）
+  if (forward.startsWith('//')) {
+    return 'file:' + encodeURI(forward);
+  }
+  return 'file:///' + encodeURI(forward.replace(/^\/+/, ''));
+}
+
 // ===== 渲染预览主体 =====
 async function renderPreview(result) {
   const { meta, decision, content, language } = result;
@@ -211,7 +289,18 @@ async function renderPreview(result) {
     } else if (kind === 'json') {
       renderJson(content, meta);
     } else if (kind === 'text' || kind === 'code') {
-      renderText(content, meta, language, kind === 'code');
+      // 修复 M2：空文件预览显示「文件为空」占位卡片
+      if (content === '') {
+        els.stage.innerHTML = `
+          <div class="preview-empty">
+            <div class="empty-icon">∅</div>
+            <h3>文件为空</h3>
+            <p>${escapeHtml(meta.name)} 没有内容</p>
+          </div>
+        `;
+      } else {
+        renderText(content, meta, language, kind === 'code');
+      }
     } else if (kind === 'font') {
       renderFont(meta);
     } else if (kind === 'archive') {
@@ -219,7 +308,8 @@ async function renderPreview(result) {
     } else if (kind === 'office') {
       renderOffice(meta);
     } else {
-      showError('暂不支持此文件格式');
+      // 修复 L5：unknown 文件用中性 info 样式
+      showUnsupported(meta);
     }
   } catch (e) {
     showError(e.message);
@@ -236,7 +326,7 @@ async function renderImage(meta) {
 }
 
 function renderVideo(meta) {
-  const url = `file://${meta.path.replace(/\\/g, '/')}`;
+  const url = filePathToUrl(meta.path);
   const v = document.createElement('video');
   v.className = 'preview-video';
   v.src = url;
@@ -245,7 +335,7 @@ function renderVideo(meta) {
 }
 
 function renderAudio(meta) {
-  const url = `file://${meta.path.replace(/\\/g, '/')}`;
+  const url = filePathToUrl(meta.path);
   const wrap = document.createElement('div');
   wrap.className = 'preview-audio';
   wrap.innerHTML = `
@@ -261,7 +351,7 @@ function renderAudio(meta) {
 }
 
 function renderPdf(meta) {
-  const url = `file://${meta.path.replace(/\\/g, '/')}`;
+  const url = filePathToUrl(meta.path);
   const iframe = document.createElement('iframe');
   iframe.className = 'preview-iframe';
   iframe.src = url;
@@ -278,8 +368,19 @@ function renderText(content, meta, language, isCode) {
 
 function renderMarkdown(content, meta) {
   const div = document.createElement('div');
-  div.className = 'preview-text';
+  div.className = 'preview-text md-body';
   div.innerHTML = simpleMarkdown(content);
+  // 修复 M6：拦截 <a> 点击，用 shell.open 打开外链
+  div.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const href = a.getAttribute('href');
+      if (href) {
+        window.api.blurControl.suspend(2000);
+        window.api.shell.open(href);
+      }
+    });
+  });
   els.stage.appendChild(div);
 }
 
@@ -296,7 +397,7 @@ function renderJson(content, meta) {
 }
 
 function renderFont(meta) {
-  const url = `file://${meta.path.replace(/\\/g, '/')}`;
+  const url = filePathToUrl(meta.path);
   const wrap = document.createElement('div');
   wrap.style.cssText = 'text-align:center;padding:24px;';
   const fontFamily = `previewFont-${Date.now()}`;
@@ -369,6 +470,15 @@ function simpleMarkdown(src) {
 (async function init() {
   // 默认显示欢迎页
   showWelcome();
+  // 修复 M1：首次启动 800ms 后显示引导 Toast
+  try {
+    if (!localStorage.getItem('ql_firstRun_v1')) {
+      setTimeout(() => {
+        showToast('按 Alt+Q 随时唤起我', 3500);
+        localStorage.setItem('ql_firstRun_v1', '1');
+      }, 800);
+    }
+  } catch {}
 })();
 
 // 键盘快捷键（应用内）
@@ -376,7 +486,9 @@ document.addEventListener('keydown', async (e) => {
   // Esc 关闭预览
   if (e.key === 'Escape') {
     if (!els.historyPanel.hidden) {
-      els.historyPanel.hidden = true;
+      // 修复 L4：抽屉用 .open 类切换，配合 CSS 过渡动画
+      els.historyPanel.classList.remove('open');
+      setTimeout(() => { els.historyPanel.hidden = true; }, 250);
     } else {
       window.api.window.close();
     }
