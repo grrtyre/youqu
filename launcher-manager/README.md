@@ -5,7 +5,7 @@
 ![platform](https://img.shields.io/badge/platform-Windows-blue?style=flat-square)
 ![electron](https://img.shields.io/badge/Electron-30-47848F?style=flat-square)
 ![license](https://img.shields.io/badge/license-MIT-green?style=flat-square)
-![version](https://img.shields.io/badge/version-1.0.0-007aff?style=flat-square)
+![version](https://img.shields.io/badge/version-1.1.0-007aff?style=flat-square)
 
 ---
 
@@ -15,6 +15,7 @@
 - 🔍 **智能模糊搜索** —— 自研评分算法（精确匹配 / 单词边界 / 前缀匹配 / 子序列匹配），输入即可命中
 - 📚 **自动索引本地应用** —— 扫描开始菜单、桌面、用户目录等所有 `.lnk` / `.url` / `.exe` 文件
 - 🕘 **最近使用排序** —— 自动记录启动次数与时间，常用应用置顶显示
+- 🏷️ **智能分组小节** —— 空查询时自动按"最近使用 / 全部应用"分组，搜索态自动合并
 - 🎨 **苹果白高端风格** —— 浅色背景、细腻多层阴影、系统字体、`#007aff` 强调色
 - ⌨️ **全键盘操作** —— `↑↓` 选择、`Enter` 启动、`Esc` 关闭，无需鼠标
 - 🚀 **轻量极速** —— 单窗口、5 分钟增量索引、内存占用低
@@ -105,6 +106,18 @@ launcher-manager/
 ---
 
 ## 📝 更新日志
+
+### v1.1.0
+- 🏷️ 空查询时按"最近使用 / 全部应用"分组，新增小节标签与计数
+- 🎨 选中态改为 Apple Spotlight 风格：纯净实色块 + 内描边，移除原发光阴影与左侧竖条
+- 🪶 状态栏移除亮绿圆点，改用低饱和蓝点；底栏背景统一为白色，去除生硬分割线
+- 🧹 空状态去掉方框包裹，纯 SVG 居中，更克制
+- ⌨️ hint-kbd 改为圆角 pill 风格；底部 kbd 改为 chip 样式（浅灰底 + 细边框 + 圆角）
+- 🖼️ 截图演示数据扩充至 8 个应用，更饱满
+- 📝 副标题统一显示安装位置类型（Program Files / Local / Roaming / WindowsApps），消除信息层级混乱
+- 🎨 字母占位符图标改为蓝色渐变底 + 白字，统一品牌感；图标尺寸 32→34px
+- 💡 阴影调整为垂直扩散为主，水平收窄，让卡片"浮"得更精致
+- 🎨 小节标签加深颜色与字重；第二小节加细分割线强化分组分隔
 
 ### v1.0.0
 - 🎉 首次发布

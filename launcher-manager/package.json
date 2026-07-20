@@ -1,6 +1,6 @@
 {
   "name": "launcher-manager",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "快速应用启动器 - 模糊搜索已安装应用，全局热键唤起，苹果白高端风格",
   "main": "src/main.js",
   "scripts": {

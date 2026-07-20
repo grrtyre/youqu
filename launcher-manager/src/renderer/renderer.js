@@ -1,4 +1,4 @@
-// launcher-manager 渲染逻辑
+// launcher-manager 渲染逻辑 (v1.1.0 视觉精修)
 
 const searchInput = document.getElementById('search-input');
 const resultsEl = document.getElementById('results');
@@ -8,17 +8,15 @@ const appCountEl = document.getElementById('app-count');
 let currentResults = [];
 let selectedIndex = 0;
 let searchTimer = null;
+let currentQuery = '';
 
-// 应用头像配色板（饱和中调渐变，避免浅色发白）
+// 应用头像配色板 —— 4 套和谐冷色（蓝/靛/青/紫），统一苹果白调性
+// 比彩虹色板更克制、更具系统感，避免视觉杂乱
 const AVATAR_COLORS = [
-  ['#0a84ff', '#0064d6'],
-  ['#30d158', '#28a745'],
-  ['#ff9f0a', '#f07700'],
-  ['#bf5af2', '#9b30d4'],
-  ['#ff375f', '#d6244a'],
-  ['#5e5ce6', '#4338ca'],
-  ['#1ec8d6', '#0e9aa8'],
-  ['#e84c8a', '#c41e6a']
+  ['#0a84ff', '#0064d6'],  // 蓝
+  ['#5e5ce6', '#4338ca'],  // 靛
+  ['#1ec8d6', '#0e9aa8'],  // 青
+  ['#bf5af2', '#7c3aed']   // 紫
 ];
 
 function firstChar(name) {
@@ -91,9 +89,37 @@ searchInput.addEventListener('keydown', (e) => {
 });
 
 async function doSearch(query) {
-  currentResults = await window.launcher.search(query || '');
+  currentQuery = query || '';
+  currentResults = await window.launcher.search(currentQuery);
   selectedIndex = 0;
   renderResults();
+}
+
+// 把结果按 "最近使用 / 全部应用" 分组
+// 仅当存在至少一个最近项，且查询为空（首页态）时显示小节标签
+function groupResults(results, query) {
+  const hasRecent = results.some(r => r.recent);
+  if (query && query.trim()) {
+    // 搜索态：不分组，整体显示为"搜索结果"
+    return [
+      { label: '', items: results }
+    ];
+  }
+  if (!hasRecent) {
+    return [
+      { label: '', items: results }
+    ];
+  }
+  const recent = results.filter(r => r.recent);
+  const others = results.filter(r => !r.recent);
+  const groups = [];
+  if (recent.length) {
+    groups.push({ label: '最近使用', items: recent });
+  }
+  if (others.length) {
+    groups.push({ label: '全部应用', items: others });
+  }
+  return groups;
 }
 
 function renderResults() {
@@ -108,56 +134,76 @@ function renderResults() {
   resultsEl.hidden = false;
   emptyState.hidden = true;
 
-  currentResults.forEach((app, index) => {
-    const item = document.createElement('div');
-    item.className = 'result-item' + (index === selectedIndex ? ' selected' : '');
-    item.setAttribute('role', 'option');
-    item.setAttribute('aria-selected', index === selectedIndex);
+  const groups = groupResults(currentResults, currentQuery);
 
-    const iconWrap = document.createElement('div');
-    iconWrap.className = 'item-icon';
-    if (app.icon) {
-      const img = document.createElement('img');
-      img.src = app.icon;
-      img.alt = '';
-      img.onerror = () => {
-        iconWrap.innerHTML = avatarHtml(app.name);
-      };
-      iconWrap.appendChild(img);
-    } else {
-      iconWrap.innerHTML = avatarHtml(app.name);
+  // 把"全局 selectedIndex"映射到分组内的局部位置
+  let globalIdx = 0;
+
+  groups.forEach((group) => {
+    if (group.label) {
+      const label = document.createElement('div');
+      label.className = 'section-label';
+      const textNode = document.createTextNode(group.label);
+      label.appendChild(textNode);
+      const cnt = document.createElement('span');
+      cnt.className = 'section-count';
+      cnt.textContent = String(group.items.length);
+      label.appendChild(cnt);
+      resultsEl.appendChild(label);
     }
+    group.items.forEach((app) => {
+      const index = globalIdx;
+      const item = document.createElement('div');
+      item.className = 'result-item' + (index === selectedIndex ? ' selected' : '');
+      item.setAttribute('role', 'option');
+      item.setAttribute('aria-selected', index === selectedIndex);
 
-    const textWrap = document.createElement('div');
-    textWrap.className = 'item-text';
+      const iconWrap = document.createElement('div');
+      iconWrap.className = 'item-icon';
+      if (app.icon) {
+        const img = document.createElement('img');
+        img.src = app.icon;
+        img.alt = '';
+        img.onerror = () => {
+          iconWrap.innerHTML = avatarHtml(app.name);
+        };
+        iconWrap.appendChild(img);
+      } else {
+        iconWrap.innerHTML = avatarHtml(app.name);
+      }
 
-    const nameEl = document.createElement('div');
-    nameEl.className = 'item-name';
-    nameEl.innerHTML = highlight(app.name, searchInput.value);
+      const textWrap = document.createElement('div');
+      textWrap.className = 'item-text';
 
-    const pathEl = document.createElement('div');
-    pathEl.className = 'item-path';
-    pathEl.textContent = shortenPath(app.path);
+      const nameEl = document.createElement('div');
+      nameEl.className = 'item-name';
+      nameEl.innerHTML = highlight(app.name, searchInput.value);
 
-    textWrap.appendChild(nameEl);
-    textWrap.appendChild(pathEl);
+      const pathEl = document.createElement('div');
+      pathEl.className = 'item-path';
+      pathEl.textContent = shortenPath(app.path, app.name);
 
-    item.appendChild(iconWrap);
-    item.appendChild(textWrap);
+      textWrap.appendChild(nameEl);
+      textWrap.appendChild(pathEl);
 
-    // 移除右侧"最近"圆点指示器 — 最近应用已通过置顶排序隐式表达
-    // 避免视觉冗余和"未完成感"
+      item.appendChild(iconWrap);
+      item.appendChild(textWrap);
 
-    item.addEventListener('mouseenter', () => {
-      selectedIndex = index;
-      renderResults();
+      // 不再渲染单独的"最近"pill —— 小节标签 + 分组已经清楚表达"最近使用"
+      // 避免连续 4 个相同 pill 造成视觉冗余
+
+      item.addEventListener('mouseenter', () => {
+        selectedIndex = index;
+        renderResults();
+      });
+      item.addEventListener('click', () => {
+        selectedIndex = index;
+        launchApp(currentResults[index]);
+      });
+
+      resultsEl.appendChild(item);
+      globalIdx++;
     });
-    item.addEventListener('click', () => {
-      selectedIndex = index;
-      launchApp(currentResults[index]);
-    });
-
-    resultsEl.appendChild(item);
   });
 
   const selected = resultsEl.querySelector('.selected');
@@ -197,8 +243,23 @@ function escapeHtml(s) {
   }[c]));
 }
 
-function shortenPath(p) {
-  return p.replace(/^[A-Z]:\\Users\\[^\\]+\\/, '~/').replace(/^[A-Z]:\\ProgramData\\/, '/ProgramData/');
+// 副标题统一显示安装位置类型，信息层级一致，避免厂商名/父目录名混合造成的视觉混乱
+function shortenPath(p, appName) {
+  return getLocationType(p);
+}
+
+// 根据路径返回安装位置类型
+function getLocationType(p) {
+  const lower = p.toLowerCase();
+  if (lower.indexOf('program files (x86)') >= 0) return 'Program Files (x86)';
+  if (lower.indexOf('program files') >= 0) return 'Program Files';
+  if (lower.indexOf('appdata\\roaming') >= 0) return 'Roaming';
+  if (lower.indexOf('appdata\\local\\programs') >= 0) return 'Local';
+  if (lower.indexOf('appdata\\local\\microsoft\\windowsapps') >= 0) return 'WindowsApps';
+  if (lower.indexOf('appdata\\local') >= 0) return 'Local';
+  if (lower.indexOf('programdata') >= 0) return 'ProgramData';
+  if (lower.indexOf('desktop') >= 0) return 'Desktop';
+  return '';
 }
 
 async function launchApp(app) {

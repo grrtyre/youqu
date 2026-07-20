@@ -13,12 +13,16 @@ let indexer = null;
 const SCREENSHOT_MODE = process.argv.includes('--screenshot');
 
 // 演示数据（截图模式下展示，呈现苹果白界面效果）
+// 8 个应用让结果列表更饱满，并配合"最近使用 / 全部应用"小节标签呈现层级
 const DEMO_APPS = [
   { name: 'Google Chrome', path: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', icon: null, ext: '.lnk' },
   { name: 'Visual Studio Code', path: 'C:\\Users\\demo\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe', icon: null, ext: '.lnk' },
   { name: 'Windows Terminal', path: 'C:\\Users\\demo\\AppData\\Local\\Microsoft\\WindowsApps\\wt.exe', icon: null, ext: '.lnk' },
+  { name: 'Figma', path: 'C:\\Users\\demo\\AppData\\Local\\Programs\\Figma\\Figma.exe', icon: null, ext: '.lnk' },
   { name: 'Spotify', path: 'C:\\Users\\demo\\AppData\\Roaming\\Spotify\\Spotify.exe', icon: null, ext: '.lnk' },
-  { name: 'Notion', path: 'C:\\Users\\demo\\AppData\\Local\\Programs\\Notion\\Notion.exe', icon: null, ext: '.lnk' }
+  { name: 'Notion', path: 'C:\\Users\\demo\\AppData\\Local\\Programs\\Notion\\Notion.exe', icon: null, ext: '.lnk' },
+  { name: 'Telegram', path: 'C:\\Users\\demo\\AppData\\Roaming\\Telegram Desktop\\Telegram.exe', icon: null, ext: '.lnk' },
+  { name: 'WeChat', path: 'C:\\Program Files\\Tencent\\WeChat\\WeChat.exe', icon: null, ext: '.lnk' }
 ];
 
 // 索引缓存
@@ -73,8 +77,8 @@ function buildAppList() {
 
 function createWindow() {
   const { width: screenWidth, height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
-  const winW = SCREENSHOT_MODE ? 660 : 640;
-  const winH = SCREENSHOT_MODE ? 520 : 460;
+  const winW = SCREENSHOT_MODE ? 680 : 640;
+  const winH = SCREENSHOT_MODE ? 660 : 460;
 
   mainWindow = new BrowserWindow({
     width: winW,
@@ -143,11 +147,13 @@ function registerHotkey() {
 // 索引应用（启动时 + 每隔 5 分钟刷新）
 function startIndexing() {
   if (SCREENSHOT_MODE) {
-    // 截图模式：注入演示"最近使用"数据，让"最近"标记可见
+    // 截图模式：注入演示"最近使用"数据 —— 前 4 个标记为最近
+    // 让"最近使用"(4) + "全部应用"(4) 两个小节都可见，充分呈现层级
     recentApps = [
-      { path: DEMO_APPS[0].path, count: 8, time: Date.now() },
-      { path: DEMO_APPS[1].path, count: 5, time: Date.now() - 1000 },
-      { path: DEMO_APPS[3].path, count: 3, time: Date.now() - 2000 }
+      { path: DEMO_APPS[0].path, count: 12, time: Date.now() },
+      { path: DEMO_APPS[1].path, count: 8, time: Date.now() - 1000 },
+      { path: DEMO_APPS[3].path, count: 5, time: Date.now() - 2000 },
+      { path: DEMO_APPS[2].path, count: 3, time: Date.now() - 3000 }
     ];
     buildAppList();
     return;
