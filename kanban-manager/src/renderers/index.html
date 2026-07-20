@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';" />
+  <title>看板管家</title>
+  <link rel="stylesheet" href="../styles/app.css" />
+</head>
+<body>
+  <!-- 顶部栏 -->
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-icon">▦</div>
+      <span>看板管家</span>
+    </div>
+    <div class="board-tabs" id="boardTabs"></div>
+    <div class="actions">
+      <div class="search-box">
+        <span class="icon">🔍</span>
+        <input id="searchInput" type="text" placeholder="搜索卡片..." autocomplete="off" />
+        <div class="search-results" id="searchResults"></div>
+      </div>
+      <button class="btn btn-icon" id="btnAddBoard" title="新建看板">＋</button>
+      <button class="btn btn-icon" id="btnExport" title="导出数据">⬇</button>
+      <button class="btn btn-icon" id="btnImport" title="导入数据">⬆</button>
+      <button class="btn btn-icon" id="btnAbout" title="关于">ⓘ</button>
+    </div>
+  </div>
+
+  <!-- 状态栏 -->
+  <div class="statusbar" id="statusbar"></div>
+
+  <!-- 看板主区域 -->
+  <div class="board-area" id="boardArea"></div>
+
+  <!-- 模态框容器 -->
+  <div id="modalContainer"></div>
+
+  <!-- Toast 容器 -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="../scripts/store.js"></script>
+  <script src="../scripts/app.js"></script>
+</body>
+</html>

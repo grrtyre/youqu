@@ -1,0 +1,36 @@
+{
+  "name": "kanban-manager",
+  "version": "1.0.0",
+  "description": "苹果白风格本地优先看板任务管理工具，支持拖拽、标签、截止日期、归档与导入导出",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/run-tests.js",
+    "build": "electron-builder --win --x64",
+    "build:portable": "electron-builder --win portable --x64"
+  },
+  "keywords": ["kanban", "task", "todo", "productivity", "electron", "apple-white"],
+  "author": "youqu",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.youqu.kanban",
+    "productName": "看板管家",
+    "directories": { "output": "dist", "buildResources": "build" },
+    "files": ["src/**/*", "assets/**/*", "package.json"],
+    "win": {
+      "target": [{"target": "nsis", "arch": ["x64"]}],
+      "icon": "build/icon.ico",
+      "artifactName": "KanbanManager-${version}-Setup.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "看板管家"
+    }
+  }
+}
