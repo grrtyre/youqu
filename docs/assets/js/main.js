@@ -1,7 +1,7 @@
 /* ============ youqu 展示站点 · 交互逻辑 ============ */
 'use strict';
 
-/* ---------- 项目数据（66 个工具） ---------- */
+/* ---------- 项目数据（67 个工具） ---------- */
 var G = 'https://github.com/grrtyre/youqu';
 var R = 'https://github.com/grrtyre/youqu/releases';
 var AF = 'https://www.ifdian.net/a/giquwei';
@@ -272,15 +272,20 @@ var PROJECTS = [
   {id:'voice-memo-manager',icon:'🎙️',name:'语音备忘录',cat:'efficiency',stack:'electron',ver:'v1.0.0',
    desc:'苹果白风格桌面语音备忘录：一键录音、实时波形动画、精确计时、流畅播放（进度条可拖动）、录音列表自动倒序、模糊搜索、重命名/删除、打开目录定位、系统托盘常驻，纯本地隐私优先。',
    tags:['Electron','MediaRecorder API'],gh:G+'/tree/main/voice-memo-manager',
-   features:['一键录音，单击开始/再次单击结束','录音时实时波形动画 + 精确到秒计时器','内置播放器，进度条可拖动跳转','录音列表自动按时间倒序','按标题模糊搜索','悬停显示重命名/删除按钮','一键在文件管理器中定位录音','系统托盘常驻，关闭即最小化','空格键开始/停止录音（输入框聚焦时除外）']}
+   features:['一键录音，单击开始/再次单击结束','录音时实时波形动画 + 精确到秒计时器','内置播放器，进度条可拖动跳转','录音列表自动按时间倒序','按标题模糊搜索','悬停显示重命名/删除按钮','一键在文件管理器中定位录音','系统托盘常驻，关闭即最小化','空格键开始/停止录音（输入框聚焦时除外）']},
+  /* 第十九轮：补录遗漏项目 license-manager，工具总数 66→67，与 GitHub 仓库实际目录完全对齐 */
+  {id:'license-manager',icon:'🔑',name:'许可证管理器',cat:'system',stack:'electron',ver:'v1.0.0',
+   desc:'苹果白风格软件许可证管理器：AES-256-GCM 加密 + PBKDF2 100k 轮密钥派生、到期提醒（30 天内/已过期/永久授权）、仪表盘统计、全文搜索、7 大分类、密钥脱敏显示、加密备份导入导出、5 分钟自动锁定、纯本地隐私优先。',
+   tags:['Electron','Node.js crypto'],gh:G+'/tree/main/license-manager',
+   features:['AES-256-GCM 加密 + PBKDF2-SHA512 100k 轮密钥派生','主密码不存储，仅会话内派生密钥','到期提醒：有效 / 即将到期（30 天）/ 已过期 / 永久授权','仪表盘统计：总数、即将到期、总价值','全文搜索：名称、厂商、密钥、备注','7 大分类：生产力 / 开发 / 设计 / 游戏 / 系统 / 安全 / 其他','密钥脱敏显示，一键复制完整密钥','加密备份导出 / 导入（.lmenc 跨设备迁移）','5 分钟无操作自动锁定保险库']}
 ];
 
 /* Assign screenshot path + score placeholder to each project */
 /* shot  = 卡片尺寸小图 (480px wide, ~5KB) 用于卡片首屏 */
 /* full  = 大图尺寸 (1200px wide, ~22KB) 用于 lightbox */
 /* 仅最近新增的项目标记「新」徽标，保持徽标稀缺性与视觉指引价值 */
-/* 第十七轮：新徽标刷新为本次补录的 2 个项目，让用户一眼看到新收录工具，恢复徽标稀缺性 */
-var NEW_IDS = ['mortgage-manager','voice-memo-manager'];
+/* 第十九轮：新徽标刷新为本次补录的 1 个项目（license-manager），恢复徽标稀缺性 */
+var NEW_IDS = ['license-manager'];
 PROJECTS.forEach(function(p){
   p.shot = 'assets/img/' + p.id + '.webp';
   p.full = 'assets/img/' + p.id + '-full.webp';
@@ -333,6 +338,8 @@ function cardHTML(p, idx, query){
   var g = GRAD[p.cat];
   var cc = CAT_COLOR[p.cat];
   var si = STACK_INFO[p.stack] || {icon:'⚡',label:p.stack};
+  // 第二十三轮：ver 字段兜底，未设置时回退 v1.0，避免版本徽章空缺
+  var ver = p.ver || 'v1.0';
   var dlBtn = p.dl
     ? '<a class="btn btn--primary btn--sm card__cta" href="'+p.dl+'" target="_blank" rel="noopener"><span>获取</span><span class="card__cta-arrow" aria-hidden="true">→</span></a>'
     : '<a class="btn btn--primary btn--sm card__cta" href="'+p.gh+'" target="_blank" rel="noopener"><span>获取</span><span class="card__cta-arrow" aria-hidden="true">→</span></a>';
@@ -342,11 +349,13 @@ function cardHTML(p, idx, query){
   var newBadge = p.isNew ? '<span class="card__new">新</span>' : '';
   var titleHTML = highlight(p.name, query);
   var descHTML = highlight(p.desc, query);
+  // 第二十三轮：card__desc 加 data-full 属性供 CSS tooltip 显示完整描述
+  var fullDesc = escapeHTML(p.desc || '');
   return ''+
   '<article class="card" data-cat="'+p.cat+'" data-stack="'+p.stack+'" data-id="'+p.id+'" tabindex="0" role="button" aria-label="'+escapeHTML(p.name)+' 详情">'+
     '<span class="card__hint" aria-hidden="true">查看详情</span>'+
     '<div class="card__media" style="background:'+g.emoji_bg+'">'+
-      '<span class="card__version">'+p.ver+'</span>'+
+      '<span class="card__version">'+ver+'</span>'+
       scoreBadge+
       '<span class="card__emoji-glow" aria-hidden="true"></span>'+
       '<span class="card__emoji" aria-hidden="true">'+p.icon+'</span>'+
@@ -358,7 +367,7 @@ function cardHTML(p, idx, query){
         newBadge+
       '</div>'+
       '<h3 class="card__title">'+titleHTML+'</h3>'+
-      '<p class="card__desc">'+descHTML+'</p>'+
+      '<p class="card__desc" data-full="'+fullDesc+'" title="'+fullDesc+'">'+descHTML+'</p>'+
       '<div class="card__actions">'+
         dlBtn+
         '<a class="card__src" href="'+p.gh+'" target="_blank" rel="noopener" aria-label="查看源码" title="查看源码"><svg class="card__src-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg></a>'+
@@ -1086,14 +1095,69 @@ if(searchHint && !searchInteracted){
 })();
 
 /* ---------- 工具栏滚动暗示：滚动 >400px 后淡出 ---------- */
-/* 配合 CSS .toolbar__scroll-hint，让"向下滚动浏览全部 66 个工具"提示在用户开始滚动后消失 */
+/* 第十九轮：动态绑定 PROJECTS.length 到滚动暗示文本，未来新增项目无需手改 HTML */
 (function(){
   var hint = document.getElementById('scroll-hint');
   if(!hint) return;
+  var hintText = hint.querySelector('.toolbar__scroll-hint-text');
+  if(hintText) hintText.textContent = '向下滚动浏览全部 ' + PROJECTS.length + ' 个工具';
   function onHintScroll(){
     var y = window.scrollY;
     hint.classList.toggle('is-hidden', y > 400);
   }
   window.addEventListener('scroll', onHintScroll, {passive:true});
   onHintScroll();
+})();
+
+/* ============ 第十九轮：卡片 hover 鼠标跟随 3D 倾斜 ============ */
+/* 仅桌面端 pointer:fine 启用；尊重 prefers-reduced-motion 直接跳过 */
+/* 鼠标在卡片内移动时，计算相对中心的偏移驱动 rotateX/rotateY（±3°） */
+/* 鼠标离开时 0.5s 缓动复位（移除 is-tilting 类，CSS transition 接管） */
+(function(){
+  if(!window.matchMedia) return;
+  if(!window.matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+  if(window.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  var MAX_TILT = 3; /* 最大倾斜角度 */
+  var cards = document.querySelectorAll('.card');
+  if(!cards.length) return;
+  /* 委托到 grid，避免每张卡片单独绑定 */
+  var grid = document.getElementById('grid');
+  if(!grid) return;
+  var activeCard = null;
+  grid.addEventListener('mousemove', function(e){
+    var card = e.target.closest('.card');
+    if(!card) return;
+    if(card !== activeCard){
+      if(activeCard) activeCard.classList.remove('is-tilting');
+      activeCard = card;
+      activeCard.classList.add('is-tilting');
+    }
+    var rect = card.getBoundingClientRect();
+    var cx = rect.left + rect.width / 2;
+    var cy = rect.top + rect.height / 2;
+    var dx = (e.clientX - cx) / (rect.width / 2);  /* -1 ~ 1 */
+    var dy = (e.clientY - cy) / (rect.height / 2); /* -1 ~ 1 */
+    /* 鼠标在右侧 → 卡片绕 Y 轴向右倾（右侧远离视线）
+       鼠标在下方 → 卡片绕 X 轴向上倾（顶部远离视线）
+       这样产生"卡片面向鼠标"的立体感 */
+    var ry = (dx * MAX_TILT).toFixed(2);
+    var rx = (-dy * MAX_TILT).toFixed(2);
+    card.style.setProperty('--rx', rx + 'deg');
+    card.style.setProperty('--ry', ry + 'deg');
+  });
+  grid.addEventListener('mouseleave', function(){
+    if(activeCard){
+      activeCard.classList.remove('is-tilting');
+      activeCard.style.removeProperty('--rx');
+      activeCard.style.removeProperty('--ry');
+      activeCard = null;
+    }
+  });
+  /* 卡片被点击/聚焦时也移除倾斜，避免交互冲突 */
+  document.addEventListener('focusin', function(e){
+    if(activeCard && e.target.closest('.card') !== activeCard){
+      activeCard.classList.remove('is-tilting');
+      activeCard = null;
+    }
+  });
 })();
