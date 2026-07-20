@@ -355,7 +355,6 @@ function cardHTML(p, idx, query){
   '<article class="card" data-cat="'+p.cat+'" data-stack="'+p.stack+'" data-id="'+p.id+'" tabindex="0" role="button" aria-label="'+escapeHTML(p.name)+' 详情">'+
     '<span class="card__hint" aria-hidden="true">查看详情</span>'+
     '<div class="card__media" style="background:'+g.emoji_bg+'">'+
-      '<span class="card__version">'+ver+'</span>'+
       scoreBadge+
       '<span class="card__emoji-glow" aria-hidden="true"></span>'+
       '<span class="card__emoji" aria-hidden="true">'+p.icon+'</span>'+
@@ -365,6 +364,7 @@ function cardHTML(p, idx, query){
       '<div class="card__meta">'+
         '<span class="card__stack">'+si.icon+' '+si.label+'</span>'+
         newBadge+
+        '<span class="card__version">'+ver+'</span>'+
       '</div>'+
       '<h3 class="card__title">'+titleHTML+'</h3>'+
       '<p class="card__desc" data-full="'+fullDesc+'" title="'+fullDesc+'">'+descHTML+'</p>'+
