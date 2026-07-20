@@ -3449,7 +3449,163 @@
       给 emoji 更多呼吸空间 */
 .card__media{padding:6px 0 0}
 
+/* ============ 第二十八轮 · mimo v10 反馈修复（图标视觉统一 / 版本号胶囊化 / CTA-GitHub 分组 / Hero 分隔线 / 末行渐变遮罩 / 描述等高兜底） ============ */
 
+/* 102. 图标视觉语言统一 —— mimo 反馈"卡片图标混用写实/扁平/卡通风格"
+      方案：不修改 67 个项目源码，通过 CSS 给 .card__emoji 强制统一容器语言
+      (a) 圆角从 50% 改为 20px，让所有 emoji 落在统一的"圆角方形"容器中（苹果 App 图标范式）
+      (b) 容器背景统一为浅灰 #f5f5f7 + 内嵌微光，弱化 emoji 自身风格差异
+      (c) 加 filter:grayscale(.18) contrast(1.02) 轻度灰度统一视觉调性
+      (d) 尺寸从 72px 加大到 80px，配合 40px 字号让图标更稳 */
+.card__emoji{
+  width:80px !important;
+  height:80px !important;
+  border-radius:20px !important;
+  font-size:40px !important;
+  background:#f5f5f7 !important;
+  backdrop-filter:none !important;
+  filter:grayscale(.18) contrast(1.02) saturate(.95);
+  box-shadow:0 4px 14px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04),inset 0 1px 0 rgba(255,255,255,.9) !important;
+  border:1px solid rgba(0,0,0,.04) !important;
+}
+.card:hover .card__emoji{
+  transform:translate(-50%,-50%) scale(1.06) !important;
+  filter:grayscale(.08) contrast(1.04) saturate(1);
+  box-shadow:0 8px 22px rgba(0,122,255,.10),0 2px 4px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.9) !important;
+}
+.card__emoji-glow{display:none !important}
+@media (max-width:600px){
+  .card__emoji{width:64px !important;height:64px !important;font-size:32px !important;border-radius:16px !important}
+}
+
+/* 103. 版本号统一胶囊 —— mimo 反馈"灰色小字存在感弱，像半隐藏状态"
+      方案：做成统一的浅灰胶囊，与 stack chip 视觉对齐
+      浅灰背景 + 圆角 + 等宽数字，让版本号有明确形态 */
+.card__version{
+  background:rgba(0,0,0,.045) !important;
+  color:var(--ink2) !important;
+  padding:3px 9px !important;
+  border-radius:8px !important;
+  font-size:10.5px !important;
+  font-weight:600 !important;
+  letter-spacing:.01em !important;
+  font-variant-numeric:tabular-nums !important;
+  line-height:1.4 !important;
+  border:1px solid rgba(0,0,0,.04) !important;
+}
+.card__meta .card__version{margin-left:auto !important}
+
+/* 104. CTA 与 GitHub 图标分组 —— mimo 反馈"获取按钮与 GitHub 图标间距偏紧"
+      方案：GitHub 按钮推到右侧 margin-left:auto，与 CTA 拉开视觉距离
+      card__actions gap 已经 18px，再让 .card__src 贴右 */
+.card__actions{
+  gap:10px !important;
+  justify-content:flex-start !important;
+}
+.card__actions .card__cta{flex:0 0 auto !important}
+.card__actions .card__src{
+  margin-left:auto !important;
+  flex:0 0 auto !important;
+}
+
+/* 105. Hero 与筛选栏分隔线 —— mimo 反馈"Hero 底部直接衔接搜索栏，稍显突兀"
+      方案：在 .toolbar 顶部加 1px 极淡分隔线，让两区有明确边界感
+      sticky 时分隔线保持可见 */
+.toolbar{
+  border-top:1px solid rgba(0,0,0,.05) !important;
+  background:rgba(245,245,247,.92) !important;
+  backdrop-filter:saturate(180%) blur(12px);
+}
+.toolbar.is-stuck{
+  border-top-color:rgba(0,0,0,.08) !important;
+  box-shadow:0 1px 0 rgba(0,0,0,.03),0 4px 16px rgba(0,0,0,.04) !important;
+}
+
+/* 106. 末行卡片渐变遮罩 —— mimo 反馈"最底部一排卡片只露出图标顶部，截断位置不美观"
+      方案：.grid-wrap::after 在底部加 120px 渐变遮罩，从透明到背景色
+      暗示"还有更多内容可滚动"，配合已有的滚动提示胶囊 */
+.grid-wrap{
+  position:relative !important;
+}
+.grid-wrap::after{
+  content:'' !important;
+  position:absolute !important;
+  left:0;right:0;bottom:0 !important;
+  height:120px !important;
+  background:linear-gradient(to bottom,rgba(245,245,247,0) 0%,rgba(245,245,247,.6) 50%,rgba(245,245,247,.95) 100%) !important;
+  pointer-events:none !important;
+  z-index:1 !important;
+}
+@media (max-width:600px){
+  .grid-wrap::after{height:80px !important}
+}
+
+/* 107. 描述等高兜底 —— mimo 反馈"描述截断点不统一"
+      方案：所有断点强制 line-clamp:2 + min-height:3.32em（2 行 × 1.66）
+      移除历史上 3 行 / 4.2em / 4.65em 等冲突规则 */
+.card__desc{
+  -webkit-line-clamp:2 !important;
+  line-clamp:2 !important;
+  -webkit-box-orient:vertical !important;
+  display:-webkit-box !important;
+  overflow:hidden !important;
+  min-height:3.32em !important;
+  max-height:3.32em !important;
+  text-overflow:ellipsis !important;
+}
+@media (max-width:600px){
+  .card__desc{
+    -webkit-line-clamp:2 !important;
+    line-clamp:2 !important;
+    min-height:3.1em !important;
+    max-height:3.1em !important;
+  }
+}
+
+/* 108. 卡片 hover 微交互增强 —— mimo 反馈"卡片缺乏微交互暗示"
+      方案：hover 时卡片整体上浮 2px + 阴影加深 + 边框淡蓝
+      配合 emoji 缩放形成统一的"浮起"反馈 */
+.card{
+  transition:transform .25s var(--ease-out),box-shadow .25s var(--ease-out),border-color .25s var(--ease-out) !important;
+  border:1px solid rgba(0,0,0,.04) !important;
+}
+.card:hover{
+  transform:translateY(-2px) !important;
+  box-shadow:0 4px 12px rgba(0,0,0,.05),0 12px 32px rgba(0,0,0,.07),0 1px 3px rgba(0,122,255,.04) !important;
+  border-color:rgba(0,122,255,.15) !important;
+}
+.card:focus-visible{
+  transform:translateY(-2px) !important;
+  border-color:rgba(0,122,255,.4) !important;
+  box-shadow:0 4px 12px rgba(0,122,255,.10),0 12px 32px rgba(0,0,0,.06) !important;
+  outline:none !important;
+}
+@media (prefers-reduced-motion:reduce){
+  .card:hover,.card:focus-visible{transform:none !important}
+}
+
+/* 109. stack chip 统一中性灰 —— 配合版本号胶囊，让 meta 区视觉一致 */
+.card__stack{
+  background:rgba(0,0,0,.045) !important;
+  color:var(--ink2) !important;
+  padding:3px 9px !important;
+  border-radius:8px !important;
+  font-size:10.5px !important;
+  font-weight:600 !important;
+  border:1px solid rgba(0,0,0,.04) !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  gap:4px !important;
+}
+.card__new{
+  background:rgba(0,122,255,.12) !important;
+  color:var(--accent) !important;
+  padding:3px 9px !important;
+  border-radius:8px !important;
+  font-size:10.5px !important;
+  font-weight:700 !important;
+  border:1px solid rgba(0,122,255,.18) !important;
+}
 
 
 
