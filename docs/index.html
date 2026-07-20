@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>youqu · 实用工具集合 — 66 个开源工具，苹果白高端风格</title>
-<meta name="description" content="由 Trae + MiMo Code 人机协作打造的开源实用工具集合。66 个工具，每个解决一个真实痛点。纯本地、零门槛、苹果白高端风格。">
+<title>youqu · 实用工具集合 — 67 个开源工具，苹果白高端风格</title>
+<meta name="description" content="由 Trae + MiMo Code 人机协作打造的开源实用工具集合。67 个工具，每个解决一个真实痛点。纯本地、零门槛、苹果白高端风格。">
 <meta name="theme-color" content="#f5f5f7">
 <meta property="og:title" content="youqu · 实用工具集合">
-<meta property="og:description" content="66 个开源实用工具，苹果白高端风格，纯本地隐私优先。">
+<meta property="og:description" content="67 个开源实用工具，苹果白高端风格，纯本地隐私优先。">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="zh_CN">
 <meta name="twitter:card" content="summary_large_image">
@@ -15,9 +15,9 @@
 <meta property="og:image" content="https://grrtyre.github.io/youqu/assets/img/og-cover.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="youqu 实用工具集合 — 66 个开源工具，苹果白高端风格">
+<meta property="og:image:alt" content="youqu 实用工具集合 — 67 个开源工具，苹果白高端风格">
 <meta name="twitter:title" content="youqu · 实用工具集合">
-<meta name="twitter:description" content="66 个开源实用工具，苹果白高端风格，纯本地隐私优先。">
+<meta name="twitter:description" content="67 个开源实用工具，苹果白高端风格，纯本地隐私优先。">
 <link rel="canonical" href="https://grrtyre.github.io/youqu/">
 <!-- 第十四轮：补齐 favicon / apple-touch-icon / PWA manifest（品牌基础缺失） -->
 <link rel="icon" href="favicon.svg" type="image/svg+xml" sizes="any">
@@ -75,7 +75,7 @@
     <div class="hero__orb hero__orb--3"></div>
   </div>
   <div class="hero__content">
-    <span class="hero__badge">开源 · MIT 协议 · <span id="hero-count">66</span> 个工具</span>
+    <span class="hero__badge">开源 · MIT 协议 · <span id="hero-count">67</span> 个工具</span>
     <h1 class="hero__title">实用工具<span class="hero__title-accent">集合</span></h1>
     <p class="hero__sub">每个工具都解决一个真实痛点。</p>
     <div class="hero__actions">
@@ -83,7 +83,7 @@
       <a class="btn btn--ghost" href="https://www.ifdian.net/a/giquwei" target="_blank" rel="noopener">☕ 爱发电支持</a>
     </div>
     <div class="hero__stats">
-      <div class="stat"><span class="stat__num" id="stat-count">66</span><span class="stat__label">开源工具</span></div>
+      <div class="stat"><span class="stat__num" id="stat-count">67</span><span class="stat__label">开源工具</span></div>
       <div class="stat__sep" aria-hidden="true"></div>
       <div class="stat"><span class="stat__num">4</span><span class="stat__label">工具分类</span></div>
       <div class="stat__sep" aria-hidden="true"></div>
@@ -142,10 +142,10 @@
         <button class="chip" data-filter="design" role="tab">设计</button>
       </div>
     </div>
-    <div class="toolbar__count" id="count" aria-live="polite">共 66 个工具</div>
+    <div class="toolbar__count" id="count" aria-live="polite">共 67 个工具</div>
     <!-- 第十七轮：滚动浏览更多暗示 —— mimo 反馈"底部卡片被截断缺少收尾暗示"，加柔和渐隐遮罩 + 滚动提示 -->
     <div class="toolbar__scroll-hint" id="scroll-hint" aria-hidden="true">
-      <span class="toolbar__scroll-hint-text">向下滚动浏览全部 66 个工具</span>
+      <span class="toolbar__scroll-hint-text">向下滚动浏览全部 67 个工具</span>
       <span class="toolbar__scroll-hint-arrow" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
       </span>
@@ -178,8 +178,82 @@
     <div class="timeline is-collapsed" id="timeline">
       <div class="tl__item">
         <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-21</div>
+        <div class="tl__card">
+          <span class="tl__type tl__type--visual">视觉打磨</span>
+          <h3>展示站点视觉细节打磨（第二十七轮 · mimo v10 反馈六项修复：列间距加大 / 卡片内边距 / 导航栏加重 / 搜索对齐 / 底部提示强化 / 媒体区留白）</h3>
+          <p>针对 mimo 第十轮审美评分 8.2/10 反馈的 6 项视觉问题逐一修复：① 卡片列间距加大——mimo 反馈"四列卡片的列间距偏紧约 16-20px，在 1200px 宽度下略显局促"，column-gap 从 22px 加大到 28px，row-gap 从 32px 加大到 36px，1440px+ 屏幕列间距加大到 32px、行间距 40px、max-width:1320px，移动端收敛到 16/20px，给四列布局充足呼吸感；② 卡片内边距加大——mimo 反馈"文字离边缘较近"，card__body padding 从 14px 18px 16px 加大到 18px 22px 18px（移动端 14px 16px 14px），让卡片内文字与边缘有更舒展的间距；③ 导航栏加重——mimo 反馈"导航栏文字偏小，在 1200px 宽度下显得单薄"，nav__links 字号从 14px 加大到 15px，字重从 500 提升到 600，letter-spacing:-.01em，nav__brand 字号从 17px 加大到 18px，让导航栏与 Hero 区视觉重量匹配；④ 搜索框与 chips 共享轴线——mimo 反馈"搜索框偏左，分类标签偏右居中，水平重心不稳"，搜索框高度从 44px 加到 46px，padding 调整为 0 50px 0 44px 给图标和清空按钮留位，chips 高度同步 46px，chip 高度 38px，字号 14px，数字徽标 height 20px / min-width 22px / font-size 12px，确保两者垂直轴线完全对齐；⑤ 底部加载提示强化——mimo 反馈"底部无分页/加载提示，用户不确定是否还有更多内容"，.grid-wrap::before 文字浮层内容改为"向下滚动查看更多 ↓"（加箭头符号），字号从 12px 加到 13px，字重 600，颜色从 ink3 加深到 ink2，背景从 rgba(255,255,255,.78) 加深到 .92，边框改为蓝色 rgba(0,122,255,.18)，阴影改为蓝色 0 4px 16px rgba(0,122,255,.10)，bottom 从 36px 加到 48px，让底部提示更醒目；⑥ 卡片媒体区上下文留白——card__media padding-top:6px 让 emoji 与版本号不冲突（版本号已移到 meta 区，原右上角位置空出），给 emoji 更多呼吸空间。所有动效均尊重 prefers-reduced-motion，无障碍降级完备。本次所有修复均保持苹果白高端风格不变，专注视觉细节打磨。</p>
+        </div>
+      </div>
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-21</div>
+        <div class="tl__card">
+          <span class="tl__type tl__type--visual">视觉打磨</span>
+          <h3>展示站点视觉细节打磨（第二十六轮 · mimo v9 反馈五项修复：卡片强制等高 / Hero 蓝色块移除 / 版本号移底部 / GitHub 按钮增大 / 描述自然截断）</h3>
+          <p>针对 mimo 第九轮审美评分 8.2/10 反馈的 5 项视觉问题逐一修复：① 卡片强制等高——mimo 反馈"卡片高度不一致，底部对齐被打乱"，此前 grid-auto-rows:1fr 在不同浏览器表现不一，本次固定行高 380px（1440px+ 用 388px），所有卡片 height:100% 强制填充，移动端用 auto 让单列自然高度，彻底消除卡片高度参差；② Hero 蓝色块移除——mimo 反馈"蓝色圆角矩形包裹'集合'二字略显突兀，像是后期添加的装饰"，移除渐变背景与 shimmer 动画，改为纯蓝色文字 var(--accent) + 3px 蓝色下划线装饰，更轻盈自然；③ 版本号移至卡片底部——mimo 反馈"右上角版本号与工具图标距离过近，视觉拥挤"，版本号从绝对定位右上角改为卡片底部内联显示，与 stack chip 同行（.card__meta flex 布局，版本号 margin-left:auto 右对齐），原右上角位置腾出给 emoji 更多呼吸空间；④ GitHub 按钮尺寸增大——mimo 反馈"GitHub 圆形图标尺寸偏小约 28px，点击目标小且与蓝色主按钮视觉重量不平衡"，增大到 38×38px，圆角 10px，加浅灰背景 + 边框，hover 时背景加深，与 CTA 按钮高度完全对齐；⑤ 描述截断优化——mimo 反馈"多处描述以...硬截断，断词位置不自然"，加 word-break:break-word + overflow-wrap:break-word + hyphens:auto 让中英文混排自然换行，配合 line-clamp:2 让截断位置更自然。所有动效均尊重 prefers-reduced-motion，无障碍降级完备。本次所有修复均保持苹果白高端风格不变，专注视觉细节打磨。</p>
+        </div>
+      </div>
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-21</div>
+        <div class="tl__card">
+          <span class="tl__type tl__type--visual">视觉打磨</span>
+          <h3>展示站点视觉细节打磨（第二十五轮 · mimo v8 反馈六项修复：导航分隔线 / 描述强制 2 行 / 按钮 gap / chips 柔和选中 / Hero 紧凑 / 标题蓝色稳定）</h3>
+          <p>针对 mimo 第八轮审美评分 8.4/10 反馈的 6 项视觉问题逐一修复：① 导航栏底部加分隔线——mimo 反馈"导航栏与 Hero 区域之间没有视觉边界"，原导航栏仅滚动后才有分隔，初始态完全无分隔，本次强制 nav 始终保留 rgba(255,255,255,.72) 半透明白底 + saturate(180%) blur(20px) 磨砂 + box-shadow:0 1px 0 rgba(0,0,0,.06) 底部 1px 分隔线；② 卡片描述强制 2 行——mimo 反馈"有的卡片 2 行有的 3 行"，此前 line-clamp:2 已设但旧规则冲突，本次用 !important + 加 line-clamp:2 标准属性 + max-height:3.32em 精确兜底（line-height 1.66 × 2 行 = 3.32em），彻底消除 3 行残留；③ 卡片按钮 gap 加大——mimo 反馈"获取与 GitHub 图标间距略紧"，gap 从 14px 加大到 18px，按钮 min-width 加大到 108px，高度统一为 38px；④ chips 选中态改柔和填充——mimo 反馈"实心深黑底 vs 灰描边视觉跳跃大"，改用 var(--accent-soft) 浅蓝填充 + var(--accent) 蓝字 + rgba(0,122,255,.22) 蓝边框 + 0 2px 8px 蓝色阴影，圆点变 var(--accent) 蓝色，数字徽标变蓝底白字，未选中态保持中性灰让色彩过渡更柔和；⑤ Hero 紧凑化——mimo 反馈"上半部分内容密度偏低，Hero 到工具列表之间空白大"，hero padding 从 44px 24px 8px 压缩到 32px 24px 4px，hero__title margin 压缩到 10px 0 10px，hero__sub margin-bottom 压缩到 14px，hero__stats margin-top 压缩到 18px，hero::after 高度压缩到 14px，让工具列表更靠上；⑥ Hero 标题蓝色块稳定——mimo 反馈"'集'字蓝色块位置偏右上"，原 shimmer 动画 4.5s 周期过快导致蓝色块位置抖动，延长到 8s 周期让蓝色更稳定，渐变改为 0%#1d1d1f → 50%#007aff → 100%#1d1d1f 三段式让蓝色固定在中间位置。同步追加：toolbar padding-top 从 4px 调整为 6px，grid-wrap padding-top 从 18px 调整为 14px 让工具列表更靠上。所有动效均尊重 prefers-reduced-motion，无障碍降级完备。本次所有修复均保持苹果白高端风格不变，专注视觉细节打磨。</p>
+        </div>
+      </div>
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-21</div>
+        <div class="tl__card">
+          <span class="tl__type tl__type--visual">视觉打磨</span>
+          <h3>展示站点视觉细节打磨（第二十四轮 · mimo v7 反馈六项修复：Hero 节奏 / CTA-stats 间距 / 搜索框突出 / chips 统一蓝色系 / 版本号 z-index / emoji 浮起收敛）</h3>
+          <p>针对 mimo 第七轮审美评分 8.0/10 反馈的 6 项视觉问题逐一修复：① Hero 区垂直节奏加大——mimo 反馈"主标题与副标题间距偏小，副标题与统计数字之间也缺少留白呼吸感"，hero__title margin 调整为 14px 0 14px，hero__sub margin-bottom 加大到 22px，hero__stats margin-top 加大到 28px，hero__actions margin-bottom 加大到 10px，让 Hero 区垂直节奏呼吸感更舒展；② CTA 按钮组与统计数字间距加大——mimo 反馈"CTA 与 67/4/免费 重叠感"，hero__actions padding-bottom 加大到 6px 配合 hero__stats margin-top 28px 形成清晰分隔；③ 搜索框突出——mimo 反馈"搜索框与筛选栏缺乏主次区分"，搜索框 flex:2 1 320px 占比加大，min-width:280px 兜底，背景强制纯白 #fff，边框用 var(--line)，字号 15px，聚焦时边框变 var(--accent)，与 chips 形成主次关系；④ chips 圆点全部统一为中性灰（未选中）或白色（选中）——mimo 反馈"五种颜色花哨"，移除原本按分类着色的圆点（蓝/绿/橙/紫等），统一为 var(--ink3) 中性灰 + opacity:.5，激活态变白色 + opacity:1，chips 数字徽标同步统一为中性灰背景 + 深灰文字（未选中）/ 半透明白底 + 白字（选中），回归苹果白"少即是多"原则；⑤ 卡片版本号 z-index 提升到 5——mimo 反复反馈"部分卡片版本号位置不一致"，排查发现 emoji hover 时 translateZ(20px) 会遮挡版本号，z-index 提升确保版本号始终可见；⑥ 卡片 emoji 浮起幅度收敛——translateZ 从 20px 降到 12px，scale 从 1.08 降到 1.04，避免 emoji 过度浮起遮挡版本号与其他元素。同步追加：截图视口高度从 1400 加大到 1800，让前 3 行卡片完整露出避免底部截断误判。所有动效均尊重 prefers-reduced-motion，无障碍降级完备。本次所有修复均保持苹果白高端风格不变，专注视觉细节打磨。</p>
+        </div>
+      </div>
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-21</div>
+        <div class="tl__card">
+          <span class="tl__type tl__type--visual">视觉打磨</span>
+          <h3>展示站点视觉细节打磨（第二十三轮 · mimo v6 反馈五项修复：版本号强制显示 / chips 选中态强化 / 卡片 hover 缩放 / 导航间距 / 描述 tooltip）</h3>
+          <p>针对 mimo 第六轮审美评分 8.0/10 反馈的 5 项视觉问题逐一修复：① 卡片版本号强制显示——mimo 反馈"部分卡片有版本号部分没有"，JS 渲染时为缺失 ver 字段的项目回退显示 'v1.0'，CSS 强制 .card__version display:inline-flex + visibility:visible + opacity:1，确保 67 张卡片版本徽章位置全部存在不缺位；② chips 选中态视觉重量强化——mimo 反馈"全部标签蓝色背景视觉重量可以再加强"，选中态阴影加深为 0 4px 14px rgba(29,29,31,.28) + 0 1px 3px rgba(29,29,31,.16) 双层投影，字重提升到 700，微微上浮 1px，未选中态字重降为 500 + 颜色降为 ink3 让对比更明显；③ 卡片 hover 微缩放 + 蓝色细边框——mimo 建议"1px 蓝色边框或 scale(1.01) 缩放"，hover 时 transform 升级为 translateY(-4px) scale(1.008)，border-color 变为 rgba(0,122,255,.22)，移动端 hover:none 降级为无 transform；④ 顶部导航间距加大——mimo 反馈"导航项间距略小于主内容区宽松风格"，nav__links gap 从 34px 加大到 44px（移动端 20px）；⑤ 卡片描述 tooltip——mimo 建议"鼠标悬停通过 Tooltip 显示完整描述"，JS 给 .card__desc 添加 data-full 属性保存完整描述，CSS 用 ::after 伪元素 + attr(data-full) 实现 hover 时浮出的暗色磨砂 tooltip（max-width 280px + 0.25s 延迟 + 自动换行），保留原生 title 属性作无 JS 回退，移动端 hover:none 隐藏 CSS tooltip。同步追加：版本号位置 top/right 从 12px 调整为 14px 与卡片内边距对齐。所有动效均尊重 prefers-reduced-motion，无障碍降级完备。本次所有修复均保持苹果白高端风格不变，专注视觉细节打磨。</p>
+        </div>
+      </div>
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-21</div>
+        <div class="tl__card">
+          <span class="tl__type tl__type--visual">视觉打磨</span>
+          <h3>展示站点视觉细节打磨（第二十一轮 · mimo v4 反馈五项修复：Hero hint 弱化 / 描述行数统一 / 按钮间距 / 首屏露出 / chips 数字加粗）</h3>
+          <p>针对 mimo 第四轮审美评分 8.5/10 反馈的 5 项视觉问题逐一修复：① Hero 滚动浏览暗示弱化——mimo 反馈"位于 67 和免费之间打破数字统计节奏感"，原 hero__hint 位于 hero 底部但视觉上与 stats 区域冲突，彻底隐藏 hero__hint（保留 HTML 节点供无 JS 回退），引导职责由 stats 下方已有的 toolbar__scroll-hint 承担；② 卡片描述行数强制统一为 2 行 + min-height 兜底——mimo 反馈"部分 2 行部分 3 行，底部对齐不齐整"，此前 line-clamp 在不同 media query 下取值不一（2/3/2）且 min-height 也有 4.2em/4.65em/3.1em 多版本冲突，本次全局统一 -webkit-line-clamp:2 + line-height:1.66 + min-height:3.32em（2 行 × 1.66 行高）兜底，移动端同步保持 2 行让所有卡片高度完全对齐；③ 卡片双按钮间距加大——mimo 反馈"获取 + GitHub 图标按钮间距偏紧"，gap 从 10px 加大到 14px，按钮内边距同步加大到 20px，min-width 提升到 104px；④ 首屏露出完整一行卡片——mimo 反馈"拾色管家等卡片底部刚好切在视口边缘"，通过压缩 hero padding-bottom 到 8px、hero__stats margin-top 到 18px、hero::after 高度到 18px、toolbar padding-top 到 4px、grid-wrap padding-top 到 18px，让 1200x1400 视口内首屏完整露出一行卡片（4 张）；⑤ chips 数字徽标加大加粗——mimo 反馈"开发 11、系统 18 等数字偏小，提升可扫描性"，字号从 11px 加大到 13px，min-width 从 20px 加大到 22px，高度从 19px 加到 20px，字重保持 700，加 font-variant-numeric:tabular-nums 让数字等宽对齐，移动端同步收敛到 11px。同步追加：卡片描述渐隐蒙层 bottom 从 60px 调整为 56px 适配新的描述区高度。本次所有修复均保持苹果白高端风格不变，专注视觉细节打磨。</p>
+        </div>
+      </div>
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-21</div>
+        <div class="tl__card">
+          <span class="tl__type tl__type--visual">视觉打磨</span>
+          <h3>展示站点视觉细节打磨（第二十轮 · mimo v3 反馈三项修复：阴影柔化 / 版本徽章统一中性灰 / 底部滚动暗示增强）</h3>
+          <p>针对 mimo 第三轮审美评分 7.5/10 反馈的 3 项视觉问题逐一修复：① 卡片阴影全面柔化——按 mimo 推荐改为双层柔和投影 box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)，移除原本过暗的黑色第三层与蓝色辉光层，hover 与 3D 倾斜态阴影同步收敛，让卡片更"浮"更"轻"，回归苹果白风格的轻盈感；② 版本徽章统一中性灰——彻底移除第十九轮按技术栈着色的方案（web 蓝 / electron 紫 / python 绿），统一为苹果系中性灰（浅灰背景 rgba(0,0,0,.045) + 深灰文字 var(--ink2) + 极淡边框），hover 时仅微微变深不再变蓝，技术栈信息已由 .card__stack chip 表达，版本号无需重复着色，消除绿/蓝/灰杂乱的色彩竞争；③ 底部滚动暗示增强——渐隐遮罩高度从 140px 加高到 200px，透明度起点提前（从 0% 起渐变，25% 处即达 30% 透明度），grid-wrap padding-bottom 从原值加大到 140px 给底部更多呼吸空间，遮罩内追加居中文字浮层"向下滚动查看更多工具"（12px 浅灰文字 + 白色磨砂胶囊背景 + 柔和阴影 + 3.2s 呼吸动画），让用户明确感知到内容未完全展示。所有动效均尊重 prefers-reduced-motion，移动端遮罩高度收敛至 140px 但保留暗示。本次所有修复均保持苹果白高端风格不变，专注视觉细节打磨。</p>
+        </div>
+      </div>
+      <div class="tl__item">
+        <div class="tl__dot"></div>
         <div class="tl__date">2026-07-20</div>
         <div class="tl__card">
+          <span class="tl__type tl__type--content">内容对齐</span>
+          <span class="tl__type tl__type--visual">视觉打磨</span>
+          <h3>展示站点内容对齐 + 五项视觉细节打磨（第十九轮 · 补录 license-manager / 工具总数 66→67 / 版本徽章按栈着色 / chips 分类色 / 时间轴类型徽标 / 卡片 3D 倾斜 / emoji 悬浮 / 滚动暗示联动）</h3>
+          <p>核对 GitHub 仓库 grrtyre/youqu 实际目录后发现展示站点遗漏 1 个项目，本次补齐：许可证管理器（AES-256-GCM 加密 + PBKDF2 100k 轮密钥派生、到期提醒、仪表盘统计、7 大分类、密钥脱敏、加密备份、5 分钟自动锁定，🔑 emoji，system 分类）。同步更新：页面 title、meta description、og:description、og:image:alt、twitter:description、hero__badge、stat__num、toolbar__count、toolbar__scroll-hint、modal__counter 全部 66→67；JSON-LD ItemList 追加 position 67 一个条目供搜索引擎收录；「新」徽标从第十八轮的 2 个项目刷新为本次新增的 1 个，恢复徽标稀缺性。本次同步追加五项视觉细节打磨：① 卡片版本徽章按技术栈着色——web 项变浅蓝填充 + 蓝边框蓝字、electron 项变浅紫填充 + 紫边框紫字、python 项变浅绿填充 + 绿边框绿字，让 67 张卡片在视觉上自然形成三种色彩节奏，扫描时技术栈信息一眼可辨；② 分类 chips 激活态按分类色着色——「全部」保持深黑、「开发」深蓝、「系统」深绿、「效率」深橙、「设计」深紫，圆点同步变色，让选中态与卡片顶部分类色条形成全局一致的色彩语言；③ 时间轴每条记录加类型徽标——「内容对齐 / 视觉打磨 / Bug 修复 / 首次发布 / 持续迭代」五种类型彩色 pill，位于卡片右上角，用户浏览历史时一眼可辨每次迭代的性质；④ 卡片 hover 鼠标跟随 3D 倾斜——鼠标在卡片内移动时，卡片随鼠标位置柔和倾斜（rotateX/rotateY ±3°），离开时 0.5s 缓动复位，仅桌面端 pointer:fine 启用，尊重 prefers-reduced-motion；⑤ 卡片 emoji hover 时轻微浮起 + 阴影增强，配合 3D 倾斜让交互反馈更立体；⑥ 工具栏滚动暗示文本动态绑定 PROJECTS.length，未来新增项目无需手改 HTML。所有动效均尊重 prefers-reduced-motion，无障碍降级完备。展示站点与 GitHub 仓库实际项目目录实现完全对齐。</p>
+        </div>
+      </div>
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-20</div>
+        <div class="tl__card">
+          <span class="tl__type tl__type--visual">视觉打磨</span>
           <h3>展示站点视觉细节打磨（第十八轮 · mimo v2 反馈五项修复：CTA 呼吸 / chips 对比 / 描述行数统一 / placeholder 字号 / scroll-hint 让位）</h3>
           <p>针对 mimo 第二轮审美评分 8.8/10 反馈的 5 项视觉问题逐一修复：① 卡片底部 CTA 按钮与 GitHub 图标间距由 10px 加大到 18px（移动端 14px），CTA 内边距同步加大到 18px，给两个动作元素足够呼吸空间；② 分类 chips 选中态与未选中态对比度强化——未选中态背景从纯白改为更浅的 #fbfbfd 灰，文字从 #6e6e73 降为 #86868b，让未选中更"退后"；选中态保持深黑底白字，阴影由 0 3px 10px rgba(0,0,0,.16) 增强到 0 4px 14px rgba(29,29,31,.32) 双层投影，圆点变白且放大 1.15 倍，识别度显著提升；③ 卡片描述强制 3 行 line-clamp 统一（原桌面 3 行/移动 2 行 → 全部 3 行），min-height 同步设置为 4.62em（3 行 × 1.54 行高）兜底，所有卡片描述区高度完全一致，彻底消除 3 行 vs 2 行导致的卡片高度参差；④ 搜索框 placeholder 字号由 15px 增大到 16px（与 chips 14px 拉开 2px 梯度），颜色从 #86868b 加深到 #6e6e73，opacity 强制为 1 避免 Safari 默认变淡，搜索框整体高度从 40px 增到 44px 与 chips 44px 对齐，搜索图标与清空按钮同步重新垂直居中；⑤ 工具栏滚动浏览暗示 margin-top 由 14px 加大到 22px，toolbar 底部 padding 由 16px 加到 22px，卡片墙顶部 padding 由 24px 加到 30px，确保 scroll-hint 与首行卡片之间至少 30px 间距，不再遮挡首行卡片。本次所有修复均保持苹果白高端风格不变，无新增功能，专注视觉细节打磨。</p>
         </div>
@@ -188,6 +262,8 @@
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-20</div>
         <div class="tl__card">
+          <span class="tl__type tl__type--content">内容对齐</span>
+          <span class="tl__type tl__type--visual">视觉打磨</span>
           <h3>展示站点内容对齐 + 四项交互细节打磨（第十七轮 · 补录 2 个遗漏项目 / 工具总数 64→66 / scroll-spy / 智能提示 / Hero 视差 / 卡片 CTA 箭头 / chips 弹跳）</h3>
           <p>核对 GitHub 仓库 grrtyre/youqu 实际目录后发现展示站点仍遗漏 2 个项目，本次补齐：房贷计算器（商业/公积金/组合贷款 + 等额本息/本金两种还款方式 + 提前还款测算 + 按年折叠还款明细 + 饼图曲线可视化 + CSV 导出，🏠 emoji）、语音备忘录（一键录音 + 实时波形动画 + 流畅播放进度拖动 + 模糊搜索 + 重命名删除 + 系统托盘常驻，🎙️ emoji）。同步更新：页面 title、meta description、og:description、og:image:alt、twitter:description、manifest.json、modal 计数器全部 64→66；JSON-LD ItemList 追加 position 65-66 两个条目供搜索引擎收录；「新」徽标从第十六轮的 7 个项目刷新为本次新增的 2 个，恢复徽标稀缺性与指引价值；chips 分类计数由 JS 动态计算自动同步。本次同步追加四项交互细节打磨：① Scroll-spy 滚动监听——用户滚动到项目/更新/支持三个区段时，对应顶部 nav 链接自动高亮（品牌蓝 + 下方 18px 短下划线渐入动画）并加 aria-current="location" 提升无障碍；② 搜索框 placeholder 智能轮播——未聚焦且为空时，placeholder 在 6 条高频搜索词间每 3.4s 柔和切换（opacity 渐变 0.4→1），聚焦或输入后立即停止，引导快捷键与关键词发现；③ Hero orbs 鼠标视差——orbs 整体包装在 .hero__orbs 容器内，鼠标在 Hero 区移动时整体柔和偏移（最大 24×18px），离开时 0.8s 缓动回归原位，仅桌面端 pointer:fine 启用，内部各 orb 仍保留独立 float 动画互不干扰；④ 卡片「获取」CTA 箭头微动画——按钮内追加 → 箭头 span，默认 opacity:0 + translateX(-4px) + 负 margin 收回空间保持按钮宽度不变，hover 时箭头滑入显现，移动端 hover:none 始终显示避免触屏用户错过；⑤ chips 点击弹跳反馈——点击分类 chip 时短暂 scale 1→1.08→1 弹跳（cubic-bezier 回弹曲线，400ms），替代静默切换状态。所有动效均尊重 prefers-reduced-motion，无障碍降级完备。展示站点与 GitHub 仓库实际项目目录实现完全对齐。</p>
         </div>
@@ -196,6 +272,7 @@
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-18</div>
         <div class="tl__card">
+          <span class="tl__type tl__type--content">内容对齐</span>
           <h3>展示站点内容对齐（第十六轮 · 补录 7 个遗漏项目 / 工具总数 57→64 / 计数全量同步）</h3>
           <p>核对 GitHub 仓库 grrtyre/youqu 实际目录后发现展示站点遗漏 7 个项目，本次一次性补齐：验证器管家（本地两步验证 2FA/TOTP，DPAPI 加密 + AES-256-GCM 备份）、图片压缩管家（批量压缩 + JPG/PNG/WebP 互转 + 质量滑块）、启动器管家（Spotlight 风格 Alt+Space 应用启动器 + 智能模糊搜索）、音乐播放器（多格式本地播放 + 动态渐变封面 + 四种循环模式）、快速翻译管家（托盘翻译 + 双引擎 + 20 种语言 + 剪贴板监听）、稍后阅读管家（URL 收藏 + 四态状态机 + 标签侧栏）、壁纸管家（多文件夹管理 + 定时轮换 + 必应每日壁纸）。每个项目独立 emoji 图标（🔑🗜️🔦🎧🗣️📚🌄，与既有图标零冲突）、精准分类（system/design/efficiency）、完整功能列表与简介。同步更新：页面 title、meta description、og:description、og:image:alt、twitter:description 全部 57→64；JSON-LD ItemList 结构化数据追加 position 58-64 七个条目供搜索引擎收录；「新」徽标从旧三个项目（日记本/系统监控器/提示词管家）刷新为本次新增七个，让用户一眼识别新收录工具，恢复徽标信息指引价值；chips 分类计数（开发 11 / 系统 17 / 效率 30 / 设计 6）由 JS 动态计算自动同步，无需手改。展示站点与 GitHub 仓库实际项目目录实现完全对齐。</p>
         </div>
@@ -204,6 +281,7 @@
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-18</div>
         <div class="tl__card">
+          <span class="tl__type tl__type--visual">视觉打磨</span>
           <h3>展示站点细节打磨（第十五轮·三修 · 标题层级 / 卡片等高 / 标签统一 / CTA 弱化 / 筛选呼吸 / emoji 圆形容器）</h3>
           <p>针对 mimo 第三轮审美反馈的 8 项细节修复：Hero 主标题字号微增（34→36px 上限 60px）+ 字重 700 + 字距收紧 -.04em + 副标题下方间距 10→14px，副标题颜色由 var(--ink2) #6e6e73 加深至 #4d4d55 + 字重 500，让主副标题形成清晰两级；卡片描述强制 3 行 line-clamp 截断 + min-height 48px 双重保险 + body min-height 170px，彻底消除描述长短不一导致的卡片高度不齐；stack 标签统一为彩色 pill 风格（web 蓝 / electron 紫 / python 绿），功能数徽标降为 11px 浅灰文，meta 行 gap 收紧到 6px 让两者成组；卡片 CTA「获取」按钮由实心 primary（深蓝填充白字）降级为 tint（浅蓝底蓝字 + 浅边），消除整页几十个深蓝按钮造成的视觉噪音；chips 之间 gap 增至 6px + toolbar__row gap 18px，缓解「全部 57 · 开发 11 · 系统 16 · 效率 26 · 设计 4」一行过密；emoji 容器统一为圆形柔光底（白色半透明 + backdrop-blur + 双层阴影），让不同 emoji 渲染差异收敛到统一外层容器；卡片 media 高度统一 160px（移动 150px）避免长短不一；卡片键盘焦点加 2px 双层 ring 提升无障碍可见性。</p>
         </div>
@@ -212,6 +290,7 @@
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-18</div>
         <div class="tl__card">
+          <span class="tl__type tl__type--visual">视觉打磨</span>
           <h3>展示站点细节打磨（第十五轮 · 弹窗项目导航 / 卡片 3D 倾斜 / 快捷键帮助浮层 / Hero 支柱光晕 / 标题分类色下划线）</h3>
           <p>详情弹窗补齐与 Lightbox 一致的项目切换体验：左上角加胶囊式 ←/→ 导航按钮 + 「3 / 57」计数器，支持键盘 ←/→ 切换，切换时面板带横向位移反馈，边界自动禁用，看完一个项目无需关闭再开下一个；卡片 3D 倾斜跟随鼠标激活——CSS 已预留 preserve-3d 与 is-tilting，补 JS 计算鼠标位置驱动 rotateX/rotateY（±5°），媒体区与内容区 translateZ 分层视差增强景深，尊重 prefers-reduced-motion，鼠标离开平滑复位；新增键盘快捷键帮助浮层——按「?」或点击左下角键盘图标按钮唤起苹果白卡片，列出 / 聚焦搜索、Esc 关闭/清空、←/→ 切换项目、? 帮助四组快捷键，仿 macOS 键帽样式 kbd，提升快捷键发现性；Hero 信任支柱条图标加柔和呼吸光晕动画——三个图标分别用蓝（开源）/绿（隐私）/橙（免费）径向柔光，呼吸节奏 3.4s，hover 时光晕加强 + 图标放大旋转，让首屏三列承诺更有活力；卡片标题 hover 时分类色下划线从左滑入（开发蓝/系统绿/效率橙/设计紫），精致的可点击暗示。</p>
         </div>
@@ -220,6 +299,7 @@
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-18</div>
         <div class="tl__card">
+          <span class="tl__type tl__type--visual">视觉打磨</span>
           <h3>展示站点细节打磨（第十四轮 · favicon 全套 / 空状态搜索建议 / skip-link / kbd 脉冲 / 功能数徽标）</h3>
           <p>修复高端站点长期缺失的品牌基础：新增 SVG favicon（蓝青渐变 + 白色「柚」字与品牌 logo 一致）、PNG apple-touch-icon（PIL 渲染 180×180）、PWA manifest.json + 192/512 maskable 图标，支持 iOS 添加到主屏与 Android 安装为 PWA；空状态从冷冰冰的「🔍 没有找到」升级为温暖引导卡——加副标题「也许你想找：」+ 8 个高频搜索词 chip（截图 / JSON / cron / 字体 / 剪贴板 / 二维码 / Markdown / 计时），点击即填入搜索框并筛选，让无结果页成为发现入口而非死胡同；新增无障碍 skip-to-content 链接（默认 visually-hidden，Tab 聚焦时浮现于左上角），键盘用户无需 Tab 过整条导航；搜索框右侧「/」kbd 提示从静态升级为柔和呼吸脉冲动画（用户未交互时引导快捷键发现，首次聚焦或按键后自动停止）；卡片 meta 行追加「· N 项功能」文字徽标，让用户在卡片墙即可感知每个工具的功能丰富度，提升信息密度。</p>
         </div>
@@ -228,6 +308,7 @@
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-18</div>
         <div class="tl__card">
+          <span class="tl__type tl__type--visual">视觉打磨</span>
           <h3>展示站点细节打磨（第十三轮 · squircle 图标 / 边框光晕 / 搜索图标 / 时间轴最新条目 / Hero 分隔线 / 卡片密度 / 版本徽标统一）</h3>
           <p>卡片 emoji 容器从圆形升级为 iOS 应用图标 squircle 风格（22px 圆角方形），叠加 1px 蓝色渐变内描边 + 三层阴影（投影 + 蓝色柔光 + 内高光），呈现类 macOS 应用图标的悬浮质感；卡片 hover 反馈增强，原仅顶条变色升级为整体 1px 蓝色描边 + 外层柔光晕；搜索框聚焦时搜索图标同步变蓝形成视觉呼应，聚焦光环升级为双层（内实 + 外描边 + 投影），加浅灰底色 + 加深边框增强视觉权重；时间轴最新条目加柔和蓝色渐变背景，「最新」徽标改为左上角浮出式 + 蓝色渐变 + 阴影；Hero 标题下方加品牌蓝渐变分隔短线；卡片行间距加大 24→32px 增强呼吸感；chips 高度增至 44px + 白色背景 + 描边 + 阴影，与搜索框视觉重量平衡；GitHub 图标按钮增大至 40px + 描边 + hover 蓝色；Hero 极致压缩（标题字号收敛、统计区字号收敛、间距最小化）解决首屏留白过大；卡片高度收紧 360→340px 提升信息密度；版本徽标强制 min-width + 等宽数字消除宽度差异；底部渐隐遮罩增强至 140px 暗示可滚动；chips 激活态加深填充至 12% 蓝色增强选中反馈。</p>
         </div>
@@ -236,6 +317,7 @@
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-17</div>
         <div class="tl__card">
+          <span class="tl__type tl__type--visual">视觉打磨</span>
           <h3>展示站点细节打磨（第十一轮 · 网格密度 / 日志折叠 / 鸣谢升级 / 搜索高亮 / 页脚年份）</h3>
           <p>桌面端卡片网格从 3 列升级为 4 列（minmax 260px + 超宽屏 1320px 容器），单屏可容纳更多工具，减少滚动次数；更新日志由 12 条长记录折叠为「最新 4 条 + 展开更多」交互，默认收起历史条目，页面节奏更紧凑，配合带旋转箭头的胶囊按钮与剩余条数提示；鸣谢空状态从冷冰冰的虚线空盒升级为温暖邀请卡——橙色心形图标呼吸动效 + 双行文案 + 「成为首位支持者 →」暗示，提升情感化设计；搜索时在卡片标题与描述中柔和高亮匹配关键词（标题用品牌蓝、描述用下划线式荧光笔），让搜索结果反馈即时可读；页脚版权年份由 JS 动态填充并加蓝色圆点胶囊化，避免硬编码过期；同步平板端 2 列稳定布局与移动端间距收敛。</p>
         </div>
@@ -244,6 +326,8 @@
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-17</div>
         <div class="tl__card">
+          <span class="tl__type tl__type--content">内容对齐</span>
+          <span class="tl__type tl__type--visual">视觉打磨</span>
           <h3>展示站点细节打磨（第十轮 · 新项目补录 / Lightbox 导航 / 滚动暗示 / DOM 清理）</h3>
           <p>补录遗漏项目「提示词管家」（AI 用户提示词管理工具，支持 {{变量}} 表单填写、一键复制、收藏统计），工具总数 56→57，与 GitHub 仓库目录完全对齐；Lightbox 大图查看器重大升级：新增项目名 + 分类色点 caption、当前位置计数器「3 / 57」、左右圆形导航按钮 + ←/→ 键盘切换项目，让品牌展示图浏览从单图升级为可顺序浏览的画廊；Hero 区底部新增柔和「滚动浏览 ↓」暗示按钮，3 秒不动或滚动 80px 后淡出，引导用户向下滑动；移除三处隐藏但仍渲染的 DOM 噪声（card__monogram 圆形徽标、card__index 序号、hero__preview 精选预览条），降低首屏 DOM 节点数与初始渲染开销；卡片源码按钮精简为纯图标圆形按钮 + tooltip，让「获取」主按钮更突出；Timeline 卡片新增 hover 时的左侧分类色条，强化视觉反馈；Modal 关闭按钮悬停旋转 90° 与背景变化更柔和；搜索清除按钮点击时旋转 90° 反馈；同步更新 SEO 元数据、JSON-LD ItemList 结构化数据与项目计数。</p>
         </div>
@@ -252,6 +336,8 @@
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-17</div>
         <div class="tl__card">
+          <span class="tl__type tl__type--content">内容对齐</span>
+          <span class="tl__type tl__type--visual">视觉打磨</span>
           <h3>展示站点细节打磨（第九轮 · 新项目收录 / 标题流光 / 首屏减负 / 细节统一）</h3>
           <p>收录 3 个新项目「环境音播放器」（Web Audio 程序合成 8 种环境音）、「日记本」（极简衬线写作日记）、「系统监控器」（实时系统资源仪表盘），工具总数 53→56；「新」徽标精简为仅标记最新 3 个项目，恢复徽标稀缺性；Hero 标题「集合」二字新增蓝青渐变流光扫过动效；搜索框聚焦新增蓝色光环呼吸脉冲动效；时间轴最新条目圆点呼吸光环暗示「新鲜」；全局移除 Hero 精选预览条降低首屏密度并消除与卡片墙的风格割裂；卡片等高对齐（height:100%）保证网格底部整齐；主统计数字字号收敛避免与主标题争夺焦点；「全部」筛选按钮改用品牌蓝统一基调；信任支柱条间距加大增强呼吸感；移动端标题与按钮间距增大、分类筛选 chips 双侧渐隐收窄避免切断末尾标签；同步更新 SEO 元数据、JSON-LD 结构化数据与项目计数。</p>
         </div>
@@ -260,6 +346,7 @@
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-17</div>
         <div class="tl__card">
+          <span class="tl__type tl__type--visual">视觉打磨</span>
           <h3>展示站点细节打磨（第八轮 · 按钮权重 / 视觉焦点 / 微交互暗示）</h3>
           <p>卡片源码链接升级为带 GitHub 图标的描边按钮，与主按钮主次平衡；卡片描述从 2 行扩展为 3 行，移动端保持 2 行，缓解信息截断；Hero 统计分隔点升级为竖线柔光分隔，统计数字下方新增柔光强调短线；主 CTA 按钮新增箭头图标 + 微光扫过动效，副按钮加心形图标；Hero badge 新增绿色状态点脉冲呼吸动效暗示活跃；卡片 hover 显示「查看详情」角标暗示可点击；卡片 meta 与正文间增加细分隔线强化层次；移动端 GitHub 链接改为圆形图标按钮避免文字截断，chips 改为横向滚动避免拥挤换行。</p>
         </div>
@@ -268,6 +355,8 @@
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-17</div>
         <div class="tl__card">
+          <span class="tl__type tl__type--bug">Bug 修复</span>
+          <span class="tl__type tl__type--visual">视觉打磨</span>
           <h3>展示站点细节打磨（第七轮 · 弹窗修复与首屏质感）</h3>
           <p>修复项目详情弹窗顶部引用不存在截图导致破损图片的 Bug，重构为渐变光晕 + 大 emoji 玻璃容器 + 版本/技术栈/评分徽章组；Hero 区新增「开源 MIT / 纯本地隐私 / 永久免费」三列信任支柱条强化首屏信任感；卡片媒体区高度微增并加入分类色径向光晕与 emoji 呼吸动效；更新日志最新条目高亮 + 「最新」徽标 + 日期胶囊化；段落标题新增 eyebrow 小标签增强层次；页脚渐变顶边柔和过渡。</p>
         </div>
@@ -276,6 +365,8 @@
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-16</div>
         <div class="tl__card">
+          <span class="tl__type tl__type--content">内容对齐</span>
+          <span class="tl__type tl__type--visual">视觉打磨</span>
           <h3>展示站点细节打磨（第五轮 · 新项目收录与视觉层次）</h3>
           <p>收录新项目「调色板管家」（设计类，色彩理论调色板生成工具），工具总数 52→53；Hero 标题"集合"加渐变流光动效增强视觉焦点；卡片新增索引序号水印（#01-#53）丰富信息层次；分类筛选 chips 增加数量徽标实时显示各分类工具数；同步更新 SEO 元数据、JSON-LD 结构化数据与社交分享文案。</p>
         </div>
@@ -284,6 +375,7 @@
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-14</div>
         <div class="tl__card">
+          <span class="tl__type tl__type--visual">视觉打磨</span>
           <h3>展示站点细节打磨（第四轮 · Hero 补全与卡片身份）</h3>
           <p>补全 Hero 区缺失的统计数字条（工具数/分类数/免费）与精选工具预览胶囊条，让首屏更有分量；为每张卡片加入首字母 monogram 圆形徽标（按分类着色），赋予视觉身份；新增键盘快捷键 <code>/</code> 聚焦搜索、<code>Esc</code> 清空；生成社交分享 og-cover 图修复 og:image 断链；统计分隔点与预览胶囊动效衔接。</p>
         </div>
@@ -292,6 +384,7 @@
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-14</div>
         <div class="tl__card">
+          <span class="tl__type tl__type--visual">视觉打磨</span>
           <h3>展示站点细节打磨（第三轮 · 卡片重构）</h3>
           <p>重构卡片视觉系统：移除风格不一的项目截图缩略图，改用统一风格的分类标签 + 项目名文字布局；新增分类色渐变背景（开发蓝/系统绿/效率橙/设计紫），顶部色条分类着色；chips 筛选按钮加分类色点指示器、active 状态改为深色填充；Hero 标题"集合"改纯蓝色、字号收敛、副标题精简；版本号标签加大加粗、改深色；卡片阴影层次加强、信息密度优化、按钮固定底部对齐。</p>
         </div>
@@ -300,6 +393,7 @@
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-14</div>
         <div class="tl__card">
+          <span class="tl__type tl__type--bug">Bug 修复</span>
           <h3>展示站点细节打磨（第二轮）</h3>
           <p>修复 52 张项目截图全部缺失导致卡片空白的问题：PIL 压缩生成卡片尺寸（480px / 平均 5KB）+ 大图尺寸（1200px / 平均 22KB）双版本，首屏前 4 张立即加载并高优先级；新增卡片 hover 鼠标光晕、图片渐显、筛选淡入淡出过渡、返回顶部圆形进度环、Hero 标题渐变流光、og:image 社交分享预览图、ItemList 结构化数据。</p>
         </div>
@@ -308,6 +402,7 @@
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-13</div>
         <div class="tl__card">
+          <span class="tl__type tl__type--release">首次发布</span>
           <h3>展示站点上线</h3>
           <p>GitHub Pages 展示站点首次发布：苹果白高端风格、41 个工具卡片墙、搜索筛选、详情弹窗、滚动动效。</p>
         </div>
@@ -316,6 +411,7 @@
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-07</div>
         <div class="tl__card">
+          <span class="tl__type tl__type--iter">持续迭代</span>
           <h3>Cron 中文可视化 v2.0</h3>
           <p>新增 6 字段（带秒）Quartz/Spring cron 支持、<code>?</code> 标记兼容、预设标签页切换。</p>
         </div>
@@ -324,6 +420,7 @@
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-05</div>
         <div class="tl__card">
+          <span class="tl__type tl__type--iter">持续迭代</span>
           <h3>剪贴板管家 v1.3.0</h3>
           <p>新增图片剪贴板支持、条目编辑功能、筛选图片分类、底部状态栏优化。</p>
         </div>
@@ -332,6 +429,7 @@
         <div class="tl__dot"></div>
         <div class="tl__date">持续迭代</div>
         <div class="tl__card">
+          <span class="tl__type tl__type--iter">持续迭代</span>
           <h3>更多工具陆续上线</h3>
           <p>从 Cron 可视化起步，逐步扩展到系统工具、效率工具、设计工具四大类，全部苹果白高端风格、纯本地隐私优先。</p>
         </div>
@@ -420,7 +518,7 @@
       <button class="modal__nav-btn" id="modal-prev" aria-label="上一个项目">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
       </button>
-      <span class="modal__counter" id="modal-counter" aria-live="polite">1 / 66</span>
+      <span class="modal__counter" id="modal-counter" aria-live="polite">1 / 67</span>
       <button class="modal__nav-btn" id="modal-next" aria-label="下一个项目">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
       </button>
@@ -470,7 +568,7 @@
 {"@context":"https://schema.org","@type":"SoftwareApplication","name":"youqu 实用工具集合","applicationCategory":"UtilitiesApplication","operatingSystem":"Windows, Web","offers":{"@type":"Offer","price":"0","priceCurrency":"CNY"},"author":{"@type":"Organization","name":"grrtyre"}}
 </script>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"ItemList","name":"youqu 工具列表","itemListElement":[{"@type":"ListItem","position":1,"name":"Cron 中文可视化","url":"https://github.com/grrtyre/youqu/tree/main/cron-zh"},{"@type":"ListItem","position":2,"name":"剪贴板管家","url":"https://github.com/grrtyre/youqu/tree/main/clipboard-manager"},{"@type":"ListItem","position":3,"name":"Markdown 预览器","url":"https://github.com/grrtyre/youqu/tree/main/markdown-preview"},{"@type":"ListItem","position":4,"name":"开发者工具箱","url":"https://github.com/grrtyre/youqu/tree/main/dev-toolbox"},{"@type":"ListItem","position":5,"name":"拾色管家","url":"https://github.com/grrtyre/youqu/tree/main/color-picker"},{"@type":"ListItem","position":6,"name":"截图管家","url":"https://github.com/grrtyre/youqu/tree/main/screenshot-manager"},{"@type":"ListItem","position":7,"name":"世界时钟","url":"https://github.com/grrtyre/youqu/tree/main/world-clock"},{"@type":"ListItem","position":8,"name":"重命名管家","url":"https://github.com/grrtyre/youqu/tree/main/file-rename-manager"},{"@type":"ListItem","position":9,"name":"速览管家","url":"https://github.com/grrtyre/youqu/tree/main/quick-look"},{"@type":"ListItem","position":10,"name":"文本管家","url":"https://github.com/grrtyre/youqu/tree/main/text-manager"},{"@type":"ListItem","position":11,"name":"清重管家","url":"https://github.com/grrtyre/youqu/tree/main/duplicate-finder"},{"@type":"ListItem","position":12,"name":"屏幕尺管家","url":"https://github.com/grrtyre/youqu/tree/main/screen-ruler"},{"@type":"ListItem","position":13,"name":"字体管家","url":"https://github.com/grrtyre/youqu/tree/main/font-manager"},{"@type":"ListItem","position":14,"name":"PDF管家","url":"https://github.com/grrtyre/youqu/tree/main/pdf-toolbox"},{"@type":"ListItem","position":15,"name":"文本对比管家","url":"https://github.com/grrtyre/youqu/tree/main/diff-checker"},{"@type":"ListItem","position":16,"name":"倒计时管家","url":"https://github.com/grrtyre/youqu/tree/main/countdown-manager"},{"@type":"ListItem","position":17,"name":"二维码管家","url":"https://github.com/grrtyre/youqu/tree/main/qr-manager"},{"@type":"ListItem","position":18,"name":"习惯管家","url":"https://github.com/grrtyre/youqu/tree/main/habit-keeper"},{"@type":"ListItem","position":19,"name":"记账管家","url":"https://github.com/grrtyre/youqu/tree/main/accounting-manager"},{"@type":"ListItem","position":20,"name":"代码片段管家","url":"https://github.com/grrtyre/youqu/tree/main/snippet-manager"},{"@type":"ListItem","position":21,"name":"时间管家","url":"https://github.com/grrtyre/youqu/tree/main/time-tracker"},{"@type":"ListItem","position":22,"name":"端口管家","url":"https://github.com/grrtyre/youqu/tree/main/port-manager"},{"@type":"ListItem","position":23,"name":"校验管家","url":"https://github.com/grrtyre/youqu/tree/main/checksum-manager"},{"@type":"ListItem","position":24,"name":"API管家","url":"https://github.com/grrtyre/youqu/tree/main/api-manager"},{"@type":"ListItem","position":25,"name":"置顶管家","url":"https://github.com/grrtyre/youqu/tree/main/topmost-manager"},{"@type":"ListItem","position":26,"name":"护眼管家","url":"https://github.com/grrtyre/youqu/tree/main/eye-rest-manager"},{"@type":"ListItem","position":27,"name":"Hosts管家","url":"https://github.com/grrtyre/youqu/tree/main/hosts-manager"},{"@type":"ListItem","position":28,"name":"网络管家","url":"https://github.com/grrtyre/youqu/tree/main/network-manager"},{"@type":"ListItem","position":29,"name":"订阅管家","url":"https://github.com/grrtyre/youqu/tree/main/subscription-manager"},{"@type":"ListItem","position":30,"name":"便签管家","url":"https://github.com/grrtyre/youqu/tree/main/sticky-notes-manager"},{"@type":"ListItem","position":31,"name":"水印管家","url":"https://github.com/grrtyre/youqu/tree/main/watermark-manager"},{"@type":"ListItem","position":32,"name":"正则管家","url":"https://github.com/grrtyre/youqu/tree/main/regex-manager"},{"@type":"ListItem","position":33,"name":"表格管家","url":"https://github.com/grrtyre/youqu/tree/main/csv-manager"},{"@type":"ListItem","position":34,"name":"启动项管家","url":"https://github.com/grrtyre/youqu/tree/main/startup-manager"},{"@type":"ListItem","position":35,"name":"番茄管家","url":"https://github.com/grrtyre/youqu/tree/main/pomodoro-manager"},{"@type":"ListItem","position":36,"name":"识字管家","url":"https://github.com/grrtyre/youqu/tree/main/ocr-manager"},{"@type":"ListItem","position":37,"name":"计算器管家","url":"https://github.com/grrtyre/youqu/tree/main/calculator-manager"},{"@type":"ListItem","position":38,"name":"思维导图管家","url":"https://github.com/grrtyre/youqu/tree/main/mind-map-manager"},{"@type":"ListItem","position":39,"name":"录屏管家","url":"https://github.com/grrtyre/youqu/tree/main/screen-recorder-manager"},{"@type":"ListItem","position":40,"name":"抽签转盘管家","url":"https://github.com/grrtyre/youqu/tree/main/wheel-manager"},{"@type":"ListItem","position":41,"name":"纪念日管家","url":"https://github.com/grrtyre/youqu/tree/main/anniversary-manager"},{"@type":"ListItem","position":42,"name":"闹钟管家","url":"https://github.com/grrtyre/youqu/tree/main/alarm-manager"},{"@type":"ListItem","position":43,"name":"磁盘管家","url":"https://github.com/grrtyre/youqu/tree/main/disk-manager"},{"@type":"ListItem","position":44,"name":"表情管家便携版","url":"https://github.com/grrtyre/youqu/tree/main/emoji-manager"},{"@type":"ListItem","position":45,"name":"闪卡记忆管家","url":"https://github.com/grrtyre/youqu/tree/main/flashcard-manager"},{"@type":"ListItem","position":46,"name":"图片转换管家","url":"https://github.com/grrtyre/youqu/tree/main/image-converter"},{"@type":"ListItem","position":47,"name":"JSON管家","url":"https://github.com/grrtyre/youqu/tree/main/json-manager"},{"@type":"ListItem","position":48,"name":"键鼠管家","url":"https://github.com/grrtyre/youqu/tree/main/keyboard-tester"},{"@type":"ListItem","position":49,"name":"日志管家","url":"https://github.com/grrtyre/youqu/tree/main/log-manager"},{"@type":"ListItem","position":50,"name":"密码生成器","url":"https://github.com/grrtyre/youqu/tree/main/password-generator"},{"@type":"ListItem","position":51,"name":"单位转换器","url":"https://github.com/grrtyre/youqu/tree/main/unit-converter"},{"@type":"ListItem","position":52,"name":"剧集管家","url":"https://github.com/grrtyre/youqu/tree/main/watching-manager"},{"@type":"ListItem","position":53,"name":"调色板管家","url":"https://github.com/grrtyre/youqu/tree/main/palette-manager"},{"@type":"ListItem","position":54,"name":"环境音播放器","url":"https://github.com/grrtyre/youqu/tree/main/ambient-sound"},{"@type":"ListItem","position":55,"name":"日记本","url":"https://github.com/grrtyre/youqu/tree/main/diary-manager"},{"@type":"ListItem","position":56,"name":"系统监控器","url":"https://github.com/grrtyre/youqu/tree/main/system-monitor"},{"@type":"ListItem","position":57,"name":"提示词管家","url":"https://github.com/grrtyre/youqu/tree/main/prompt-manager"},{"@type":"ListItem","position":58,"name":"验证器管家","url":"https://github.com/grrtyre/youqu/tree/main/authenticator-manager"},{"@type":"ListItem","position":59,"name":"图片压缩管家","url":"https://github.com/grrtyre/youqu/tree/main/image-compressor"},{"@type":"ListItem","position":60,"name":"启动器管家","url":"https://github.com/grrtyre/youqu/tree/main/launcher-manager"},{"@type":"ListItem","position":61,"name":"音乐播放器","url":"https://github.com/grrtyre/youqu/tree/main/music-player"},{"@type":"ListItem","position":62,"name":"快速翻译管家","url":"https://github.com/grrtyre/youqu/tree/main/quick-translate"},{"@type":"ListItem","position":63,"name":"稍后阅读管家","url":"https://github.com/grrtyre/youqu/tree/main/reading-list-manager"},{"@type":"ListItem","position":64,"name":"壁纸管家","url":"https://github.com/grrtyre/youqu/tree/main/wallpaper-manager"},{"@type":"ListItem","position":65,"name":"房贷计算器","url":"https://github.com/grrtyre/youqu/tree/main/mortgage-manager"},{"@type":"ListItem","position":66,"name":"语音备忘录","url":"https://github.com/grrtyre/youqu/tree/main/voice-memo-manager"}]}
+{"@context":"https://schema.org","@type":"ItemList","name":"youqu 工具列表","itemListElement":[{"@type":"ListItem","position":1,"name":"Cron 中文可视化","url":"https://github.com/grrtyre/youqu/tree/main/cron-zh"},{"@type":"ListItem","position":2,"name":"剪贴板管家","url":"https://github.com/grrtyre/youqu/tree/main/clipboard-manager"},{"@type":"ListItem","position":3,"name":"Markdown 预览器","url":"https://github.com/grrtyre/youqu/tree/main/markdown-preview"},{"@type":"ListItem","position":4,"name":"开发者工具箱","url":"https://github.com/grrtyre/youqu/tree/main/dev-toolbox"},{"@type":"ListItem","position":5,"name":"拾色管家","url":"https://github.com/grrtyre/youqu/tree/main/color-picker"},{"@type":"ListItem","position":6,"name":"截图管家","url":"https://github.com/grrtyre/youqu/tree/main/screenshot-manager"},{"@type":"ListItem","position":7,"name":"世界时钟","url":"https://github.com/grrtyre/youqu/tree/main/world-clock"},{"@type":"ListItem","position":8,"name":"重命名管家","url":"https://github.com/grrtyre/youqu/tree/main/file-rename-manager"},{"@type":"ListItem","position":9,"name":"速览管家","url":"https://github.com/grrtyre/youqu/tree/main/quick-look"},{"@type":"ListItem","position":10,"name":"文本管家","url":"https://github.com/grrtyre/youqu/tree/main/text-manager"},{"@type":"ListItem","position":11,"name":"清重管家","url":"https://github.com/grrtyre/youqu/tree/main/duplicate-finder"},{"@type":"ListItem","position":12,"name":"屏幕尺管家","url":"https://github.com/grrtyre/youqu/tree/main/screen-ruler"},{"@type":"ListItem","position":13,"name":"字体管家","url":"https://github.com/grrtyre/youqu/tree/main/font-manager"},{"@type":"ListItem","position":14,"name":"PDF管家","url":"https://github.com/grrtyre/youqu/tree/main/pdf-toolbox"},{"@type":"ListItem","position":15,"name":"文本对比管家","url":"https://github.com/grrtyre/youqu/tree/main/diff-checker"},{"@type":"ListItem","position":16,"name":"倒计时管家","url":"https://github.com/grrtyre/youqu/tree/main/countdown-manager"},{"@type":"ListItem","position":17,"name":"二维码管家","url":"https://github.com/grrtyre/youqu/tree/main/qr-manager"},{"@type":"ListItem","position":18,"name":"习惯管家","url":"https://github.com/grrtyre/youqu/tree/main/habit-keeper"},{"@type":"ListItem","position":19,"name":"记账管家","url":"https://github.com/grrtyre/youqu/tree/main/accounting-manager"},{"@type":"ListItem","position":20,"name":"代码片段管家","url":"https://github.com/grrtyre/youqu/tree/main/snippet-manager"},{"@type":"ListItem","position":21,"name":"时间管家","url":"https://github.com/grrtyre/youqu/tree/main/time-tracker"},{"@type":"ListItem","position":22,"name":"端口管家","url":"https://github.com/grrtyre/youqu/tree/main/port-manager"},{"@type":"ListItem","position":23,"name":"校验管家","url":"https://github.com/grrtyre/youqu/tree/main/checksum-manager"},{"@type":"ListItem","position":24,"name":"API管家","url":"https://github.com/grrtyre/youqu/tree/main/api-manager"},{"@type":"ListItem","position":25,"name":"置顶管家","url":"https://github.com/grrtyre/youqu/tree/main/topmost-manager"},{"@type":"ListItem","position":26,"name":"护眼管家","url":"https://github.com/grrtyre/youqu/tree/main/eye-rest-manager"},{"@type":"ListItem","position":27,"name":"Hosts管家","url":"https://github.com/grrtyre/youqu/tree/main/hosts-manager"},{"@type":"ListItem","position":28,"name":"网络管家","url":"https://github.com/grrtyre/youqu/tree/main/network-manager"},{"@type":"ListItem","position":29,"name":"订阅管家","url":"https://github.com/grrtyre/youqu/tree/main/subscription-manager"},{"@type":"ListItem","position":30,"name":"便签管家","url":"https://github.com/grrtyre/youqu/tree/main/sticky-notes-manager"},{"@type":"ListItem","position":31,"name":"水印管家","url":"https://github.com/grrtyre/youqu/tree/main/watermark-manager"},{"@type":"ListItem","position":32,"name":"正则管家","url":"https://github.com/grrtyre/youqu/tree/main/regex-manager"},{"@type":"ListItem","position":33,"name":"表格管家","url":"https://github.com/grrtyre/youqu/tree/main/csv-manager"},{"@type":"ListItem","position":34,"name":"启动项管家","url":"https://github.com/grrtyre/youqu/tree/main/startup-manager"},{"@type":"ListItem","position":35,"name":"番茄管家","url":"https://github.com/grrtyre/youqu/tree/main/pomodoro-manager"},{"@type":"ListItem","position":36,"name":"识字管家","url":"https://github.com/grrtyre/youqu/tree/main/ocr-manager"},{"@type":"ListItem","position":37,"name":"计算器管家","url":"https://github.com/grrtyre/youqu/tree/main/calculator-manager"},{"@type":"ListItem","position":38,"name":"思维导图管家","url":"https://github.com/grrtyre/youqu/tree/main/mind-map-manager"},{"@type":"ListItem","position":39,"name":"录屏管家","url":"https://github.com/grrtyre/youqu/tree/main/screen-recorder-manager"},{"@type":"ListItem","position":40,"name":"抽签转盘管家","url":"https://github.com/grrtyre/youqu/tree/main/wheel-manager"},{"@type":"ListItem","position":41,"name":"纪念日管家","url":"https://github.com/grrtyre/youqu/tree/main/anniversary-manager"},{"@type":"ListItem","position":42,"name":"闹钟管家","url":"https://github.com/grrtyre/youqu/tree/main/alarm-manager"},{"@type":"ListItem","position":43,"name":"磁盘管家","url":"https://github.com/grrtyre/youqu/tree/main/disk-manager"},{"@type":"ListItem","position":44,"name":"表情管家便携版","url":"https://github.com/grrtyre/youqu/tree/main/emoji-manager"},{"@type":"ListItem","position":45,"name":"闪卡记忆管家","url":"https://github.com/grrtyre/youqu/tree/main/flashcard-manager"},{"@type":"ListItem","position":46,"name":"图片转换管家","url":"https://github.com/grrtyre/youqu/tree/main/image-converter"},{"@type":"ListItem","position":47,"name":"JSON管家","url":"https://github.com/grrtyre/youqu/tree/main/json-manager"},{"@type":"ListItem","position":48,"name":"键鼠管家","url":"https://github.com/grrtyre/youqu/tree/main/keyboard-tester"},{"@type":"ListItem","position":49,"name":"日志管家","url":"https://github.com/grrtyre/youqu/tree/main/log-manager"},{"@type":"ListItem","position":50,"name":"密码生成器","url":"https://github.com/grrtyre/youqu/tree/main/password-generator"},{"@type":"ListItem","position":51,"name":"单位转换器","url":"https://github.com/grrtyre/youqu/tree/main/unit-converter"},{"@type":"ListItem","position":52,"name":"剧集管家","url":"https://github.com/grrtyre/youqu/tree/main/watching-manager"},{"@type":"ListItem","position":53,"name":"调色板管家","url":"https://github.com/grrtyre/youqu/tree/main/palette-manager"},{"@type":"ListItem","position":54,"name":"环境音播放器","url":"https://github.com/grrtyre/youqu/tree/main/ambient-sound"},{"@type":"ListItem","position":55,"name":"日记本","url":"https://github.com/grrtyre/youqu/tree/main/diary-manager"},{"@type":"ListItem","position":56,"name":"系统监控器","url":"https://github.com/grrtyre/youqu/tree/main/system-monitor"},{"@type":"ListItem","position":57,"name":"提示词管家","url":"https://github.com/grrtyre/youqu/tree/main/prompt-manager"},{"@type":"ListItem","position":58,"name":"验证器管家","url":"https://github.com/grrtyre/youqu/tree/main/authenticator-manager"},{"@type":"ListItem","position":59,"name":"图片压缩管家","url":"https://github.com/grrtyre/youqu/tree/main/image-compressor"},{"@type":"ListItem","position":60,"name":"启动器管家","url":"https://github.com/grrtyre/youqu/tree/main/launcher-manager"},{"@type":"ListItem","position":61,"name":"音乐播放器","url":"https://github.com/grrtyre/youqu/tree/main/music-player"},{"@type":"ListItem","position":62,"name":"快速翻译管家","url":"https://github.com/grrtyre/youqu/tree/main/quick-translate"},{"@type":"ListItem","position":63,"name":"稍后阅读管家","url":"https://github.com/grrtyre/youqu/tree/main/reading-list-manager"},{"@type":"ListItem","position":64,"name":"壁纸管家","url":"https://github.com/grrtyre/youqu/tree/main/wallpaper-manager"},{"@type":"ListItem","position":65,"name":"房贷计算器","url":"https://github.com/grrtyre/youqu/tree/main/mortgage-manager"},{"@type":"ListItem","position":66,"name":"语音备忘录","url":"https://github.com/grrtyre/youqu/tree/main/voice-memo-manager"},{"@type":"ListItem","position":67,"name":"许可证管理器","url":"https://github.com/grrtyre/youqu/tree/main/license-manager"}]}
 </script>
 <script src="assets/js/main.js" defer></script>
 </body>
