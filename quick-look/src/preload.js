@@ -39,6 +39,10 @@ contextBridge.exposeInMainWorld('api', {
     minimize: () => ipcRenderer.invoke('window:minimize'),
     toggleMax: () => ipcRenderer.invoke('window:toggle-max'),
   },
+  blurControl: {
+    // 修复 S2/S3：拖拽或外部应用打开期间禁用 blur 自动隐藏
+    suspend: (ms) => ipcRenderer.invoke('blur-control:suspend', ms),
+  },
   config: {
     get: () => ipcRenderer.invoke('config:get'),
     set: (partial) => ipcRenderer.invoke('config:set', partial),
