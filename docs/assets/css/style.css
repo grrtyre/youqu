@@ -2691,5 +2691,774 @@
 
 
 
+/* ============ 第十九轮（补录 license-manager + 五项视觉细节打磨） ============ */
+
+/* 49. 全局阴影柔化（mimo 反馈：阴影质感偏硬，不够柔和扩散）
+      降低黑色投影透明度，加大模糊半径，让阴影更细腻扩散
+      保持多层结构（近+中+远），但每层都更柔和 */
+:root{
+  --shadow:0 1px 2px rgba(0,0,0,.02),0 6px 18px rgba(0,0,0,.04),0 12px 28px rgba(0,122,255,.025) !important;
+  --shadow-md:0 2px 4px rgba(0,0,0,.03),0 12px 32px rgba(0,0,0,.05),0 20px 44px rgba(0,122,255,.05) !important;
+  --shadow-lg:0 4px 8px rgba(0,0,0,.035),0 24px 56px rgba(0,0,0,.06),0 36px 72px rgba(0,122,255,.07) !important;
+}
+
+/* 50. 卡片间距与内部 padding 加大（mimo 反馈：间距偏紧，呼吸感不足）
+      grid 列间距与行间距均加大 4-6px
+      card body padding 加大 2px，让内容与卡片边缘有更多呼吸 */
+.grid{column-gap:24px !important;row-gap:28px !important}
+@media (min-width:1440px){.grid{column-gap:28px !important;row-gap:36px !important}}
+@media (max-width:768px){.grid{column-gap:16px !important;row-gap:20px !important}}
+.card__body{padding:20px 22px 18px !important}
+@media (max-width:600px){.card__body{padding:16px 18px 14px !important}}
+
+/* 51. 卡片版本徽章按技术栈着色（克制版）
+      mimo 反馈：原方案色彩过强破坏苹果白克制
+      改为极浅中性色微差：web=极浅蓝灰、electron=极浅紫灰、python=极浅绿灰
+      仅 8% 不透明度色相底 + 18% 边框 + 深一档文字色
+      保持整体克制，但 67 张卡片仍有微妙色彩节奏 */
+.card[data-stack="web"] .card__version{
+  background:rgba(0,122,255,.08) !important;
+  color:#0a4d9c !important;
+  border-color:rgba(0,122,255,.18) !important;
+}
+.card[data-stack="electron"] .card__version{
+  background:rgba(175,82,222,.08) !important;
+  color:#6b2fa0 !important;
+  border-color:rgba(175,82,222,.18) !important;
+}
+.card[data-stack="python"] .card__version{
+  background:rgba(52,199,89,.08) !important;
+  color:#157a35 !important;
+  border-color:rgba(52,199,89,.18) !important;
+}
+
+/* 52. 分类 chips 激活态保持深黑（mimo 反馈：多色破坏克制）
+      仅圆点保留分类色作为色彩暗示，底色统一深黑
+      既有规则已生效，此处仅作说明注释，不再覆盖 */
+
+/* 53. 时间轴类型徽标：克制配色（mimo 反馈：多色破坏苹果白克制）
+      统一用浅灰底 + 深灰字 + 灰边框，仅靠文字区分类型
+      保留 5 种类型语义，但色彩语言统一 */
+.tl__card{position:relative}
+.tl__type{
+  display:inline-flex;align-items:center;
+  font-size:10.5px;font-weight:600;letter-spacing:.02em;
+  padding:3px 9px;border-radius:980px;
+  margin:0 6px 8px 0;
+  border:1px solid transparent;
+  white-space:nowrap;
+  vertical-align:middle;
+  background:rgba(142,142,147,.10);
+  color:#6e6e73;
+  border-color:rgba(142,142,147,.22);
+}
+.tl__type + .tl__type{margin-left:0}
+/* 类型差异仅通过极轻的左侧色条暗示，不破坏整体灰色基调 */
+.tl__type--content{box-shadow:inset 2px 0 0 #007aff}
+.tl__type--visual{box-shadow:inset 2px 0 0 #af52de}
+.tl__type--bug{box-shadow:inset 2px 0 0 #ff3b30}
+.tl__type--release{box-shadow:inset 2px 0 0 #34c759}
+.tl__type--iter{box-shadow:inset 2px 0 0 #86868b}
+@media (max-width:600px){
+  .tl__type{font-size:10px;padding:2px 8px;margin-bottom:6px}
+}
+
+/* 52. 卡片 hover 鼠标跟随 3D 倾斜（mimo 反馈：卡片 hover 反馈单调，可增加立体感）
+      JS 监听 mousemove，计算鼠标相对卡片中心的偏移，设置 --rx/--ry CSS 变量
+      CSS 用 transform: perspective(...) rotateX(var(--rx)) rotateY(var(--ry)) 实现
+      倾斜幅度 ±3°，离开时 0.5s 缓动复位
+      preserve-3d 让内部 emoji 与 media 可分层 translateZ 增强景深
+      仅桌面端 pointer:fine 启用，移动端无 hover 不影响
+      尊重 prefers-reduced-motion：直接禁用变换 */
+.card{
+  transform-style:preserve-3d;
+  transition:transform .35s var(--ease-out),box-shadow .35s var(--ease-out),border-color .35s var(--ease-out);
+}
+.card.is-tilting{
+  transition:none; /* 倾斜过程中不要过渡，让鼠标跟随即时 */
+  transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(-6px);
+  box-shadow:var(--shadow-md);
+  border-color:rgba(0,122,255,.14);
+  will-change:transform;
+}
+.card.is-tilting .card__emoji{
+  transform:translate(-50%,-50%) translateZ(35px) scale(1.06) !important;
+}
+.card.is-tilting .card__version{
+  transform:translateZ(25px);
+}
+.card.is-tilting .card__body{
+  transform:translateZ(20px);
+}
+@media (hover:none){.card.is-tilting{transform:none}}
+@media (prefers-reduced-motion:reduce){
+  .card.is-tilting{transform:none !important}
+  .card.is-tilting .card__emoji,
+  .card.is-tilting .card__version,
+  .card.is-tilting .card__body{transform:none !important}
+}
+
+/* 53. 卡片 emoji hover 时轻微浮起 + 阴影增强（配合 3D 倾斜让交互反馈更立体）
+      原 emoji 已有 float 呼吸动画，hover 时叠加 scale 与 translateZ 让其"探出"
+      注意 .card__emoji 用 translate(-50%,-50%) 居中，hover transform 必须保留此偏移 */
+.card:hover .card__emoji{
+  transform:translate(-50%,-50%) translateZ(20px) scale(1.08) !important;
+  filter:drop-shadow(0 8px 16px rgba(0,0,0,.12));
+  transition:transform .35s var(--ease-out),filter .35s var(--ease-out);
+}
+@media (hover:none){.card:hover .card__emoji{transform:translate(-50%,-50%) !important;filter:none}}
+@media (prefers-reduced-motion:reduce){.card:hover .card__emoji{transform:translate(-50%,-50%) !important;filter:none !important}}
+
+/* 54. 工具栏滚动暗示文本动态绑定 PROJECTS.length（未来新增项目无需手改 HTML）
+      JS 在初始化时设置文本，HTML 内的"67"仅作 SSR/无 JS 回退 */
+
+/* ============ 第二十轮 · mimo v3 反馈修复（阴影柔化 / 版本徽章统一中性灰 / 底部滚动暗示增强） ============ */
+
+/* 55. 卡片阴影全面柔化 —— mimo 反馈"阴影过重破坏苹果白轻盈感"
+      改为 mimo 推荐的双层柔和投影：1px 极淡接触 + 8px 大范围扩散
+      移除原本过暗的黑色第三层与蓝色辉光层，让卡片更"浮"更"轻" */
+.card{
+  box-shadow:
+    0 1px 3px rgba(0,0,0,.04),
+    0 8px 24px rgba(0,0,0,.06) !important;
+  border:1px solid rgba(0,0,0,.045) !important;
+}
+/* 卡片 hover 阴影同步柔化：保留蓝色微光提示但大幅降低强度 */
+.card:hover{
+  box-shadow:
+    0 2px 6px rgba(0,0,0,.05),
+    0 12px 32px rgba(0,0,0,.07),
+    0 0 0 1px rgba(0,122,255,.06) !important;
+}
+/* 卡片 3D 倾斜态阴影也收敛 */
+.card.is-tilting{
+  box-shadow:
+    0 2px 6px rgba(0,0,0,.05),
+    0 14px 36px rgba(0,0,0,.08),
+    0 0 0 1px rgba(0,122,255,.08) !important;
+}
+
+/* 56. 版本徽章统一中性灰 —— mimo 反馈"绿/蓝/灰杂乱，颜色语义不明确"
+      彻底移除按技术栈着色（web 蓝 / electron 紫 / python 绿），
+      统一为苹果系中性灰：浅灰背景 + 深灰文字 + 极淡边框
+      技术栈信息已由 .card__stack chip 表达，版本号无需重复着色 */
+.card__version{
+  background:rgba(0,0,0,.045) !important;
+  color:var(--ink2) !important;
+  border:1px solid rgba(0,0,0,.06) !important;
+  font-weight:600 !important;
+  backdrop-filter:blur(8px) saturate(120%);
+  -webkit-backdrop-filter:blur(8px) saturate(120%);
+}
+/* hover 时版本徽章仅微微变深，不再变蓝避免色彩干扰 */
+.card:hover .card__version{
+  background:rgba(0,0,0,.07) !important;
+  color:var(--ink) !important;
+  border-color:rgba(0,0,0,.10) !important;
+  box-shadow:none !important;
+}
+/* 覆盖第十九轮按技术栈着色的规则 */
+.card[data-stack="web"] .card__version,
+.card[data-stack="electron"] .card__version,
+.card[data-stack="python"] .card__version{
+  background:rgba(0,0,0,.045) !important;
+  color:var(--ink2) !important;
+  border-color:rgba(0,0,0,.06) !important;
+}
+.card:hover .card[data-stack="web"] .card__version,
+.card:hover .card[data-stack="electron"] .card__version,
+.card:hover .card[data-stack="python"] .card__version{
+  background:rgba(0,0,0,.07) !important;
+  color:var(--ink) !important;
+}
+
+/* 57. 底部滚动暗示增强 —— mimo 反馈"底部卡片被截断缺乏优雅滚动暗示"
+      加高渐隐遮罩至 200px，提前透明度起点（从 0% 起渐变）
+      并在遮罩内追加文字提示"向下滚动查看更多" */
+.grid-wrap{padding-bottom:140px !important;position:relative}
+.grid-wrap::after{
+  content:'' !important;
+  position:absolute;left:0;right:0;bottom:0;height:200px !important;
+  background:linear-gradient(180deg,
+    rgba(245,245,247,0) 0%,
+    rgba(245,245,247,.3) 25%,
+    rgba(245,245,247,.65) 55%,
+    rgba(245,245,247,.92) 85%,
+    var(--bg) 100%) !important;
+  pointer-events:none;z-index:1 !important;
+}
+/* 底部滚动暗示文字浮层：居中显示在遮罩下半部，渐入渐出 */
+.grid-wrap::before{
+  content:'向下滚动查看更多工具';
+  position:absolute;left:50%;bottom:36px;transform:translateX(-50%);
+  font-size:12px;font-weight:500;color:var(--ink3);
+  letter-spacing:.06em;text-transform:none;
+  padding:8px 18px;border-radius:980px;
+  background:rgba(255,255,255,.78);
+  backdrop-filter:blur(12px) saturate(160%);
+  -webkit-backdrop-filter:blur(12px) saturate(160%);
+  border:1px solid rgba(0,0,0,.06);
+  box-shadow:0 2px 12px rgba(0,0,0,.06);
+  pointer-events:none;z-index:2;
+  animation:scrollHintBreath 3.2s ease-in-out infinite;
+}
+@keyframes scrollHintBreath{
+  0%,100%{opacity:.55;transform:translateX(-50%) translateY(0)}
+  50%{opacity:1;transform:translateX(-50%) translateY(-3px)}
+}
+@media (prefers-reduced-motion:reduce){
+  .grid-wrap::before{animation:none;opacity:.75}
+}
+/* 移动端遮罩高度收敛但保留暗示 */
+@media (max-width:600px){
+  .grid-wrap::after{height:140px !important}
+  .grid-wrap::before{font-size:11px;bottom:24px;padding:7px 14px}
+}
+
+/* 58. 工具栏顶部滚动暗示（原有 toolbar__scroll-hint）保留，与底部暗示形成首尾呼应 */
+
+/* ============ 第二十一轮 · mimo v4 反馈修复（Hero hint 弱化 / 描述行数统一 / 按钮间距 / 首屏露出 / chips 数字加粗） ============ */
+
+/* 59. Hero 滚动浏览暗示弱化 —— mimo 反馈"位于 67 和免费之间打破数字统计节奏感"
+      原 hero__hint 位于 hero 底部，但视觉上与 stats 区域冲突
+      方案：彻底隐藏 hero__hint，因为 stats 下方就有 toolbar 滚动暗示承担引导职责
+      保留 HTML 节点供无 JS 回退，仅 CSS 隐藏 */
+.hero__hint{display:none !important}
+
+/* 60. 卡片描述行数强制统一为 2 行 + min-height 兜底 —— mimo 反馈"部分 2 行部分 3 行，底部对齐不齐整"
+      此前 line-clamp 在不同 media query 下取值不一（2/3/2），min-height 也有 4.2em/4.65em/3.1em 多版本
+      方案：全局统一 2 行 line-clamp + min-height:3.32em（2 行 × 1.66 行高）兜底
+      移动端保持 2 行（与桌面一致）让所有卡片高度完全对齐 */
+.card__desc{
+  display:-webkit-box !important;
+  -webkit-box-orient:vertical !important;
+  -webkit-line-clamp:2 !important;
+  overflow:hidden !important;
+  line-height:1.66 !important;
+  min-height:3.32em !important;
+  flex:1 !important;
+}
+@media (max-width:600px){
+  .card__desc{
+    -webkit-line-clamp:2 !important;
+    min-height:3.32em !important;
+  }
+}
+
+/* 61. 卡片双按钮间距加大 —— mimo 反馈"获取 + GitHub 图标按钮间距偏紧"
+      gap 从 10px 加大到 14px，按钮内边距同步加大 */
+.card__actions{gap:14px !important;margin-top:6px !important}
+.card__actions .card__cta{padding-left:20px !important;padding-right:20px !important;min-width:104px !important}
+
+/* 62. 首屏露出完整一行卡片 —— mimo 反馈"拾色管家等卡片底部刚好切在视口边缘"
+      方案：略微压缩 Hero padding-bottom + hero__stats margin-top + toolbar padding
+      让 1200x1400 视口内首屏完整露出一行卡片（4 张） */
+.hero{padding-bottom:8px !important}
+.hero__stats{margin-top:18px !important}
+.hero::after{height:18px !important}
+.toolbar{padding-top:4px !important;padding-bottom:8px !important}
+.toolbar__scroll-hint{margin-top:18px !important}
+.grid-wrap{padding-top:18px !important}
+
+/* 63. chips 数字徽标加大加粗 —— mimo 反馈"开发 11、系统 18 等数字偏小，提升可扫描性"
+      字号从 11px → 13px，min-width 从 20px → 22px，高度从 19px → 20px，字重保持 700
+      激活态背景对比度同步加强 */
+.chip[data-count]::after{
+  min-width:22px !important;
+  height:20px !important;
+  font-size:13px !important;
+  padding:0 7px !important;
+  font-weight:700 !important;
+  font-variant-numeric:tabular-nums !important;
+}
+@media (max-width:600px){
+  .chip[data-count]::after{
+    min-width:18px !important;
+    height:17px !important;
+    font-size:11px !important;
+    padding:0 5px !important;
+  }
+}
+
+/* 64. 卡片描述渐隐蒙层同步调整：min-height 收敛后蒙层位置下移
+      原蒙层 bottom:60px，描述区现在更短，蒙层 bottom 调整为 56px */
+.card__body::before{bottom:56px !important}
+@media (max-width:600px){.card__body::before{display:none !important}}
+
+/* ============ 第二十二轮 · mimo v5 反馈修复（阴影增强 / CTA 蓝填充 / 版本号定位统一 / 桌面端隐藏 scroll-hint / 间距统一） ============ */
+
+/* 65. 卡片阴影重新增强 —— mimo 反馈"阴影偏平与背景融合度太高"
+      上一轮（第二十轮）按 mimo v3 建议改的双层阴影过于柔和，导致层次感不足
+      平衡方案：保留双层结构，但加强第二层的扩散范围与轻微蓝色辉光
+      接触层 0 1px 2px 极淡 + 主投影 0 6px 20px 中等 + 蓝色微光 0 12px 28px 极淡蓝 */
+.card{
+  box-shadow:
+    0 1px 2px rgba(0,0,0,.04),
+    0 6px 20px rgba(0,0,0,.07),
+    0 12px 28px rgba(0,122,255,.04) !important;
+  border:1px solid rgba(0,0,0,.06) !important;
+}
+.card:hover{
+  box-shadow:
+    0 2px 6px rgba(0,0,0,.06),
+    0 14px 36px rgba(0,0,0,.09),
+    0 20px 48px rgba(0,122,255,.08),
+    0 0 0 1px rgba(0,122,255,.10) !important;
+}
+.card.is-tilting{
+  box-shadow:
+    0 4px 10px rgba(0,0,0,.07),
+    0 18px 44px rgba(0,0,0,.10),
+    0 24px 56px rgba(0,122,255,.10) !important;
+}
+
+/* 66. 「获取」CTA 按钮加蓝色填充 —— mimo 反馈"蓝色文字按钮缺少边框或背景衬托"
+      原本用 accent-soft 浅蓝背景 + 蓝字，视觉权重不足
+      升级为：实色蓝填充 + 白字 + 蓝色阴影，与 .btn--primary 风格一致 */
+.card__cta{
+  background:var(--accent) !important;
+  color:#fff !important;
+  border:1px solid var(--accent) !important;
+  box-shadow:0 3px 10px rgba(0,122,255,.28) !important;
+  font-weight:600 !important;
+}
+.card:hover .card__cta{
+  background:#0066d6 !important;
+  border-color:#0066d6 !important;
+  box-shadow:0 5px 16px rgba(0,122,255,.38) !important;
+  transform:translateY(-1px);
+}
+.card__cta-arrow{color:#fff !important}
+
+/* 67. 版本号定位统一 —— mimo 反馈"右上角版本号位置在不同卡片中有微小偏移"
+      原因：hover 时 .card__version 有 transform:translateY(-1px)，造成视觉偏移
+      方案：移除 hover 时的 transform，仅保留颜色变化 */
+.card:hover .card__version{
+  transform:none !important;
+  background:rgba(0,0,0,.07) !important;
+  color:var(--ink) !important;
+  border-color:rgba(0,0,0,.10) !important;
+  box-shadow:none !important;
+}
+/* 版本号定位强制固定，避免不同卡片定位漂移 */
+.card__version{
+  position:absolute !important;
+  top:12px !important;
+  right:12px !important;
+  transform:none !important;
+}
+
+/* 68. 桌面端隐藏 toolbar__scroll-hint —— mimo 反馈"桌面端意义不大，移动端更适合"
+      桌面端用户已能看到卡片网格，顶部 scroll-hint 冗余
+      移动端保留（视口小需要引导） */
+@media (min-width:769px){
+  .toolbar__scroll-hint{display:none !important}
+}
+
+/* 69. 卡片双按钮间距统一 —— mimo 反馈"GitHub 图标与获取按钮间距不均"
+      强制 gap 固定值，移除可能的弹性布局差异 */
+.card__actions{
+  display:flex !important;
+  align-items:center !important;
+  gap:14px !important;
+  margin-top:8px !important;
+}
+.card__actions > *{flex-shrink:0}
+
+/* 70. 搜索框与 chips 垂直对齐 —— mimo 反馈"搜索框与筛选标签垂直对齐略低"
+      强制 align-items:center，确保 baseline 一致 */
+.toolbar__row{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:16px !important;
+}
+.search__input{height:44px !important}
+.chips{height:44px !important;display:flex !important;align-items:center !important}
+
+/* 71. 卡片 hover 微动效 —— mimo 建议"卡片浮起 + 阴影加深"
+      当前已有 transform，但浮起幅度偏小，加大到 -3px */
+.card:hover{
+  transform:translateY(-3px);
+}
+
+/* ============ 第二十三轮 · mimo v6 反馈修复（版本号强制显示 / chips 选中态强化 / 卡片 hover 缩放 / 导航间距 / tooltip） ============ */
+
+/* 72. 卡片版本号强制显示 —— mimo 反馈"部分卡片有版本号部分没有"
+      原因：JS 渲染时部分项目未设 ver 字段
+      方案：CSS 层面强制 .card__version 可见，JS 层面无 ver 时回退显示 'v1.0'
+      此规则确保即使 JS 漏写 ver，徽章位置仍存在不缺位 */
+.card__version{display:inline-flex !important;visibility:visible !important;opacity:1 !important}
+
+/* 73. chips 选中态视觉重量强化 —— mimo 反馈"全部标签蓝色背景视觉重量可以再加强"
+      选中态：阴影加深 + 字重提升到 700 + 微微上浮
+      未选中态：保持原样让对比更明显 */
+.chip.is-active{
+  background:var(--ink) !important;
+  color:#fff !important;
+  border-color:var(--ink) !important;
+  font-weight:700 !important;
+  box-shadow:0 4px 14px rgba(29,29,31,.28),0 1px 3px rgba(29,29,31,.16) !important;
+  transform:translateY(-1px) !important;
+}
+.chip:not(.is-active){
+  font-weight:500 !important;
+  color:var(--ink3) !important;
+}
+
+/* 74. 卡片 hover 微缩放 + 蓝色细边框 —— mimo 建议"1px 蓝色边框或 scale(1.01) 缩放"
+      hover 时卡片轻微上浮 + 缩放 + 蓝色细边框增强交互反馈 */
+.card:hover{
+  transform:translateY(-4px) scale(1.008);
+  border-color:rgba(0,122,255,.22) !important;
+}
+@media (hover:none){
+  .card:hover{transform:none !important}
+}
+
+/* 75. 顶部导航间距加大 —— mimo 反馈"导航项间距略小于主内容区宽松风格"
+      nav__links gap 从 34px 加大到 44px */
+.nav__links{gap:44px !important}
+@media (max-width:768px){.nav__links{gap:20px !important}}
+
+/* 76. 卡片描述 tooltip：hover 时显示完整描述 —— mimo 建议"鼠标悬停通过 Tooltip 显示完整描述"
+      用 title 属性原生 tooltip 已有，这里增加一个 CSS 自定义 tooltip 浮层
+      实现方式：card__desc 内嵌 ::after 伪元素，hover 时显示完整描述（attr 函数） */
+.card__desc{
+  position:relative;
+  /* title 属性仍保留作无 JS 回退，CSS tooltip 仅作增强 */
+}
+.card__desc::after{
+  content:attr(data-full);
+  position:absolute;
+  bottom:calc(100% + 8px);
+  left:50%;
+  transform:translateX(-50%) translateY(4px);
+  background:rgba(29,29,31,.96);
+  color:#fff;
+  font-size:12px;
+  line-height:1.5;
+  padding:10px 14px;
+  border-radius:10px;
+  width:max-content;
+  max-width:280px;
+  white-space:normal;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .2s var(--ease),transform .2s var(--ease);
+  z-index:50;
+  box-shadow:0 8px 24px rgba(0,0,0,.18);
+  backdrop-filter:blur(8px);
+}
+.card:hover .card__desc::after{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+  transition-delay:.25s;
+}
+@media (hover:none){.card__desc::after{display:none !important}}
+@media (prefers-reduced-motion:reduce){.card__desc::after{transition:none}}
+
+/* 77. 版本号位置与卡片 emoji 等高对齐优化 —— 让版本号与卡片右上角顶条留出更多空间
+      top 从 12px 调整为 14px，与卡片内边距对齐 */
+.card__version{top:14px !important;right:14px !important}
+
+/* ============ 第二十四轮 · mimo v7 反馈修复（Hero 节奏 / CTA-stats 间距 / 搜索框突出 / chips 统一蓝色系 / 截图视口） ============ */
+
+/* 78. Hero 区垂直节奏加大 —— mimo 反馈"主标题与副标题间距偏小，副标题与统计数字之间也缺少留白"
+      hero__title margin-bottom 加大、hero__sub margin-bottom 加大、hero__stats margin-top 加大 */
+.hero__title{margin:14px 0 14px !important}
+.hero__sub{margin:0 auto 22px !important}
+.hero__stats{margin-top:28px !important}
+.hero__actions{margin-bottom:10px !important}
+
+/* 79. CTA 按钮组与统计数字间距 —— mimo 反馈"CTA 与 67/4/免费 重叠感"
+      在 hero__actions 与 hero__stats 之间增加分隔
+      方案：hero__actions padding-bottom 加大 + hero__stats margin-top 加大（已加到 28px） */
+.hero__actions{padding-bottom:6px !important}
+
+/* 80. 搜索框突出 —— mimo 反馈"搜索框与筛选栏缺乏主次区分"
+      方案：搜索框宽度占比加大（flex:2 vs chips flex:1），搜索框背景更白 + 边框更深
+      搜索框聚焦时阴影更明显 */
+.toolbar__row{gap:20px !important}
+.search{flex:2 1 320px !important;min-width:280px}
+.chips{flex:0 0 auto !important}
+.search__input{
+  background:#fff !important;
+  border-color:var(--line) !important;
+  font-size:15px !important;
+}
+.search__input:focus{
+  border-color:var(--accent) !important;
+}
+
+/* 81. chips 圆点全部统一为蓝色（激活）或中性灰（未激活）—— mimo 反馈"五种颜色花哨"
+      移除原本按分类着色的圆点（绿/橙/紫等），统一为蓝色系+灰色未选中态
+      与苹果白"少即是多"原则一致 */
+.chip::before,
+.chip[data-filter="all"]::before,
+.chip[data-filter="dev"]::before,
+.chip[data-filter="system"]::before,
+.chip[data-filter="efficiency"]::before,
+.chip[data-filter="design"]::before,
+.chip:hover::before{
+  background:var(--ink3) !important;
+  opacity:.5 !important;
+}
+.chip.is-active::before{
+  background:#fff !important;
+  opacity:1 !important;
+}
+/* chips 数字徽标统一中性灰（未选中）/ 白底蓝字（选中） */
+.chip[data-count]::after{
+  background:rgba(0,0,0,.06) !important;
+  color:var(--ink2) !important;
+}
+.chip.is-active[data-count]::after{
+  background:rgba(255,255,255,.22) !important;
+  color:#fff !important;
+}
+
+/* 82. 卡片版本号 z-index 提升 —— 解决 emoji 浮起时遮挡版本号
+      原 emoji hover 时 translateZ(20px)，可能遮挡版本号
+      版本号 z-index 提升到 5 确保始终可见 */
+.card__version{z-index:5 !important}
+
+/* 83. 卡片 emoji 浮起幅度收敛 —— 避免遮挡版本号
+      原 translateZ(20px) scale(1.08) 改为 translateZ(12px) scale(1.04) */
+.card:hover .card__emoji{
+  transform:translate(-50%,-50%) translateZ(12px) scale(1.04) !important;
+}
+
+/* ============ 第二十五轮 · mimo v8 反馈修复（导航分隔线 / 描述强制 2 行 / 按钮 gap / chips 柔和选中 / Hero 紧凑） ============ */
+
+/* 84. 导航栏底部加分隔线 —— mimo 反馈"导航栏与 Hero 区域之间没有视觉边界"
+      原导航栏滚动后才有分隔，初始态完全无分隔
+      方案：导航栏始终保留极淡底色 + 底部 1px 分隔线 */
+.nav{
+  background:rgba(255,255,255,.72) !important;
+  backdrop-filter:saturate(180%) blur(20px) !important;
+  -webkit-backdrop-filter:saturate(180%) blur(20px) !important;
+  box-shadow:0 1px 0 rgba(0,0,0,.06) !important;
+}
+
+/* 85. 卡片描述强制 2 行 —— mimo 反馈"有的卡片 2 行有的 3 行"
+      此前 .card__desc line-clamp:2 已设置，但可能有旧规则冲突
+      用 !important + 移除 min-height 让 line-clamp 严格生效
+      min-height 改为精确 2 行高度（line-height 1.66 × 2 = 3.32em） */
+.card__desc{
+  display:-webkit-box !important;
+  -webkit-box-orient:vertical !important;
+  -webkit-line-clamp:2 !important;
+  line-clamp:2 !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  line-height:1.66 !important;
+  min-height:3.32em !important;
+  max-height:3.32em !important;
+}
+
+/* 86. 卡片按钮 gap 加大 —— mimo 反馈"获取与 GitHub 图标间距略紧"
+      gap 从 14px 加大到 18px */
+.card__actions{gap:18px !important}
+.card__actions .card__cta{min-width:108px !important;padding:0 22px !important;height:38px !important}
+
+/* 87. chips 选中态改柔和填充 —— mimo 反馈"实心深黑底 vs 灰描边视觉跳跃大"
+      改用柔和的浅蓝填充 + 蓝字 + 蓝边框，降低视觉跳跃
+      未选中态保持灰描边，选中态用 accent-soft 浅蓝填充 */
+.chip.is-active{
+  background:var(--accent-soft) !important;
+  color:var(--accent) !important;
+  border-color:rgba(0,122,255,.22) !important;
+  font-weight:600 !important;
+  box-shadow:0 2px 8px rgba(0,122,255,.12) !important;
+  transform:translateY(-1px) !important;
+}
+.chip.is-active[data-count]::after{
+  background:var(--accent) !important;
+  color:#fff !important;
+}
+.chip.is-active::before{
+  background:var(--accent) !important;
+  opacity:1 !important;
+}
+
+/* 88. Hero 紧凑化 —— mimo 反馈"上半部分内容密度偏低，Hero 到工具列表之间空白大"
+      Hero padding 上下压缩，让工具列表更靠上 */
+.hero{padding:32px 24px 4px !important}
+.hero__badge{margin-top:0 !important}
+.hero__title{margin:10px 0 10px !important}
+.hero__sub{margin:0 auto 14px !important}
+.hero__actions{margin-bottom:6px !important;padding-bottom:4px !important}
+.hero__stats{margin-top:18px !important}
+.hero::after{height:14px !important}
+
+/* 89. Hero 标题蓝色块稳定 —— mimo 反馈"'集'字蓝色块位置偏右上"
+      hero__title-accent 用渐变文字，蓝色块是 shimmer 动画的瞬间状态
+      方案：降低 shimmer 动画幅度，让蓝色更稳定
+      或直接移除 shimmer 动画，让蓝色文字保持静态稳定 */
+.hero__title-accent{
+  background:linear-gradient(110deg,#1d1d1f 0%,#007aff 50%,#1d1d1f 100%) !important;
+  background-size:200% auto !important;
+  animation:titleShimmer 8s linear infinite !important;
+}
+@keyframes titleShimmer{
+  0%{background-position:0% center}
+  100%{background-position:200% center}
+}
+
+/* 90. toolbar 与 hero 间距收敛 —— 让工具列表更靠上 */
+.toolbar{padding-top:6px !important}
+.grid-wrap{padding-top:14px !important}
+
+/* ============ 第二十六轮 · mimo v9 反馈修复（卡片强制等高 / Hero 蓝色块移除 / 版本号移底部 / GitHub 按钮增大 / 描述自然截断） ============ */
+
+/* 91. 卡片强制等高 —— mimo 反馈"卡片高度不一致，底部对齐被打乱"
+      此前 grid-auto-rows:1fr 在不同浏览器表现不一
+      方案：固定行高 380px，所有卡片 height:100% 强制填充
+      移动端用 auto 让单列自然高度 */
+.grid{
+  grid-auto-rows:380px !important;
+}
+@media (min-width:1440px){
+  .grid{grid-auto-rows:388px !important}
+}
+@media (max-width:900px){
+  .grid{grid-auto-rows:auto !important}
+}
+.card{height:100% !important}
+
+/* 92. Hero 蓝色块移除 —— mimo 反馈"蓝色圆角矩形包裹'集合'二字略显突兀"
+      方案：移除渐变背景，改为纯蓝色文字 + 蓝色下划线装饰，更轻盈 */
+.hero__title-accent{
+  background:none !important;
+  -webkit-background-clip:initial !important;
+  background-clip:initial !important;
+  -webkit-text-fill-color:var(--accent) !important;
+  color:var(--accent) !important;
+  animation:none !important;
+  position:relative;
+  padding-bottom:4px;
+  border-bottom:3px solid var(--accent);
+  border-radius:2px;
+}
+
+/* 93. 版本号移至卡片底部 —— mimo 反馈"右上角版本号与工具图标距离过近"
+      方案：版本号从绝对定位右上角改为卡片底部内联显示，与 stack chip 并排
+      原位置腾出给 emoji 更多呼吸空间 */
+.card__version{
+  position:static !important;
+  top:auto !important;
+  right:auto !important;
+  display:inline-flex !important;
+  align-items:center;
+  margin-left:auto;
+}
+.card__meta{
+  display:flex !important;
+  align-items:center !important;
+  gap:8px !important;
+  margin-bottom:6px !important;
+}
+/* 版本号在 meta 区作为附属信息，与 stack chip 同行 */
+.card__meta .card__stack{flex:0 0 auto}
+.card__meta .card__version{flex:0 0 auto;margin-left:auto;font-size:11px !important}
+.card__media{padding-top:6px}
+
+/* 94. GitHub 按钮尺寸增大 —— mimo 反馈"GitHub 圆形图标尺寸偏小约 28px"
+      增大到 38px，与 CTA 按钮高度对齐 */
+.card__src{
+  width:38px !important;
+  height:38px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border-radius:10px !important;
+  background:rgba(0,0,0,.04) !important;
+  border:1px solid rgba(0,0,0,.06) !important;
+  transition:background .2s var(--ease),border-color .2s var(--ease) !important;
+}
+.card__src:hover{
+  background:rgba(0,0,0,.08) !important;
+  border-color:rgba(0,0,0,.12) !important;
+}
+.card__src-icon{width:18px !important;height:18px !important}
+
+/* 95. 描述截断优化 —— mimo 反馈"多处描述以...硬截断，断词位置不自然"
+      方案：用 word-break:break-word 让中文/英文混排自然换行
+      配合 line-clamp:2 让截断位置更自然 */
+.card__desc{
+  word-break:break-word !important;
+  overflow-wrap:break-word !important;
+  hyphens:auto !important;
+}
+
+/* ============ 第二十七轮 · mimo v10 反馈修复（列间距加大 / 导航栏加重 / 底部提示强化 / 搜索对齐） ============ */
+
+/* 96. 卡片列间距加大 —— mimo 反馈"四列卡片的列间距偏紧约 16-20px"
+      方案：column-gap 从 22px 加大到 28px，row-gap 从 32px 加大到 36px
+      1440px+ 屏幕列间距加大到 32px，给四列布局更多呼吸感 */
+.grid{
+  column-gap:28px !important;
+  row-gap:36px !important;
+}
+@media (min-width:1440px){
+  .grid{column-gap:32px !important;row-gap:40px !important;max-width:1320px}
+}
+@media (max-width:768px){
+  .grid{column-gap:16px !important;row-gap:20px !important}
+}
+
+/* 97. 卡片内边距加大 —— mimo 反馈"文字离边缘较近"
+      card__body padding 加大 2px */
+.card__body{padding:18px 22px 18px !important}
+@media (max-width:600px){.card__body{padding:14px 16px 14px !important}}
+
+/* 98. 导航栏加重 —— mimo 反馈"导航栏文字偏小，在 1200px 宽度下显得单薄"
+      字号从 14px 加大到 15px，字重从 500 提升到 600 */
+.nav__links{font-size:15px !important;font-weight:600 !important;letter-spacing:-.01em !important}
+.nav__brand{font-size:18px !important}
+
+/* 99. 搜索框与 chips 共享轴线 —— mimo 反馈"搜索框偏左，分类标签偏右居中，水平重心不稳"
+      方案：toolbar__row 强制 align-items:center（已有），加 padding 让两者垂直对齐
+      搜索框与 chips 高度强制一致 */
+.search__input{height:46px !important;font-size:15px !important;padding:0 50px 0 44px !important}
+.chips{height:46px !important}
+.chip{height:38px !important;padding:0 16px !important;font-size:14px !important}
+.chip[data-count]::after{height:20px !important;min-width:22px !important;font-size:12px !important}
+
+/* 100. 底部加载提示强化 —— mimo 反馈"底部无分页/加载提示，用户不确定是否还有更多内容"
+      已有 .grid-wrap::before 文字浮层"向下滚动查看更多工具"
+      本次强化：加粗字号 + 加深颜色 + 加图标箭头 + 更明显的胶囊背景 */
+.grid-wrap::before{
+  content:'向下滚动查看更多 ↓' !important;
+  font-size:13px !important;
+  font-weight:600 !important;
+  color:var(--ink2) !important;
+  padding:10px 22px !important;
+  background:rgba(255,255,255,.92) !important;
+  border:1px solid rgba(0,122,255,.18) !important;
+  box-shadow:0 4px 16px rgba(0,122,255,.10),0 1px 3px rgba(0,0,0,.06) !important;
+  bottom:48px !important;
+}
+@media (max-width:600px){
+  .grid-wrap::before{font-size:11px !important;padding:8px 16px !important;bottom:32px !important}
+}
+
+/* 101. 卡片媒体区上下文留白 —— 让 emoji 与版本号不冲突
+      版本号已移到 meta 区，原右上角版本号位置空出
+      给 emoji 更多呼吸空间 */
+.card__media{padding:6px 0 0}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
