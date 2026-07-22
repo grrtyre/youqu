@@ -119,7 +119,7 @@ html, body {
 .sidebar {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   overflow-y: auto;
   overflow-x: hidden;
   align-self: stretch;
@@ -130,7 +130,7 @@ html, body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03), 0 4px 12px rgba(0,0,0,0.04);
+  box-shadow: var(--shadow-sm);
   padding: 14px 16px;
   animation: cardIn 0.4s cubic-bezier(0.16, 0.84, 0.44, 1) both;
 }
@@ -302,8 +302,9 @@ html, body {
 .task-del {
   width: 22px; height: 22px; border: none; background: transparent;
   color: var(--text-3); cursor: pointer; border-radius: 5px;
-  opacity: 0; transition: opacity 0.15s, color 0.15s;
-  font-size: 16px; line-height: 1;
+  opacity: 0; transition: opacity 0.15s, color 0.15s, background 0.15s;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
 }
 .task-item:hover .task-del { opacity: 1; }
 .task-del:hover { color: var(--danger); background: rgba(255,59,48,0.08); }
@@ -480,7 +481,7 @@ html, body {
   letter-spacing: 0.3px;
 }
 .timer-cycle {
-  margin-top: 10px; display: none;
+  margin-top: 10px; display: flex; gap: 5px; align-items: center;
 }
 .cycle-dot {
   width: 7px; height: 7px; border-radius: 50%;
@@ -739,6 +740,7 @@ html, body {
   background: var(--surface-2); outline: none;
 }
 .setting-row input[type="number"]:focus { border-color: var(--accent); background: #fff; }
+.setting-row input[type="number"].invalid { border-color: var(--danger); background: rgba(255,59,48,0.06); }
 .setting-switch input[type="checkbox"] {
   width: 40px; height: 24px; appearance: none;
   background: var(--border); border-radius: 999px;
@@ -997,7 +999,7 @@ input, button { font-family: inherit; }
 }
 .heat-cell:hover { transform: scale(1.3); z-index: 2; position: relative; }
 
-/* 图例：3 级色块（少/中/多），减少视觉噪音 */
+/* 图例：4 级色块（少→多完整渐变），与热力图色阶一一对应 */
 .heat-legend {
   display: flex; align-items: center; gap: 5px;
   justify-content: flex-end;
