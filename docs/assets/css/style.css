@@ -2759,6 +2759,8 @@
 .tl__type--bug{box-shadow:inset 2px 0 0 #ff3b30}
 .tl__type--release{box-shadow:inset 2px 0 0 #34c759}
 .tl__type--iter{box-shadow:inset 2px 0 0 #86868b}
+/* 第二十九轮：体验增强类型徽标（橙色，区别于纯视觉打磨的紫色） */
+.tl__type--a11y{box-shadow:inset 2px 0 0 #ff9500}
 @media (max-width:600px){
   .tl__type{font-size:10px;padding:2px 8px;margin-bottom:6px}
 }
@@ -3607,6 +3609,1165 @@
   border:1px solid rgba(0,122,255,.18) !important;
 }
 
+/* ============================================================ */
+/* 第二十九轮 · 五项实质性细节优化                                */
+/* 1. 卡片骨架屏（JS 渲染前消除空白闪烁）                         */
+/* 2. 完整 @media print 打印样式（苹果风格打印布局）              */
+/* 3. Lightbox 与 Modal 触屏滑动切换（移动端原生交互）           */
+/* 4. Hero 滚动视差（orbs 反向位移 + 内容渐隐）                  */
+/* 5. 卡片墙结尾徽章（"已展示全部 N 个工具"完成感）              */
+/* ============================================================ */
+
+/* ---------- 1. 卡片骨架屏（Skeleton Loading） ---------- */
+/* JS 渲染前预渲染 8 个骨架占位，shimmer 动画提示加载中 */
+.skeleton-card{
+  background:var(--card);
+  border:1px solid var(--line-soft);
+  border-radius:var(--radius);
+  overflow:hidden;
+  display:flex;flex-direction:column;
+  height:340px;
+}
+.skeleton-card__media{
+  height:150px;
+  background:linear-gradient(90deg,#f5f5f7 0%,#ececf0 50%,#f5f5f7 100%);
+  background-size:200% 100%;
+  animation:skeleton-shimmer 1.6s ease-in-out infinite;
+}
+.skeleton-card__body{
+  padding:18px 22px;display:flex;flex-direction:column;gap:10px;flex:1;
+}
+.skeleton-card__line{
+  height:10px;border-radius:5px;
+  background:linear-gradient(90deg,#f0f0f4 0%,#e4e4ea 50%,#f0f0f4 100%);
+  background-size:200% 100%;
+  animation:skeleton-shimmer 1.6s ease-in-out infinite;
+}
+.skeleton-card__line--meta{height:14px;width:40%;margin-bottom:4px}
+.skeleton-card__line--title{height:16px;width:70%}
+.skeleton-card__line--desc1{height:10px;width:100%}
+.skeleton-card__line--desc2{height:10px;width:75%}
+.skeleton-card__line--cta{height:30px;width:50%;border-radius:980px;margin-top:auto}
+@keyframes skeleton-shimmer{
+  0%{background-position:200% 0}
+  100%{background-position:-200% 0}
+}
+@media (prefers-reduced-motion:reduce){
+  .skeleton-card__media,
+  .skeleton-card__line{
+    animation:none;
+    background:#f0f0f4;
+  }
+}
+
+/* ---------- 4. Hero 滚动视差 ---------- */
+/* 滚动时 orbs 反向位移产生景深感，Hero 内容轻微渐隐 */
+.hero{
+  /* 通过 JS 设置 --hero-scroll 变量（0~1），驱动内部元素位移 */
+  --hero-scroll:0;
+}
+.hero__orbs{
+  transform:translateY(calc(var(--hero-scroll) * -80px));
+  transition:transform .15s linear;
+  will-change:transform;
+}
+.hero__content{
+  transform:translateY(calc(var(--hero-scroll) * 24px));
+  opacity:calc(1 - var(--hero-scroll) * 0.6);
+  transition:transform .15s linear,opacity .15s linear;
+  will-change:transform,opacity;
+}
+@media (prefers-reduced-motion:reduce){
+  .hero__orbs,.hero__content{
+    transform:none !important;
+    opacity:1 !important;
+    transition:none !important;
+  }
+}
+
+/* ---------- 5. 卡片墙结尾徽章 ---------- */
+/* 滚动到底部时显示"已展示全部 N 个工具"完成徽章 */
+.grid-end{
+  max-width:var(--maxw);margin:0 auto;padding:48px 24px 24px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  opacity:0;transform:translateY(20px);
+  transition:opacity .6s var(--ease-out),transform .6s var(--ease-out);
+  pointer-events:none;
+}
+.grid-end.is-visible{
+  opacity:1;transform:translateY(0);
+}
+.grid-end__line{
+  width:60px;height:2px;
+  background:linear-gradient(90deg,transparent,var(--line),transparent);
+  margin-bottom:18px;
+}
+.grid-end__badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 22px;border-radius:980px;
+  background:var(--card);
+  border:1px solid var(--line-soft);
+  box-shadow:0 2px 12px rgba(0,0,0,.04);
+  font-size:13px;font-weight:600;color:var(--ink2);
+  letter-spacing:-.005em;
+}
+.grid-end__badge-icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:22px;height:22px;border-radius:50%;
+  background:linear-gradient(135deg,#34c759,#30b14e);
+  color:#fff;font-size:12px;font-weight:700;
+  box-shadow:0 1px 6px rgba(52,199,89,.3);
+}
+.grid-end__badge strong{color:var(--ink);font-weight:700}
+.grid-end__sub{
+  margin-top:10px;font-size:11.5px;color:var(--ink3);
+  letter-spacing:.02em;
+}
+@media (prefers-reduced-motion:reduce){
+  .grid-end{opacity:1;transform:none;transition:none}
+}
+
+/* ---------- 2. 完整 @media print 打印样式 ---------- */
+/* 苹果风格打印布局：隐藏交互元素，仅保留项目清单 */
+@media print{
+  /* 全局打印设置 */
+  *{
+    -webkit-print-color-adjust:exact !important;
+    print-color-adjust:exact !important;
+  }
+  html,body{
+    background:#fff !important;
+    color:#000 !important;
+    font-size:11pt;
+    line-height:1.4;
+  }
+  body{
+    background-image:none !important;
+  }
+  ::selection{background:transparent}
+
+  /* 隐藏所有交互/装饰元素 */
+  .nav,.progress,.to-top,.kbd-trigger,
+  .modal,.lightbox,.kbd-help,
+  .hero__orbs,.hero__hint,.hero__pillar,
+  .toolbar__scroll-hint,
+  #tl-toggle-wrap,
+  .footer__made,
+  .skip-link,
+  .card__lightbox-btn,
+  .card__hint,
+  .card__src,
+  .card__cta-arrow,
+  .card__emoji-glow,
+  .empty,
+  .skeleton-card,
+  .grid-end__badge-icon{
+    display:none !important;
+  }
+
+  /* Hero 简化：保留标题与统计 */
+  .hero{
+    padding:0 0 12pt;
+    background:none !important;
+    page-break-after:avoid;
+  }
+  .hero__content{
+    transform:none !important;
+    opacity:1 !important;
+  }
+  .hero__badge{
+    display:inline-block;
+    padding:0;margin-bottom:6pt;
+    background:none !important;border:none !important;
+    box-shadow:none !important;
+    color:#000 !important;font-weight:700;
+  }
+  .hero__title{
+    font-size:22pt;color:#000 !important;
+    -webkit-text-fill-color:#000 !important;
+    background:none !important;
+    margin:0 0 4pt;
+  }
+  .hero__title-accent{
+    color:#007aff !important;
+    -webkit-text-fill-color:#007aff !important;
+    background:none !important;
+  }
+  .hero__sub{
+    color:#333 !important;font-size:11pt;margin:0 0 8pt;
+  }
+  .hero__stats{
+    margin:8pt 0 0;opacity:1 !important;animation:none !important;
+    gap:16pt;
+  }
+  .stat__num{
+    font-size:14pt;color:#000 !important;
+    -webkit-text-fill-color:#000 !important;
+    background:none !important;min-height:auto;
+  }
+  .stat__num--free{
+    color:#34c759 !important;
+    -webkit-text-fill-color:#34c759 !important;
+    background:none !important;
+  }
+  .stat__label{color:#555 !important;font-size:9pt}
+  .stat__sep{display:none !important}
+
+  /* 工具栏：保留搜索框（只读）+ chips 计数 */
+  .toolbar{
+    position:static !important;
+    padding:8pt 0;
+    background:none !important;
+    backdrop-filter:none !important;
+    box-shadow:none !important;
+    border-top:1pt solid #ccc;
+    border-bottom:1pt solid #ccc;
+    page-break-after:avoid;
+  }
+  .toolbar__head{display:none}
+  .toolbar__row{
+    flex-direction:column;align-items:flex-start;gap:6pt;
+  }
+  .search{
+    border:1pt solid #999 !important;
+    background:#fff !important;
+    padding:4pt 8pt;
+    box-shadow:none !important;
+  }
+  .search__input{
+    color:#000 !important;font-size:10pt;
+  }
+  .chips{
+    flex-wrap:wrap;gap:4pt;
+  }
+  .chip{
+    border:1pt solid #999 !important;
+    background:#fff !important;
+    color:#000 !important;
+    box-shadow:none !important;
+    padding:2pt 8pt;font-size:9pt;
+  }
+  .chip.is-active{
+    background:#000 !important;color:#fff !important;
+  }
+  .chip__dot,.chip__count{display:none !important}
+  .toolbar__count{
+    color:#333 !important;font-size:9pt;
+    page-break-after:avoid;
+  }
+
+  /* 卡片网格：打印为 2 列简洁布局 */
+  .grid-wrap{
+    padding:0 !important;
+  }
+  .grid-wrap::before,.grid-wrap::after{display:none !important}
+  .grid{
+    display:grid !important;
+    grid-template-columns:repeat(2,1fr) !important;
+    column-gap:12pt;row-gap:10pt;
+    padding:0 !important;
+    max-width:100% !important;
+  }
+  .card{
+    background:#fff !important;
+    border:1pt solid #ccc !important;
+    box-shadow:none !important;
+    page-break-inside:avoid;
+    height:auto !important;
+    transform:none !important;
+    opacity:1 !important;
+  }
+  .card.is-pending{opacity:1 !important;transform:none !important}
+  .card::before{display:none !important}
+  .card__media{
+    height:auto !important;
+    padding:6pt 8pt !important;
+    background:#f5f5f7 !important;
+  }
+  .card__emoji{
+    position:static !important;
+    transform:none !important;
+    width:24pt !important;height:24pt !important;
+    font-size:14pt !important;
+    background:none !important;
+    box-shadow:none !important;
+    filter:grayscale(0) !important;
+  }
+  .card__score{display:none !important}
+  .card__body{padding:6pt 8pt !important;gap:3pt !important}
+  .card__meta{
+    margin-bottom:2pt !important;
+    gap:4pt !important;
+  }
+  .card__stack,.card__new,.card__version{
+    background:none !important;
+    border:1pt solid #999 !important;
+    color:#333 !important;
+    padding:1pt 4pt !important;
+    font-size:8pt !important;
+    box-shadow:none !important;
+  }
+  .card__new{color:#007aff !important;border-color:#007aff !important}
+  .card__title{
+    font-size:11pt !important;
+    color:#000 !important;
+    -webkit-line-clamp:2 !important;
+    margin:0 0 2pt;
+  }
+  .card__title mark{background:#ffeb3b !important;color:#000 !important}
+  .card__desc{
+    font-size:9.5pt !important;
+    color:#333 !important;
+    line-height:1.4 !important;
+    -webkit-line-clamp:3 !important;
+  }
+  .card__desc::after{display:none !important}
+  .card__desc mark{background:#ffeb3b !important;color:#000 !important}
+  .card__actions{display:none !important}
+
+  /* 卡片标题后追加 GitHub URL（打印引用用） */
+  .card__title::after{
+    content:"  (github.com/grrtyre/youqu/tree/main/" attr(data-id) ")";
+    font-size:8pt;color:#666;font-weight:400;
+    display:inline;
+  }
+
+  /* 结尾徽章：打印时直接显示 */
+  .grid-end{
+    opacity:1 !important;transform:none !important;
+    padding:12pt 0 6pt;
+    page-break-before:avoid;
+  }
+  .grid-end__badge{
+    background:#fff !important;
+    border:1pt solid #ccc !important;
+    box-shadow:none !important;
+    color:#000 !important;
+  }
+  .grid-end__badge strong{color:#000 !important}
+  .grid-end__sub{color:#555 !important}
+
+  /* 更新日志：展开全部 + 简化样式 */
+  .changelog{
+    padding:12pt 0 !important;
+    page-break-before:always;
+  }
+  .timeline{max-height:none !important;overflow:visible !important}
+  .timeline.is-collapsed{max-height:none !important}
+  .tl__toggle-wrap{display:none !important}
+  .tl__item{
+    page-break-inside:avoid;
+    margin-bottom:8pt;
+  }
+  .tl__card{
+    background:none !important;
+    border:1pt solid #ccc !important;
+    box-shadow:none !important;
+    padding:6pt 8pt !important;
+  }
+  .tl__type{display:none !important}
+  .tl__card h3{font-size:10pt;color:#000 !important;margin:0 0 3pt}
+  .tl__card p{font-size:9pt;color:#333 !important;line-height:1.4}
+  .tl__date{color:#555 !important;font-size:9pt}
+
+  /* 支持区：简化 */
+  .support{
+    page-break-before:always;
+    padding:12pt 0 !important;
+  }
+  .support__inner{
+    flex-direction:column;gap:8pt;
+  }
+  .support__thanks{
+    background:none !important;
+    border:1pt solid #ccc !important;
+    box-shadow:none !important;
+    padding:6pt 8pt !important;
+  }
+  .btn{
+    background:#000 !important;color:#fff !important;
+    box-shadow:none !important;
+    padding:4pt 10pt;font-size:10pt;
+    border:none !important;
+  }
+
+  /* 页脚 */
+  .footer{
+    background:none !important;
+    border-top:1pt solid #ccc;
+    padding:8pt 0;
+    margin-top:12pt;
+  }
+  .footer__inner{
+    flex-direction:column;gap:4pt;align-items:flex-start;
+  }
+  .footer__brand,.footer__links{
+    color:#000 !important;
+  }
+  .footer__links a{
+    color:#007aff !important;
+    text-decoration:underline;
+  }
+  .footer__copy{color:#555 !important;font-size:9pt}
+  .footer__year{color:#000 !important}
+
+  /* noscript 不打印 */
+  noscript{display:none !important}
+}
+
+/* ============================================================ */
+/* 第二十九轮 · mimo v1 反馈五项修复（评分 7.5→目标 9/10）        */
+/* 1. 图标视觉精致感：emoji 灰度加重 + 白色 squircle 容器主导      */
+/* 2. 卡片层级感：阴影加深 + 边框微加深                            */
+/* 3. 分类标签对比：未选中更退后 / 选中更深更突出                  */
+/* 4. 卡片信息呼吸：body padding 与 gap 加大                       */
+/* 5. 按钮组重心：GitHub 图标按钮背景加深、hover 蓝色              */
+/* ============================================================ */
+
+/* 1. 图标视觉精致感 —— mimo 反馈"emoji 风格粗糙与苹果白不匹配"
+      方案：加重灰度到 .32 让 emoji 色彩进一步收敛为"图标"而非"卡通"
+      容器背景改纯白 + 内描边，让容器成为视觉锚点，emoji 弱化为字形 */
+.card__emoji{
+  width:84px !important;
+  height:84px !important;
+  border-radius:22px !important;
+  font-size:38px !important;
+  background:#fff !important;
+  filter:grayscale(.32) contrast(1.04) saturate(.88) !important;
+  box-shadow:
+    0 6px 16px rgba(0,0,0,.07),
+    0 1px 3px rgba(0,0,0,.05),
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 0 0 1px rgba(0,0,0,.05) !important;
+  border:1px solid rgba(0,0,0,.06) !important;
+}
+.card:hover .card__emoji{
+  transform:translate(-50%,-50%) scale(1.05) !important;
+  filter:grayscale(.20) contrast(1.06) saturate(.94) !important;
+  box-shadow:
+    0 10px 24px rgba(0,122,255,.10),
+    0 2px 6px rgba(0,0,0,.07),
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 0 0 1px rgba(0,122,255,.18) !important;
+  border-color:rgba(0,122,255,.22) !important;
+}
+@media (max-width:600px){
+  .card__emoji{width:68px !important;height:68px !important;font-size:32px !important;border-radius:18px !important}
+}
+
+/* 2. 卡片层级感 —— mimo 反馈"卡片阴影/边框过于轻微，与背景融合度高"
+      方案：默认阴影加深 + 边框微加深，让卡片明确"浮"在背景上 */
+.card{
+  box-shadow:
+    0 1px 2px rgba(0,0,0,.04),
+    0 4px 12px rgba(0,0,0,.05),
+    0 8px 20px rgba(0,0,0,.04) !important;
+  border:1px solid rgba(0,0,0,.07) !important;
+}
+.card:hover{
+  box-shadow:
+    0 4px 10px rgba(0,0,0,.06),
+    0 12px 28px rgba(0,0,0,.08),
+    0 20px 44px rgba(0,122,255,.06) !important;
+  border-color:rgba(0,122,255,.20) !important;
+}
+.card:focus-visible{
+  border-color:rgba(0,122,255,.45) !important;
+  box-shadow:0 4px 12px rgba(0,122,255,.12),0 12px 32px rgba(0,0,0,.06) !important;
+}
+
+/* 3. 分类标签对比 —— mimo 反馈"未选中与选中对比度不够明显"
+      方案：未选中更退后（更浅灰底 + 更淡文字），选中更深更突出（纯黑底 + 强阴影） */
+.chip{
+  background:#f0f0f4 !important;
+  color:var(--ink3) !important;
+  border:1px solid rgba(0,0,0,.05) !important;
+  font-weight:500 !important;
+  box-shadow:none !important;
+  transform:none !important;
+}
+.chip:hover{
+  background:#e8e8ed !important;
+  color:var(--ink2) !important;
+}
+.chip.is-active{
+  background:#000 !important;
+  color:#fff !important;
+  border-color:#000 !important;
+  font-weight:700 !important;
+  box-shadow:0 6px 18px rgba(0,0,0,.22),0 2px 4px rgba(0,0,0,.10) !important;
+  transform:translateY(-1px) !important;
+}
+.chip.is-active:hover{
+  background:#1d1d1f !important;
+}
+
+/* 4. 卡片信息呼吸 —— mimo 反馈"信息密度过高，呼吸感不足"
+      方案：body padding 加大 + gap 加大，让各信息块之间有更舒展的间距 */
+.card__body{
+  padding:20px 22px 20px !important;
+  gap:11px !important;
+}
+.card__meta{
+  margin-bottom:2px !important;
+}
+.card__title{
+  margin:0 0 1px !important;
+}
+.card__actions{
+  margin-top:4px !important;
+}
+
+/* 5. 按钮组重心 —— mimo 反馈"GitHub 图标按钮存在感较弱"
+      方案：背景加深 + 边框加深，hover 时变蓝色，让两个按钮视觉重量更平衡
+      主按钮（获取）= 蓝色实心；副按钮（GitHub）= 中性灰描边
+      形成"主+副"的清晰分组 */
+.card__src{
+  width:38px !important;
+  height:38px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border-radius:10px !important;
+  background:rgba(0,0,0,.06) !important;
+  border:1px solid rgba(0,0,0,.10) !important;
+  transition:background .2s var(--ease),border-color .2s var(--ease),color .2s var(--ease) !important;
+}
+.card__src:hover{
+  background:rgba(0,122,255,.10) !important;
+  border-color:rgba(0,122,255,.25) !important;
+  color:var(--accent) !important;
+}
+.card__src-icon{
+  width:18px !important;
+  height:18px !important;
+  opacity:.85 !important;
+  transition:opacity .2s,color .2s !important;
+}
+.card__src:hover .card__src-icon{
+  opacity:1 !important;
+  color:var(--accent) !important;
+}
+
+/* 移动端 chips 与卡片间距收敛 */
+@media (max-width:600px){
+  .card__body{padding:16px 18px 16px !important;gap:9px !important}
+}
+
+/* ============================================================ */
+/* 第二十九轮 · mimo v2 反馈三项修复（评分 7.5→目标 9/10）        */
+/* v2 mimo 反馈：1. 图标风格不一致  2. 卡片阴影过于明显           */
+/*              3. 排版层级（标题/描述字号字重对比度不足）         */
+/* ============================================================ */
+
+/* 1. 图标统一性 —— v2 mimo 反馈"部分线条部分填充，视觉语言不统一"
+      方案：保持 squircle 容器主导，emoji 进一步灰度统一为 .42 + 微对比度
+      让所有 emoji 视觉权重更接近"图标字形"而非"彩色卡通"
+      并为容器加内阴影 + 极淡渐变背景，统一所有图标的视觉骨架 */
+.card__emoji{
+  filter:grayscale(.42) contrast(1.05) saturate(.82) !important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,1) 0%,rgba(248,248,250,1) 100%) !important;
+  box-shadow:
+    0 4px 10px rgba(0,0,0,.05),
+    0 1px 2px rgba(0,0,0,.04),
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 0 0 1px rgba(0,0,0,.06) !important;
+  border:1px solid rgba(0,0,0,.05) !important;
+}
+.card:hover .card__emoji{
+  filter:grayscale(.28) contrast(1.06) saturate(.90) !important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,1) 0%,rgba(242,246,252,1) 100%) !important;
+  box-shadow:
+    0 8px 20px rgba(0,122,255,.10),
+    0 2px 4px rgba(0,0,0,.05),
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 0 0 1px rgba(0,122,255,.16) !important;
+}
+
+/* 2. 卡片阴影收敛 —— v2 mimo 反馈"阴影过于明显，与苹果白轻盈感有偏差"
+      方案：v1 把阴影加深过重，本轮回调到"克制阴影"
+      保留单层主阴影 + 极淡边框，避免多层层叠阴影堆叠感
+      让卡片更像"浮在玻璃上"而非"投影明显" */
+.card{
+  box-shadow:
+    0 1px 2px rgba(0,0,0,.03),
+    0 6px 16px rgba(0,0,0,.04) !important;
+  border:1px solid rgba(0,0,0,.06) !important;
+}
+.card:hover{
+  box-shadow:
+    0 2px 6px rgba(0,0,0,.04),
+    0 10px 24px rgba(0,0,0,.06),
+    0 16px 36px rgba(0,122,255,.04) !important;
+  border-color:rgba(0,122,255,.18) !important;
+  transform:translateY(-4px) !important;
+}
+.card:focus-visible{
+  border-color:rgba(0,122,255,.40) !important;
+  box-shadow:0 2px 8px rgba(0,122,255,.10),0 8px 20px rgba(0,0,0,.05) !important;
+}
+
+/* 3. 排版层级强化 —— v2 mimo 反馈"标题与描述字号字重对比不足"
+      方案：标题放大到 18px + 字重 720 + 字距更紧
+           描述缩小到 13px + 颜色降到 ink3 + 行高加大到 1.65
+           形成"大标题 / 浅描述"的清晰视觉层级 */
+.card__title{
+  font-size:18px !important;
+  font-weight:720 !important;
+  letter-spacing:-.025em !important;
+  color:var(--ink) !important;
+  line-height:1.25 !important;
+  margin:0 0 2px !important;
+}
+.card__desc{
+  font-size:13px !important;
+  color:var(--ink3) !important;
+  line-height:1.65 !important;
+  letter-spacing:.005em !important;
+}
+.card__meta{
+  margin-bottom:3px !important;
+}
+.card__stack{
+  font-size:10.5px !important;
+  font-weight:600 !important;
+  letter-spacing:.02em !important;
+  text-transform:uppercase !important;
+}
+
+/* 4. 卡片 actions 区与主按钮强化（v2 mimo 未明示但与层级相关）
+      主按钮加粗 + 字距 + 圆角更小（10px），形成"标题→描述→按钮"三级跳 */
+.card__cta{
+  font-weight:600 !important;
+  letter-spacing:-.005em !important;
+}
+.card__cta-arrow{
+  transition:transform .25s var(--ease) !important;
+}
+.card:hover .card__cta-arrow{
+  transform:translateX(3px) !important;
+}
+
+/* 5. Hero 视觉重量平衡 —— 让 Hero 与卡片墙层级关系更清晰
+      Hero 标题保持 1 级权重，但 sub 文字降级为 ink3，让"标题"更突出 */
+.hero__sub{
+  color:var(--ink3) !important;
+  font-size:18px !important;
+  letter-spacing:.01em !important;
+}
+
+/* 移动端 v3 收敛 */
+@media (max-width:600px){
+  .card__title{font-size:16px !important;font-weight:700 !important}
+  .card__desc{font-size:12.5px !important;line-height:1.6 !important}
+  .card__emoji{width:64px !important;height:64px !important;font-size:30px !important}
+  .hero__sub{font-size:16px !important}
+}
+
+/* ============================================================ */
+/* 第二十九轮 · mimo v3 反馈五项修复（评分 7.2→目标 9/10）        */
+/* v3 mimo 反馈：1. 图标风格不统一  2. 卡片信息密度过高          */
+/*              3. Hero 渐变色块略显过时                         */
+/*              4. 统计数字样式不统一（免费为书法风）             */
+/*              5. 卡片底部截断无滚动提示                          */
+/* ============================================================ */
+
+/* 1. Hero 标题渐变移除 —— v3 mimo 反馈"蓝色渐变光晕偏向 2020 早期 Web 风格"
+      方案：移除渐变 + shimmer 动画，改为纯色 #007aff（苹果系统蓝）
+      保留字重 700，回归苹果克制扁平美学 */
+.hero__title-accent{
+  background:none !important;
+  -webkit-text-fill-color:#007aff !important;
+  color:#007aff !important;
+  animation:none !important;
+  font-weight:700 !important;
+}
+
+/* 2. 统计数字统一 —— v3 mimo 反馈""免费"是书法风格破坏水平节奏"
+      方案：移除渐变背景文字，改为纯色（绿色但实色非渐变）
+      字号统一到 34px，字重统一到 700，让三个数字视觉权重一致 */
+.stat__num--free{
+  background:none !important;
+  -webkit-text-fill-color:#34c759 !important;
+  color:#34c759 !important;
+  font-size:46px !important;
+  font-weight:700 !important;
+  letter-spacing:-.035em !important;
+  line-height:1 !important;
+}
+.stat__num{
+  font-size:46px !important;
+  font-weight:700 !important;
+  letter-spacing:-.035em !important;
+  line-height:1 !important;
+}
+
+/* 3. 图标统一性强化 —— v3 mimo 反馈"emoji 与写实图标混搭不统一"
+      方案：将灰度从 .42 进一步加深到 .55 + 饱和度降到 .65
+      让所有 emoji 接近"灰阶图标字形"，去除彩色卡通感
+      glow 光晕从蓝色彩色改为纯灰色，去除分类彩色干扰 */
+.card__emoji{
+  filter:grayscale(.55) contrast(1.05) saturate(.65) !important;
+}
+.card:hover .card__emoji{
+  filter:grayscale(.38) contrast(1.06) saturate(.78) !important;
+}
+.card__emoji-glow{
+  background:rgba(0,0,0,.04) !important;
+  opacity:.6 !important;
+}
+.card[data-cat="dev"] .card__emoji-glow,
+.card[data-cat="system"] .card__emoji-glow,
+.card[data-cat="efficiency"] .card__emoji-glow,
+.card[data-cat="design"] .card__emoji-glow{
+  --glow:rgba(0,0,0,.04) !important;
+  background:rgba(0,0,0,.04) !important;
+}
+.card:hover .card__emoji-glow{
+  background:rgba(0,122,255,.06) !important;
+  transform:translate(-50%,-50%) scale(1.10) !important;
+}
+
+/* 4. 卡片信息密度降低 —— v3 mimo 反馈"8 个视觉层级过于拥挤"
+      方案：① 隐藏 lightbox 按钮（仅 hover 显示，且弱化）
+           ② meta 区技术栈标签字号缩小到 10px、字重 500、移除大写
+           ③ version 字号缩小、颜色更淡
+           ④ body padding 加大留白呼吸感
+           ⑤ glow 光晕透明度降低 */
+.card__lightbox-btn{
+  opacity:0 !important;
+  transform:scale(.85) !important;
+}
+.card:hover .card__lightbox-btn{
+  opacity:.7 !important;
+  transform:scale(1) !important;
+}
+.card__stack{
+  font-size:10px !important;
+  font-weight:500 !important;
+  letter-spacing:.01em !important;
+  text-transform:none !important;
+  padding:2px 7px !important;
+  opacity:.85 !important;
+}
+.card__version{
+  font-size:10px !important;
+  font-weight:500 !important;
+  color:var(--ink3) !important;
+  opacity:.7 !important;
+}
+.card__new-badge{
+  font-size:9.5px !important;
+  padding:2px 6px !important;
+  font-weight:600 !important;
+}
+.card__body{
+  padding:22px 22px 22px !important;
+  gap:13px !important;
+}
+.card__meta{
+  margin-bottom:0 !important;
+  gap:6px !important;
+}
+.card__actions{
+  margin-top:6px !important;
+  gap:8px !important;
+}
+
+/* 5. 卡片底部截断缓解 —— v3 mimo 反馈"最后一行卡片被截断无暗示"
+      方案：在 grid-wrap 末尾追加更强的滚动暗示渐变 + 提示
+      仅在视口下方有更多内容时显示 */
+.grid-wrap{
+  position:relative;
+}
+.grid-wrap::after{
+  content:"";
+  position:absolute;
+  left:0;right:0;bottom:0;
+  height:80px;
+  background:linear-gradient(to bottom,rgba(245,245,247,0) 0%,rgba(245,245,247,.85) 70%,rgba(245,245,247,1) 100%);
+  pointer-events:none;
+  z-index:1;
+  opacity:.9;
+}
+
+/* 移动端 v4 收敛 */
+@media (max-width:600px){
+  .card__body{padding:18px 18px 18px !important;gap:11px !important}
+  .card__stack{font-size:9.5px !important}
+  .stat__num--free,.stat__num{font-size:32px !important}
+  .hero__title-accent{color:#007aff !important;-webkit-text-fill-color:#007aff !important}
+}
+
+/* ============================================================ */
+/* 第二十九轮 · mimo v4 反馈五项修复（评分 7.0→目标 9/10）        */
+/* v4 mimo 反馈：1. 标题过渡生硬  2. 卡片密度仍偏高              */
+/*              3. 卡片相似度高无差异化  4. 配色单一              */
+/*              5. chips 朴素与卡片不呼应                          */
+/* ============================================================ */
+
+/* 1. Hero 标题过渡柔化 —— v4 mimo 反馈"黑蓝过渡生硬"
+      方案：在"实用工具"与"集合"之间加微妙的色彩过渡
+      保留主色 #007aff，但加 letter-spacing + 微弱阴影增强层次 */
+.hero__title{
+  letter-spacing:-.04em !important;
+}
+.hero__title-accent{
+  margin-left:.04em !important;
+  text-shadow:0 1px 0 rgba(0,122,255,.06) !important;
+}
+
+/* 2. 卡片密度再次降低 + 留白扩大 —— v4 mimo 反馈"密度仍偏高"
+      方案：body padding 22→28px、gap 13→16px
+      actions 区 margin-top 6→10px */
+.card__body{
+  padding:26px 24px 26px !important;
+  gap:16px !important;
+}
+.card__meta{
+  margin-bottom:0 !important;
+  gap:6px !important;
+  padding-bottom:0 !important;
+}
+.card__actions{
+  margin-top:8px !important;
+  gap:8px !important;
+}
+.card__desc{
+  margin-top:2px !important;
+}
+
+/* 3. 卡片差异化：恢复分类彩色顶栏 + hover 分类彩色阴影 —— v4 mimo 反馈"卡片相似度高"
+      方案：之前所有卡片顶栏被统一覆盖为蓝色渐变，现恢复分类彩色
+      dev=蓝、system=绿、efficiency=橙、design=紫
+      hover 时阴影也带分类色调，形成视觉差异化锚点 */
+.card[data-cat="dev"]::before{background:linear-gradient(90deg,#007aff,#5ac8fa) !important}
+.card[data-cat="system"]::before{background:linear-gradient(90deg,#34c759,#30d158) !important}
+.card[data-cat="efficiency"]::before{background:linear-gradient(90deg,#ff9500,#ffb340) !important}
+.card[data-cat="design"]::before{background:linear-gradient(90deg,#af52de,#d478f0) !important}
+.card[data-cat="dev"]:hover{box-shadow:0 2px 6px rgba(0,0,0,.04),0 10px 24px rgba(0,0,0,.06),0 16px 36px rgba(0,122,255,.10) !important}
+.card[data-cat="system"]:hover{box-shadow:0 2px 6px rgba(0,0,0,.04),0 10px 24px rgba(0,0,0,.06),0 16px 36px rgba(52,199,89,.10) !important}
+.card[data-cat="efficiency"]:hover{box-shadow:0 2px 6px rgba(0,0,0,.04),0 10px 24px rgba(0,0,0,.06),0 16px 36px rgba(255,149,0,.10) !important}
+.card[data-cat="design"]:hover{box-shadow:0 2px 6px rgba(0,0,0,.04),0 10px 24px rgba(0,0,0,.06),0 16px 36px rgba(175,82,222,.10) !important}
+
+/* 4. 分类彩色 chips 激活态恢复 —— v4 mimo 反馈"chips 朴素与卡片不呼应"
+      之前 v1 fix 把所有 is-active 覆盖为纯黑，现恢复分类彩色激活态
+      让 chips 与卡片顶栏形成色彩呼应 */
+.chip.is-active{
+  background:#000 !important;
+  color:#fff !important;
+  border-color:#000 !important;
+}
+.chip[data-filter="dev"].is-active{
+  background:#007aff !important;
+  border-color:#007aff !important;
+  box-shadow:0 6px 18px rgba(0,122,255,.28),0 2px 4px rgba(0,0,0,.10) !important;
+}
+.chip[data-filter="system"].is-active{
+  background:#34c759 !important;
+  border-color:#34c759 !important;
+  box-shadow:0 6px 18px rgba(52,199,89,.28),0 2px 4px rgba(0,0,0,.10) !important;
+}
+.chip[data-filter="efficiency"].is-active{
+  background:#ff9500 !important;
+  border-color:#ff9500 !important;
+  box-shadow:0 6px 18px rgba(255,149,0,.28),0 2px 4px rgba(0,0,0,.10) !important;
+}
+.chip[data-filter="design"].is-active{
+  background:#af52de !important;
+  border-color:#af52de !important;
+  box-shadow:0 6px 18px rgba(175,82,222,.28),0 2px 4px rgba(0,0,0,.10) !important;
+}
+.chip[data-filter="all"].is-active{
+  background:#000 !important;
+  border-color:#000 !important;
+  box-shadow:0 6px 18px rgba(0,0,0,.22),0 2px 4px rgba(0,0,0,.10) !important;
+}
+
+/* 5. chips 朴素设计精修：未选中态加分类色点 + 字距 + 圆角 */
+.chip{
+  font-weight:600 !important;
+  letter-spacing:.005em !important;
+  border-radius:980px !important;
+  padding:7px 14px 7px 12px !important;
+  transition:all .2s var(--ease) !important;
+}
+.chip[data-filter]:not(.is-active):hover{
+  transform:translateY(-1px) !important;
+  box-shadow:0 2px 8px rgba(0,0,0,.06) !important;
+}
+.chip[data-count]::after{
+  font-weight:600 !important;
+  letter-spacing:0 !important;
+}
+
+/* 6. 配色丰富度提升：背景细微渐变光斑（克制） —— v4 mimo 反馈"配色单一"
+      方案：body 背景增加 2 个极淡的彩色 radial-gradient 光斑
+      不影响主色，仅为整体增添色彩呼吸 */
+body{
+  background-image:
+    radial-gradient(circle at 1px 1px,rgba(0,0,0,.018) 1px,transparent 0),
+    radial-gradient(circle at 12% 18%,rgba(0,122,255,.025) 0,transparent 35%),
+    radial-gradient(circle at 88% 72%,rgba(175,82,222,.020) 0,transparent 38%) !important;
+  background-attachment:fixed !important;
+}
+
+/* 移动端 v5 收敛 */
+@media (max-width:600px){
+  .card__body{padding:20px 18px 20px !important;gap:12px !important}
+  .hero__title-accent{margin-left:.03em !important}
+  .chip{padding:6px 12px 6px 10px !important}
+}
+
+/* ============================================================ */
+/* 第二十九轮 · mimo v5 反馈五项修复（评分 7.2→目标 9/10）        */
+/* v5 mimo 反馈：1. 图标风格不统一  2. Hero 层级偏弱             */
+/*              3. 卡片圆角小/阴影偏重  4. chips 过渡突兀         */
+/*              5. 统计数字排版紧凑                                */
+/* ============================================================ */
+
+/* 1. 卡片圆角加大 + 边框淡化 + 阴影克制 —— v5 mimo 反馈"圆角小、阴影偏重、边框粗"
+      方案：圆角 18→22px（超出苹果标准 16-20，更显精致）
+           边框 rgba(0,0,0,.06)→rgba(0,0,0,.04) 更淡
+           阴影降到极轻（单层 6px） */
+.card{
+  border-radius:22px !important;
+  border:1px solid rgba(0,0,0,.04) !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.02),0 4px 12px rgba(0,0,0,.035) !important;
+}
+.card:hover{
+  border-radius:22px !important;
+  border-color:rgba(0,122,255,.15) !important;
+  box-shadow:0 2px 6px rgba(0,0,0,.04),0 8px 20px rgba(0,0,0,.05),0 16px 36px rgba(0,122,255,.05) !important;
+  transform:translateY(-3px) !important;
+}
+.card__media{
+  border-radius:22px 22px 0 0 !important;
+}
+.card__emoji{
+  border-radius:20px !important;
+}
+
+/* 2. Hero 层级强化 —— v5 mimo 反馈"主标题与下方对比不够强烈"
+      方案：标题 clamp 最大 56→64px、字重 700→750
+           副标题字号 18→16px、颜色更淡、margin 收紧
+           形成"大标题 / 小副标题"的强对比 */
+.hero__title{
+  font-size:clamp(36px,5.5vw,64px) !important;
+  font-weight:750 !important;
+  letter-spacing:-.04em !important;
+  margin:14px 0 8px !important;
+}
+.hero__sub{
+  font-size:16px !important;
+  color:var(--ink3) !important;
+  margin:0 auto 24px !important;
+  font-weight:400 !important;
+}
+.hero__badge{
+  font-size:12.5px !important;
+  padding:6px 14px !important;
+  letter-spacing:.02em !important;
+}
+
+/* 3. 统计数字排版呼吸扩大 —— v5 mimo 反馈"数字间距窄、对齐不考究"
+      方案：stats gap 40→64px、stat min-width 80→96px
+           stat__label 字号 12→11.5px、margin-top 4→6px */
+.hero__stats{
+  gap:64px !important;
+  margin-top:32px !important;
+}
+.stat{
+  min-width:96px !important;
+  gap:6px !important;
+}
+.stat__num{
+  font-size:48px !important;
+}
+.stat__num--free{
+  font-size:48px !important;
+}
+.stat__label{
+  font-size:11.5px !important;
+  margin-top:6px !important;
+  letter-spacing:.06em !important;
+  text-transform:uppercase !important;
+  font-weight:500 !important;
+}
+.stat__sep{
+  width:1px !important;
+  height:32px !important;
+  background:rgba(0,0,0,.08) !important;
+}
+
+/* 4. chips 过渡柔化 —— v5 mimo 反馈"黑色填充与灰色文字突兀"
+      方案：未选中态加 hover 时浅蓝底色过渡
+           is-active 不要纯黑，改为 ink 色 #1d1d1f（更柔和）
+           所有 chips 加 0.2s 过渡 */
+.chip{
+  transition:background .25s var(--ease),color .25s var(--ease),border-color .25s var(--ease),box-shadow .25s var(--ease),transform .25s var(--ease) !important;
+}
+.chip[data-filter="all"].is-active{
+  background:#1d1d1f !important;
+  border-color:#1d1d1f !important;
+}
+
+/* 5. 图标统一性最终方案 —— v5 mimo 反馈"emoji 与矢量图标混搭"
+      方案：emoji 进一步灰度 .55→.65 + 对比度 1.05→1.08
+      让所有 emoji 几乎成为单色字形，与卡片整体形成统一图标语言
+      hover 时灰度大幅回退到 .30（让 hover 时彩色恢复作为反馈） */
+.card__emoji{
+  filter:grayscale(.65) contrast(1.08) saturate(.55) !important;
+}
+.card:hover .card__emoji{
+  filter:grayscale(.30) contrast(1.08) saturate(.85) !important;
+}
+
+/* 移动端 v6 收敛 */
+@media (max-width:600px){
+  .card{border-radius:18px !important}
+  .hero__title{font-size:30px !important;font-weight:720 !important}
+  .hero__sub{font-size:14px !important;margin:0 auto 18px !important}
+  .hero__stats{gap:32px !important;margin-top:24px !important}
+  .stat__num,.stat__num--free{font-size:32px !important}
+  .stat__label{font-size:10px !important}
+  .card__emoji{border-radius:16px !important}
+}
+
+/* ============================================================ */
+/* 第二十九轮 · v7 终版收敛（v6 阴影过轻回归 + emoji 容器主导强化） */
+/* v6 mimo 评分 6.5 回退主因：v6 把阴影降到过轻导致卡片与背景"糊" */
+/* v6 mimo 反馈"心形图标"为幻觉（卡片实际无此元素），不予采纳 */
+/* v6 mimo 反馈"绿色免费与蓝色冲突"与 v3 反馈矛盾，保持现状 */
+/* 本轮只做 2 件事：恢复 v5 阴影深度 + 强化 emoji 容器视觉重量 */
+/* ============================================================ */
+
+/* 1. 卡片阴影恢复到 v5 平衡点（介于 v5 与 v6 之间） */
+.card{
+  border-radius:22px !important;
+  border:1px solid rgba(0,0,0,.05) !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.03),0 6px 16px rgba(0,0,0,.045) !important;
+}
+.card:hover{
+  border-color:rgba(0,122,255,.18) !important;
+  box-shadow:0 2px 6px rgba(0,0,0,.04),0 10px 24px rgba(0,0,0,.06),0 16px 36px rgba(0,122,255,.05) !important;
+  transform:translateY(-4px) !important;
+}
+
+/* 2. emoji 容器视觉重量强化 —— 让容器成为视觉主导，emoji 降为容器内的"字形"
+      方案：容器尺寸 84→88px、边框 1px→1.5px、内阴影加深
+      emoji 字号 38→36px（相对容器缩小，让容器边框更突出）
+      灰度回到 .55（v6 的 .65 过重） */
+.card__emoji{
+  width:88px !important;
+  height:88px !important;
+  border-radius:22px !important;
+  font-size:36px !important;
+  filter:grayscale(.55) contrast(1.06) saturate(.68) !important;
+  background:linear-gradient(180deg,rgba(255,255,255,1) 0%,rgba(248,248,250,1) 100%) !important;
+  box-shadow:
+    0 4px 10px rgba(0,0,0,.05),
+    0 1px 2px rgba(0,0,0,.04),
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 0 0 1.5px rgba(0,0,0,.07) !important;
+  border:1px solid rgba(0,0,0,.04) !important;
+}
+.card:hover .card__emoji{
+  filter:grayscale(.35) contrast(1.07) saturate(.82) !important;
+  transform:translate(-50%,-50%) scale(1.04) !important;
+  background:linear-gradient(180deg,rgba(255,255,255,1) 0%,rgba(242,246,252,1) 100%) !important;
+  box-shadow:
+    0 8px 20px rgba(0,122,255,.10),
+    0 2px 4px rgba(0,0,0,.05),
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 0 0 1.5px rgba(0,122,255,.18) !important;
+}
+
+/* 移动端 v7 收敛 */
+@media (max-width:600px){
+  .card__emoji{width:64px !important;height:64px !important;font-size:28px !important;border-radius:16px !important}
+}
+
+/* ============================================================ */
+/* 第二十九轮 · v8 终版精修（v7-hero 评分 8.2→目标 9/10）         */
+/* v7-hero mimo 反馈：1. 卡片内容高度不统一                       */
+/*                   2. Hero 下划线装饰生硬                      */
+/*                   3. 搜索框与筛选栏视觉权重失衡               */
+/* ============================================================ */
+
+/* 1. Hero 下划线装饰柔化 —— v7-hero mimo 反馈"蓝色下划线生硬"
+      方案：宽度 48→32px、高度 3→2px、透明度 .7→.35
+      移除渐变改为纯色，更克制不抢戏 */
+.hero__title::after{
+  width:32px !important;
+  height:2px !important;
+  border-radius:2px !important;
+  background:#007aff !important;
+  opacity:.35 !important;
+  bottom:6px !important;
+}
+
+/* 2. 卡片内容高度统一 —— v7-hero mimo 反馈"内容区高度参差"
+      方案：① card__body 加 flex:1 让 body 撑满卡片
+           ② card__desc 加 min-height 让描述行数固定（2 行）
+           ③ card__title 加 min-height 让标题行高固定（1 行）
+           ④ card__meta 加 min-height 让 meta 区固定
+      让所有卡片在网格行内高度完全一致 */
+.card{
+  display:flex !important;
+  flex-direction:column !important;
+}
+.card__media{
+  flex-shrink:0 !important;
+}
+.card__body{
+  flex:1 !important;
+  display:flex !important;
+  flex-direction:column !important;
+}
+.card__desc{
+  min-height:42px !important;
+  -webkit-line-clamp:2 !important;
+}
+.card__title{
+  min-height:23px !important;
+}
+.card__meta{
+  min-height:22px !important;
+}
+.card__actions{
+  margin-top:auto !important;
+  padding-top:4px !important;
+}
+
+/* 3. 搜索框与筛选栏视觉权重平衡 —— v7-hero mimo 反馈"权重失衡"
+      方案：搜索框 max-width 收紧到 360px（不全占左侧）
+      chips 紧凑化 padding 减小，让两者视觉重量更均衡
+      toolbar__row gap 加大让两者有更清晰的视觉分组 */
+.toolbar__row{
+  gap:20px !important;
+  align-items:center !important;
+}
+.search{
+  max-width:360px !important;
+  flex:0 1 auto !important;
+}
+.chips{
+  flex-wrap:wrap !important;
+  justify-content:flex-end !important;
+}
+
+/* 移动端 v8 收敛 */
+@media (max-width:600px){
+  .hero__title::after{width:24px !important;height:2px !important;bottom:4px !important}
+  .card__desc{min-height:38px !important}
+  .card__title{min-height:20px !important}
+  .toolbar__row{gap:12px !important;flex-direction:column !important;align-items:stretch !important}
+  .search{max-width:none !important}
+  .chips{justify-content:flex-start !important}
+}
 
 
 
