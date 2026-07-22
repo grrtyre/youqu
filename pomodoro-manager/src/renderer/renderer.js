@@ -469,7 +469,7 @@ function renderTasks(state) {
           </div>
         </div>
         <span class="task-current-dot ${isCurrent ? '' : 'empty'}" data-action="current" title="设为当前任务"></span>
-        <button class="task-del" data-action="delete" title="删除">×</button>
+        <button class="task-del" data-action="delete" title="删除" aria-label="删除"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
       </li>`;
   }).join('');
   // 仅当列表内容溢出时添加 scrollable 类，触发底部渐变遮罩
@@ -790,6 +790,18 @@ function openSettings() {
   el.settingsMask.classList.add('show');
 }
 
+// Q7: 设置数值输入即时校验——超范围时添加红色边框提示
+const _cfgLimits = { cfgWork:[1,90], cfgShort:[1,30], cfgLong:[1,60], cfgInterval:[2,12], cfgGoal:[1,30], cfgWeekGoal:[1,100] };
+Object.keys(_cfgLimits).forEach(id => {
+  const input = document.getElementById(id);
+  if (!input) return;
+  input.addEventListener('input', () => {
+    const v = parseInt(input.value, 10);
+    const [lo, hi] = _cfgLimits[id];
+    input.classList.toggle('invalid', isNaN(v) || v < lo || v > hi);
+  });
+});
+
 el.settingsSave.addEventListener('click', async () => {
   const raw = {
     workDuration: parseInt(document.getElementById('cfgWork').value,10),
@@ -821,6 +833,13 @@ el.settingsSave.addEventListener('click', async () => {
     if (isNaN(v)) { adjusted.push(nameMap[k] + '已填默认值'); }
     else if (v < lo) { adjusted.push(nameMap[k] + '已调整为最小 ' + lo); }
     else if (v > hi) { adjusted.push(nameMap[k] + '已调整为最大 ' + hi); }
+  }
+  // Q5: 时长关系校验——短休息不应超过专注时长，长休息不应短于短休息
+  if (cfg.shortBreak > cfg.workDuration) {
+    adjusted.push('短休息长于专注时长，建议短休息 ≤ ' + cfg.workDuration + ' 分钟');
+  }
+  if (cfg.longBreak < cfg.shortBreak) {
+    adjusted.push('长休息短于短休息，建议长休息 ≥ ' + cfg.shortBreak + ' 分钟');
   }
   await window.api.saveConfig(cfg);
   applyWhiteNoise(cfg.whiteNoise);
@@ -886,7 +905,10 @@ document.addEventListener('keydown', async (e) => {
     return;
   }
   const tag = (e.target.tagName || '').toLowerCase();
-  if (tag === 'input' || tag === 'textarea' || e.target.isContentEditable) return;
+  // 修复：按钮聚焦时按 Space 会同时触发按钮 click(keyup) 和文档 keydown 处理器，
+  // 导致双重触发（如 startBtn 聚焦时按 Space 切换两次 = 无变化）。
+  // 排除 button 元素，让按钮自身的 click 处理即可。
+  if (tag === 'input' || tag === 'textarea' || tag === 'button' || e.target.isContentEditable) return;
   const key = e.key.toLowerCase();
   if (key === ' ' || key === 'spacebar') {
     e.preventDefault();
@@ -901,6 +923,16 @@ document.addEventListener('keydown', async (e) => {
     await confirmReset();
   } else if (key === 's') {
     e.preventDefault();
+    // 跳过专注确认：与按钮点击一致，剩余时间 > 30% 时需二次确认
+    // 修复：上轮 Q3 仅给按钮加了确认，键盘 S 快捷键绕过了确认直接跳过
+    if (current && current.state === 'working' && (current.progress || 0) < 0.7 && !_skipConfirming) {
+      _skipConfirming = true;
+      const remainMin = Math.ceil((current.remainingMs || 0) / 60000);
+      toast(`将放弃剩余 ${remainMin} 分钟专注，再次按 S 确认跳过`);
+      setTimeout(() => { _skipConfirming = false; }, 3000);
+      return;
+    }
+    _skipConfirming = false;
     const ev = await window.api.skip();
     if (!ev) {
       if (current && (current.state === 'idle' || current.state === 'paused')) toast('计时未开始');
