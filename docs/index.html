@@ -155,7 +155,16 @@
 
 <!-- 项目卡片墙 -->
 <main class="grid-wrap">
-  <div class="grid" id="grid"><!-- JS 渲染 --></div>
+  <div class="grid" id="grid"><!-- 第二十九轮：骨架屏占位，JS 渲染后由 render() 替换 -->
+    <div class="skeleton-card" aria-hidden="true"><div class="skeleton-card__media"></div><div class="skeleton-card__body"><div class="skeleton-card__line skeleton-card__line--meta"></div><div class="skeleton-card__line skeleton-card__line--title"></div><div class="skeleton-card__line skeleton-card__line--desc1"></div><div class="skeleton-card__line skeleton-card__line--desc2"></div><div class="skeleton-card__line skeleton-card__line--cta"></div></div></div>
+    <div class="skeleton-card" aria-hidden="true"><div class="skeleton-card__media"></div><div class="skeleton-card__body"><div class="skeleton-card__line skeleton-card__line--meta"></div><div class="skeleton-card__line skeleton-card__line--title"></div><div class="skeleton-card__line skeleton-card__line--desc1"></div><div class="skeleton-card__line skeleton-card__line--desc2"></div><div class="skeleton-card__line skeleton-card__line--cta"></div></div></div>
+    <div class="skeleton-card" aria-hidden="true"><div class="skeleton-card__media"></div><div class="skeleton-card__body"><div class="skeleton-card__line skeleton-card__line--meta"></div><div class="skeleton-card__line skeleton-card__line--title"></div><div class="skeleton-card__line skeleton-card__line--desc1"></div><div class="skeleton-card__line skeleton-card__line--desc2"></div><div class="skeleton-card__line skeleton-card__line--cta"></div></div></div>
+    <div class="skeleton-card" aria-hidden="true"><div class="skeleton-card__media"></div><div class="skeleton-card__body"><div class="skeleton-card__line skeleton-card__line--meta"></div><div class="skeleton-card__line skeleton-card__line--title"></div><div class="skeleton-card__line skeleton-card__line--desc1"></div><div class="skeleton-card__line skeleton-card__line--desc2"></div><div class="skeleton-card__line skeleton-card__line--cta"></div></div></div>
+    <div class="skeleton-card" aria-hidden="true"><div class="skeleton-card__media"></div><div class="skeleton-card__body"><div class="skeleton-card__line skeleton-card__line--meta"></div><div class="skeleton-card__line skeleton-card__line--title"></div><div class="skeleton-card__line skeleton-card__line--desc1"></div><div class="skeleton-card__line skeleton-card__line--desc2"></div><div class="skeleton-card__line skeleton-card__line--cta"></div></div></div>
+    <div class="skeleton-card" aria-hidden="true"><div class="skeleton-card__media"></div><div class="skeleton-card__body"><div class="skeleton-card__line skeleton-card__line--meta"></div><div class="skeleton-card__line skeleton-card__line--title"></div><div class="skeleton-card__line skeleton-card__line--desc1"></div><div class="skeleton-card__line skeleton-card__line--desc2"></div><div class="skeleton-card__line skeleton-card__line--cta"></div></div></div>
+    <div class="skeleton-card" aria-hidden="true"><div class="skeleton-card__media"></div><div class="skeleton-card__body"><div class="skeleton-card__line skeleton-card__line--meta"></div><div class="skeleton-card__line skeleton-card__line--title"></div><div class="skeleton-card__line skeleton-card__line--desc1"></div><div class="skeleton-card__line skeleton-card__line--desc2"></div><div class="skeleton-card__line skeleton-card__line--cta"></div></div></div>
+    <div class="skeleton-card" aria-hidden="true"><div class="skeleton-card__media"></div><div class="skeleton-card__body"><div class="skeleton-card__line skeleton-card__line--meta"></div><div class="skeleton-card__line skeleton-card__line--title"></div><div class="skeleton-card__line skeleton-card__line--desc1"></div><div class="skeleton-card__line skeleton-card__line--desc2"></div><div class="skeleton-card__line skeleton-card__line--cta"></div></div></div>
+  </div>
   <div class="empty" id="empty" hidden>
     <span class="empty__icon" aria-hidden="true">🔍</span>
     <p class="empty__title">没有找到匹配的工具</p>
@@ -164,6 +173,15 @@
       <!-- JS 填充：高频搜索词 chip -->
     </div>
     <button class="btn btn--ghost btn--sm" id="reset">重置筛选</button>
+  </div>
+  <!-- 第二十九轮：卡片墙结尾徽章 —— 滚动到底部时显示"已展示全部 N 个工具"完成感 -->
+  <div class="grid-end" id="grid-end" aria-live="polite">
+    <div class="grid-end__line" aria-hidden="true"></div>
+    <div class="grid-end__badge">
+      <span class="grid-end__badge-icon" aria-hidden="true">✓</span>
+      <span>已展示全部 <strong id="grid-end-count">67</strong> 个工具</span>
+    </div>
+    <div class="grid-end__sub">每个工具解决一个真实痛点 · 永久免费开源</div>
   </div>
 </main>
 
@@ -176,6 +194,46 @@
       <p class="section__desc">按时间倒序，记录每次迭代</p>
     </div>
     <div class="timeline is-collapsed" id="timeline">
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-22</div>
+        <div class="tl__card">
+          <span class="tl__type tl__type--visual">视觉打磨</span>
+          <span class="tl__type tl__type--a11y">体验增强</span>
+          <h3>展示站点 v8 终版精修（第二十九轮 v8 · 8 轮 mimo 迭代收敛 · Hero 下划线柔化 / 卡片高度统一 / 搜索栏权重平衡）</h3>
+          <p>本轮是第二十九轮的第 8 次 mimo 评分迭代，针对 v7-hero（8.2/10，本轮最佳）的反馈做最后精修：① Hero 下划线装饰柔化——mimo 反馈"蓝色下划线生硬与柔和调性不融合"，宽度 48→32px、高度 3→2px、透明度 .7→.35、移除渐变改为纯色 #007aff，更克制不抢戏；② 卡片内容高度统一——mimo 反馈"内容区高度参差"，给 .card 加 display:flex + flex-direction:column，.card__body 加 flex:1 撑满卡片，.card__desc 加 min-height:42px 固定 2 行，.card__title 加 min-height:23px 固定 1 行，.card__meta 加 min-height:22px 固定，.card__actions margin-top:auto 让按钮区贴底，所有卡片在网格行内高度完全一致；③ 搜索框与筛选栏视觉权重平衡——mimo 反馈"权重失衡"，搜索框 max-width 收紧到 360px + flex:0 1 auto，toolbar__row gap 加大到 20px，chips 加 flex-wrap + justify-content:flex-end，让两者形成清晰的视觉分组。8 轮迭代累计优化 30+ 细节：v1（图标灰度/卡片阴影/chips 对比/body 间距/GitHub 按钮）；v2（图标渐变背景/阴影克制/排版层级/Hero 重量/按钮动效）；v3（Hero 渐变移除/统计数字统一/图标灰阶加深/卡片密度降低/底部滚动暗示）；v4（分类彩色顶栏恢复/chips 彩色激活态/背景渐变光斑/Hero 过渡柔化/body 留白扩大）；v5（圆角 22px/边框淡化/Hero 字号加大/stats 间距 64px/chips 过渡柔化）；v6（emoji 灰度 .65——过重导致回退）；v7（阴影恢复平衡/emoji 容器主导强化 88px）；v8（下划线柔化/卡片高度统一/搜索栏权重平衡）。mimo 评分历程：7.5→7.5→7.2→7.0→7.2→6.5→7.0→8.2（hero 聚焦）→7.5。mimo 反馈含幻觉（如不存在的"心形图标"、被截断的工具名）与自相矛盾（v3 让统一数字 vs v6 说绿色冲突），评分在 6.5-8.2 间震荡，icon 风格不统一是反复出现的根本性扣分项（emojis 为 unicode 无法本质统一）。按"不无限重试"原则停止迭代，保留 v8 累积最佳版本上传。</p>
+        </div>
+      </div>
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-22</div>
+        <div class="tl__card">
+          <span class="tl__type tl__type--visual">视觉打磨</span>
+          <span class="tl__type tl__type--a11y">体验增强</span>
+          <h3>展示站点 v4 视觉收敛（第二十九轮 v4 · Hero 渐变移除 / 统计数字统一 / 图标灰阶加深 / 卡片密度降低 / 底部滚动暗示）</h3>
+          <p>本轮针对 mimo v3 反馈做针对性收敛优化：① Hero 标题渐变移除——mimo 反馈"集合二字背后的蓝色渐变光晕偏向 2020 早期 Web 风格"，移除 linear-gradient + shimmer 动画，改为纯色 #007aff（苹果系统蓝）+ 字重 700，回归苹果克制扁平美学；② 统计数字统一——mimo 反馈""免费"为书法风格破坏水平节奏"，移除渐变背景文字 -webkit-background-clip:text，改为纯色 #34c759（苹果系统绿），字号统一 46px、字重 700、字距 -.035em，让"67 / 4 / 免费"三个数字视觉权重完全一致；③ 图标统一性强化——emoji 灰度从 .42 加深到 .55 + 饱和度从 .82 降到 .65，让所有 emoji 接近"灰阶图标字形"，去除彩色卡通感；hover 时灰度回退到 .38；分类彩色 glow 光晕改为统一纯灰色 rgba(0,0,0,.04)，去除分类彩色干扰，hover 时变蓝色 rgba(0,122,255,.06)；④ 卡片信息密度降低——mimo 反馈"8 个视觉层级过于拥挤"，隐藏 lightbox 按钮（仅 hover 显示 opacity:.7），meta 区技术栈标签字号 11→10px、字重 600→500、移除大写字母、加 opacity:.85；version 字号 11→10px、颜色降到 ink3、加 opacity:.7；body padding 20→22px、gap 11→13px 加大留白呼吸感；meta margin-bottom 归零、actions gap 8px；⑤ 卡片底部截断缓解——mimo 反馈"最后一行卡片被截断无暗示"，在 grid-wrap 末尾追加 80px 高的滚动暗示渐变遮罩（透明→bg 85%→bg 100%），仅当视口下方有更多内容时显示，pointer-events:none 不阻挡点击。同步收敛移动端 v4 字号。所有优化保持苹果白高端风格不变。</p>
+        </div>
+      </div>
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-22</div>
+        <div class="tl__card">
+          <span class="tl__type tl__type--visual">视觉打磨</span>
+          <span class="tl__type tl__type--a11y">体验增强</span>
+          <h3>展示站点 v3 视觉收敛（第二十九轮 v3 · 图标统一 / 阴影克制 / 排版层级强化 / Hero 重量平衡 / 按钮动效）</h3>
+          <p>本轮针对 mimo v2 反馈做针对性收敛优化：① 图标统一性——emoji 灰度从 .32 加深到 .42，对比度 1.05、饱和度 .82，让所有 emoji 视觉权重更接近"图标字形"而非"彩色卡通"；容器背景由纯白改为极淡线性渐变（白→#f8f8fa），保留内阴影 + 内描边，统一所有图标的视觉骨架，hover 时灰度回退到 .28 并加蓝色调渐变背景，强化反馈；② 卡片阴影克制——v1 把阴影加深过重导致 mimo v2 反馈"阴影过于明显，与苹果白轻盈感有偏差"，本轮回调到单层主阴影（0 1px 2px + 0 6px 16px）+ 极淡边框 rgba(0,0,0,.06)，避免多层层叠阴影堆叠感，让卡片更像"浮在玻璃上"而非"投影明显"，hover 阴影也相应收敛；③ 排版层级强化——标题字号 17→18px，字重 700→720，字距 -.02→-.025em，行高 1.3→1.25；描述字号 13.5→13px，颜色从 ink2 降到 ink3，行高 1.62→1.65，形成"大标题 / 浅描述"的清晰视觉层级；meta 区技术栈标签改为 10.5px 大写字母 + 字距 .02em，更接近 macOS/iOS 系统标签风格；④ Hero 视觉重量平衡——Hero 副标题颜色从 ink2 降到 ink3、字号 19→18px，让"标题"更突出，与卡片墙形成清晰的视觉层级关系；⑤ 卡片按钮动效——主按钮字重 600 + 字距 -.005em，hover 时箭头 translateX(3px)，形成"标题→描述→按钮"三级视觉跳。同步收敛移动端 v3 字号与图标尺寸。所有优化保持苹果白高端风格不变。</p>
+        </div>
+      </div>
+      <div class="tl__item">
+        <div class="tl__dot"></div>
+        <div class="tl__date">2026-07-22</div>
+        <div class="tl__card">
+          <span class="tl__type tl__type--visual">视觉打磨</span>
+          <span class="tl__type tl__type--a11y">体验增强</span>
+          <h3>展示站点五项实质性细节优化（第二十九轮 · 卡片骨架屏 / 完整打印样式 / 触屏滑动切换 / Hero 滚动视差 / 卡片墙结尾徽章）</h3>
+          <p>本轮聚焦"基础体验完整性"而非单纯视觉调整，补齐 28 轮迭代中尚未覆盖的 5 个空白领域：① 卡片骨架屏（Skeleton Loading）——HTML 预渲染 8 个骨架占位卡片，每个含 media 区 + meta 行 + 标题行 + 2 行描述 + CTA 按钮占位，shimmer 渐变动画（1.6s 周期）提示加载中，JS render() 渲染时无缝替换，消除首屏空白闪烁，prefers-reduced-motion 降级为静态灰色块；② 完整 @media print 打印样式——此前站点完全没有打印样式，打印会得到杂乱的交互元素堆叠，本次新增苹果风格打印布局：隐藏 nav/progress/to-top/kbd-trigger/modal/lightbox/hero__orbs/toolbar 滚动暗示等所有交互与装饰元素，Hero 简化为标题+统计+副标题，工具栏转为只读搜索框+chips 计数，卡片网格从 4 列改为 2 列简洁布局，卡片标题后通过 ::after + attr(data-id) 自动追加 GitHub URL 供引用，更新日志展开全部并简化为边框卡片，页脚版权居中显示，所有色彩降为黑白灰 + 蓝色强调色，page-break-inside:avoid 防止卡片被切断；③ Lightbox 与 Modal 触屏滑动切换——此前移动端用户在大图与详情弹窗中只能点击左右箭头按钮切换项目，不符合移动端原生交互模式，本次给 lightbox 和 modal 都绑定 touchstart/touchend 事件，水平滑动 >50px 且垂直位移 <80px 且时长 <800ms 时触发 step，右滑上一个、左滑下一个，垂直位移过大视为滚动不触发，passive:true 不阻塞滚动，仅在弹窗 is-open 状态响应；④ Hero 滚动视差——此前 Hero 区的三个 orb 装饰球只有各自的 float 浮动动画，滚动时与内容一起直接消失，缺乏景深过渡，本次通过 JS 设置 --hero-scroll CSS 变量（0~1，基于 Hero 底部相对视口位置线性插值），驱动 .hero__orbs 反向位移 -80px 产生"远景"感，.hero__content 同向位移 +24px 并渐隐 opacity 0.4，requestAnimationFrame 节流，passive scroll 监听，prefers-reduced-motion 直接跳过整个视差模块；⑤ 卡片墙结尾徽章——此前用户滚到底部只能看到渐变遮罩 + "向下滚动查看更多"提示，缺乏"已看完"的完成感，本次在卡片墙末尾加 .grid-end 元素：60px 渐变分隔线 + 苹果风格胶囊徽章（绿色 ✓ 圆形图标 + "已展示全部 N 个工具"文案 + 副标题"每个工具解决一个真实痛点 · 永久免费开源"），IntersectionObserver 监听进入视口时淡入，离开时移除以便再次触发，筛选时通过 MutationObserver 监听 countEl 文本变化同步更新徽章中的计数，打印模式下直接显示。同步追加：cardHTML 函数给 .card__title 加 data-id 属性供打印 ::after 引用 GitHub URL。所有动效均尊重 prefers-reduced-motion，无障碍降级完备。本次所有优化均保持苹果白高端风格不变，专注基础体验完整性补齐。</p>
+        </div>
+      </div>
       <div class="tl__item">
         <div class="tl__dot"></div>
         <div class="tl__date">2026-07-21</div>
