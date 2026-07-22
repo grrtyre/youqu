@@ -496,10 +496,19 @@ function renderWeekChart(daily) {
     const dot = isToday ? '<span class="week-bar-dot"></span>' : '';
     // 今日为 0 时也显示 "0" 数字标注，颜色用 accent 突出今日锚点
     const countText = d.workSessions || (isToday ? '0' : '');
+    // 数据驱动深浅梯度：非今日柱体按强度在浅蓝→Apple蓝之间插值，数值越大越饱和
+    let barBg = '';
+    if (!empty && !isToday) {
+      const t = max > 0 ? (d.workSessions / max) : 0;
+      const mix = (c1, c2, p) => Math.round(c1 + (c2 - c1) * p);
+      const top = `rgb(${mix(0xb8,0x0a,t)},${mix(0xd9,0x84,t)},${mix(0xf9,0xff,t)})`;
+      const bot = `rgb(${mix(0x9e,0x00,t)},${mix(0xc5,0x7a,t)},${mix(0xf5,0xff,t)})`;
+      barBg = `background:linear-gradient(180deg, ${top} 0%, ${bot} 100%);`;
+    }
     return `
       <div class="week-bar-wrap ${isToday ? 'today' : ''}">
         <span class="week-bar-count">${countText}</span>
-        <div class="week-bar ${empty ? 'empty' : ''} ${isToday ? 'today' : ''}" style="height:${Math.max(10, h)}px">${dot}</div>
+        <div class="week-bar ${empty ? 'empty' : ''} ${isToday ? 'today' : ''}" style="${barBg}height:${Math.max(10, h)}px">${dot}</div>
         <span class="week-bar-label">${d.label}</span>
       </div>`;
   }).join('');

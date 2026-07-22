@@ -61,7 +61,7 @@ html, body {
 }
 .brand:hover .brand-icon { transform: rotate(-6deg) scale(1.06); }
 .brand-name { font-size: 17px; font-weight: 600; letter-spacing: 0.2px; }
-.topbar-right { display: flex; align-items: center; gap: 14px; }
+.topbar-right { display: flex; align-items: center; gap: 18px; }
 
 .streak-badge {
   display: flex; align-items: center; gap: 6px;
@@ -89,8 +89,8 @@ html, body {
   opacity: 0.92;
 }
 @keyframes flameFlicker {
-  0%, 100% { transform: scale(1) rotate(-0.5deg); filter: drop-shadow(0 0 2px rgba(255,149,0,0.18)); }
-  50%      { transform: scale(1.06) rotate(1deg); filter: drop-shadow(0 0 3px rgba(255,149,0,0.3)); }
+  0%, 100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 1px rgba(255,149,0,0.12)); }
+  50%      { transform: scale(1.03) rotate(0.6deg); filter: drop-shadow(0 0 2px rgba(255,149,0,0.2)); }
 }
 .streak-label { color: var(--text-2); font-weight: 500; }
 
@@ -109,7 +109,7 @@ html, body {
 .main {
   flex: 1;
   display: grid;
-  grid-template-columns: 310px 1fr;
+  grid-template-columns: 326px 1fr;
   gap: 18px;
   padding: 18px 22px 22px;
   overflow: hidden;
@@ -180,12 +180,25 @@ html, body {
 .stat-mini {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-  font-size: 11.5px; color: var(--text-2);
+  gap: 0;
+  font-size: 11px; color: var(--text-3);
   padding-top: 12px; border-top: 1px solid var(--border);
   text-align: center;
 }
-.stat-mini > div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stat-mini > div {
+  position: relative;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  padding: 2px 4px;
+}
+/* 列间细分隔线：强化三列结构层次，告别扁平堆叠 */
+.stat-mini > div + div::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 1px; height: 16px;
+  background: var(--border);
+}
 .stat-mini span { color: var(--text); font-weight: 600; margin: 0 1px; }
 
 /* 任务 */
@@ -350,7 +363,7 @@ html, body {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  padding: 18px 32px 14px;
+  padding: 18px 26px 14px;
   overflow-y: auto;
   gap: 4px;
   position: relative;
@@ -459,7 +472,7 @@ html, body {
   stroke-dasharray: 879.6; /* 2*PI*140 */
   stroke-dashoffset: 879.6;
   transition: stroke-dashoffset 0.5s linear, stroke 0.3s;
-  filter: drop-shadow(0 0 8px rgba(0,122,255,0.22));
+  filter: drop-shadow(0 0 6px rgba(0,122,255,0.18));
 }
 .ring-progress.short_break { stroke: url(#ringGradShort); filter: drop-shadow(0 0 8px rgba(52,199,89,0.3)); }
 .ring-progress.long_break { stroke: url(#ringGradLong); filter: drop-shadow(0 0 8px rgba(255,149,0,0.3)); }
@@ -484,13 +497,14 @@ html, body {
   margin-top: 10px; display: flex; gap: 5px; align-items: center;
 }
 .cycle-dot {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: #d4d8de;
-  transition: background 0.2s, transform 0.2s;
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #e0e0e6;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
 }
 .cycle-dot.filled {
   background: var(--accent);
-  transform: scale(1.1);
+  transform: scale(1.15);
+  box-shadow: 0 0 0 2px rgba(0,122,255,0.16);
 }
 .cycle-label {
   margin-top: 6px;
@@ -532,32 +546,32 @@ html, body {
   font-size: 13px; color: var(--text-2); font-weight: 500;
   margin-bottom: 8px; margin-top: 2px;
 }
-/* 快捷键提示：分组成 pill 容器，更精致更紧凑，但保持可读字号 */
+/* 快捷键提示：去除工程感，弱化为优雅的辅助文字风格 */
 .kbd-hint {
-  margin: 2px 0 16px;
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 5px 10px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
+  margin: 8px 0 16px;
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 0;
+  background: transparent;
+  border: none;
   border-radius: 999px;
   flex-wrap: wrap; letter-spacing: 0.1px;
   font-weight: 500;
-  opacity: 0.96;
+  opacity: 0.78;
 }
 .kbd-group {
   display: inline-flex; align-items: center; gap: 6px;
 }
 .kbd-hint kbd {
   font-family: -apple-system, "SF Pro Text", "PingFang SC", sans-serif;
-  font-size: 11.5px; font-weight: 600;
-  color: var(--text);
-  background: var(--surface);
+  font-size: 11px; font-weight: 500;
+  color: var(--text-2);
+  background: transparent;
   border: 1px solid var(--border);
-  padding: 2px 7px;
+  padding: 1px 6px;
   line-height: 1.4;
-  min-width: 22px; text-align: center;
-  border-radius: 5px;
-  box-shadow: 0 1px 0 rgba(0,0,0,0.05), inset 0 -1px 0 rgba(0,0,0,0.03);
+  min-width: 20px; text-align: center;
+  border-radius: 4px;
+  box-shadow: none;
 }
 .kbd-text {
   font-size: 11.5px; color: var(--text-2); font-weight: 500;
@@ -644,7 +658,7 @@ html, body {
   display: inline-block;
   width: 8px; height: 8px;
   border-radius: 2px;
-  background: linear-gradient(180deg, #0a84ff 0%, #3d9bff 100%);
+  background: linear-gradient(180deg, #0a84ff 0%, #007aff 100%);
 }
 /* 周柱状图：圆角 + 蓝→靛渐变 + 数值标注，与热力图色阶呼应 */
 .week-chart {
@@ -658,7 +672,7 @@ html, body {
 }
 .week-bar {
   width: 100%; max-width: 38px;
-  background: linear-gradient(180deg, #a8d2f9 0%, #8ec2f6 100%);
+  background: linear-gradient(180deg, #b8d9f9 0%, #9ec5f5 100%);
   border-radius: 4px 4px 3px 3px;
   min-height: 4px;
   transition: height 0.4s ease, opacity 0.2s, transform 0.15s;
@@ -668,7 +682,7 @@ html, body {
 .week-bar:hover { opacity: 1; transform: translateY(-1px); }
 .week-bar.today {
   opacity: 1;
-  background: linear-gradient(180deg, #0a84ff 0%, #3d9bff 100%);
+  background: linear-gradient(180deg, #0a84ff 0%, #007aff 100%);
   box-shadow: 0 3px 10px rgba(0,122,255,0.32), 0 1px 4px rgba(0,122,255,0.18);
 }
 .week-bar.empty {
@@ -932,8 +946,8 @@ input, button { font-family: inherit; }
   margin-left: 18px;
 }
 .heat-month {
-  width: 11px;
-  font-size: 9px;
+  width: 12px;
+  font-size: 10px;
   color: var(--text-3);
   font-weight: 600;
   line-height: 11px;
@@ -959,7 +973,7 @@ input, button { font-family: inherit; }
 }
 .heat-row-label {
   height: 11px;
-  font-size: 9px;
+  font-size: 10px;
   color: var(--text-3);
   font-weight: 500;
   line-height: 11px;
@@ -985,10 +999,10 @@ input, button { font-family: inherit; }
 }
 /* 热力图色阶：苹果蓝单色系 5 级，深浅渐进清晰，小尺寸下辨识度高 */
 .heat-cell.level-0 { background: #ececf0; }
-.heat-cell.level-1 { background: #c5dffa; }   /* 浅蓝 */
-.heat-cell.level-2 { background: #8ec2f6; }   /* 中浅蓝 */
-.heat-cell.level-3 { background: #4ea4f0; }   /* 中蓝 */
-.heat-cell.level-4 { background: #1e7fe0; }   /* 深蓝（Apple 标准蓝） */
+.heat-cell.level-1 { background: #b3d7ff; }   /* Apple 蓝 24% */
+.heat-cell.level-2 { background: #79b8ff; }   /* Apple 蓝 48% */
+.heat-cell.level-3 { background: #3d9bff; }   /* Apple 蓝 72% */
+.heat-cell.level-4 { background: #007aff; }   /* Apple 标准蓝（与主色完全一致） */
 .heat-cell.future { background: #f4f4f6; opacity: 0.55; }
 .heat-cell.today {
   box-shadow: 0 0 0 1.5px var(--accent), 0 0 0 3px rgba(0,122,255,0.12);

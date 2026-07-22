@@ -165,7 +165,7 @@ function playChime() {
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1000,
-    height: 800,
+    height: process.argv.includes('--screenshot') ? 940 : 800,
     minWidth: 860,
     minHeight: 700,
     show: false,
