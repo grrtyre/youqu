@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>分账助手</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 顶部标题栏 -->
+    <header class="titlebar">
+      <div class="titlebar-left">
+        <div class="app-logo">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <rect x="2.5" y="4.5" width="19" height="15" rx="4" fill="#007aff"/>
+            <path d="M7 12h10" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="8.5" cy="12" r="1.6" fill="#fff"/>
+            <circle cx="15.5" cy="12" r="1.6" fill="#fff"/>
+          </svg>
+        </div>
+        <span class="app-name">分账助手</span>
+      </div>
+      <div class="titlebar-drag"></div>
+      <div class="titlebar-right">
+        <span class="status-pill" id="syncStatus">已保存</span>
+      </div>
+    </header>
+
+    <div class="body">
+      <!-- 侧边栏：分账组列表 -->
+      <aside class="sidebar">
+        <button class="new-group-btn" id="newGroupBtn">
+          <span class="plus">＋</span> 新建分账
+        </button>
+        <div class="sidebar-label">我的分账</div>
+        <div class="group-list" id="groupList"></div>
+        <div class="sidebar-footer">
+          <div class="footer-tip">数据本地保存 · 隐私安全</div>
+        </div>
+      </aside>
+
+      <!-- 主内容 -->
+      <main class="main" id="mainContent">
+        <!-- 空状态 -->
+        <div class="empty-state" id="emptyState">
+          <div class="empty-illu">
+            <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+              <rect x="20" y="30" width="80" height="60" rx="12" fill="#ffffff" stroke="#e5e5ea" stroke-width="2"/>
+              <circle cx="40" cy="55" r="8" fill="#007aff" opacity="0.15"/>
+              <circle cx="60" cy="55" r="8" fill="#34c759" opacity="0.15"/>
+              <circle cx="80" cy="55" r="8" fill="#ff9500" opacity="0.15"/>
+              <path d="M35 78h50" stroke="#e5e5ea" stroke-width="3" stroke-linecap="round"/>
+              <path d="M35 78a10 10 0 0 1 20 0" stroke="#007aff" stroke-width="3" stroke-linecap="round" fill="none"/>
+            </svg>
+          </div>
+          <h2>开始你的第一次分账</h2>
+          <p>合租、聚餐、旅行……和朋友的每一笔账，清清楚楚</p>
+          <button class="primary-btn" onclick="document.getElementById('newGroupBtn').click()">创建分账组</button>
+        </div>
+
+        <!-- 分账组详情 -->
+        <div class="detail" id="detailView" style="display:none;">
+          <!-- 详情头部 -->
+          <div class="detail-header">
+            <div class="detail-title-row">
+              <h1 class="detail-title" id="groupName">分账组</h1>
+              <div class="detail-actions">
+                <button class="text-btn" id="addMemberBtn">＋ 成员</button>
+                <button class="text-btn danger" id="deleteGroupBtn">删除</button>
+              </div>
+            </div>
+            <!-- 统计卡片 -->
+            <div class="stats-row">
+              <div class="stat-card">
+                <div class="stat-label">总支出</div>
+                <div class="stat-value" id="statTotal">¥0.00</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">账单笔数</div>
+                <div class="stat-value" id="statCount">0</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">参与人数</div>
+                <div class="stat-value" id="statMembers">0</div>
+              </div>
+              <div class="stat-card accent">
+                <div class="stat-label">人均</div>
+                <div class="stat-value" id="statPerPerson">¥0.00</div>
+              </div>
+            </div>
+            <!-- 成员头像 -->
+            <div class="members-row" id="membersRow"></div>
+          </div>
+
+          <!-- 标签导航 -->
+          <div class="tabs">
+            <button class="tab active" data-tab="bills">账单明细</button>
+            <button class="tab" data-tab="balance">余额</button>
+            <button class="tab" data-tab="settle">结算建议</button>
+            <button class="tab-action primary-btn small" id="addExpenseBtn">＋ 添加账单</button>
+          </div>
+
+          <!-- 账单明细 -->
+          <section class="tab-panel active" id="panel-bills">
+            <div class="bill-list" id="billList"></div>
+          </section>
+
+          <!-- 余额 -->
+          <section class="tab-panel" id="panel-balance">
+            <div class="balance-list" id="balanceList"></div>
+          </section>
+
+          <!-- 结算建议 -->
+          <section class="tab-panel" id="panel-settle">
+            <div class="settle-intro" id="settleIntro"></div>
+            <div class="settle-list" id="settleList"></div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- 添加账单 弹窗 -->
+  <div class="modal-mask" id="expenseModal" style="display:none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="expenseModalTitle">添加账单</h3>
+        <button class="modal-close" data-close>✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <label>描述</label>
+          <input type="text" id="expDescription" placeholder="例如：晚餐、房租、打车" />
+        </div>
+        <div class="form-row">
+          <label>金额（元）</label>
+          <input type="number" id="expAmount" placeholder="0.00" step="0.01" min="0" />
+        </div>
+        <div class="form-row">
+          <label>付款人</label>
+          <select id="expPayer"></select>
+        </div>
+        <div class="form-row">
+          <label>分摊方式</label>
+          <div class="seg" id="splitTypeSeg">
+            <button class="seg-item active" data-st="equal">均摊</button>
+            <button class="seg-item" data-st="share">按份数</button>
+            <button class="seg-item" data-st="percent">百分比</button>
+            <button class="seg-item" data-st="exact">自定义</button>
+          </div>
+        </div>
+        <div class="form-row" id="splitEditorRow">
+          <label>分摊对象</label>
+          <div class="split-editor" id="splitEditor"></div>
+        </div>
+        <div class="form-row">
+          <label>日期</label>
+          <input type="date" id="expDate" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="ghost-btn" data-close>取消</button>
+        <button class="primary-btn" id="expSave">保存账单</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 添加成员 弹窗 -->
+  <div class="modal-mask" id="memberModal" style="display:none;">
+    <div class="modal small">
+      <div class="modal-header">
+        <h3>添加成员</h3>
+        <button class="modal-close" data-close>✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <label>成员名字</label>
+          <input type="text" id="memberName" placeholder="例如：小明" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="ghost-btn" data-close>取消</button>
+        <button class="primary-btn" id="memberSave">添加</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新建分账 弹窗 -->
+  <div class="modal-mask" id="groupModal" style="display:none;">
+    <div class="modal small">
+      <div class="modal-header">
+        <h3>新建分账</h3>
+        <button class="modal-close" data-close>✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <label>分账名称</label>
+          <input type="text" id="groupNameInput" placeholder="例如：海南之旅、合租日常" />
+        </div>
+        <div class="form-row">
+          <label>成员（逗号分隔）</label>
+          <input type="text" id="groupMembersInput" placeholder="小明, 小红, 小刚" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="ghost-btn" data-close>取消</button>
+        <button class="primary-btn" id="groupSave">创建</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="lib/accounting.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>

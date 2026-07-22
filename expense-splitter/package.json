@@ -1,0 +1,25 @@
+{
+  "name": "expense-splitter",
+  "version": "1.0.0",
+  "description": "分账助手 - 群组AA账单、自动计算谁欠谁、债务简化与结算追踪（苹果白高端风格桌面应用）",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "node test/accounting.test.js",
+    "start": "electron .",
+    "screenshot": "node scripts/screenshot.js"
+  },
+  "keywords": [
+    "分账",
+    "AA",
+    "账单",
+    "expense",
+    "split",
+    "bill",
+    "electron"
+  ],
+  "author": "youqu",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0"
+  }
+}
