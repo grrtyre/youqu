@@ -366,7 +366,7 @@ function cardHTML(p, idx, query){
         newBadge+
         '<span class="card__version">'+ver+'</span>'+
       '</div>'+
-      '<h3 class="card__title">'+titleHTML+'</h3>'+
+      '<h3 class="card__title" data-id="'+p.id+'">'+titleHTML+'</h3>'+
       '<p class="card__desc" data-full="'+fullDesc+'" title="'+fullDesc+'">'+descHTML+'</p>'+
       '<div class="card__actions">'+
         dlBtn+
@@ -1160,4 +1160,144 @@ if(searchHint && !searchInteracted){
       activeCard = null;
     }
   });
+})();
+
+/* ============================================================ */
+/* 第二十九轮 · 五项实质性细节优化（JS 部分）                     */
+/* 3. Lightbox 与 Modal 触屏滑动切换                             */
+/* 4. Hero 滚动视差（--hero-scroll 变量驱动）                   */
+/* 5. 卡片墙结尾徽章（IntersectionObserver 触发显示）            */
+/* ============================================================ */
+
+/* ---------- 3. Lightbox 与 Modal 触屏滑动切换 ---------- */
+/* 移动端用户在大图和详情弹窗中可通过左右滑动切换项目 */
+/* 仅 touch 设备启用，水平滑动 >50px 触发 step */
+(function(){
+  var SWIPE_THRESHOLD = 50;
+  var SWIPE_MAX_VERTICAL = 80; /* 垂直位移过大则视为滚动，不触发 */
+
+  function bindSwipe(el, stepFn){
+    if(!el || !stepFn) return;
+    var startX = 0, startY = 0, startT = 0, tracking = false;
+    el.addEventListener('touchstart', function(e){
+      if(e.touches.length !== 1) return;
+      tracking = true;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      startT = Date.now();
+    }, {passive:true});
+    el.addEventListener('touchend', function(e){
+      if(!tracking) return;
+      tracking = false;
+      var t = e.changedTouches[0];
+      if(!t) return;
+      var dx = t.clientX - startX;
+      var dy = t.clientY - startY;
+      var dt = Date.now() - startT;
+      /* 垂直位移过大视为滚动；时间过长视为长按拖拽；水平位移不足则忽略 */
+      if(Math.abs(dy) > SWIPE_MAX_VERTICAL) return;
+      if(dt > 800) return;
+      if(Math.abs(dx) < SWIPE_THRESHOLD) return;
+      /* 仅在弹窗打开时响应 */
+      if(!el.classList.contains('is-open')) return;
+      if(dx > 0){ stepFn(-1); } /* 右滑 → 上一个 */
+      else { stepFn(1); }       /* 左滑 → 下一个 */
+    }, {passive:true});
+  }
+  bindSwipe(lightbox, lbStep);
+  bindSwipe(modal, modalStep);
+})();
+
+/* ---------- 4. Hero 滚动视差 ---------- */
+/* 滚动时设置 --hero-scroll 变量（0~1），驱动 orbs 反向位移与内容渐隐 */
+/* 0 = Hero 完全可见，1 = Hero 已完全滚出视口顶部 */
+(function(){
+  if(prefersReducedMotion) return;
+  var heroEl = document.querySelector('.hero');
+  if(!heroEl) return;
+  var ticking = false;
+  function update(){
+    ticking = false;
+    var rect = heroEl.getBoundingClientRect();
+    var h = heroEl.offsetHeight;
+    if(h <= 0) return;
+    /* 当 Hero 顶部在视口内（rect.top > 0）→ scroll=0 */
+    /* 当 Hero 底部到达视口顶部（rect.bottom <= 0）→ scroll=1 */
+    /* 中间线性插值 */
+    var visible = rect.bottom; /* Hero 底部相对视口顶部的位置 */
+    if(visible >= h){
+      /* Hero 完全在视口内（顶部还没滚出） */
+      heroEl.style.setProperty('--hero-scroll', 0);
+    } else if(visible <= 0){
+      /* Hero 完全滚出视口 */
+      heroEl.style.setProperty('--hero-scroll', 1);
+    } else {
+      /* 部分滚出：按 (h - visible) / h 计算 0~1 */
+      var s = (h - visible) / h;
+      if(s > 1) s = 1;
+      if(s < 0) s = 0;
+      heroEl.style.setProperty('--hero-scroll', s.toFixed(3));
+    }
+  }
+  function onScroll(){
+    if(!ticking){
+      ticking = true;
+      requestAnimationFrame(update);
+    }
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', onScroll, {passive:true});
+  /* 首次设置 */
+  update();
+})();
+
+/* ---------- 5. 卡片墙结尾徽章 ---------- */
+/* 滚动到底部时显示"已展示全部 N 个工具"完成徽章 */
+/* 同时根据当前筛选结果更新计数 */
+(function(){
+  var gridEnd = document.getElementById('grid-end');
+  var gridEndCount = document.getElementById('grid-end-count');
+  if(!gridEnd) return;
+  /* 初始化计数为项目总数 */
+  if(gridEndCount) gridEndCount.textContent = PROJECTS.length;
+
+  /* IntersectionObserver：徽章进入视口时淡入显示 */
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          e.target.classList.add('is-visible');
+        } else {
+          /* 离开视口时移除，让用户再次滚到底部时再次看到淡入 */
+          e.target.classList.remove('is-visible');
+        }
+      });
+    }, {threshold:0.1, rootMargin:'0px 0px -40px 0px'});
+    io.observe(gridEnd);
+  } else {
+    gridEnd.classList.add('is-visible');
+  }
+
+  /* 筛选时同步更新计数（监听 countEl 文本变化作为信号） */
+  if(gridEndCount && countEl){
+    var prevCount = PROJECTS.length;
+    var syncCount = function(){
+      var txt = countEl.textContent;
+      var m = txt.match(/\d+/);
+      if(m){
+        var n = parseInt(m[0], 10);
+        if(n !== prevCount){
+          prevCount = n;
+          gridEndCount.textContent = n;
+        }
+      }
+    };
+    /* 用 MutationObserver 监听 countEl 文本变化 */
+    if('MutationObserver' in window){
+      var mo = new MutationObserver(syncCount);
+      mo.observe(countEl, {childList:true, characterData:true, subtree:true});
+    }
+    /* 初次同步 */
+    syncCount();
+  }
 })();
