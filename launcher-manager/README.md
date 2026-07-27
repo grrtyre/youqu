@@ -4,8 +4,8 @@
 
 ![platform](https://img.shields.io/badge/platform-Windows-blue?style=flat-square)
 ![electron](https://img.shields.io/badge/Electron-30-47848F?style=flat-square)
-![license](https://img.shields.io/badge/license-MIT-green?style=flat-square)
-![version](https://img.shields.io/badge/version-1.1.0-007aff?style=flat-square)
+![license](https://img.shields.io/badge/license-Apache--2.0-blue?style=flat-square)
+![version](https://img.shields.io/badge/version-1.1.1-007aff?style=flat-square)
 
 ---
 
@@ -58,7 +58,10 @@ npm start
 | `↑` / `↓` | 上下选择结果 |
 | `Enter` | 启动选中应用 |
 | `Esc` | 隐藏搜索框 |
+| `Tab` | 补全为选中项名称，继续缩小范围 |
+| `Ctrl + Backspace` | 一次清空输入 |
 | `鼠标悬停` | 选中对应项 |
+| `右键点击` | 打开所在文件夹 / 以管理员运行 / 复制路径 |
 
 ---
 
@@ -106,6 +109,22 @@ launcher-manager/
 ---
 
 ## 📝 更新日志
+
+### v1.1.1
+- 🟢 新增系统托盘图标：常驻指示程序运行中，单击唤起，右键菜单含"显示/重新索引/退出"
+- 🐛 修复"无法退出应用"致命缺陷：原 window-all-closed 阻止退出且无托盘，只能任务管理器杀进程；现可通过托盘"退出"正常关闭
+- ✨ 首次启动主动展示窗口一次：避免用户双击 exe 后看不到窗口以为没启动
+- ⏱️ 失焦隐藏加 220ms 延迟：避免用户切到输入法候选框/字典等辅助窗口时搜索框立即消失
+- 🖱️ 结果项新增右键菜单：打开所在文件夹 / 以管理员身份运行 / 复制路径 / 启动
+- ⌨️ 新增 Tab 补全：用选中项名称填充输入框，继续缩小范围
+- ⌨️ 新增 Ctrl+Backspace 一次清空输入
+- 📊 索引中状态栏显示"索引中..."+ 蓝点呼吸动画，扫描完成恢复"X 个应用已索引"
+- 🎨 选中态背景由 #c7e0fc 调柔为 #e8f0fe，更贴合苹果白；描边对比度提升
+- 🎨 状态栏蓝点 opacity 0.55 → 0.85，可见性提升
+- 🎨 空状态 SVG 加斜线差异化，与搜索框图标区分"无结果"语义
+- 🎨 placeholder 精简："搜索应用，输入名称开始..." → "搜索应用..."
+- 🎨 输入框加 maxlength=120，防止超长字符串撑坏布局
+- 📝 修复 README license badge：MIT → Apache-2.0（与 LICENSE 文件一致）
 
 ### v1.1.0
 - 🏷️ 空查询时按"最近使用 / 全部应用"分组，新增小节标签与计数
