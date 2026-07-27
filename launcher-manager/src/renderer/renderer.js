@@ -61,6 +61,22 @@ window.launcher.onWindowShown(() => {
   updateCount();
 });
 
+// 监听索引状态：索引中时状态栏显示"索引中..."
+window.launcher.onIndexingStatus((data) => {
+  appCountEl.textContent = data.count;
+  const statusLeft = document.querySelector('.status-left');
+  const suffix = document.getElementById('status-suffix');
+  if (statusLeft && suffix) {
+    if (data.indexing) {
+      statusLeft.classList.add('indexing');
+      suffix.textContent = ' 索引中...';
+    } else {
+      statusLeft.classList.remove('indexing');
+      suffix.textContent = ' 个应用已索引';
+    }
+  }
+});
+
 searchInput.addEventListener('input', () => {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(() => doSearch(searchInput.value), 80);
@@ -85,6 +101,19 @@ searchInput.addEventListener('keydown', (e) => {
   } else if (e.key === 'Escape') {
     e.preventDefault();
     window.launcher.hide();
+  } else if (e.key === 'Tab') {
+    // Tab 补全：用选中项的名称填充输入框，方便继续缩小范围
+    if (currentResults[selectedIndex]) {
+      e.preventDefault();
+      const name = currentResults[selectedIndex].name;
+      searchInput.value = name;
+      doSearch(name);
+    }
+  } else if (e.key === 'Backspace' && (e.ctrlKey || e.metaKey)) {
+    // Ctrl/Cmd+Backspace 一次清空输入
+    e.preventDefault();
+    searchInput.value = '';
+    doSearch('');
   }
 });
 
@@ -199,6 +228,13 @@ function renderResults() {
       item.addEventListener('click', () => {
         selectedIndex = index;
         launchApp(currentResults[index]);
+      });
+      // 右键菜单：打开所在文件夹 / 以管理员运行 / 复制路径
+      item.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        selectedIndex = index;
+        renderResults();
+        window.launcher.showContextMenu(app.path);
       });
 
       resultsEl.appendChild(item);
