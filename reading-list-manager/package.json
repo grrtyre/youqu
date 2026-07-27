@@ -4,7 +4,7 @@
   "description": "稍后阅读管理器 - 收集、整理、追踪你想要稍后阅读的文章",
   "main": "src/main.js",
   "author": "grrtyre",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "scripts": {
     "start": "electron .",
     "test": "node --test test/",

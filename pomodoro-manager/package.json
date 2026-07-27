@@ -9,7 +9,7 @@
     "pack": "electron-builder --win --x64"
   },
   "author": "youqu",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "devDependencies": {
     "electron": "^28.3.3",
     "electron-builder": "^24.13.3"

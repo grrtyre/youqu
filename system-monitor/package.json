@@ -4,7 +4,7 @@
   "description": "system monitor dashboard",
   "main": "src/server.js",
   "author": "youqu",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "scripts": {
     "start": "node src/server.js",
     "test": "node test/core.test.js"

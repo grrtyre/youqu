@@ -16,7 +16,7 @@
     "苹果白"
   ],
   "author": "youqu",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "devDependencies": {
     "electron": "^30.0.0"
   }

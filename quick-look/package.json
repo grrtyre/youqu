@@ -4,7 +4,7 @@
   "description": "速览管家 - Windows 仿 Mac QuickLook 的极速文件预览工具",
   "main": "src/main.js",
   "author": "youqu",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "scripts": {
     "start": "electron .",
     "test": "node test/test.js",

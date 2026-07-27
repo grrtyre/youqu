@@ -4,7 +4,7 @@
   "description": "苹果白风格的本地 2FA 验证器，安全存储 TOTP 密钥，一键复制动态验证码",
   "main": "main.js",
   "author": "youqu",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",

@@ -41,7 +41,7 @@
     }
   },
   "author": "giquwei",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "devDependencies": {
     "electron": "^28.0.0",
     "electron-builder": "^24.9.1"
