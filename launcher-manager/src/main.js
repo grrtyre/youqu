@@ -1,6 +1,6 @@
 // launcher-manager 主进程
 // 快速应用启动器 - 全局热键唤起、模糊搜索已安装应用、苹果白风格
-const { app, BrowserWindow, globalShortcut, ipcMain, screen, shell, nativeImage } = require('electron');
+const { app, BrowserWindow, globalShortcut, ipcMain, screen, shell, nativeImage, Tray, Menu, clipboard } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { AppIndexer } = require('./lib/appIndexer');
@@ -8,6 +8,10 @@ const { fuzzySearch } = require('./lib/fuzzySearch');
 
 let mainWindow = null;
 let indexer = null;
+let tray = null;
+let firstLaunchShown = false; // 首次启动是否已展示过窗口
+let blurHideTimer = null; // 失焦延迟隐藏计时器
+let isIndexing = false; // 是否正在索引
 
 // 截图模式：注入演示数据、禁用失焦隐藏与热键，便于后台 PrintWindow 截取
 const SCREENSHOT_MODE = process.argv.includes('--screenshot');
@@ -108,10 +112,21 @@ function createWindow() {
     SCREENSHOT_MODE ? { query: { shot: '1' } } : undefined);
 
   // 失焦自动隐藏（仿 Spotlight 体验）；截图模式下禁用以便后台截取
+  // 加 220ms 延迟：避免用户切到辅助窗口（如输入法候选框、字典）时立即消失
   if (!SCREENSHOT_MODE) {
     mainWindow.on('blur', () => {
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.hide();
+      if (blurHideTimer) clearTimeout(blurHideTimer);
+      blurHideTimer = setTimeout(() => {
+        if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isFocused()) {
+          mainWindow.hide();
+        }
+        blurHideTimer = null;
+      }, 220);
+    });
+    mainWindow.on('focus', () => {
+      if (blurHideTimer) {
+        clearTimeout(blurHideTimer);
+        blurHideTimer = null;
       }
     });
   }
@@ -159,36 +174,104 @@ function startIndexing() {
     return;
   }
   indexer = new AppIndexer();
+  isIndexing = true;
+  notifyIndexingStatus();
   indexer.scan().then(() => {
     buildAppList();
+    isIndexing = false;
+    notifyIndexingStatus();
   }).catch(err => {
     console.error('应用索引失败:', err);
+    isIndexing = false;
+    notifyIndexingStatus();
   });
   setInterval(() => {
     if (indexer) {
-      indexer.scan().then(buildAppList).catch(() => {});
+      isIndexing = true;
+      notifyIndexingStatus();
+      indexer.scan().then(() => {
+        buildAppList();
+        isIndexing = false;
+        notifyIndexingStatus();
+      }).catch(() => {
+        isIndexing = false;
+        notifyIndexingStatus();
+      });
     }
   }, 5 * 60 * 1000);
+}
+
+// 通知渲染层索引状态变化（用于状态栏显示"索引中..."）
+function notifyIndexingStatus() {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('indexing-status', { indexing: isIndexing, count: appList.length });
+  }
+}
+
+// 创建系统托盘（仿 Spotlight 的常驻体验，提供可见性 + 退出入口）
+function createTray() {
+  if (SCREENSHOT_MODE) return;
+  const iconPath = path.join(__dirname, '..', 'assets', 'icon.ico');
+  let trayIcon = null;
+  try {
+    if (fs.existsSync(iconPath)) {
+      trayIcon = nativeImage.createFromPath(iconPath);
+    }
+  } catch (e) {}
+  // 回退：用一个 16x16 透明图（避免 Tray 抛错）
+  if (!trayIcon || trayIcon.isEmpty()) {
+    trayIcon = nativeImage.createEmpty();
+  }
+  tray = new Tray(trayIcon);
+  tray.setToolTip('Launcher Manager - Alt+Space 唤起');
+
+  const menu = Menu.buildFromTemplate([
+    { label: '显示搜索框', click: () => toggleWindow() },
+    { type: 'separator' },
+    { label: '重新索引应用', click: () => { startIndexing(); } },
+    { type: 'separator' },
+    { label: '退出', click: () => {
+      globalShortcut.unregisterAll();
+      if (tray) tray.destroy();
+      app.quit();
+    }}
+  ]);
+  tray.setContextMenu(menu);
+  // 单击托盘图标也切换窗口
+  tray.on('click', () => toggleWindow());
 }
 
 app.whenReady().then(() => {
   loadRecent();
   createWindow();
   registerHotkey();
+  createTray();
   startIndexing();
   // 截图模式：显示窗口但不抢焦点（showInactive），避免打扰用户当前操作
   if (SCREENSHOT_MODE && mainWindow) {
     mainWindow.showInactive();
     mainWindow.setSkipTaskbar(true);
+  } else if (mainWindow) {
+    // 首次启动：主动展示一次窗口，让用户知道程序已运行（避免"双击没反应"误解）
+    // 后续只能通过 Alt+Space 或托盘唤起
+    if (!firstLaunchShown) {
+      firstLaunchShown = true;
+      mainWindow.show();
+      mainWindow.focus();
+      mainWindow.webContents.send('window-shown');
+    }
   }
 });
 
+// 关闭窗口时不退出应用，隐藏到托盘（Spotlight 行为）
+// 通过托盘菜单"退出"才会真正退出
 app.on('window-all-closed', e => {
   e.preventDefault();
 });
 
 app.on('before-quit', () => {
   globalShortcut.unregisterAll();
+  if (tray) tray.destroy();
 });
 
 // ===== IPC 处理 =====
@@ -238,4 +321,50 @@ ipcMain.handle('hide-window', () => {
 
 ipcMain.handle('get-app-count', () => {
   return appList.length;
+});
+
+// 右键菜单：打开所在文件夹 / 以管理员运行 / 复制路径
+ipcMain.handle('show-context-menu', async (event, appPath) => {
+  const { Menu } = require('electron');
+  const menu = Menu.buildFromTemplate([
+    {
+      label: '打开所在文件夹',
+      click: () => {
+        // shell.showItemInFolder 会高亮选中该文件
+        try { shell.showItemInFolder(appPath); } catch (e) {}
+        if (mainWindow && mainWindow.isVisible()) mainWindow.hide();
+      }
+    },
+    {
+      label: '以管理员身份运行',
+      click: () => {
+        // 借助 PowerShell 的 Start-Process -Verb RunAs 触发 UAC 提权
+        try {
+          const { exec } = require('child_process');
+          const safePath = appPath.replace(/'/g, "''");
+          exec(`powershell -NoProfile -Command "Start-Process -FilePath '${safePath}' -Verb RunAs"`, () => {});
+        } catch (e) {}
+        if (mainWindow && mainWindow.isVisible()) mainWindow.hide();
+      }
+    },
+    {
+      label: '复制路径',
+      click: () => {
+        try { clipboard.writeText(appPath); } catch (e) {}
+      }
+    },
+    { type: 'separator' },
+    {
+      label: '启动',
+      click: () => {
+        try {
+          saveRecent(appPath);
+          shell.openPath(appPath);
+        } catch (e) {}
+        if (mainWindow && mainWindow.isVisible()) mainWindow.hide();
+      }
+    }
+  ]);
+  menu.popup();
+  return true;
 });
