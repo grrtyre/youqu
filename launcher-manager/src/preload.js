@@ -6,7 +6,11 @@ contextBridge.exposeInMainWorld('launcher', {
   launch: (appPath) => ipcRenderer.invoke('launch-app', appPath),
   hide: () => ipcRenderer.invoke('hide-window'),
   getAppCount: () => ipcRenderer.invoke('get-app-count'),
+  showContextMenu: (appPath) => ipcRenderer.invoke('show-context-menu', appPath),
   onWindowShown: (cb) => {
     ipcRenderer.on('window-shown', () => cb());
+  },
+  onIndexingStatus: (cb) => {
+    ipcRenderer.on('indexing-status', (event, data) => cb(data));
   }
 });
