@@ -7,9 +7,9 @@
 专注 · 休息 · 心流 · 打卡 · 统计
 
 <p align="center">
-  <img alt="version" src="https://img.shields.io/badge/%E7%89%88%E6%9C%AC-v1.4.0-007aff?style=flat-square&logo=semver&logoColor=white">
+  <img alt="version" src="https://img.shields.io/badge/%E7%89%88%E6%9C%AC-v1.4.1-007aff?style=flat-square&logo=semver&logoColor=white">
   <img alt="platform" src="https://img.shields.io/badge/Windows-10%2B-007aff?style=flat-square&logo=windows10&logoColor=white">
-  <img alt="license" src="https://img.shields.io/badge/License-MIT-007aff?style=flat-square&logo=opensourceinitiative&logoColor=white">
+  <img alt="license" src="https://img.shields.io/badge/License-Apache_2.0-007aff?style=flat-square&logo=apache&logoColor=white">
   <img alt="stars" src="https://img.shields.io/github/stars/grrtyre/youqu?style=flat-square&color=007aff&logo=github&logoColor=white&label=%E7%82%B9%E8%B5%9E">
 </p>
 
@@ -260,6 +260,7 @@ pomodoro-manager/
 
 | 版本 | 类型 | 摘要 |
 |---|---|---|
+| **v1.4.1** | 视觉精修 | 轮次指示器放大+渐变、统计行主次层级、kbd-hint 胶囊化、周柱色阶对齐热力图、协议徽章修正 |
 | **v1.4.0** | 视觉精修 | 配色统一苹果蓝、热力图 5 级单色阶、卡片标题加粗 |
 | **v1.3.1** | 体验优化 | 自定义 tooltip、任务空状态升级、快捷键提示精修 |
 | **v1.3.0** | 功能增强 | 任务番茄进度条、`N` 键新建任务、火焰动效 |
@@ -271,6 +272,7 @@ pomodoro-manager/
 <details>
 <summary><b>📋 查看完整变更明细</b></summary>
 
+- **v1.4.1**：轮次圆点 9→12px 放大 + 苹果蓝渐变填充 + 柔光阴影 · 统计行重构为「数值+标签」双行结构、今日分钟主指标加粗放大并着主色 · kbd-hint 由透明文字升级为半透明胶囊容器、kbd 标签白底蓝字 · 周柱渐变对齐热力图色阶（#b3d7ff→#79b8ff）· README 顶部 License 徽章由 MIT 修正为 Apache-2.0
 - **v1.4.0**：streak 徽章蓝色主题 · 热力图回归苹果蓝 5 级单色阶 · 图例简化为 3 级降噪 · 卡片标题 15→16px 加粗 · 快捷键提示 10→12px · 任务进度条与主进度条风格统一 · 环形进度条 stroke-width 统一为 10 · 左右分栏 286→310px 平衡重心 · 任务输入区增加分隔线 · 火焰动效更克制
 - **v1.3.1**：专注热力图自定义 tooltip（苹果白样式）· 任务空状态视觉升级（番茄图标+主副标题）· 快捷键提示精修（柔和胶囊+蓝色 kbd 标签）· README 测试用例数同步
 - **v1.3.0**：任务番茄进度条（可视化 pomodoros/estimate）· `N` 键快速新建任务 · 连续打卡火焰动效增强 · 当前任务条与计时圆环视觉整合 · 任务间距统一；修复截图演示模式启动崩溃

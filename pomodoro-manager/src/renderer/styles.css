@@ -179,16 +179,34 @@ html, body {
 .stat-pct { display: block; font-size: 10px; font-weight: 600; color: var(--accent); text-align: right; line-height: 1; margin-top: 6px; letter-spacing: 0.3px; }
 .stat-mini {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 0;
   font-size: 11px; color: var(--text-3);
-  padding-top: 12px; border-top: 1px solid var(--border);
+  padding-top: 13px; border-top: 1px solid var(--border);
   text-align: center;
+  align-items: center;
 }
 .stat-mini > div {
   position: relative;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  padding: 2px 4px;
+  padding: 4px 4px 3px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+}
+/* 主指标（今日分钟）强化：数值加粗放大 + 主色，建立"主→次"层级 */
+.stat-mini > div:first-child .sm-val {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.3px;
+}
+.sm-val {
+  font-size: 13px; color: var(--text); font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.sm-label {
+  font-size: 10px; color: var(--text-3); font-weight: 500;
+  letter-spacing: 0.2px;
 }
 /* 列间细分隔线：强化三列结构层次，告别扁平堆叠 */
 .stat-mini > div + div::before {
@@ -196,7 +214,7 @@ html, body {
   position: absolute;
   left: 0; top: 50%;
   transform: translateY(-50%);
-  width: 1px; height: 16px;
+  width: 1px; height: 22px;
   background: var(--border);
 }
 .stat-mini span { color: var(--text); font-weight: 600; margin: 0 1px; }
@@ -494,17 +512,19 @@ html, body {
   letter-spacing: 0.3px;
 }
 .timer-cycle {
-  margin-top: 10px; display: flex; gap: 5px; align-items: center;
+  margin-top: 12px; display: flex; gap: 7px; align-items: center;
 }
 .cycle-dot {
-  width: 9px; height: 9px; border-radius: 50%;
-  background: #e0e0e6;
-  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: #ececf0;
+  border: 1px solid #e0e0e6;
+  transition: background 0.25s, transform 0.25s, box-shadow 0.25s, border-color 0.25s;
 }
 .cycle-dot.filled {
-  background: var(--accent);
-  transform: scale(1.15);
-  box-shadow: 0 0 0 2px rgba(0,122,255,0.16);
+  background: linear-gradient(135deg, #3d9bff 0%, #007aff 100%);
+  border-color: rgba(0,122,255,0.5);
+  transform: scale(1.1);
+  box-shadow: 0 0 0 3px rgba(0,122,255,0.12), 0 1px 3px rgba(0,122,255,0.25);
 }
 .cycle-label {
   margin-top: 6px;
@@ -546,38 +566,38 @@ html, body {
   font-size: 13px; color: var(--text-2); font-weight: 500;
   margin-bottom: 8px; margin-top: 2px;
 }
-/* 快捷键提示：去除工程感，弱化为优雅的辅助文字风格 */
+/* 快捷键提示：柔化为半透明胶囊容器，弱化工程感、强化辅助说明属性 */
 .kbd-hint {
-  margin: 8px 0 16px;
-  display: inline-flex; align-items: center; gap: 12px;
-  padding: 0;
-  background: transparent;
-  border: none;
+  margin: 10px 0 16px;
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 6px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   border-radius: 999px;
   flex-wrap: wrap; letter-spacing: 0.1px;
   font-weight: 500;
-  opacity: 0.78;
+  opacity: 0.92;
 }
 .kbd-group {
-  display: inline-flex; align-items: center; gap: 6px;
+  display: inline-flex; align-items: center; gap: 5px;
 }
 .kbd-hint kbd {
   font-family: -apple-system, "SF Pro Text", "PingFang SC", sans-serif;
-  font-size: 11px; font-weight: 500;
-  color: var(--text-2);
-  background: transparent;
-  border: 1px solid var(--border);
+  font-size: 10.5px; font-weight: 600;
+  color: var(--accent);
+  background: #fff;
+  border: 1px solid rgba(0,122,255,0.18);
   padding: 1px 6px;
-  line-height: 1.4;
-  min-width: 20px; text-align: center;
-  border-radius: 4px;
-  box-shadow: none;
+  line-height: 1.5;
+  min-width: 18px; text-align: center;
+  border-radius: 5px;
+  box-shadow: 0 1px 1px rgba(0,122,255,0.06);
 }
 .kbd-text {
-  font-size: 11.5px; color: var(--text-2); font-weight: 500;
+  font-size: 11px; color: var(--text-2); font-weight: 500;
   letter-spacing: 0.1px;
 }
-.kbd-sep-dim { color: var(--border); font-size: 11px; }
+.kbd-sep-dim { color: var(--border); font-size: 10px; }
 
 /* 当前任务 */
 .current-task {
@@ -660,7 +680,7 @@ html, body {
   border-radius: 2px;
   background: linear-gradient(180deg, #0a84ff 0%, #007aff 100%);
 }
-/* 周柱状图：圆角 + 蓝→靛渐变 + 数值标注，与热力图色阶呼应 */
+/* 周柱状图：圆角 + 苹果蓝渐变 + 数值标注，与热力图色阶完全呼应 */
 .week-chart {
   display: flex; align-items: flex-end; gap: 12px;
   height: 76px; width: 100%;
@@ -672,7 +692,7 @@ html, body {
 }
 .week-bar {
   width: 100%; max-width: 38px;
-  background: linear-gradient(180deg, #b8d9f9 0%, #9ec5f5 100%);
+  background: linear-gradient(180deg, #b3d7ff 0%, #79b8ff 100%);
   border-radius: 4px 4px 3px 3px;
   min-height: 4px;
   transition: height 0.4s ease, opacity 0.2s, transform 0.15s;
