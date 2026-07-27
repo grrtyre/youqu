@@ -172,7 +172,7 @@ _暂无，期待第一个支持者的出现。_
 
 ## 📄 许可证
 
-[MIT License](LICENSE) · 可自由使用、修改、分发
+[Apache License 2.0](LICENSE) · 可自由使用、修改、分发
 
 ## 🔗 相关项目
 

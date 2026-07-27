@@ -277,4 +277,4 @@ _欢迎成为第一位支持者。_
 
 ## License
 
-[MIT License](./LICENSE) —— 可自由使用、修改、分发。
+[Apache License 2.0](./LICENSE) —— 可自由使用、修改、分发。

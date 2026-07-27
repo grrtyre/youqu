@@ -368,7 +368,9 @@ _暂无，期待第一个支持者的出现。_
 
 ## 📄 License
 
-[MIT](./LICENSE) · © 2026 youqu · 自由使用、修改、分发
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+
+[Apache License 2.0](./LICENSE) · © 2026 youqu · 自由使用、修改、分发
 
 <p align="center">
   <sub>🍅 专注 25 分钟 · 休息 5 分钟 · 重复直到心流</sub>

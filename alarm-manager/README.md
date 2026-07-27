@@ -275,7 +275,9 @@ npm test
 
 ## 📄 License
 
-[MIT License](./LICENSE)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+
+[Apache License 2.0](./LICENSE)
 
 ---
 
@@ -314,5 +316,5 @@ _暂无，期待第一个支持者的出现。_
 ---
 
 <div align="center">
-  <sub>Made with ☕ & 💙 · 闹钟管家 © 2026 · MIT License</sub>
+  <sub>Made with ☕ & 💙 · 闹钟管家 © 2026 · Apache License 2.0</sub>
 </div>

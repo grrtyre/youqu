@@ -126,4 +126,4 @@ _暂无，期待第一个支持者的出现。_
 
 ## 📝 License
 
-MIT License © 2026 youqu
+Apache License 2.0 © 2026 youqu

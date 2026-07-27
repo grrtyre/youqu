@@ -136,4 +136,4 @@ _暂无，期待第一个支持者的出现。_
 
 ## 📄 许可证
 
-[MIT License](./LICENSE)
+[Apache License 2.0](./LICENSE)

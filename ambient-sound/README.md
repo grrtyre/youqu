@@ -2,7 +2,7 @@
 
 > 专注 · 放松 · 助眠 —— 纯程序合成的白噪音与自然环境音桌面应用
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-007aff.svg)](LICENSE)
+[![License: Apache-2.0](https://img.shields.io/badge/License-MIT-007aff.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows-007aff.svg)]()
 [![Style](https://img.shields.io/badge/Style-Apple%20White-f5f5f7.svg)]()
 
@@ -183,4 +183,4 @@ _暂无，期待第一个支持者的出现。_
 
 ## 📄 许可证
 
-[MIT License](LICENSE) © 2026 youqu
+[Apache License 2.0](LICENSE) © 2026 youqu

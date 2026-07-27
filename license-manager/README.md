@@ -2,7 +2,7 @@
 
 > 本地加密 · 隐私优先 · 苹果白高端风格的软件许可证管理桌面应用
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-007aff.svg)](LICENSE)
+[![License: Apache-2.0](https://img.shields.io/badge/License-MIT-007aff.svg)](LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/Platform-Windows-007aff.svg)]()
 [![Style: Apple White](https://img.shields.io/badge/Style-苹果白-f5f5f7.svg)]()
 [![Encryption: AES-256-GCM](https://img.shields.io/badge/加密-AES--256--GCM-34c759.svg)]()
@@ -159,5 +159,7 @@ _暂无，期待第一个支持者的出现。_
 ---
 
 ## 📄 License
+
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 MIT © youqu

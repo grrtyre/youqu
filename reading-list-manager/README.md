@@ -121,4 +121,4 @@ _暂无，期待第一个支持者的出现。_
 
 ## License
 
-[MIT](./LICENSE)
+[Apache License 2.0](./LICENSE)

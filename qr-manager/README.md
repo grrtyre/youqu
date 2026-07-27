@@ -152,7 +152,9 @@ _欢迎成为第一位支持者。_
 
 ## 📄 License
 
-[MIT License](./LICENSE) —— 可自由使用、修改、分发。
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+
+[Apache License 2.0](./LICENSE) —— 可自由使用、修改、分发。
 
 ## 🔗 相关项目
 

@@ -272,7 +272,9 @@ _欢迎成为第一位支持者，你的名字将出现在这里。_
 
 ## 📄 License
 
-[MIT License](./LICENSE) —— 可自由使用、修改、分发。如需商用请保留 License 文件中的版权声明。
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+
+[Apache License 2.0](./LICENSE) —— 可自由使用、修改、分发。如需商用请保留 License 文件中的版权声明。
 
 ---
 
@@ -311,6 +313,6 @@ _欢迎成为第一位支持者，你的名字将出现在这里。_
 
 <div align="center">
 
-<sub>Copyright © 2026 [youqu 工具集](https://github.com/grrtyre/youqu) · MIT License</sub>
+<sub>Copyright © 2026 [youqu 工具集](https://github.com/grrtyre/youqu) · Apache License 2.0</sub>
 
 </div>

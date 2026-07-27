@@ -270,7 +270,7 @@ _暂无，期待第一个支持者的出现。_
 
 ## 📄 许可证
 
-[MIT License](LICENSE) · Copyright (c) 2026 youqu
+[Apache License 2.0](LICENSE) · Copyright (c) 2026 youqu
 
 <div align="center">
 <sub>Built with 🔒 for users who care about password security</sub>

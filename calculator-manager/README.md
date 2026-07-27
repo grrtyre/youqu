@@ -275,4 +275,6 @@ _暂无，期待第一个支持者的出现。_
 
 ## 📄 License
 
-[MIT License](./LICENSE) © youqu
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+
+[Apache License 2.0](./LICENSE) © youqu
