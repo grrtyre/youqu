@@ -187,7 +187,9 @@ _暂无，期待第一个支持者的出现。_
 
 ## 📄 License
 
-所有项目均采用 [MIT License](./LICENSE)，可自由使用。
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+
+所有项目均采用 [Apache License 2.0](./LICENSE)，版权所有 © 2026 grrtyre。允许自由使用、修改和分发，但需保留版权声明和协议文件。
 | [password-generator](./password-generator) | 瀵嗙爜鐢熸垚鍣?| 鍩轰簬 Electron + crypto CSPRNG 鐨勬湰鍦板瘑鐮佺敓鎴愬伐鍏凤紝鏀寔闅忔満瀵嗙爜銆佽蹇嗗彛浠ゃ€佸己搴︽娴嬨€佹壒閲忕敓鎴愪笌鏈湴鍘嗗彶 | Electron | 
 
 | [📔 日记本](./diary-manager) | 极简日记本桌面应用：日历视图、心情追踪、标签管理、全文搜索、Markdown 导出、本地存储隐私优先、苹果白风格 | Electron + 原生 JS | ✅ 可用 v1.0.0 |
