@@ -1,4 +1,4 @@
-﻿/* styles.css
+/* styles.css
    世界时钟 —— 苹果白高端风格
    参考 macOS/iOS 原生设计：浅灰背景、白色卡片、细腻阴影、系统字体、蓝色强调
 */
@@ -32,13 +32,18 @@
 html, body {
   margin: 0;
   padding: 0;
-  background: var(--bg);
+  background:
+    radial-gradient(1200px 600px at 100% -10%, rgba(0, 122, 255, 0.06), transparent 60%),
+    radial-gradient(900px 500px at 0% 0%, rgba(90, 200, 250, 0.05), transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
   color: var(--text);
   font-family: var(--font);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 14px;
   line-height: 1.5;
+  font-feature-settings: "tnum" 1, "ss01" 1;
 }
 
 .app {
@@ -66,7 +71,15 @@ html, body {
   background: linear-gradient(135deg, #007aff, #5ac8fa);
   color: #fff;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  position: relative;
+}
+.brand-icon::after {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 45%);
+  pointer-events: none;
 }
 
 .app-header h1 {
@@ -220,9 +233,9 @@ html, body {
   transition: transform 0.18s ease, box-shadow 0.18s ease;
   overflow: hidden;
 }
-.zone-card.is-day { background: linear-gradient(180deg, #ffffff 0%, #fffbf5 100%); }
-.zone-card.is-night { background: linear-gradient(180deg, #ffffff 0%, #f5f6fa 100%); }
-.zone-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.zone-card.is-day { background: linear-gradient(180deg, #ffffff 0%, #fffaf2 100%); }
+.zone-card.is-night { background: linear-gradient(180deg, #ffffff 0%, #f4f6fb 100%); }
+.zone-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: rgba(0, 122, 255, 0.18); }
 .zone-card::before {
   content: "";
   position: absolute; left: 0; top: 0; bottom: 0;
@@ -290,11 +303,17 @@ html, body {
   margin-top: 12px;
   height: 7px; border-radius: 4px;
   background: linear-gradient(90deg,
-    #d4d6e0 0%, #d4d6e0 20%,
-    #ffe0c7 25%, #fff8ee 35%, #fff8ee 65%,
-    #ffe0c7 75%, #d4d6e0 80%, #d4d6e0 100%);
+    #c9ccd6 0%,
+    #d8c4b0 22%,
+    #ffe3c4 28%,
+    #fff5e4 38%,
+    #fff5e4 62%,
+    #ffe3c4 72%,
+    #d8c4b0 78%,
+    #c9ccd6 100%);
   position: relative;
-  opacity: 0.9;
+  opacity: 0.92;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.03);
 }
 .zc-bar-label {
   margin-top: 5px;
@@ -337,7 +356,10 @@ html, body {
   appearance: none;
   height: 8px;
   border-radius: 4px;
-  background: linear-gradient(90deg, #e2e4ea 0%, #e2e4ea 100%);
+  background: linear-gradient(90deg,
+    #e3e5ec 0%, #e3e5ec var(--fill-start, 50%),
+    var(--blue) var(--fill-start, 50%), var(--blue) var(--fill-end, 50%),
+    #e3e5ec var(--fill-end, 50%), #e3e5ec 100%);
   outline: none;
   cursor: pointer;
 }
@@ -696,9 +718,10 @@ html, body {
 .result-table th {
   text-align: left;
   font-weight: 500; font-size: 12px;
+  letter-spacing: 0.02em;
   color: var(--text-3);
   padding: 11px 16px;
-  background: #fafafa;
+  background: #fafbfc;
   border-bottom: 1px solid var(--border);
 }
 .result-table td {

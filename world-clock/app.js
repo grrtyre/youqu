@@ -1,4 +1,4 @@
-﻿// app.js
+// app.js
 // 世界时钟 UI 逻辑 —— 状态管理、渲染、交互
 // 依赖 timezone-core.js（提供 TimezoneCore 命名空间）
 
@@ -554,6 +554,20 @@
     const slider = $('#scrubberSlider');
     const sValue = $('#scrubberValue');
     const sReset = $('#scrubberReset');
+    // 根据滑块值更新轨道填充（从中心 0 向两侧填充蓝色）
+    function updateSliderFill() {
+      const v = parseFloat(slider.value);
+      const pct = ((v - (-12)) / 24) * 100; // 0..100 滑块位置
+      const center = 50;
+      if (v >= 0) {
+        slider.style.setProperty('--fill-start', center + '%');
+        slider.style.setProperty('--fill-end', pct + '%');
+      } else {
+        slider.style.setProperty('--fill-start', pct + '%');
+        slider.style.setProperty('--fill-end', center + '%');
+      }
+    }
+    updateSliderFill();
     slider.addEventListener('input', () => {
       const v = parseFloat(slider.value);
       if (v === 0) {
@@ -566,6 +580,7 @@
         sValue.textContent = `${sign}${v}h`;
         sReset.hidden = false;
       }
+      updateSliderFill();
       renderLocalNow();
       renderZones();
     });
@@ -574,6 +589,7 @@
       previewOffset = null;
       sValue.textContent = '实时';
       sReset.hidden = true;
+      updateSliderFill();
       renderLocalNow();
       renderZones();
     });

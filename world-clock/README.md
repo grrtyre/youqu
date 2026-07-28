@@ -5,7 +5,7 @@
 **一眼看清全球时间与工作时段重叠 · 远程协作时代的跨时区瑞士军刀**
 
 <p>
-  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-007aff?style=flat-square" alt="License"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-007aff?style=flat-square" alt="License"></a>
   <img src="https://img.shields.io/badge/Platform-Web-007aff?style=flat-square" alt="Platform">
   <img src="https://img.shields.io/badge/Style-Apple%20White-f5f5f7?style=flat-square" alt="Style">
   <img src="https://img.shields.io/badge/Tests-39%20%E7%94%A8%E4%BE%8B-34c759?style=flat-square" alt="Tests">
@@ -120,6 +120,14 @@ world-clock/
 ```
 
 ## 📜 更新日志
+
+### v1.1.0
+
+- 视觉精致度升级：环境光背景、卡片柔光、昼夜进度条平滑过渡
+- 时间预览滑块新增填充轨，拖动反馈更清晰
+- 顶部品牌图标增加内高光与柔和投影，质感提升
+- 新增 SVG favicon 与 theme-color，浏览器标签更精致
+- 修复协议徽章不一致问题（统一为 Apache-2.0）
 
 ### v1.0.0
 
